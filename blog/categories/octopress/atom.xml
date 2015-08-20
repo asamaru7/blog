@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Octopress | 이 세산에 하나는 남기고 가자]]></title>
+  <link href="http://blog.asamaru.net/blog/categories/octopress/atom.xml" rel="self"/>
+  <link href="http://blog.asamaru.net/"/>
+  <updated>2015-08-20T23:10:50+09:00</updated>
+  <id>http://blog.asamaru.net/</id>
+  <author>
+    <name><![CDATA[유영재]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[옥토프레스 Rake Deploy에서 오류가 날 경우]]></title>
+    <link href="http://blog.asamaru.net/2015/08/20/octopress-rake-deploy-error/"/>
+    <updated>2015-08-20T22:56:20+09:00</updated>
+    <id>http://blog.asamaru.net/2015/08/20/octopress-rake-deploy-error</id>
+    <content type="html"><![CDATA[<p>옥토프레스를 설치하고 테스트 포스팅을 한 후 본격적으로 세팅을 하려고 시작했다.
+도메인도 세팅하고 구글 어날리틱스, disqus 등도 연결을 하고자 _config.xml 파일을 수정하고 몇가지 글도 포스팅하려고 저장 후 generate 했다.</p>
+
+<p>이제 배포를 하려고 rake deploy를 하니 아래와 같은 오류가 나타났다.</p>
+
+<pre><code class="bash">To https://github.com/asamaru7/blog.git
+ ! [rejected]        gh-pages -&gt; gh-pages (non-fast-forward)
+error: failed to push some refs to 'https://github.com/asamaru7/blog.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+</code></pre>
+
+<p>구글에서 검색해서 여러가지 방법들을 따라 시도해도 진행이 되지 않다가 발견한 stackoverflow에서 강제 업데이트하는 방법을 안내하고 있었다.</p>
+
+<pre><code class="bash">vi Rakefile
+</code></pre>
+
+<p>Rakefile을 열어 deploy_branch로 검색하다 보면 아래와 같은 부분을 볼 수 있다.</p>
+
+<pre><code class="ruby">desc "deploy public directory to github pages"
+multitask :push do
+  puts "## Deploying branch to Github Pages "
+  puts "## Pulling any updates from Github Pages "
+  cd "#{deploy_dir}" do
+    Bundler.with_clean_env { system "git pull" }
+  end
+  (Dir["#{deploy_dir}/*"]).each { |f| rm_rf(f) }
+  Rake::Task[:copydot].invoke(public_dir, deploy_dir)
+  puts "\n## Copying #{public_dir} to #{deploy_dir}"
+  cp_r "#{public_dir}/.", deploy_dir
+  cd "#{deploy_dir}" do
+    system "git add -A"
+    message = "Site updated at #{Time.now.utc}"
+    puts "\n## Committing: #{message}"
+    system "git commit -m \"#{message}\""
+    puts "\n## Pushing generated #{deploy_dir} website"
+    Bundler.with_clean_env { system "git push origin #{deploy_branch}" }
+    puts "\n## Github Pages deploy complete"
+  end
+end
+</code></pre>
+
+<p>여기서 고칠 부분은 <code>Bundler.with_clean_env { system "git push origin #{deploy_branch}" }</code> 이 부분이다.
+<code>#{deploy_branch}"</code> 앞에 +를 붙여준다.</p>
+
+<pre><code class="ruby">Bundler.with_clean_env { system "git push origin #{deploy_branch}" }
+</code></pre>
+
+<p>이제 저장후 나와서 다시 deploy&hellip;</p>
+
+<pre><code class="bash">## Pushing generated _deploy website
+Counting objects: 36, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (27/27), done.
+Writing objects: 100% (36/36), 12.90 KiB | 0 bytes/s, done.
+Total 36 (delta 14), reused 0 (delta 0)
+To https://github.com/asamaru7/blog.git
+ + 9295247...d6c0b14 gh-pages -&gt; gh-pages (forced update)
+</code></pre>
+
+<p>이번엔 gh-pages (forced update) 안내를 보여주며 push 성공.</p>
+]]></content>
+  </entry>
+  
+</feed>

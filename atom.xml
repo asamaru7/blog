@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-08-30T07:23:37+09:00</updated>
+  <updated>2015-09-01T22:36:31+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,45 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Java Reflection을 사용해서 Private Static Final Field 변경하기]]></title>
+    <link href="http://blog.asamaru.net/2015/09/01/change-private-static-final-field-using-java-reflection/"/>
+    <updated>2015-09-01T22:29:00+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/01/change-private-static-final-field-using-java-reflection</id>
+    <content type="html"><![CDATA[<p>java에서 final로 지정한 것은 당연히 변경을 하지 말라는 뜻이다.
+하지만 간혹 작업을 하다보면 그 값을 수정하고 싶을 때가 있다. 이번에도 안드로이드 작업을 하던 중 중요한 값도 아닐뿐아니라 유연성을 위해 값 변경이 필요한 값을 상수라는 이유만으로 final을 붙여 놓은 필드가 있었다.(아마도 자바 개발자들의 습관인 것 같다.)</p>
+
+<p>그래서 관련된 내용을 검색하던 중 해답을 알려주는 내용을 찾았다.</p>
+
+<p><a href="http://stackoverflow.com/questions/3301635/change-private-static-final-field-using-java-reflection">http://stackoverflow.com/questions/3301635/change-private-static-final-field-using-java-reflection</a></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">static</span> <span class="kt">void</span> <span class="nf">setFinalStatic</span><span class="o">(</span><span class="n">Field</span> <span class="n">field</span><span class="o">,</span> <span class="n">Object</span> <span class="n">newValue</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">field</span><span class="o">.</span><span class="na">setAccessible</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">Field</span> <span class="n">modifiersField</span> <span class="o">=</span> <span class="n">Field</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getDeclaredField</span><span class="o">(</span><span class="s">&quot;modifiers&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="n">modifiersField</span><span class="o">.</span><span class="na">setAccessible</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+</span><span class='line'>  <span class="n">modifiersField</span><span class="o">.</span><span class="na">setInt</span><span class="o">(</span><span class="n">field</span><span class="o">,</span> <span class="n">field</span><span class="o">.</span><span class="na">getModifiers</span><span class="o">()</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">Modifier</span><span class="o">.</span><span class="na">FINAL</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">field</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="n">newValue</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>상세한 내용은 원본 주소에 가서 보면 친절히 설명되어 있다. 사실 코드를 굳이 해석할 이유도 없고 그냥 저 함수를 써서 원하는 처리를 하면 그만이다.</p>
+
+<p>이번 작업과 상관은 없지만 개인적으로 java는 정말 맘에 들지 않는다. 개인적으로 느끼기에 너무 고지식한 언어 같다. 이렇게 얘기하면 java 추종자들이 난리나겠지만 길게 얘기할 맘은 없다. 난 Objective-C가 좋아.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[증여받은 부동산의 양도소득세]]></title>

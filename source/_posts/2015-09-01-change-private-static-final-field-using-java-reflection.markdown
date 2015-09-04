@@ -1,0 +1,29 @@
+---
+layout: post
+title: "java reflection을 사용해서 private static final field 변경하기"
+date: 2015-09-01 22:29:00 +0900
+comments: true
+categories: java
+---
+java에서 final로 지정한 것은 당연히 변경을 하지 말라는 뜻이다.
+하지만 간혹 작업을 하다보면 그 값을 수정하고 싶을 때가 있다. 이번에도 안드로이드 작업을 하던 중 중요한 값도 아닐뿐아니라 유연성을 위해 값 변경이 필요한 값을 상수라는 이유만으로 final을 붙여 놓은 필드가 있었다.(아마도 자바 개발자들의 습관인 것 같다.)
+
+그래서 관련된 내용을 검색하던 중 해답을 알려주는 내용을 찾았다.
+
+http://stackoverflow.com/questions/3301635/change-private-static-final-field-using-java-reflection
+
+```java
+static void setFinalStatic(Field field, Object newValue) throws Exception {
+  field.setAccessible(true);
+
+  Field modifiersField = Field.class.getDeclaredField("modifiers");
+  modifiersField.setAccessible(true);
+  modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
+  field.set(null, newValue);
+}
+```
+
+상세한 내용은 원본 주소에 가서 보면 친절히 설명되어 있다. 사실 코드를 굳이 해석할 이유도 없고 그냥 저 함수를 써서 원하는 처리를 하면 그만이다.
+
+이번 작업과 상관은 없지만 개인적으로 java는 정말 맘에 들지 않는다. 개인적으로 느끼기에 너무 고지식한 언어 같다. 이렇게 얘기하면 java 추종자들이 난리나겠지만 길게 얘기할 맘은 없다. 난 Objective-C가 좋아.

@@ -12,6 +12,7 @@ categories: android
 > public boolean isLaidOut ()
 
 > Added in API level 19
+> 
 > Returns true if this view has been through at least one layout since it was last attached to or detached from a window.
 
 쉽게 말해서 "해당 View가 layout이 그려졌는가?"를 반환하는 함수다.
@@ -21,6 +22,7 @@ categories: android
 > public boolean post (Runnable action)
 
 > Added in API level 1
+> 
 > Causes the Runnable to be added to the message queue. The runnable will be run on the user interface thread.
 
 Runnalbe을 넘겨 받아 UIThread에서 실행시켜준다고 한다.

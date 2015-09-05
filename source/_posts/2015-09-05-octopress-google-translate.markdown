@@ -11,19 +11,19 @@ categories: octopress
 ## 구글 번역 스크립트 생성
 http://translate.google.com/manager/website/
 
-![웹사이트에 지금 추가](../img/2015-09-05-octopress-google-translate-1.png)
+![웹사이트에 지금 추가](/img/2015-09-05-octopress-google-translate-1.png "웹사이트에 지금 추가")
 
 "웹사이트에 지금 추가"를 눌러 다음으로.
 
-![웹사이트 정보](../img/2015-09-05-octopress-google-translate-2.png)
+![웹사이트 정보](/img/2015-09-05-octopress-google-translate-2.png)
 
 번역기를 넣을 웹사이트 주소를 입력하고 언어 선택 후 다음.
 
-![플러그인 설정](../img/2015-09-05-octopress-google-translate-3.png)
+![플러그인 설정](/img/2015-09-05-octopress-google-translate-3.png)
 
 원하는 옵션을 선택하고 다음.
 
-![플러그인 추가](../img/2015-09-05-octopress-google-translate-4.png)
+![플러그인 추가](/img/2015-09-05-octopress-google-translate-4.png)
 
 번역 스크립트 완성. 이제 이 스크립트를 복사해서 원하는 곳에 넣으면 끝이다.
 

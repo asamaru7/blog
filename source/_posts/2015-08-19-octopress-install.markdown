@@ -3,7 +3,7 @@ layout: post
 title: "Octopress 설치"
 date: 2015-08-19 23:29:26 +0900
 comments: true
-categories: 
+categories: ["octopress"]
 ---
 # Octopress 설치
 

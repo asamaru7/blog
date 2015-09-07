@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-05T19:55:53+09:00</updated>
+  <updated>2015-09-07T21:08:17+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,86 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[안드로이드 스튜디오에서 WIFI로 Run/install/debug 하기]]></title>
+    <link href="http://blog.asamaru.net/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi/"/>
+    <updated>2015-09-07T20:43:33+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi</id>
+    <content type="html"><![CDATA[<p>이제 안드로이드 개발을 시작한지 6개월 가량 된 것 같다. 나이 주 개발 영역은 웹이다. 프론드/백엔드, 서버 등등 웹에 관련된 일을 주로하며 예전엔 아이폰 개발도 일부 했었다. 하지만 회사 업무로 인해 안드로이드를 시작하게 되었고 6개월이나 했음에도 아직 초보를 벗어나지 못한 것 같다. 불필요한 사설이 길었지만 6개월간 왜 불편함을 그냥 당연하게 생각하고 작업을 했는지 안타깝다.</p>
+
+<p>어제는 불현듯 책생 위에 널브러져 케이블들을 보며 이걸 없앨 수 없나? 라는 생각이 들었다. 내 책상 위에는 아이폰이 3개, 안드로이드 폰이 2개, 충전선 등이 있다. 굳이 다 필요하진 않지만&hellip;
+그래서 찾아봤다. 안드로이드 빌드 후 실행을 케이블 없이 할 수 있는가? 결과는 있다. 아 왜 진작 찾아보지 않았던가? 사실은 선 정리보다 더 중요한 문제가 있었다. 안드로이드 연결 케이블이 불안정한 것이다. adb에 붙었다 떨어졌다 하는 현상이 사용하는 케이블에 따라 상태가 천차만별이었다. 정말 안드로이드는 맘에 안든다.</p>
+
+<p>이제 정말 각설하고 본론을&hellip;</p>
+
+<p>일단 이 방법에서의 최대 단점은 최초 연결시에는 USB 케이블이 필요하다는 것이다.</p>
+
+<h3>1. 일단 기존처럼 USB로 안드로이드폰을 연결한다.</h3>
+
+<h3>2. Shell을 열어 기기가 연결된 것을 확인한다. (사실 이 단계는 확인단계로 그냥 건너뛰어도 다.)</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>adb devices -l
+</span><span class='line'>
+</span><span class='line'>List of devices attached
+</span><span class='line'>6a1d4134               device usb:4245815296X product:hltelgt model:SM_N900L device:hltelgt
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>3. 연결된 기기의 IP를 확인한다. adb shell 실행 후 shell이 뜨면 netcfg 입력. exit로 종료.</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>adb shell
+</span><span class='line'>shell@hltelgt:/ <span class="nv">$ </span>netcfg
+</span><span class='line'>rev_rmnet1 DOWN                                   0.0.0.0/0   0x00001002 2e:80:5c:86:19:5f
+</span><span class='line'>...
+</span><span class='line'>sit0     DOWN                                   0.0.0.0/0   0x00000080 00:00:00:00:00:00
+</span><span class='line'>p2p0     UP                                     0.0.0.0/0   0x00001003 ca:14:79:ea:48:5f
+</span><span class='line'>lo       UP                                   127.0.0.1/8   0x00000049 00:00:00:00:00:00
+</span><span class='line'>wlan0    UP                             192.168.219.101/24  0x00001043 c8:14:79:ea:48:5f
+</span><span class='line'>shell@hltelgt:/ <span class="nv">$ </span><span class="nb">exit</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>4. adb를 통해 포트 5555(원하는 포트)로 변경한다.</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>adb tcpip 5555
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>5. 기기 IP를 통해서 연결</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>adb connect &lt;DEVICE_IP_ADDRESS&gt;:5555
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>끝이다. 이제는 USB에서 기기를 분리해도 된다.
+이제부터는 안드로이드 스튜디오에서 빌드를 하고 실행하려고 하면 원격으로 연결된 기기가 뜬다.</p>
+
+<p>아직 많이 써보진 않았지만 아무래도 직접 USB로 연결한 것 보다는 조금 느린 것 같긴하다. 하지만 계속 션으로 연결하지 않아도 된다는 것으로 만족.</p>
+
+<p>마지막으로 리모트 연결을 다시 USB 연결로 바꾸는 방법</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>adb -s &lt;DEVICE_IP_ADDRESS&gt;:5555 usb
+</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[옥토프레스에 구글 번역기 달기]]></title>

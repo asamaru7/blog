@@ -125,6 +125,118 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-08-28T20:45:21+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.08.28</time>
+        
+           | <a href="/2015/08/28/octopress-category-list-plugin-install/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/08/28/octopress-category-list-plugin-install/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/08/28/octopress-category-list-plugin-install/" itemprop="url">옥토프레스 Category List 플러그인 설치</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>이번엔 옥토프레스에 category list 플러그인을 추가해 보았다.</p>
+
+<p>사실 현재 시점에서 쓰고 있는 테마를 선택한 이유가 우측에 나오는 카테고리 목록이었다. 그런데 막상 테마를 설치한 후에도 카테고리 목록이 보이지 않았다. 처음엔 설정이 누락되어서 그렇다고 생각했고 시간이 없어서 그냥 두다가 오늘에서야 추가를 하고자 확인해 봤다.</p>
+
+<p>현재 시점에 사용하고 있는 테마는 <a href="" title="https://github.com/kAworu/octostrap3">octostrap3</a>다. 해당 소스를 뒤져서 aside에 추가하는 부분은 찾았으나 테마엔 그 파일이 없었다. 그럼 이사람은 없는 파일을 어떻게 불러서 쓴단 말인가?</p>
+
+<p>알아보니 별도 플러그인을 추가해야만 했다.
+<a href="https://github.com/ctdk/octopress-category-list">https://github.com/ctdk/octopress-category-list</a>
+현재 내가 적용한 플러그인이다. 최근 업데이트가 시점이 오래되어 조금 미심쩍지만 대안이 없다.</p>
+
+<p>일단 설명이 된대로 소스를 받아서 안내하는 경로에 집어 넣었다.
+그리고 octostrap3에서 사용하던것 처럼 _config.xml 파일에 추가 했다.일단 사이드 영역에 &ldquo;custom/asides/category_list.html"를 추가.</p>
+
+<blockquote><p>default_asides: [asides/recent_posts.html, custom/asides/category_list.html, asides/github.html, asides/delicious.html, asides/pinboard.html, asides/googleplus.html]</p></blockquote>
+
+<p>그리고는 정상적으로 적용이 되는지 확인.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake generate
+</span><span class='line'><span class="c">## Generating Site with Jekyll</span>
+</span><span class='line'>Configuration file: /Volumes/Data/DropBox/blog/_config.yml
+</span><span class='line'>            Source: <span class="nb">source</span>
+</span><span class='line'><span class="nb">       </span>Destination: public/blog
+</span><span class='line'>      Generating...
+</span><span class='line'>  Liquid Exception: undefined method <span class="sb">`</span>+<span class="s1">&#39; for nil:NilClass in _layouts/page.html</span>
+</span><span class='line'><span class="s1">jekyll 2.5.3 | Error:  undefined method `+&#39;</span> <span class="k">for</span> nil:NilClass
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>하지만 오류.. 이런.. 불친절하게 어디가 문제인지 명확히 알려주지 않는다. 무작정 소스를 봤다. ruby를 아예 모르는 관계로 봐도 모르겠다. 하지만 nil 오류라고 하니 값이 없는 것이 문제라는 생각에 의심되는 부분들을 보다가 발견한 부분..</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">lists</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span class='line'>  <span class="n">max</span><span class="p">,</span> <span class="n">min</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+</span><span class='line'>  <span class="n">config</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">registers</span><span class="o">[</span><span class="ss">:site</span><span class="o">].</span><span class="n">config</span>
+</span><span class='line'>  <span class="n">category_dir</span> <span class="o">=</span> <span class="n">config</span><span class="o">[</span><span class="s1">&#39;root&#39;</span><span class="o">]</span> <span class="o">+</span> <span class="n">config</span><span class="o">[</span><span class="s1">&#39;category_dir&#39;</span><span class="o">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span>
+</span><span class='line'>  <span class="n">categories</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">registers</span><span class="o">[</span><span class="ss">:site</span><span class="o">].</span><span class="n">categories</span>
+</span><span class='line'>  <span class="n">categories</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">sort_by</span><span class="p">{</span> <span class="o">|</span><span class="n">str</span><span class="o">|</span> <span class="n">str</span><span class="o">.</span><span class="n">downcase</span> <span class="p">}</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">category</span><span class="o">|</span>
+</span><span class='line'>    <span class="n">count</span> <span class="o">=</span> <span class="n">categories</span><span class="o">[</span><span class="n">category</span><span class="o">].</span><span class="n">count</span>
+</span><span class='line'>    <span class="n">lists</span><span class="o">[</span><span class="n">category</span><span class="o">]</span> <span class="o">=</span> <span class="n">count</span>
+</span><span class='line'>    <span class="n">max</span> <span class="o">=</span> <span class="n">count</span> <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="n">max</span>
+</span><span class='line'>  <span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>여기서 config[&lsquo;root&rsquo;] 이 부분이 문제 였다. 내 _config.xml 파일에서는 &ldquo;root:&rdquo; 부분을 비워두었다. 하위 폴더를 사용하지 않기 때문에. 여기에 값이 없어서 오류. 그래서 &ldquo;root: /"로 수정.</p>
+
+<p>다시 시도.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake generate
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>이젠 된다. 카테고리 목록도 잘 나온다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-08-28T06:34:30+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.08.28</time>
         
            | <a href="/2015/08/28/cocoapods-usage/#disqus_thread" itemprop="discussionUrl"
@@ -976,6 +1088,8 @@ Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블�
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/09/08/cleaner-view-casting-with-generics/">안드로이드에서 findViewById 사용시 Generics을 이용해 Type Casting 없애기</a>
+    
     <a class="list-group-item " href="/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi/">안드로이드 스튜디오에서 WIFI로 Run/Install/Debug 하기</a>
     
     <a class="list-group-item " href="/2015/09/05/octopress-google-translate/">옥토프레스에 구글 번역기 달기</a>
@@ -984,8 +1098,6 @@ Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블�
     
     <a class="list-group-item " href="/2015/09/04/android-view-dot-islaidout-and-view-dot-post/">안드로이드 View.isLaidOut / View.post</a>
     
-    <a class="list-group-item " href="/2015/09/03/android-http-ping/">안드로이드에서 android.os.NetworkOnMainThreadException을 발생시키지 않고 HTTP Ping 보내기</a>
-    
   </div>
 </section>
 <section class="panel panel-default">
@@ -993,7 +1105,7 @@ Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블�
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (6)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (4)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (7)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (4)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
 	<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>

@@ -137,7 +137,7 @@
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p>오늘은 지난번 <a href="http://blog.asamaru.net/post/webkit-tap-highlight-color-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0/">-webkit-tap-highlight-color 사용하기</a> 에서 얘기했던 안드로이드 tap highlight 버그를 회피할 수 있는 방법에 대해 포스팅하고자 한다.</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>오늘은 지난번 <a href="/2012/09/26/webkit-tap-highlight-color/">-webkit-tap-highlight-color 사용하기</a> 에서 얘기했던 안드로이드 tap highlight 버그를 회피할 수 있는 방법에 대해 포스팅하고자 한다.</p>
 
 <p>일단 기본적인 아이디어는 이렇다. webkit 브라우저는 기본적으로 tap highlight를 숨길 수 있으므로 tap highlight를 투명하게 변경하고 해당 링크의 위치에 원하는 모양의 레이어를 띄우는 것이다. 여기서 또 다른 문제를 함께 해결해야 하는데, 삼성 갤럭시 계열의 스마트폰에서는 숨기는 것 조차 안된다는 것.</p>
 
@@ -165,65 +165,119 @@
 
 <p>자 그럼 소스를 첨부한다. 정리를 해야 겠지만 시간 관계상&hellip; (그리고 jquery는 기본적으로 사용한다는 가정하에서 제작된 소스다. jquery를 사용하지 않는다면 사용 부분은 수정이 필요하다. 사실 jquery 문제가 아니더라도 범용으로 사용하기 위해 제작되 것이 아니므로 그냥 그대로 가져다 쓸 수는 없으니 참고로만 보면 된다.)</p>
 
-<p>css 소스</p>
+<h3>css 소스</h3>
 
-<pre><code>.p_tap_highlight { position:absolute; background-color:#333; -moz-opacity:.30; filter:alpha(opacity=30); opacity:.30; }
-</code></pre>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='css'><span class='line'><span class="nc">.p_tap_highlight</span> <span class="p">{</span> <span class="k">position</span><span class="o">:</span><span class="k">absolute</span><span class="p">;</span> <span class="k">background-color</span><span class="o">:</span><span class="m">#333</span><span class="p">;</span> <span class="o">-</span><span class="n">moz</span><span class="o">-</span><span class="k">opacity</span><span class="o">:.</span><span class="m">30</span><span class="p">;</span> <span class="n">filter</span><span class="o">:</span><span class="n">alpha</span><span class="p">(</span><span class="k">opacity</span><span class="o">=</span><span class="m">30</span><span class="p">);</span> <span class="k">opacity</span><span class="o">:.</span><span class="m">30</span><span class="p">;</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
-<p>js 소스 <a href="http://blog.asamaru.net/wp-content/uploads/2012/09/tabhighlight.zip">다운로드</a></p>
 
-<pre><code>(function() {
-    var isAndroid = (navigator.userAgent.toLowerCase().indexOf("android") &gt; -1); //&amp;&amp; ua.indexOf("mobile");
-    if(isAndroid) { // 안드로이드 계열에서 탭 하이라이트 위치가 맞지 않아 프로그램으로 대체
-        // 탭 하이라이트 숨김 : 삼성 계열은 소용없음
-        $("&lt;style type='text/css'&gt; html, body, body * { -webkit-tap-highlight-color:rgba(0,0,0,0); } &lt;/style&gt;").appendTo("head");
+<h3>js 소스</h3>
 
-        var fcSx=0,fcSy=0;
-        var fcEx=0,fcEy=0;
-        $(document).on('touchmove',function(event){    // touchmove로 터치 마지막 좌표 추적
-            var t=event.originalEvent.targetTouches[0];
-            fcSx=t.pageX;
-            fcSy=t.pageY;
-        });
-        $(document).on('touchstart','a',function(event){
-            var t=event.originalEvent.targetTouches[0];
-            fcSx=fcEx=t.pageX;
-            fcSy=fcEy=t.pageY;
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">isAndroid</span> <span class="o">=</span> <span class="p">(</span><span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgent</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">().</span><span class="nx">indexOf</span><span class="p">(</span><span class="s2">&quot;android&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span> <span class="c1">//&amp;&amp; ua.indexOf(&quot;mobile&quot;);</span>
+</span><span class='line'>    <span class="k">if</span><span class="p">(</span><span class="nx">isAndroid</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// 안드로이드 계열에서 탭 하이라이트 위치가 맞지 않아 프로그램으로 대체</span>
+</span><span class='line'>      <span class="c1">// 탭 하이라이트 숨김 : 삼성 계열은 소용없음</span>
+</span><span class='line'>        <span class="nx">$</span><span class="p">(</span><span class="s2">&quot;&lt;style type=&#39;text/css&#39;&gt; html, body, body * { -webkit-tap-highlight-color:rgba(0,0,0,0); } &lt;/style&gt;&quot;</span><span class="p">).</span><span class="nx">appendTo</span><span class="p">(</span><span class="s2">&quot;head&quot;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="kd">var</span> <span class="nx">fcSx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="nx">fcSy</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+</span><span class='line'>        <span class="kd">var</span> <span class="nx">fcEx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="nx">fcEy</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+</span><span class='line'>        <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;touchmove&#39;</span><span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">event</span><span class="p">){</span> <span class="c1">// touchmove로 터치 마지막 좌표 추적</span>
+</span><span class='line'>            <span class="kd">var</span> <span class="nx">t</span><span class="o">=</span><span class="nx">event</span><span class="p">.</span><span class="nx">originalEvent</span><span class="p">.</span><span class="nx">targetTouches</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span><span class='line'>            <span class="nx">fcSx</span><span class="o">=</span><span class="nx">t</span><span class="p">.</span><span class="nx">pageX</span><span class="p">;</span>
+</span><span class='line'>            <span class="nx">fcSy</span><span class="o">=</span><span class="nx">t</span><span class="p">.</span><span class="nx">pageY</span><span class="p">;</span>
+</span><span class='line'>        <span class="p">});</span>
+</span><span class='line'>        <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;touchstart&#39;</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">event</span><span class="p">){</span>
+</span><span class='line'>            <span class="kd">var</span> <span class="nx">t</span><span class="o">=</span><span class="nx">event</span><span class="p">.</span><span class="nx">originalEvent</span><span class="p">.</span><span class="nx">targetTouches</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span><span class='line'>            <span class="nx">fcSx</span><span class="o">=</span><span class="nx">fcEx</span><span class="o">=</span><span class="nx">t</span><span class="p">.</span><span class="nx">pageX</span><span class="p">;</span>
+</span><span class='line'>            <span class="nx">fcSy</span><span class="o">=</span><span class="nx">fcEy</span><span class="o">=</span><span class="nx">t</span><span class="p">.</span><span class="nx">pageY</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="nx">event</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+</span><span class='line'>            <span class="c1">// touchstart를 사용해야 하는 부모 객체에 이벤트 trigger</span>
+</span><span class='line'>            <span class="nx">$</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">).</span><span class="nx">parents</span><span class="p">(</span><span class="s1">&#39;.ui-scrollview-view&#39;</span><span class="p">).</span><span class="nx">triggerHandler</span><span class="p">(</span><span class="s1">&#39;touchstart&#39;</span><span class="p">);</span>
+</span><span class='line'>            <span class="nx">event</span><span class="p">.</span><span class="nx">stopPropagation</span><span class="p">();</span>
+</span><span class='line'>            <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class='line'>        <span class="p">}).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;touchend&#39;</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">event</span><span class="p">){</span>
+</span><span class='line'>          <span class="c1">// 가로/세로 이동 거리의 합이 10 이하인 경우만 click으로 인정(swife 제외를 위함)</span>
+</span><span class='line'>            <span class="k">if</span><span class="p">((</span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">fcSx</span><span class="o">-</span><span class="nx">fcEx</span><span class="p">)</span><span class="o">+</span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">fcSy</span><span class="o">-</span><span class="nx">fcEy</span><span class="p">))</span><span class="o">&lt;</span><span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                <span class="kd">var</span> <span class="nx">target</span><span class="o">=</span><span class="nx">$</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">currentTarget</span><span class="p">);</span>
+</span><span class='line'>                <span class="c1">// 탭 하이라이트 표시</span>
+</span><span class='line'>                <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;&lt;div class=&quot;p_tap_highlight&quot; style=&quot;width:&#39;</span><span class="o">+</span><span class="p">(</span><span class="nx">target</span><span class="p">.</span><span class="nx">width</span><span class="p">())</span><span class="o">+</span><span class="s1">&#39;px; height:&#39;</span><span class="o">+</span><span class="p">(</span><span class="nx">target</span><span class="p">.</span><span class="nx">height</span><span class="p">())</span><span class="o">+</span><span class="s1">&#39;px;&quot;&gt;&lt;/div&gt;&#39;</span><span class="p">).</span><span class="nx">insertBefore</span><span class="p">(</span><span class="nx">target</span><span class="p">).</span><span class="nx">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">).</span><span class="nx">queue</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">remove</span><span class="p">();});</span>
+</span><span class='line'>                <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">t</span><span class="p">){</span> <span class="k">return</span> <span class="kd">function</span><span class="p">(){</span>
+</span><span class='line'>                    <span class="kd">var</span> <span class="nx">href</span> <span class="o">=</span> <span class="nx">t</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">);</span>
+</span><span class='line'>                    <span class="k">if</span><span class="p">((</span><span class="k">typeof</span><span class="p">(</span><span class="nx">href</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="nx">href</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="nx">href</span> <span class="o">==</span> <span class="s1">&#39;#&#39;</span><span class="p">))</span> <span class="p">{</span>    <span class="c1">// 이동할 주소가 없을 경우 이벤트 트리거</span>
+</span><span class='line'>                        <span class="nx">t</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">);</span>
+</span><span class='line'>                        <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+</span><span class='line'>                    <span class="p">}</span>
+</span><span class='line'>                    <span class="c1">//event.preventDefault();</span>
+</span><span class='line'>                    <span class="c1">//event.stopPropagation();</span>
+</span><span class='line'>                    <span class="c1">// 링크 객체의 주소 형태에 맞게 처리</span>
+</span><span class='line'>                    <span class="k">if</span><span class="p">(</span><span class="nx">href</span><span class="p">.</span><span class="nx">substring</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">==</span><span class="s1">&#39;#&#39;</span><span class="p">){</span>
+</span><span class='line'>                        <span class="c1">// TODO hash 변경에 따른 처리</span>
+</span><span class='line'>                    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">href</span><span class="p">.</span><span class="nx">substring</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">11</span><span class="p">).</span><span class="nx">toLowerCase</span><span class="p">()</span><span class="o">==</span><span class="s1">&#39;javascript:&#39;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                        <span class="nb">eval</span><span class="p">(</span><span class="nx">href</span><span class="p">.</span><span class="nx">substring</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="nx">href</span><span class="p">.</span><span class="nx">length</span><span class="p">));</span>
+</span><span class='line'>                    <span class="p">}</span>
+</span><span class='line'>                    <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="o">=</span><span class="nx">href</span><span class="p">;</span>
+</span><span class='line'>                <span class="p">};}(</span><span class="nx">target</span><span class="p">),</span><span class="mi">10</span><span class="p">);</span>
+</span><span class='line'>                <span class="nx">target</span><span class="o">=</span><span class="kc">null</span><span class="p">;</span>
+</span><span class='line'>            <span class="p">}</span>
+</span><span class='line'>            <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+</span><span class='line'>        <span class="p">});</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">})();</span>
+</span></code></pre></td></tr></table></div></figure>
 
-            event.preventDefault();
-            // touchstart를 사용해야 하는 부모 객체에 이벤트 trigger
-            $(event.target).parents('.ui-scrollview-view').triggerHandler('touchstart');    
-            event.stopPropagation();
-            return false;
-        }).on('touchend','a',function(event){
-            // 가로/세로 이동 거리의 합이 10 이하인 경우만 click으로 인정(swife 제외를 위함)
-            if((Math.abs(fcSx-fcEx)+Math.abs(fcSy-fcEy))&amp;lt;10) {    
-                var target=$(event.currentTarget);
-                // 탭 하이라이트 표시
-                $('&lt;div class="p_tap_highlight" style="width:'+(target.width())+'px; height:'+(target.height())+'px;"&gt;&lt;/div&gt;').insertBefore(target).delay(200).queue(function(){$(this).remove();});
-                setTimeout(function(t){ return function(){
-                    var href = t.attr('href');
-                    if((typeof(href) == 'undefined') || (href == '') || (href == '#')) {    // 이동할 주소가 없을 경우 이벤트 트리거
-                        t.trigger('click');
-                        return true;
-                    }
-                    //event.preventDefault();
-                    //event.stopPropagation();
-                    // 링크 객체의 주소 형태에 맞게 처리
-                    if(href.substring(0,1)=='#'){
-                        // TODO hash 변경에 따른 처리
-                    } else if(href.substring(0,11).toLowerCase()=='javascript:') {
-                        eval(href.substring(11,href.length));
-                    }
-                    window.location.href=href;
-                };}(target),10);
-                target=null;
-            }
-            return true;
-        });
-    }
-})();
-</code></pre>
 </div>
 
 

@@ -125,6 +125,101 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-11T23:27:58+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.11</time>
+        
+           | <a href="/2015/09/11/webkit-tap-highlight-color/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/11/webkit-tap-highlight-color/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/11/webkit-tap-highlight-color/" itemprop="url">-webkit-tap-highlight-color 사용하기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>iOS와 안드로이드의 웹킷 기반 브라우저(사파리, 크롬 등)에서 링크를 터치하면 해당 위치를 표시하는 하이라이트가 나타난다.</p>
+
+<p>이 하이라이트의 색상을 바꾸고 싶을 때 사용할 수 있는 것이 -webkit-tap-highlight-color 이다.</p>
+
+<p>사용법은 아주 간단하다.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='css'><span class='line'><span class="nt">-webkit-tap-highlight-color</span><span class="o">:</span> <span class="o">&lt;</span><span class="nt">color</span><span class="o">&gt;;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>예를들어 검은색 계열에 불투명도 30%를 지정하고 싶다면</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='css'><span class='line'><span class="o">*</span> <span class="p">{</span> <span class="o">-</span><span class="n">webkit</span><span class="o">-</span><span class="n">tap</span><span class="o">-</span><span class="n">highlight</span><span class="o">-</span><span class="k">color</span><span class="o">:</span><span class="n">rgba</span><span class="p">(</span><span class="m">0</span><span class="o">,</span><span class="m">0</span><span class="o">,</span><span class="m">0</span><span class="o">,</span><span class="m">0</span><span class="o">.</span><span class="m">3</span><span class="p">);</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>으로 지정하면 된다. *는 모든 개체를 뜻하므로 특정 객체만 해제하려면 CSS selector를 변경하면 된다.</p>
+
+<p>그런데 여기서 문제가 있다.</p>
+
+<p>바로 안드로이드&hellip; 안드로이드는 현재 아이스크림 샌드위치(4.0.4) 기준으로 색상 지정을 지원하지 않는다. (젤리빈에서는 아직 테스트하지 못했다. 향후 OS 업데이트가 되면 확인 후 내용을 수정하겠다.)</p>
+
+<p>다만 아예 숨기는 것은 가능하다. (다시말해 주황색의 하이라이트를 쓰거나 아예 숨기는 것만 가능하다.)</p>
+
+<p>그렇다면 아예 숨기는 방법은</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='css'><span class='line'><span class="o">*</span> <span class="p">{</span> <span class="o">-</span><span class="n">webkit</span><span class="o">-</span><span class="n">tap</span><span class="o">-</span><span class="n">highlight</span><span class="o">-</span><span class="k">color</span><span class="o">:</span> <span class="n">rgba</span><span class="p">(</span><span class="m">255</span><span class="o">,</span><span class="m">255</span><span class="o">,</span><span class="m">255</span><span class="o">,</span><span class="m">0</span><span class="p">);</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>으로 하면 된다. 앞에 255,255,255는 의미가 없다. 마지막의 alpha값이 0으로 지정되면 된다. 다른 방법으로 rgba 대신 transparent를 지정하는 방법도 있으나 이건 iOS만 지원한다.</p>
+
+<p>애플에서는 <a href="http://developer.apple.com/library/safari/#documentation/appleapplications/reference/safaricssref/articles/standardcssproperties.html">iOS는 1.1.1 버전</a>부터 지원하던 것을 안드로이드는 아직도 제대로 지원하지 않고 있는 것이다.</p>
+
+<p>지난번에 포스팅 했던 <a href="http://blog.asamaru.net/2012/09/24/i-like-apple/">나는 애플빠다</a>에서도 언급했던 개발 부분에서 다양한 안드로이드의 버그/부실함(?) 중에 하나다. (아래의 내용도 이어서&hellip;)</p>
+
+<p><strong>더 큰 문제는 여기서 끝나지 않는다는 것이다.</strong></p>
+
+<p>안드로이드 중 삼성 계열(현재 갤럭시 노트, 갤럭시 S2 등에서 문제가 있음)에서는 색상 변경이 안될 뿐 아니라 아예 숨겨지지도 않는다. 정말 개발자 입장에서 환장할 노릇이다.</p>
+
+<p>이 부분이 그냥 단순히 예쁘지 않아서 숨기려는 것이 아니라 이 하이라이트에 다른 버그(하이라이트의 위치가 잘못 표기되는 결함)가 존재함에 따라 부득이하게 아예 숨겨버려야 하는 상황임에도 숨기지도 못하는 것이다.</p>
+
+<p>난 정말 이래서 안드로이드가 싫다. 버그에 버그가 꼬리를 물고 나를 괴롭히기 때문이다. 게다가 많기까지 하다.</p>
+
+<p>하지만 이대로 물러설 수 없는, 문제를 해결해야하는 개발자로써 다른 방법을 찾아서 하이라이트를 숨기는 것까지는 성공했다.</p>
+
+<p>아.. 정말 미쳐 버릴 것 같은 상황은 링크 터치 하이라이트는 숨겼는데 인풋폼들의 하이라이트를 숨길 방법이 없다는 것&hellip; 이 부분은 결국 숨기지는 못하고 위치가 잘못 표기되는 버그를 다른 방법으로 해결했다. 마지막으로 버그를 개선하는 과정에서 또 다른 버그들을 발견했다는 것이 더욱 나를 슬프게 한다. 도대체 안드로이드 웹뷰의 버그는 어디까지 인가?</p>
+
+<p>사실 얼마전까지만 해도 익스플로러의 버그들이 나를 괴롭혔는데.. 이때까지만 해도 익스플로러가 최악이라 생각했다. 하지만 세상에는 항상 더 강한 자가 있는법. 안드로이드 버그들이 최강이다. (문제는 개발자가 아니면, 겪어보지 않은 사람은 아무도 공감하지 못한다는 것이 나를 슬프게 한다.)</p>
+
+<p>어쨌든 하이라이트 버그 회피에 대한 자세한 해결 과정은 복잡하므로 소스와 함께 <strike>따로 포스팅할 예정이다.</strike></p>
+
+<p><a href="http://blog.asamaru.net/post/%EC%95%88%EB%93%9C%EB%A1%9C%EC%9D%B4%EB%93%9C-tap-highlight-%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A1%9C-%EB%8C%80%EC%B2%B4%ED%95%98%EA%B8%B0/">&ldquo;안드로이드 tap highlight 레이어로 대체하기&rdquo;</a>로 별도 포스팅 한다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-11T19:05:37+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.11</time>
         
            | <a href="/2015/09/11/using-sql-calc-found-rows-and-found-rows-with-mysql/#disqus_thread" itemprop="discussionUrl"
@@ -335,6 +430,8 @@ Group By 결과 row 수를 얻으려면 어떻게 해야할까? 간단할 듯 �
 <p>그외에도 오라클이나 다른 DB에서는 또 다른 방법들도 있다.</p>
 
 <p>그렇다 하더라도 group by를 한다는 것은 어짜피 전체를 스캔해서 결과를 얻는 과정(다른 조건에 의해 아닌 경우도 있을 수는 있다)을 거치므로 SQL_CALC_FOUND_ROWS를 사용하여 결과 row를 세어두는 것이 성능에 많은 도움을 줄 수 있다.</p>
+
+<h2>정리</h2>
 
 <p>그 외에도 여러가지 활용 방법이 있을 수 있으나 대표적인 사례만 나열했다. 다시 한번 강조하지만 이 방법은 만능이 아니다. 전체 스캔(Full Scan)을 피할 수 없는 상황에서 이왕 전체 스캔한거 count를 위해 다시 하지 않도록 활용하는 전략이 가장 적합하다.</p>
 
@@ -1277,254 +1374,6 @@ url에 GET 인자로 전달하고자 하는 값을 넘기고 서버에서는 해
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-02T21:49:21+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.02</time>
-        
-           | <a href="/2015/09/02/decoding-byte-escaped-strings-in-php/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/02/decoding-byte-escaped-strings-in-php/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/02/decoding-byte-escaped-strings-in-php/" itemprop="url">PHP에서 Byte-escaped(\xFF)된 문자열 decode하기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>어제 회사 직원 한명이 협력사에서 데이터 전달을 위해 생성해서 알려준 URL에서 데이터를 받지 못해 고생을 하고 있었다. 협력사는 PC용 어플리케이션을 만드는 회사(Delphi 사용)로 웹에 대해서 잘 모른다.</p>
-
-<p>처리하고자 하는 일은 다음과 같았다. PC용 어플리케이션에서 버튼을 누르면 해당 어플리케이션에서 가지고 있던 데이터를 특정 URL로 호출(전달)해주는 것이었다.</p>
-
-<p>처음엔 데이터를 &ldquo;뭐뭐 주세요&rdquo; 했더니 그냥 넘겨주는 바람에 특수문자가 들어가 내용이 정상적으로 전달되지 않았다. 당연히 POST 방식으로 값을 전달해주면 문제가 없겠지만 그렇게는 더 어렵다고하니&hellip; 그냥 GET으로 달라고 했다. 그 바람에 이런 일들이 벌어진 것이다.</p>
-
-<p>그리하여 우여곡절 끝에 문자열을 인코딩해서 보내달라는 요청을하고 받은 결과가 다시 문제가 되었다. 분명 인코딩은 되어 있는데 일반적으로 웹에서 쓰는 인코딩이 아니었다.</p>
-
-<blockquote><p>\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</p></blockquote>
-
-<p>뭐 이런식이다. 어딘가 낯익은 모양이면서도 흔히 보지못한 형태였다.</p>
-
-<p>검색을 해보니 javascript escape sequences라고 부르는 사람도 있고 Byte-escaped string이라고 하기도 하고.. 어쨌든 byte 단위로 변환된 문자열이다.</p>
-
-<p>이 문장을 decode 하려면 다음의 코드를 참조하면 된다. (인터넷에서 다른 소스를 참조해서 조금 개선했다.)</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nv">$string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</span><span class="s2">&quot;</span><span class="p">;</span>
-</span><span class='line'><span class="k">echo</span> <span class="nb">preg_replace_callback</span><span class="p">(</span>
-</span><span class='line'>    <span class="s1">&#39;/\\\x([0-9a-f]{2})/i&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="k">function</span><span class="p">(</span><span class="nv">$matches</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">hexdec</span><span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">1</span><span class="p">]));</span>
-</span><span class='line'>    <span class="p">},</span>
-</span><span class='line'>    <span class="nv">$string</span>
-</span><span class='line'><span class="p">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>어땠든 이렇게 decode를 했는데도 글자가 깨졌다. 이런&hellip; 문자열이 UTF-8이 아니라 EUC-KR이다.
-그래서 조금더 추가. 여기서 UHC는 euc-kr과 거의 유사하다. 조금 더 확장되었다고 알고있는데 오래전 기억이라 확실치 않다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nv">$string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</span><span class="s2">&quot;</span><span class="p">;</span>
-</span><span class='line'><span class="k">echo</span> <span class="nb">iconv</span><span class="p">(</span><span class="s2">&quot;UHC&quot;</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nb">preg_replace_callback</span><span class="p">(</span>
-</span><span class='line'>    <span class="s1">&#39;/\\\x([0-9a-f]{2})/i&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="k">function</span><span class="p">(</span><span class="nv">$matches</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">hexdec</span><span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">1</span><span class="p">]));</span>
-</span><span class='line'>    <span class="p">},</span>
-</span><span class='line'>    <span class="nv">$string</span>
-</span><span class='line'><span class="p">));</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이렇게 해피앤딩이 되면 좋겠지만 현실을 그렇지 않다. 문제는 이 인코딩이 특수문자는 인코딩하지 않는다는 것.(비 ascii 코드만 인코딩)
-따라서 웹에서 데이터로 URL에 사용해서는 안되는 &amp;, # 등이 그대로 남아있어 데이터가 잘려서 넘어오는 문제는 해결되지 않는다. 가장 좋은 해결책은 urlencode를 해서 넘겨 벋는 것이지만 협력사를 내맘대로 할 수는 없고&hellip;</p>
-
-<p>자체적인 해결을 위한 해결법(꼼수)은 다음과 같다.
-특히 #이 가장 큰 문제를 일으키므로 초출된 URL에서 데이터를 즉시 처리하지 않고 javascript로 현재 브라우저의 URL을 받아 다른 처리 페이지로 직접 넘겨서 파싱한다. 이렇게하면 일이 많이 번거로워지지만 협력사의 변경없이 여기서 모두 해결된다.
-다만.. urlencode만 제대로 해줘도 되는걸 이런 꼼수를 써가며 억지로 해야하는가? 하는&hellip;</p>
-
-<p>이왕 이 일로 글을 적는 김에 몇가지 함수도 덤으로&hellip;
-php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등을 사용하면되나 javascript에서 인코딩된 문자열을 그대로 전달받는 경우 등에 사용할 수 있다. 쉽게 말해서 javascript 문자열 인코딩 함수 php 대응 함수다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="sd">/**</span>
-</span><span class='line'><span class="sd"> * @desc javascript의 encodeURIComponent함수와 같은기능으로 문자열을 변환한다.</span>
-</span><span class='line'><span class="sd"> * @param mixed $str 처리할 배열변수나 단일변수</span>
-</span><span class='line'><span class="sd"> * @param String $fromEncofing 입력 인코딩</span>
-</span><span class='line'><span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
-</span><span class='line'><span class="sd"> * @exam $arr = String::encodeURI($arr);</span>
-</span><span class='line'><span class="sd"> *       String::encodeURI($arr);</span>
-</span><span class='line'><span class="sd"> */</span>
-</span><span class='line'><span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">encodeURI</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$fromEncofing</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nb">is_array</span><span class="p">(</span><span class="nv">$str</span><span class="p">))</span> <span class="p">{</span>
-</span><span class='line'>        <span class="nx">String</span><span class="o">::</span><span class="na">arrayProc</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;String::encodeURI&#39;</span><span class="p">);</span>
-</span><span class='line'>        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">is_null</span><span class="p">(</span><span class="nv">$fromEncofing</span><span class="p">))</span> <span class="p">{</span>
-</span><span class='line'>        <span class="nv">$trans</span> <span class="o">=</span> <span class="nb">iconv</span><span class="p">(</span><span class="nv">$fromEncofing</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nv">$str</span><span class="p">);</span> <span class="c1">// UHC 확장 완성형 한글</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="nv">$trans</span> <span class="o">=</span> <span class="nb">rawurlencode</span><span class="p">(</span><span class="nv">$trans</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="nv">$str</span> <span class="o">=</span> <span class="nv">$trans</span><span class="p">;</span>
-</span><span class='line'>    <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="sd">/**</span>
-</span><span class='line'><span class="sd"> * @desc javascript의 decodeURIComponent함수와 같은기능으로 문자열을 변환한다.</span>
-</span><span class='line'><span class="sd"> * @param mixed $str 처리할 배열변수나 단일변수</span>
-</span><span class='line'><span class="sd"> * @param String $toEncofing 반환 인코딩</span>
-</span><span class='line'><span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
-</span><span class='line'><span class="sd"> * @exam $arr = String::decodeURI($arr);</span>
-</span><span class='line'><span class="sd"> *       String::decodeURI($arr); //리턴받지 않아도 입력변수에 저장되어 나옴.</span>
-</span><span class='line'><span class="sd"> */</span>
-</span><span class='line'><span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">decodeURI</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$toEncofing</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nb">is_array</span><span class="p">(</span><span class="nv">$str</span><span class="p">))</span> <span class="p">{</span>
-</span><span class='line'>        <span class="nx">String</span><span class="o">::</span><span class="na">arrayProc</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;String::decodeURI&#39;</span><span class="p">);</span>
-</span><span class='line'>        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="c1">//  euc-kr의 경우 확장완성형 한글에 대한 처리가 불가능함(예 : ㅂ ㅞ ㄺ)</span>
-</span><span class='line'>    <span class="c1">//  return iconv(&quot;UTF-8&quot;, &quot;EUC-KR&quot;, rawurldecode($text));</span>
-</span><span class='line'>    <span class="nv">$str</span> <span class="o">=</span> <span class="nb">rawurldecode</span><span class="p">(</span><span class="nv">$str</span><span class="p">);</span>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">is_null</span><span class="p">(</span><span class="nv">$toEncofing</span><span class="p">))</span> <span class="p">{</span>
-</span><span class='line'>        <span class="nv">$str</span> <span class="o">=</span> <span class="nb">iconv</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nv">$toEncofing</span><span class="p">,</span> <span class="nv">$str</span><span class="p">);</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="sd">/**</span>
-</span><span class='line'><span class="sd"> * @desc javascript의 escape함수로 인코딩된 문자를 디코딩한다.(encodeURIComponent추천)</span>
-</span><span class='line'><span class="sd"> * @param String $str 처리할 배열변수나 단일변수</span>
-</span><span class='line'><span class="sd"> * @param String $toEncofing 반환 인코딩</span>
-</span><span class='line'><span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
-</span><span class='line'><span class="sd"> * @exam $decStr = String::unescape($str);</span>
-</span><span class='line'><span class="sd"> */</span>
-</span><span class='line'><span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">unescape</span><span class="p">(</span><span class="nv">$text</span><span class="p">,</span> <span class="nv">$toEncofing</span> <span class="o">=</span> <span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>    <span class="c1">//return urldecode(preg_replace_callback(&#39;/%u([[:alnum:]]{4})/&#39;, array(&#39;self&#39;, &#39;tostring&#39;), $text));</span>
-</span><span class='line'>    <span class="k">return</span> <span class="nb">urldecode</span><span class="p">(</span>
-</span><span class='line'>        <span class="nb">preg_replace_callback</span><span class="p">(</span>
-</span><span class='line'>            <span class="s1">&#39;/%u([[:alnum:]]{4})/&#39;</span><span class="p">,</span>
-</span><span class='line'>            <span class="nb">create_function</span><span class="p">(</span>
-</span><span class='line'>                <span class="s1">&#39;$text&#39;</span><span class="p">,</span>
-</span><span class='line'>                <span class="s2">&quot;echo &#39;123&#39;; return iconv(&#39;UTF-16LE&#39;, &#39;&quot;</span> <span class="o">.</span> <span class="nv">$toEncofing</span> <span class="o">.</span> <span class="s2">&quot;&#39;, chr(hexdec(substr(</span><span class="se">\$</span><span class="s2">text[1], 2, 2))).chr(hexdec(substr(</span><span class="se">\$</span><span class="s2">text[1], 0, 2))));&quot;</span>
-</span><span class='line'>            <span class="p">),</span>
-</span><span class='line'>            <span class="nv">$text</span>
-</span><span class='line'>        <span class="p">)</span>
-</span><span class='line'>    <span class="p">);</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1569,6 +1418,8 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/09/11/webkit-tap-highlight-color/">-webkit-tap-highlight-color 사용하기</a>
+    
     <a class="list-group-item " href="/2015/09/11/using-sql-calc-found-rows-and-found-rows-with-mysql/">MySql의 SQL_CALC_FOUND_ROWS와 FOUND_ROWS()</a>
     
     <a class="list-group-item " href="/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/">htmlspecialchars_decode와 html_entity_decode의 문자열 처리의 다른 점</a>
@@ -1577,8 +1428,6 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
     
     <a class="list-group-item " href="/2015/09/08/cleaner-view-casting-with-generics/">안드로이드에서 findViewById 사용시 Generics을 이용해 Type Casting 없애기</a>
     
-    <a class="list-group-item " href="/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi/">안드로이드 스튜디오에서 WIFI로 Run/Install/Debug 하기</a>
-    
   </div>
 </section>
 <section class="panel panel-default">
@@ -1586,7 +1435,7 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (8)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (4)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (3)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (9)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (1)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (1)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (4)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (3)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
 	<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>

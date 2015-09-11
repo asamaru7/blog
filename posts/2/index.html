@@ -125,254 +125,6 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-02T21:49:21+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.02</time>
-        
-           | <a href="/2015/09/02/decoding-byte-escaped-strings-in-php/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/02/decoding-byte-escaped-strings-in-php/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/02/decoding-byte-escaped-strings-in-php/" itemprop="url">PHP에서 Byte-escaped(\xFF)된 문자열 decode하기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>어제 회사 직원 한명이 협력사에서 데이터 전달을 위해 생성해서 알려준 URL에서 데이터를 받지 못해 고생을 하고 있었다. 협력사는 PC용 어플리케이션을 만드는 회사(Delphi 사용)로 웹에 대해서 잘 모른다.</p>
-
-<p>처리하고자 하는 일은 다음과 같았다. PC용 어플리케이션에서 버튼을 누르면 해당 어플리케이션에서 가지고 있던 데이터를 특정 URL로 호출(전달)해주는 것이었다.</p>
-
-<p>처음엔 데이터를 &ldquo;뭐뭐 주세요&rdquo; 했더니 그냥 넘겨주는 바람에 특수문자가 들어가 내용이 정상적으로 전달되지 않았다. 당연히 POST 방식으로 값을 전달해주면 문제가 없겠지만 그렇게는 더 어렵다고하니&hellip; 그냥 GET으로 달라고 했다. 그 바람에 이런 일들이 벌어진 것이다.</p>
-
-<p>그리하여 우여곡절 끝에 문자열을 인코딩해서 보내달라는 요청을하고 받은 결과가 다시 문제가 되었다. 분명 인코딩은 되어 있는데 일반적으로 웹에서 쓰는 인코딩이 아니었다.</p>
-
-<blockquote><p>\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</p></blockquote>
-
-<p>뭐 이런식이다. 어딘가 낯익은 모양이면서도 흔히 보지못한 형태였다.</p>
-
-<p>검색을 해보니 javascript escape sequences라고 부르는 사람도 있고 Byte-escaped string이라고 하기도 하고.. 어쨌든 byte 단위로 변환된 문자열이다.</p>
-
-<p>이 문장을 decode 하려면 다음의 코드를 참조하면 된다. (인터넷에서 다른 소스를 참조해서 조금 개선했다.)</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nv">$string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</span><span class="s2">&quot;</span><span class="p">;</span>
-</span><span class='line'><span class="k">echo</span> <span class="nb">preg_replace_callback</span><span class="p">(</span>
-</span><span class='line'>    <span class="s1">&#39;/\\\x([0-9a-f]{2})/i&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="k">function</span><span class="p">(</span><span class="nv">$matches</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">hexdec</span><span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">1</span><span class="p">]));</span>
-</span><span class='line'>    <span class="p">},</span>
-</span><span class='line'>    <span class="nv">$string</span>
-</span><span class='line'><span class="p">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>어땠든 이렇게 decode를 했는데도 글자가 깨졌다. 이런&hellip; 문자열이 UTF-8이 아니라 EUC-KR이다.
-그래서 조금더 추가. 여기서 UHC는 euc-kr과 거의 유사하다. 조금 더 확장되었다고 알고있는데 오래전 기억이라 확실치 않다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nv">$string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</span><span class="s2">&quot;</span><span class="p">;</span>
-</span><span class='line'><span class="k">echo</span> <span class="nb">iconv</span><span class="p">(</span><span class="s2">&quot;UHC&quot;</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nb">preg_replace_callback</span><span class="p">(</span>
-</span><span class='line'>    <span class="s1">&#39;/\\\x([0-9a-f]{2})/i&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="k">function</span><span class="p">(</span><span class="nv">$matches</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">hexdec</span><span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">1</span><span class="p">]));</span>
-</span><span class='line'>    <span class="p">},</span>
-</span><span class='line'>    <span class="nv">$string</span>
-</span><span class='line'><span class="p">));</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이렇게 해피앤딩이 되면 좋겠지만 현실을 그렇지 않다. 문제는 이 인코딩이 특수문자는 인코딩하지 않는다는 것.(비 ascii 코드만 인코딩)
-따라서 웹에서 데이터로 URL에 사용해서는 안되는 &amp;, # 등이 그대로 남아있어 데이터가 잘려서 넘어오는 문제는 해결되지 않는다. 가장 좋은 해결책은 urlencode를 해서 넘겨 벋는 것이지만 협력사를 내맘대로 할 수는 없고&hellip;</p>
-
-<p>자체적인 해결을 위한 해결법(꼼수)은 다음과 같다.
-특히 #이 가장 큰 문제를 일으키므로 초출된 URL에서 데이터를 즉시 처리하지 않고 javascript로 현재 브라우저의 URL을 받아 다른 처리 페이지로 직접 넘겨서 파싱한다. 이렇게하면 일이 많이 번거로워지지만 협력사의 변경없이 여기서 모두 해결된다.
-다만.. urlencode만 제대로 해줘도 되는걸 이런 꼼수를 써가며 억지로 해야하는가? 하는&hellip;</p>
-
-<p>이왕 이 일로 글을 적는 김에 몇가지 함수도 덤으로&hellip;
-php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등을 사용하면되나 javascript에서 인코딩된 문자열을 그대로 전달받는 경우 등에 사용할 수 있다. 쉽게 말해서 javascript 문자열 인코딩 함수 php 대응 함수다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="sd">/**</span>
-</span><span class='line'><span class="sd"> * @desc javascript의 encodeURIComponent함수와 같은기능으로 문자열을 변환한다.</span>
-</span><span class='line'><span class="sd"> * @param mixed $str 처리할 배열변수나 단일변수</span>
-</span><span class='line'><span class="sd"> * @param String $fromEncofing 입력 인코딩</span>
-</span><span class='line'><span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
-</span><span class='line'><span class="sd"> * @exam $arr = String::encodeURI($arr);</span>
-</span><span class='line'><span class="sd"> *       String::encodeURI($arr);</span>
-</span><span class='line'><span class="sd"> */</span>
-</span><span class='line'><span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">encodeURI</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$fromEncofing</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nb">is_array</span><span class="p">(</span><span class="nv">$str</span><span class="p">))</span> <span class="p">{</span>
-</span><span class='line'>        <span class="nx">String</span><span class="o">::</span><span class="na">arrayProc</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;String::encodeURI&#39;</span><span class="p">);</span>
-</span><span class='line'>        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">is_null</span><span class="p">(</span><span class="nv">$fromEncofing</span><span class="p">))</span> <span class="p">{</span>
-</span><span class='line'>        <span class="nv">$trans</span> <span class="o">=</span> <span class="nb">iconv</span><span class="p">(</span><span class="nv">$fromEncofing</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nv">$str</span><span class="p">);</span> <span class="c1">// UHC 확장 완성형 한글</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="nv">$trans</span> <span class="o">=</span> <span class="nb">rawurlencode</span><span class="p">(</span><span class="nv">$trans</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="nv">$str</span> <span class="o">=</span> <span class="nv">$trans</span><span class="p">;</span>
-</span><span class='line'>    <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="sd">/**</span>
-</span><span class='line'><span class="sd"> * @desc javascript의 decodeURIComponent함수와 같은기능으로 문자열을 변환한다.</span>
-</span><span class='line'><span class="sd"> * @param mixed $str 처리할 배열변수나 단일변수</span>
-</span><span class='line'><span class="sd"> * @param String $toEncofing 반환 인코딩</span>
-</span><span class='line'><span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
-</span><span class='line'><span class="sd"> * @exam $arr = String::decodeURI($arr);</span>
-</span><span class='line'><span class="sd"> *       String::decodeURI($arr); //리턴받지 않아도 입력변수에 저장되어 나옴.</span>
-</span><span class='line'><span class="sd"> */</span>
-</span><span class='line'><span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">decodeURI</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$toEncofing</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nb">is_array</span><span class="p">(</span><span class="nv">$str</span><span class="p">))</span> <span class="p">{</span>
-</span><span class='line'>        <span class="nx">String</span><span class="o">::</span><span class="na">arrayProc</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;String::decodeURI&#39;</span><span class="p">);</span>
-</span><span class='line'>        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="c1">//  euc-kr의 경우 확장완성형 한글에 대한 처리가 불가능함(예 : ㅂ ㅞ ㄺ)</span>
-</span><span class='line'>    <span class="c1">//  return iconv(&quot;UTF-8&quot;, &quot;EUC-KR&quot;, rawurldecode($text));</span>
-</span><span class='line'>    <span class="nv">$str</span> <span class="o">=</span> <span class="nb">rawurldecode</span><span class="p">(</span><span class="nv">$str</span><span class="p">);</span>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">is_null</span><span class="p">(</span><span class="nv">$toEncofing</span><span class="p">))</span> <span class="p">{</span>
-</span><span class='line'>        <span class="nv">$str</span> <span class="o">=</span> <span class="nb">iconv</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nv">$toEncofing</span><span class="p">,</span> <span class="nv">$str</span><span class="p">);</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="sd">/**</span>
-</span><span class='line'><span class="sd"> * @desc javascript의 escape함수로 인코딩된 문자를 디코딩한다.(encodeURIComponent추천)</span>
-</span><span class='line'><span class="sd"> * @param String $str 처리할 배열변수나 단일변수</span>
-</span><span class='line'><span class="sd"> * @param String $toEncofing 반환 인코딩</span>
-</span><span class='line'><span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
-</span><span class='line'><span class="sd"> * @exam $decStr = String::unescape($str);</span>
-</span><span class='line'><span class="sd"> */</span>
-</span><span class='line'><span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">unescape</span><span class="p">(</span><span class="nv">$text</span><span class="p">,</span> <span class="nv">$toEncofing</span> <span class="o">=</span> <span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>    <span class="c1">//return urldecode(preg_replace_callback(&#39;/%u([[:alnum:]]{4})/&#39;, array(&#39;self&#39;, &#39;tostring&#39;), $text));</span>
-</span><span class='line'>    <span class="k">return</span> <span class="nb">urldecode</span><span class="p">(</span>
-</span><span class='line'>        <span class="nb">preg_replace_callback</span><span class="p">(</span>
-</span><span class='line'>            <span class="s1">&#39;/%u([[:alnum:]]{4})/&#39;</span><span class="p">,</span>
-</span><span class='line'>            <span class="nb">create_function</span><span class="p">(</span>
-</span><span class='line'>                <span class="s1">&#39;$text&#39;</span><span class="p">,</span>
-</span><span class='line'>                <span class="s2">&quot;echo &#39;123&#39;; return iconv(&#39;UTF-16LE&#39;, &#39;&quot;</span> <span class="o">.</span> <span class="nv">$toEncofing</span> <span class="o">.</span> <span class="s2">&quot;&#39;, chr(hexdec(substr(</span><span class="se">\$</span><span class="s2">text[1], 2, 2))).chr(hexdec(substr(</span><span class="se">\$</span><span class="s2">text[1], 0, 2))));&quot;</span>
-</span><span class='line'>            <span class="p">),</span>
-</span><span class='line'>            <span class="nv">$text</span>
-</span><span class='line'>        <span class="p">)</span>
-</span><span class='line'>    <span class="p">);</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-
-</div>
-  
-  
-
-
-        </article>
-      
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-01T22:29:00+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.01</time>
         
            | <a href="/2015/09/01/change-private-static-final-field-using-java-reflection/#disqus_thread" itemprop="discussionUrl"
@@ -1513,6 +1265,132 @@ Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블�
 
         </article>
       
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2012-10-03T06:22:02+09:00"  data-updated="true" itemprop="datePublished dateCreated">12.10.03</time>
+        
+           | <a href="/2012/10/03/android-tap-highlight-layer/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2012/10/03/android-tap-highlight-layer/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2012/10/03/android-tap-highlight-layer/" itemprop="url">안드로이드 tap highlight 레이어로 대체하기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>오늘은 지난번 <a href="http://blog.asamaru.net/post/webkit-tap-highlight-color-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0/">-webkit-tap-highlight-color 사용하기</a> 에서 얘기했던 안드로이드 tap highlight 버그를 회피할 수 있는 방법에 대해 포스팅하고자 한다.</p>
+
+<p>일단 기본적인 아이디어는 이렇다. webkit 브라우저는 기본적으로 tap highlight를 숨길 수 있으므로 tap highlight를 투명하게 변경하고 해당 링크의 위치에 원하는 모양의 레이어를 띄우는 것이다. 여기서 또 다른 문제를 함께 해결해야 하는데, 삼성 갤럭시 계열의 스마트폰에서는 숨기는 것 조차 안된다는 것.</p>
+
+<p>그래서 조금 더 꼼수를 부려야 한다. tap highlight가 된다는 것은 결국 이벤트가 전달되기 때문이므로 브라우저에 전달될 이벤트를 가로채서 필요한 처리를 하고 브라우저에게는 이벤트를 전달하지 않는 것이다. (왜 이런 짓을 해야하는지는 위에 링크한 포스팅을 참고바람)</p>
+
+<p>그럼 하나씩 처리 방법을 정리 해보자.</p>
+
+<p>터치를 지원하는 기기는 mousedown, mouseup에 대응되는 touchstart, touchend라는 이벤트가 있다. (사실 대응된다고 하기엔 차이가 있긴하다. 하지만 이해를 쉽게하기 위해 그냥 그렇게 생각하자.)</p>
+
+<p>이 touchstart 이벤트를 사용해서 click 이벤트가 발생하는 것을 막을 수 있다. (touchstart가 발생하지 않으면 click 이벤트도 발생하지 않는다.)</p>
+
+<p>그래서 먼저 안드로이드 기기에서 테스트 다음과 같이 테스트를 해봤다.</p>
+
+<p>링크 객체에서 touchstart 이벤트를 받아 이벤트 버블링과 캡쳐링을 제거하여 이벤트를 전달하지 않고 상위 부모에게 이벤트를 trigger로 강제 생성했다. 결과는.. tap highlight 가 숨겨지지 않았다. 이런 삼성&hellip; 사실 특별한 경우가 아니라면 이벤트를 부모에게 전달하지 않아도 된다. click과 같은 효과만 내면 되므로. 하지만 경우에 따라 부모가 touchstart를 받아야 하는 상황이 자주 발생할 수 있다.</p>
+
+<p>부모를 한단계씩 건너뛰며 테스트 해볼 수 있지만 시간 관계상 나는 바로 touchstart를 받아야하는 객체에게 바로 trigger 했다. 결과는 일단 성공. touchstart는 정상적으로 동작하고 tap highlight는 보여지지 않았다.</p>
+
+<p>이제 남은 작업은 링크 객체에 tap highlight를 대신할 레이어를 띄우는 것과 click 이벤트를 대체하는 것이다.</p>
+
+<p>우선 click 이벤트를 대체하는 것에 대해서 생각해보자. 간단하게 생각해서 touchstart에서 바로 click 시 동작할 일을 수행해도 된다. 하지만 이것은 실제 click과 다르다. 테스트 해보면 알겠지만 click은 손가락이 화면에서 떨어질 때 발생한다. 따라서 touchend에서 click 이벤트를 대체해야 한다는 것이다. 문제는 여기서 끝나지 않는다. 터치를 시작하고 swife한 다음 터치를 종료하면 click 이벤트는 발생되지 않아야 한다. 이 문제를 해결하기 위해 touchstart에서 좌표를 기억하고 touchend에서 좌표를 검사하여 swife 되었는지를 확인하고 click 이벤트를 대체해야 한다. 그런데 문제는 끝이 없다. touchstart에서는 좌표를 받을 수 있으나 touchend에서는 좌표를 받을 수 없다. 따라서 touchmove 이벤트에서 좌표의 변경을 추적해야 한다.</p>
+
+<p>다음으로 링크 객체의 위에 tap highlight 대신 레이어를 올리는 방법이다. 이 부분은 간단할 것 같지만 한가지 문제가 있다. 정확하게 링크 객체의 위에 레이어를 올리려면 객체의 위치를 알아야 한다는 것. 이 부분도 여러가지 방법을 통해 알아낼 수 있지만 부모 중에 position:relative 속성을 가진 경우 등 신경써야 할 것이 많다. 하지만 아주 간단한 방법이 있다. 링크 객체의 앞에 레이어 객체를 넣고 position:absolute를 주면 레이어는 공간을 차지하지 않으므로 링크 객체의 위치는 유지되면서도 동일한 좌표에 위치 시킬 수 있다. 단, 당연히 top, left를 따로 지정하지 않아야 한다. 그리고 객체 사이즈는 간단히 구할 수 있으므로 사이즈만 지정해 주면 완료. top, left css 속성을 줄 수 없으므로 상대적인 위치 등의 조정은 margin으로 하면 된다. (예를들어 margin:-2px 0 0 -2px, width:+2px, height:+2px 이런 방법으로 링크객체보다 사방으로 2px 큰 레이어를 정확하게 위치 시킬 수 있다.)</p>
+
+<p>아주 상세히 설명하자면 더 해야 겠지만 이 정도면 원리 정도는 설명했다고 생각된다. 혹 이해가 안되는 부분은 블로그로 문의 바란다.</p>
+
+<p>자 그럼 소스를 첨부한다. 정리를 해야 겠지만 시간 관계상&hellip; (그리고 jquery는 기본적으로 사용한다는 가정하에서 제작된 소스다. jquery를 사용하지 않는다면 사용 부분은 수정이 필요하다. 사실 jquery 문제가 아니더라도 범용으로 사용하기 위해 제작되 것이 아니므로 그냥 그대로 가져다 쓸 수는 없으니 참고로만 보면 된다.)</p>
+
+<p>css 소스</p>
+
+<pre><code>.p_tap_highlight { position:absolute; background-color:#333; -moz-opacity:.30; filter:alpha(opacity=30); opacity:.30; }
+</code></pre>
+
+<p>js 소스 <a href="http://blog.asamaru.net/wp-content/uploads/2012/09/tabhighlight.zip">다운로드</a></p>
+
+<pre><code>(function() {
+    var isAndroid = (navigator.userAgent.toLowerCase().indexOf("android") &gt; -1); //&amp;&amp; ua.indexOf("mobile");
+    if(isAndroid) { // 안드로이드 계열에서 탭 하이라이트 위치가 맞지 않아 프로그램으로 대체
+        // 탭 하이라이트 숨김 : 삼성 계열은 소용없음
+        $("&lt;style type='text/css'&gt; html, body, body * { -webkit-tap-highlight-color:rgba(0,0,0,0); } &lt;/style&gt;").appendTo("head");
+
+        var fcSx=0,fcSy=0;
+        var fcEx=0,fcEy=0;
+        $(document).on('touchmove',function(event){    // touchmove로 터치 마지막 좌표 추적
+            var t=event.originalEvent.targetTouches[0];
+            fcSx=t.pageX;
+            fcSy=t.pageY;
+        });
+        $(document).on('touchstart','a',function(event){
+            var t=event.originalEvent.targetTouches[0];
+            fcSx=fcEx=t.pageX;
+            fcSy=fcEy=t.pageY;
+
+            event.preventDefault();
+            // touchstart를 사용해야 하는 부모 객체에 이벤트 trigger
+            $(event.target).parents('.ui-scrollview-view').triggerHandler('touchstart');    
+            event.stopPropagation();
+            return false;
+        }).on('touchend','a',function(event){
+            // 가로/세로 이동 거리의 합이 10 이하인 경우만 click으로 인정(swife 제외를 위함)
+            if((Math.abs(fcSx-fcEx)+Math.abs(fcSy-fcEy))&amp;lt;10) {    
+                var target=$(event.currentTarget);
+                // 탭 하이라이트 표시
+                $('&lt;div class="p_tap_highlight" style="width:'+(target.width())+'px; height:'+(target.height())+'px;"&gt;&lt;/div&gt;').insertBefore(target).delay(200).queue(function(){$(this).remove();});
+                setTimeout(function(t){ return function(){
+                    var href = t.attr('href');
+                    if((typeof(href) == 'undefined') || (href == '') || (href == '#')) {    // 이동할 주소가 없을 경우 이벤트 트리거
+                        t.trigger('click');
+                        return true;
+                    }
+                    //event.preventDefault();
+                    //event.stopPropagation();
+                    // 링크 객체의 주소 형태에 맞게 처리
+                    if(href.substring(0,1)=='#'){
+                        // TODO hash 변경에 따른 처리
+                    } else if(href.substring(0,11).toLowerCase()=='javascript:') {
+                        eval(href.substring(11,href.length));
+                    }
+                    window.location.href=href;
+                };}(target),10);
+                target=null;
+            }
+            return true;
+        });
+    }
+})();
+</code></pre>
+</div>
+  
+  
+
+
+        </article>
+      
     </div>
 
     <ul class="pager">
@@ -1557,8 +1435,6 @@ Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블�
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/09/26/webkit-tap-highlight-color/">-webkit-tap-highlight-color 사용하기</a>
-    
     <a class="list-group-item " href="/2015/09/11/using-sql-calc-found-rows-and-found-rows-with-mysql/">MySql의 SQL_CALC_FOUND_ROWS와 FOUND_ROWS()</a>
     
     <a class="list-group-item " href="/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/">htmlspecialchars_decode와 html_entity_decode의 문자열 처리의 다른 점</a>
@@ -1566,6 +1442,8 @@ Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블�
     <a class="list-group-item " href="/2015/09/09/asynctask-init-problem/">AsyncTask의 생성을 UIThread에서 하지 않으면 발생하는 문제 해결</a>
     
     <a class="list-group-item " href="/2015/09/08/cleaner-view-casting-with-generics/">안드로이드에서 findViewById 사용시 Generics을 이용해 Type Casting 없애기</a>
+    
+    <a class="list-group-item " href="/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi/">안드로이드 스튜디오에서 WIFI로 Run/Install/Debug 하기</a>
     
   </div>
 </section>

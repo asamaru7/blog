@@ -6,21 +6,21 @@ comments: true
 categories: php
 ---
 
-php에서 html 구문을 그대로 출력하기 위해 [htmlspecialchars]("http://php.net/manual/kr/function.htmlspecialchars.php")를 사용한다. 반대로 출력된 문장(Special HTML entities)을 되돌리기 위해서는 일반적으로 [htmlspecialchars_decode]("http://php.net/manual/kr/function.htmlspecialchars-decode.php")를 많이 사용한다. 그런데 이 함수를 사용하는데 문제가 있다.
+php에서 html 구문을 그대로 출력하기 위해 [htmlspecialchars](http://php.net/manual/kr/function.htmlspecialchars.php)를 사용한다. 반대로 출력된 문장(Special HTML entities)을 되돌리기 위해서는 일반적으로 [htmlspecialchars_decode](http://php.net/manual/kr/function.htmlspecialchars-decode.php)를 많이 사용한다. 그런데 이 함수를 사용하는데 문제가 있다.
 htmlspecialchars_decode는 ```&nbsp;```를 공백으로 다시 되돌려 주지 않는다.
 
-다시 htmlspecialchars로 돌아가서 메뉴얼을 보면 아래와 같이 변화된다고 설명되어 있다.
+다시 htmlspecialchars로 돌아가서 메뉴얼을 보면 아래와 같이 변환된다고 설명되어 있다.
 
-* '&'(앰퍼샌드)는 '&amp;'가 됩니다
+* '&'(앰퍼샌드)는 '```&amp;```'가 됩니다
 * '"'(겹따옴표)는 ENT_NOQUOTES를 설정하지 않았을 때 '&quot;'가 됩니다.
 * '''(홑따옴표)는 ENT_QUOTES가 설정되었을 때만 '&#039;'가 됩니다.
-* '<'(미만)은 '&lt;'가 됩니다.
-* '>'(이상)은 '&gt;'가 됩니다.
+* '<'(미만)은 '```&lt;```'가 됩니다.
+* '>'(이상)은 '```&gt;```'가 됩니다.
 
 보다시피 엄밀히 말하자면 htmlspecialchars는 공백을 변환시키지 않는다. 따라서 대응되는 함수인 htmlspecialchars_decode는 ```&nbsp;``` 공백 문자열을 되돌리지도 않는다.
 
 그럼 ```&nbsp;```와 같은 것은 어떻게 처리를 해야할까?
-[html_entity_decode]("http://php.net/manual/en/function.html-entity-decode.php")를 사용하면 된다. 이 함수는 [htmlentities]("http://php.net/manual/kr/function.htmlentities.php")와 대응되는 함수이다.
+[html_entity_decode](http://php.net/manual/en/function.html-entity-decode.php)를 사용하면 된다. 이 함수는 [htmlentities](http://php.net/manual/kr/function.htmlentities.php)와 대응되는 함수이다.
 
 그럼 htmlentities 함수는 무엇인가? 메뉴얼에 따르면 다음과 같다.
 
@@ -76,4 +76,6 @@ $str = trim(str_replace("\xc2\xa0", "", html_entity_decode("&nbsp;X&nbsp;")));
 echo (strcmp($str, 'X') == 0) ? 'ok' : 'oops';
 ```
 
-드디어 'ok'가 나온다. 참 별것 아닌것 같은 함수가 잘모르고 사용하다보면 예상치 못한 문제들을 일으킨다. 사실 ```&nbsp;```만 처리하면 된다면 더 같단하게 ```str_replace('&nbsp;', ' ', $str)```로 해결해도 된다. 하지만 프로그램에선 항상 어떤 값이 들어올지 모르는 것이니 보다 명확하게 처리하는 것이 낫지 않을까?
+드디어 'ok'가 나온다. 중요한 차이는 "\xc2\xa0" 이다. UTF-8에서는 "\xc2\xa0"는 [UTF-8 encoding table and Unicode characters](http://www.utf8-chartable.de/unicode-utf8-table.pl?start=128&number=128&utf8=string-literal&unicodeinhtml=hex)에서 확인해보면 UTF-8에서의 "NO-BREAK SPACE"라고 되어 있다.
+
+참 별것 아닌것 같은 함수가 잘모르고 사용하다보면 예상치 못한 문제들을 일으킨다. 사실 ```&nbsp;```만 처리하면 된다면 더 간단하게 ```str_replace('&nbsp;', ' ', $str)```로 해결해도 된다. 하지만 프로그램에선 항상 어떤 값이 들어올지 모르는 것이니 보다 명확하게 처리하는 것이 낫지 않을까?

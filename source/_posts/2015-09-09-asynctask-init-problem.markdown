@@ -61,9 +61,9 @@ private static class InternalHandler extends Handler {
 }
 ```
 
-> 앱을 실행하고 최초로 AsyncTask를 선언한 부분이 메인쓰레드가 아니라면 InternalHandler는 메인쓰레> 드가 아닌 쓰레드의 Handler를 가지고 있고 이 Handler로는 UI 작업을 하지 못하기 때문에 "android.view.ViewRoot$CalledFromWrongThreadException" 오류를 냅니다.
+> 앱을 실행하고 최초로 AsyncTask를 선언한 부분이 메인쓰레드가 아니라면 InternalHandler는 메인쓰레드가 아닌 쓰레드의 Handler를 가지고 있고 이 Handler로는 UI 작업을 하지 못하기 때문에 "android.view.ViewRoot$CalledFromWrongThreadException" 오류를 냅니다.
 
-> 이 문제는 API Level 16미만 에서만 발생합니다. API Level 16이상에서는 메인스레드를 관리하는 > ActivityThread 클래스가 시작할 때 main 메소드에서 static 메소드인 AsyncTask.init()을 호출하여 AsyncTask 클래스를 로드하고 있습니다. 관련 Commit은 다음 링크에서 확인하실 수 있습니다.
+> 이 문제는 API Level 16미만 에서만 발생합니다. API Level 16이상에서는 메인스레드를 관리하는 ActivityThread 클래스가 시작할 때 main 메소드에서 static 메소드인 AsyncTask.init()을 호출하여 AsyncTask 클래스를 로드하고 있습니다. 관련 Commit은 다음 링크에서 확인하실 수 있습니다.
 
 > https://github.com/android/platform_frameworks_base/commit/5e9120d4adfb07aeeadb0e0de1de2eb9ebbd80e0
 

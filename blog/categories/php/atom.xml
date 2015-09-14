@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: php, | 이 세상에 하나는 남기고 가자]]></title>
+  <title><![CDATA[Category: php | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/php/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-14T22:08:48+09:00</updated>
+  <updated>2015-09-14T22:14:09+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,350 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[PHP에서 soundex / metaphone key 구하기]]></title>
+    <link href="http://blog.asamaru.net/2015/09/14/soundex-slash-metaphone-key-in-php/"/>
+    <updated>2015-09-14T21:19:33+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/14/soundex-slash-metaphone-key-in-php</id>
+    <content type="html"><![CDATA[<p>앞선 포스팅에서 <a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">levenshtein()</a> 함수, <a href="/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text">similar_text()</a>에 대해 알아보았다.
+이런 문자열 비교 함수는 아니지만 문자열의 soundex key를 구하여 발음이 유사한 단어들을 찾을 수 있도록 도와주는 soundex() 함수와 이보다 더 정확한 결과를 반환한다고 하는 metaphone() 함수에 대해서 알아보자.</p>
+
+<h2>soundex란?</h2>
+
+<blockquote><p>Soundex란 발음이 유사한 서로다른 철자의 단어를 그룹화하여 철자 입력 오류를 보정하기 위한 색인시스템으로 초기에는 주로 사람이름을 검색하기 위한 용도로 사용되었으나 인터넷 검색이 활성화되면서 다양한 분야에서 응용되고 있다. 대표적인 Soundex Appliation은 “US Bureau of the Censu s”의 것이며, AT&amp;T의 Standard soundex algorithm도 있다.
+(츨처 : <a href="http://www.nicklib.com/nlp/2297">http://www.nicklib.com/nlp/2297</a>)</p></blockquote>
+
+<h2><a href="http://php.net/manual/en/function.soundex.php">soundex()</a> 함수</h2>
+
+<p><a href="http://php.net/manual/en/function.soundex.php">php 메뉴얼의 설명</a>에 따르면 soundex() 함수는 발음이 유사한 단어들이 같은 soundex 키를 생성하므로, 발음은 알고 있지만 스펠은 모르는 단어를 데이터베이스에서 쉽게 찾을 수 있다. soundex 함수는 문자로 시작하는 4문자 문자열을 반환한다.</p>
+
+<p>이 soundex 함수는 &ldquo;The Art Of Computer Programming, vol. 3: Sorting And Searching&rdquo;, Addison-Wesley (1973), 391-392쪽에서 Donald Knuth가 기술한 것이다.</p>
+
+<h3>기본 사용법</h3>
+
+<pre><code class="php">string soundex ( string $str )
+</code></pre>
+
+<h3>함수 인자</h3>
+
+<h4>str</h4>
+
+<p>입력 문자열</p>
+
+<h3>반환값</h3>
+
+<p>soundex 키를 문자열로 반환한다.</p>
+
+<h3>예시</h3>
+
+<pre><code class="php">&lt;?php
+soundex("Euler")       == soundex("Ellery");    // E460
+soundex("Gauss")       == soundex("Ghosh");     // G200
+soundex("Hilbert")     == soundex("Heilbronn"); // H416
+soundex("Knuth")       == soundex("Kant");      // K530
+soundex("Lloyd")       == soundex("Ladd");      // L300
+soundex("Lukasiewicz") == soundex("Lissajous"); // L222
+</code></pre>
+
+<h2><a href="http://php.net/manual/en/function.metaphone.php">metaphone()</a> 함수</h2>
+
+<p><a href="http://php.net/manual/en/function.metaphone.php">php 메뉴얼의 설명</a>에 따르면 metaphone() 함수는 soundex()처럼 유사한 발음의 단어에 대해 동일한 키를 생성다. 이 함수는 영어 발음의 기본 법칙을 사용하는 soundex()보다 훨씬 정확하다. 메타폰 생성 키는 가변 길이를 가진다.</p>
+
+<p>metaphone은 Lawrence Philips <lphilips at verity dot com>가 개발하였였고 이는 [&ldquo;Practical Algorithms for Programmers&rdquo;, Binstock &amp; Rex, Addison Wesley, 1995]에 수록되어 있다.</p>
+
+<h3>기본 사용법</h3>
+
+<pre><code class="php">string metaphone ( string $str [, int $phonemes ] )
+</code></pre>
+
+<h3>함수 인자</h3>
+
+<h4>str</h4>
+
+<p>입력 문자열.</p>
+
+<h4>phonemes</h4>
+
+<p>이 매개 변수는 음소 문자로 반환된 metaphone key의 길이를 제한한다. 0이 디폴트 값으로 제한하지 않음을 의미한다.</p>
+
+<h3>반환값</h3>
+
+<p>메타폰 키를 문자열로 반환한다.</p>
+
+<h2>응용 아이디어</h2>
+
+<p>알파벳 문자열의 유사도를 개선하는데에 응용할 수도 있을 것 같다. 문자열을 soundex나 metaphone key로 변환하여 문자열 유사도를 비교하면 조금 더 개선된 유사도를 구할 수 있을 것 같다. 정확히는 다른 의미가 되지만 발음이 유사한 문장을 유사 문장으로 인정하는 효과를 얻을 수 있을 것이다.</p>
+
+<p>사실 중요한 문제는 soundex나 metaphone 뿐만 아니라 Double Metaphone, Caverphone 같은 알고리즘은 알파벳 문자에 대한 음성 특징을 추출하는 것으로 한글에는 사용할 수 없다. 하지만 한글을 초/중/종성으로 분리하고 발음 기호로 변환하는 부분을 추가 처리하면 한글에도 응용할 수 있을 것으로 보인다.</p>
+
+<p>게대가 한글을 영어 발음으로 변환하는 오픈소스들도 찾아보니 있다.(<a href="https://metacpan.org/pod/Lingua::KO::Munja">https://metacpan.org/pod/Lingua::KO::Munja</a>)</p>
+
+<p>추후에 기회가 된다면 직접 구현 해봐야겠다.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()]]></title>
+    <link href="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/"/>
+    <updated>2015-09-14T20:13:22+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text</id>
+    <content type="html"><![CDATA[<p>앞선 포스팅 <a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a>에서 levenshtein() 함수에 대해 알아보았다. 이번엔 이와 유사한 함수인 similar_text()에 대해 알아보고자 한다.</p>
+
+<h2><a href="http://php.net/manual/en/function.similar-text.php">similar_text()</a> 함수</h2>
+
+<p><a href="http://php.net/manual/en/function.similar-text.php">php 메뉴얼의 설명</a>에 따르면 similar_text() 함수는 두 문자열의 유사도를 계산한다고 되어 있다.</p>
+
+<p>두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World&rsquo;s Best Algorithms by Oliver (ISBN 0-131-00413-1) 에서 설명되어 있다. 이 구현은 pseudo code와 다르게 스택은 아니지만, 재귀 호출이므로 전체 프로세스의 속도에 영향을 줄 수 있다. 이 계산 알고리즘은 시간복잡도 <code>O(N**3)</code>를 가지며 여기서 N은 두 문자열 중 긴 문자열의 길이를 뜻한다.</p>
+
+<p>문자열의 길이에 따라 성능이 극도로 떨어질 수 있으므로 가급적 짧은 문장의 비교에 사용하는 것이 좋다. 메뉴얼에서 paul은 20000자 이상에서만 성능에 문제가 있었다고는 하나 시간복잡도를 보더라도 긴 문자열은 자제하는게 좋겠다.</p>
+
+<h3>기본 사용법</h3>
+
+<pre><code class="php">int similar_text ( string $first , string $second [, float &amp;$percent ] )
+</code></pre>
+
+<h3>함수 인자</h3>
+
+<h4>first</h4>
+
+<p>첫번째 문자열</p>
+
+<h4>second</h4>
+
+<p>두번째 문자열</p>
+
+<h4>percent</h4>
+
+<p>reference로 넘겨져야하는 세번째 인자는 similar_text() 함수의 계산 결과인 문서 유사도를 퍼센트(%)로 제공해 준다.</p>
+
+<h3>반환값</h3>
+
+<p>두 문자열에서 매칭되는 문자수를 반환한다.</p>
+
+<h3>예시</h3>
+
+<p>이 함수는 몇가지 특성을 가지고 있으므로 메뉴얼에 안내되어 있는 아래의 예시들을 통해 차이를 알고 사용해야 한다.</p>
+
+<h4>인자의 입력 순서에 따라 결과가 달라진다.</h4>
+
+<pre><code class="php">&lt;?php
+$var_1 = 'PHP IS GREAT';
+$var_2 = 'WITH MYSQL';
+
+similar_text($var_1, $var_2, $percent);
+
+echo $percent;
+// 27.272727272727
+
+similar_text($var_2, $var_1, $percent);
+
+echo $percent;
+// 18.181818181818
+</code></pre>
+
+<h4>공백은 비교에서 제외된다.(그렇다고 trim이 되거나 문자열 내 공백이 제거되고 비교하는 것은 아니다.)</h4>
+
+<pre><code class="php">&lt;?php
+echo similar_text(" ", "", $sim);
+echo " -&gt; ";
+echo $sim;
+echo "\n";
+echo similar_text("ab c", "abc", $sim);
+echo " -&gt; ";
+echo $sim;
+echo "\n";
+echo similar_text(" abc", "abc", $sim);
+echo " -&gt; ";
+echo $sim;
+echo "\n";
+
+// 결과
+// 0 -&gt; 0
+// 3 -&gt; 85.714285714286
+// 3 -&gt; 85.714285714286
+</code></pre>
+
+<h4>대소문자를 구분한다.</h4>
+
+<pre><code class="php">&lt;?php
+$var1 = 'Hello';
+$var2 = 'Hello';
+$var3 = 'hello';
+
+echo similar_text($var1, $var2);  // 5
+echo similar_text($var1, $var3);  // 4
+</code></pre>
+
+<h3>유사함수</h3>
+
+<p>비슷한 역할을 하는 함수에 대해 알고 싶다면 아래의 포스팅을 참고하자.</p>
+
+<ul>
+<li><a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()]]></title>
+    <link href="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/"/>
+    <updated>2015-09-14T20:12:59+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein</id>
+    <content type="html"><![CDATA[<p>php 프로그램 개발중 문자열의 유사도를 계산해야 할 일이 생겼다. 그래서 찾다보니 php 내장 함수에 해당 기능이 이미 구현되어 있었다. 비슷한 함수가 몇가지 존재하고 있어서 조금 더 자세히 알아 보았다.</p>
+
+<h2><a href="http://php.net/manual/en/function.levenshtein.php">levenshtein()</a> 함수</h2>
+
+<p>위키피디아에 <a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein distance</a>에 대한 상세한 설명이 나와있다.</p>
+
+<p><a href="http://php.net/manual/en/function.levenshtein.php">php 메뉴얼의 설명</a>에 따르면 Levenshtein distance는 문자열1을 문자열2로 변환하는데 필요한 최소한의 치환, 추가, 삭제의 횟수를 나타낸다고 되어 있다. 이 알고리즘의 시간복잡도는 <code>O(m*n)</code>이며, 여기서 m과 n은 str1, str2의 각각의 길이다. 비슷한 함수인 <a href="http://php.net/manual/en/function.similar-text.php">similar_text()</a>가 가지는 시간 복잡도 <code>O(max(n,m)**3)</code>에 비해서는 덜하지만 그래도 비싼 처리 비용이 든다.</p>
+
+<p>함수의 기본형 사용시 위의 설명대로 변환에 필요한 최소한의 치환, 추가, 삭제의 횟수를 계산하지만 추가 인자를 사용하면 각 변환에 필요한 비용을 지정할 수 있다. 이것은 더 일반적이고 적용성이 높지만 효율적이지 못하다.</p>
+
+<h3>기본 사용법</h3>
+
+<pre><code class="php">int levenshtein ( string $str1 , string $str2 )
+</code></pre>
+
+<h3>확장 사용법</h3>
+
+<pre><code class="php">int levenshtein ( string $str1 , string $str2 , int $cost_ins , int $cost_rep , int $cost_del )
+</code></pre>
+
+<h3>함수 인자</h3>
+
+<h4>str1</h4>
+
+<p>Levenshtein distance를 계산할 문자열1</p>
+
+<h4>str2</h4>
+
+<p>Levenshtein distance를 계산할 문자열2</p>
+
+<h4>cost_ins</h4>
+
+<p>문자 추가 비용(가중치)</p>
+
+<h4>cost_rep</h4>
+
+<p>문자 치환 비용(가중치)</p>
+
+<h4>cost_del</h4>
+
+<p>문자 삭제 비용(가중치)</p>
+
+<h3>반환값</h3>
+
+<p>두 문자열의 Levenshtein-Distance 반환한다. 단, 입력된 두 문자열 중 하나라도 255 글자를 넘는다면 -1을 반환한다.</p>
+
+<h3>예시</h3>
+
+<p>메뉴얼에 나와 있는 예시 중 UTF-8 인코딩에 관련된 문제와 해결방법이 나와있어서 그 예시를 제시한다.</p>
+
+<pre><code class="php">&lt;?php
+echo levenshtein('notre', 'votre');
+echo "\n";
+echo levenshtein('notre', 'nôtre');
+echo "\n";
+
+// 결과
+// 1
+// 2
+</code></pre>
+
+<p>위의 결과를 보면 의아할 수 있다. 분명 두 예시 모두에서 글자가 하나씩 다르므로 결과가 1과 1이 나올 것이라고 예상되지만 결과는 1과 2가 나왔다. 이유는 UTF-8문자열 때문이다. 이를 개선하는 함수의 예시는 다음과 같다.</p>
+
+<pre><code class="php">&lt;?php
+// Convert an UTF-8 encoded string to a single-byte string suitable for
+// functions such as levenshtein.
+//
+// The function simply uses (and updates) a tailored dynamic encoding
+// (in/out map parameter) where non-ascii characters are remapped to
+// the range [128-255] in order of appearance.
+//
+// Thus it supports up to 128 different multibyte code points max over
+// the whole set of strings sharing this encoding.
+//
+function utf8_to_extended_ascii($str, &amp;$map)
+{
+    // find all multibyte characters (cf. utf-8 encoding specs)
+    $matches = array();
+    if (!preg_match_all('/[\xC0-\xF7][\x80-\xBF]+/', $str, $matches))
+        return $str; // plain ascii string
+
+    // update the encoding map with the characters not already met
+    foreach ($matches[0] as $mbc)
+        if (!isset($map[$mbc]))
+            $map[$mbc] = chr(128 + count($map));
+
+    // finally remap non-ascii characters
+    return strtr($str, $map);
+}
+
+// Didactic example showing the usage of the previous conversion function but,
+// for better performance, in a real application with a single input string
+// matched against many strings from a database, you will probably want to
+// pre-encode the input only once.
+//
+function levenshtein_utf8($s1, $s2)
+{
+    $charMap = array();
+    $s1 = utf8_to_extended_ascii($s1, $charMap);
+    $s2 = utf8_to_extended_ascii($s2, $charMap);
+
+    return levenshtein($s1, $s2);
+}
+?&gt;
+</code></pre>
+
+<p>위의 함수를 이용해서 처음 예시를 다시 실행해보자.</p>
+
+<pre><code class="php">&lt;?php
+function utf8_to_extended_ascii($str, &amp;$map)
+{
+    $matches = array();
+    if (!preg_match_all('/[\xC0-\xF7][\x80-\xBF]+/', $str, $matches))
+        return $str; // plain ascii string
+
+    foreach ($matches[0] as $mbc)
+        if (!isset($map[$mbc]))
+            $map[$mbc] = chr(128 + count($map));
+
+    return strtr($str, $map);
+}
+
+function levenshtein_utf8($s1, $s2)
+{
+    $charMap = array();
+    $s1 = utf8_to_extended_ascii($s1, $charMap);
+    $s2 = utf8_to_extended_ascii($s2, $charMap);
+
+    return levenshtein($s1, $s2);
+}
+
+echo levenshtein_utf8('notre', 'votre');
+echo "\n";
+echo levenshtein_utf8('notre', 'nôtre');
+echo "\n";
+
+// 결과
+// 1
+// 1
+</code></pre>
+
+<p>결과는 개선되어 1과 1이 나온다. 하지만 정확한 값이 필요한 것이 아니라면 개선된 함수말고 기본 함수를 써도 무방하다. 일반적으로 사용할 때는 가장 비슷한 문자열을 찾는 등에 사용할테니 인코딩에 따른 값차이는 크게 의미를 가지지 않는다. 게다가 처리 비용도 더 많이 든다.</p>
+
+<h3>유사함수</h3>
+
+<p>비슷한 역할을 하는 함수에 대해 알고 싶다면 아래의 포스팅을 참고하자.</p>
+
+<ul>
+<li><a href="/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/">PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()</a></li>
+</ul>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[두지점(WGS84 좌표)간 km 거리 계산 함수(php, mysql, javascript)]]></title>
@@ -71,6 +415,86 @@
 
 <p><a href="http://www.mapanet.eu/EN/Resources/Script-Distance.htm">http://www.mapanet.eu/EN/Resources/Script-Distance.htm</a> 이 사이트에서는 여러가지 언어로 사용하는 방법이 나와 있으나 위에 나열된 함수와는 계산이 조금 다르다. 특히 &ldquo;Earth radius in km (WGS84)"라고 설명된 값이 6378.137를 사용하고 있다.
 <a href="https://en.wikipedia.org/wiki/Earth_radius">위키피디아</a>에서 셜명된 Earth radius 값이 6371이기 때문이다.(지구가 둥글기 때문에 지역마다 값의 차이가 있는 것으로 보인다.)</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[htmlspecialchars_decode와 html_entity_decode의 문자열 처리의 다른 점]]></title>
+    <link href="http://blog.asamaru.net/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/"/>
+    <updated>2015-09-10T14:27:01+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces</id>
+    <content type="html"><![CDATA[<p>php에서 html 구문을 그대로 출력하기 위해 <a href="http://php.net/manual/kr/function.htmlspecialchars.php">htmlspecialchars</a>를 사용한다. 반대로 출력된 문장(Special HTML entities)을 되돌리기 위해서는 일반적으로 <a href="http://php.net/manual/kr/function.htmlspecialchars-decode.php">htmlspecialchars_decode</a>를 많이 사용한다. 그런데 이 함수를 사용하는데 문제가 있다.
+htmlspecialchars_decode는 <code>&amp;nbsp;</code>를 공백으로 다시 되돌려 주지 않는다.</p>
+
+<p>다시 htmlspecialchars로 돌아가서 메뉴얼을 보면 아래와 같이 변환된다고 설명되어 있다.</p>
+
+<ul>
+<li>&lsquo;&amp;&rsquo;(앰퍼샌드)는 &lsquo;<code>&amp;amp;</code>'가 됩니다</li>
+<li>&lsquo;&ldquo;&rsquo;(겹따옴표)는 ENT_NOQUOTES를 설정하지 않았을 때 &lsquo;&quot;'가 됩니다.</li>
+<li>&lsquo;&rsquo;&lsquo;(홑따옴표)는 ENT_QUOTES가 설정되었을 때만 &rsquo;&#039;&lsquo;가 됩니다.</li>
+<li>&lsquo;&lt;&rsquo;(미만)은 &lsquo;<code>&amp;lt;</code>'가 됩니다.</li>
+<li>&lsquo;>&rsquo;(이상)은 &lsquo;<code>&amp;gt;</code>'가 됩니다.</li>
+</ul>
+
+
+<p>보다시피 엄밀히 말하자면 htmlspecialchars는 공백을 변환시키지 않는다. 따라서 대응되는 함수인 htmlspecialchars_decode는 <code>&amp;nbsp;</code> 공백 문자열을 되돌리지도 않는다.</p>
+
+<p>그럼 <code>&amp;nbsp;</code>와 같은 것은 어떻게 처리를 해야할까?
+<a href="http://php.net/manual/en/function.html-entity-decode.php">html_entity_decode</a>를 사용하면 된다. 이 함수는 <a href="http://php.net/manual/kr/function.htmlentities.php">htmlentities</a>와 대응되는 함수이다.</p>
+
+<p>그럼 htmlentities 함수는 무엇인가? 메뉴얼에 따르면 다음과 같다.</p>
+
+<blockquote><p>htmlentities()는 HTML 문자 엔티티에 존재하는 모든 문자를 엔티티로 변환하는 점을 제외하면, htmlspecialchars()와 완전히 동일합니다.</p></blockquote>
+
+<p>중요한 부분은 모든 문자를 변환한다는 점이다. 이 부분이 htmlspecialchars와의 차이라고 한다.</p>
+
+<p>정리하자면</p>
+
+<blockquote><p>htmlspecialchars와 htmlentities는 유사하나 htmlentities가 더 많은 문자를 변환한다.
+htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode가 더 많은 문자를 되돌린다.</p></blockquote>
+
+<p>따라서 결론은 <code>&amp;nbsp;</code>와 같은 문자열까지 모두 decode 하려면 html_entity_decode를 사용하면 된다.</p>
+
+<h2>주의</h2>
+
+<p>자.. 이렇게 해피앤딩이 되면 좋겠지만 몇가지 주의 사항이 있다. html_entity_decode 메뉴얼을 보면 다음과 같은 설명이 있다.</p>
+
+<blockquote><p>You might wonder why trim(html_entity_decode(&lsquo;&nbsp;&rsquo;)); doesn&rsquo;t reduce the string to an empty string, that&rsquo;s because the &lsquo;&nbsp;&rsquo; entity is not ASCII code 32 (which is stripped by trim()) but ASCII code 160 (0xa0) in the default ISO 8859-1 encoding.</p></blockquote>
+
+<p>그렇다. html_entity_decode를 사용해서 <code>&amp;nbsp;</code>를 변환하면 공백이 일반적인 공백과는 다른 공백이다. 이게 왜 문제가 되느냐? 아래의 예시를 보자.</p>
+
+<pre><code class="php">&lt;?php
+$str = trim(html_entity_decode("&amp;nbsp;X&amp;nbsp;"));
+echo (strcmp($str, 'X') == 0) ? 'ok' : 'oops';
+</code></pre>
+
+<p>쉽게 생각하면 &lsquo;ok'가 나올것 같지만 위에 설명했던 것과 같이 'oops'가 나온다. 그럼 어떻게 해결을 해야할까?</p>
+
+<p>메뉴얼에서 ASCII code 160 (0xa0)로 변경된다고 하니 이것을 참고해서 조금 고쳐보자.</p>
+
+<pre><code class="php">&lt;?php
+$str = trim(str_replace("\xa0", "", html_entity_decode("&amp;nbsp;X&amp;nbsp;")));
+echo (strcmp($str, 'X') == 0) ? 'ok' : 'oops';
+</code></pre>
+
+<p>이제 해결이 되었을까? 아니다. 결과는 oops이다.(사실 default_charset에 따라 ok가 나올 수도 있다.) 이유는 위에 메뉴얼에 있다.
+&lsquo;default ISO 8859-1&rsquo; 인코딩일 때 0xa0로 변환된다고 되어 있다. 사실 나의 환경은 &lsquo;UTF-8'이다. 대부분 그럴 것이라고 생각한다. 일단 맞는지 확인해 보자. 아래와 같이 default_charset을 ISO-8859-1에 맞추고 실행해보자.</p>
+
+<pre><code class="php">&lt;?php
+$str = trim(str_replace("\xa0", "", html_entity_decode(iconv('UTF-8', 'ISO-8859-1', "&amp;nbsp;X&amp;nbsp;"))));
+echo (strcmp($str, 'X') == 0) ? 'ok' : 'oops';
+</code></pre>
+
+<p>결과는 메뉴얼대로 &lsquo;ok&rsquo; 이다. 그럼 &lsquo;UTF-8'에서는 어떻게 하나? 아래의 코드를 보자.</p>
+
+<pre><code class="php">&lt;?php
+$str = trim(str_replace("\xc2\xa0", "", html_entity_decode("&amp;nbsp;X&amp;nbsp;")));
+echo (strcmp($str, 'X') == 0) ? 'ok' : 'oops';
+</code></pre>
+
+<p>드디어 &lsquo;ok'가 나온다. 중요한 차이는 &ldquo;\xc2\xa0&rdquo; 이다. UTF-8에서는 &ldquo;\xc2\xa0"는 <a href="http://www.utf8-chartable.de/unicode-utf8-table.pl?start=128&amp;number=128&amp;utf8=string-literal&amp;unicodeinhtml=hex">UTF-8 encoding table and Unicode characters</a>에서 확인해보면 UTF-8에서의 "NO-BREAK SPACE"라고 되어 있다.</p>
+
+<p>참 별것 아닌것 같은 함수가 잘모르고 사용하다보면 예상치 못한 문제들을 일으킨다. 사실 <code>&amp;nbsp;</code>만 처리하면 된다면 더 간단하게 <code>str_replace('&amp;nbsp;', ' ', $str)</code>로 해결해도 된다. 하지만 프로그램에선 항상 어떤 값이 들어올지 모르는 것이니 보다 명확하게 처리하는 것이 낫지 않을까?</p>
 ]]></content>
   </entry>
   

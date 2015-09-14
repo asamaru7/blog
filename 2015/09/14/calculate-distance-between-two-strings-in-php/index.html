@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PHP에서 두 문자열의 거리(유사도) 구하기 - 이 세상에 하나는 남기고 가자</title>
+  <meta name="author" content="유영재">
+
+  
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php/">
+  <link href="/favicon.png" type="image/png" rel="icon">
+  <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
+
+  <!-- http://opengraphprotocol.org/ -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php/">
+  <meta property="og:title" content="PHP에서 두 문자열의 거리(유사도) 구하기 - 이 세상에 하나는 남기고 가자">
+  
+
+  <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
+
+<link href="/assets/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+<link href="/assets/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet" type="text/css">
+
+
+  
+  <link href="/stylesheets/screen.css" media="screen, projection, print" rel="stylesheet" type="text/css">
+
+  
+   <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-65749108-2', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+
+
+</head>
+
+  <body   >
+    <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+    <div id="wrap">
+      <header role="banner">
+        <nav class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" title="toggle navbar" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">이 세상에 하나는 남기고 가자</a>
+        </div>
+
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class="active">
+                    <a rel="index" href="/">Blog</a>
+                </li>
+                <li >
+                    <a href="/blog/archives">Archives</a>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a class="subscribe-rss" href="/atom.xml" title="subscribe via RSS">
+                        <span class="visible-xs">RSS</span>
+                        <img class="hidden-xs" src="/images/rss.png" alt="RSS">
+                    </a>
+                </li>
+                
+            </ul>
+            
+                <form class="navbar-form navbar-right" action="https://www.google.com/search" method="GET">
+                    <input type="hidden" name="sitesearch" value="blog.asamaru.net">
+                    <div class="form-group">
+                        <input class="form-control" type="text" name="q" placeholder="Search">
+                    </div>
+                </form>
+            
+        </div>
+    </div>
+</nav>
+
+
+      </header>
+      <div id="main" role="main" class="container">
+        <div id="content">
+          <div class="row">
+  <div class="page-content col-md-9" itemscope itemtype="http://schema.org/Blog">
+    <meta itemprop="name" content="이 세상에 하나는 남기고 가자" />
+    <meta itemprop="description" content="아사마루 개발 블로그. 세상에 필요한 소스코드 한줄 남기고 가자." />
+    <meta itemprop="url" content="http://blog.asamaru.net" />
+    <article class="hentry" role="article" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+      
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-14T14:52:05+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.14</time>
+        
+           | <a href="#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net">Comments</a>
+        
+      </p>
+    
+    
+    <h1 class="entry-title" itemprop="name headline">
+        PHP에서 두 문자열의 거리(유사도) 구하기
+        
+    </h1>
+    
+  </header>
+
+
+<div class="entry-content clearfix" itemprop="articleBody description"><p>php 프로그램 개발중 문자열의 유사도를 계산해야 할 일이 생겼다. 그래서 찾다보니 php 내장 함수에 해당 기능이 이미 구현되어 있었다. 비슷한 함수가 몇가지 존재하고 있어서 조금 더 자세히 알아 보았다.</p>
+
+<h2><a href="http://php.net/manual/en/function.levenshtein.php">levenshtein()</a> 함수</h2>
+
+<p>위키피디아에 <a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein distance</a>에 대한 상세한 설명이 나와있다.</p>
+
+<p><a href="http://php.net/manual/en/function.levenshtein.php">php 메뉴얼의 설명</a>에 따르면 Levenshtein distance는 문자열1을 문자열2로 변환하는데 필요한 최소한의 치환, 추가, 삭제의 횟수를 나타낸다고 되어 있다. 이 알고리즘의 시간복잡도는 <code>O(m*n)</code>이며, 여기서 m과 n은 str1, str2의 각각의 길이다. 비슷한 함수인 <a href="http://php.net/manual/en/function.similar-text.php">similar_text()</a>가 가지는 시간 복잡도 <code>O(max(n,m)**3)</code>에 비해서는 덜하지만 그래도 비싼 처리 비용이 든다.</p>
+
+<p>함수의 기본형 사용시 위의 설명대로 변환에 필요한 최소한의 치환, 추가, 삭제의 횟수를 계산하지만 추가 인자를 사용하면 각 변환에 필요한 비용을 지정할 수 있다. 이것은 더 일반적이고 적용성이 높지만 효율적이지 못하다.</p>
+
+<h3>기본 사용법</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nx">int</span> <span class="nb">levenshtein</span> <span class="p">(</span> <span class="nx">string</span> <span class="nv">$str1</span> <span class="p">,</span> <span class="nx">string</span> <span class="nv">$str2</span> <span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>확장 사용법</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nx">int</span> <span class="nb">levenshtein</span> <span class="p">(</span> <span class="nx">string</span> <span class="nv">$str1</span> <span class="p">,</span> <span class="nx">string</span> <span class="nv">$str2</span> <span class="p">,</span> <span class="nx">int</span> <span class="nv">$cost_ins</span> <span class="p">,</span> <span class="nx">int</span> <span class="nv">$cost_rep</span> <span class="p">,</span> <span class="nx">int</span> <span class="nv">$cost_del</span> <span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>함수 인자</h3>
+
+<h4>str1</h4>
+
+<p>Levenshtein distance를 계산할 문자열1</p>
+
+<h4>str2</h4>
+
+<p>Levenshtein distance를 계산할 문자열2</p>
+
+<h4>cost_ins</h4>
+
+<p>문자 추가 비용(가중치)</p>
+
+<h4>cost_rep</h4>
+
+<p>문자 치환 비용(가중치)</p>
+
+<h4>cost_del</h4>
+
+<p>문자 삭제 비용(가중치)</p>
+
+<h3>예시</h3>
+
+<p>메뉴얼에 나와 있는 예시 중 UTF-8 인코딩에 관련된 문제와 해결방법이 나와있어서 그 예시를 제시한다.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="k">echo</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;votre&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;nôtre&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 결과</span>
+</span><span class='line'><span class="c1">// 1</span>
+</span><span class='line'><span class="c1">// 2</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>위의 결과를 보면 의아할 수 있다. 분명 두 예시 모두에서 글자가 하나씩 다르므로 결과가 1과 1이 나올 것이라고 예상되지만 결과는 1과 2가 나왔다. 이유는 UTF-8문자열 때문이다. 이를 개선하는 함수의 예시는 다음과 같다.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="c1">// Convert an UTF-8 encoded string to a single-byte string suitable for</span>
+</span><span class='line'><span class="c1">// functions such as levenshtein.</span>
+</span><span class='line'><span class="c1">//</span>
+</span><span class='line'><span class="c1">// The function simply uses (and updates) a tailored dynamic encoding</span>
+</span><span class='line'><span class="c1">// (in/out map parameter) where non-ascii characters are remapped to</span>
+</span><span class='line'><span class="c1">// the range [128-255] in order of appearance.</span>
+</span><span class='line'><span class="c1">//</span>
+</span><span class='line'><span class="c1">// Thus it supports up to 128 different multibyte code points max over</span>
+</span><span class='line'><span class="c1">// the whole set of strings sharing this encoding.</span>
+</span><span class='line'><span class="c1">//</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="o">&amp;</span><span class="nv">$map</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="c1">// find all multibyte characters (cf. utf-8 encoding specs)</span>
+</span><span class='line'>    <span class="nv">$matches</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">preg_match_all</span><span class="p">(</span><span class="s1">&#39;/[\xC0-\xF7][\x80-\xBF]+/&#39;</span><span class="p">,</span> <span class="nv">$str</span><span class="p">,</span> <span class="nv">$matches</span><span class="p">))</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span> <span class="c1">// plain ascii string</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// update the encoding map with the characters not already met</span>
+</span><span class='line'>    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">as</span> <span class="nv">$mbc</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]))</span>
+</span><span class='line'>            <span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">128</span> <span class="o">+</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$map</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// finally remap non-ascii characters</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">strtr</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$map</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Didactic example showing the usage of the previous conversion function but,</span>
+</span><span class='line'><span class="c1">// for better performance, in a real application with a single input string</span>
+</span><span class='line'><span class="c1">// matched against many strings from a database, you will probably want to</span>
+</span><span class='line'><span class="c1">// pre-encode the input only once.</span>
+</span><span class='line'><span class="c1">//</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">levenshtein_utf8</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="nv">$charMap</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+</span><span class='line'>    <span class="nv">$s1</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
+</span><span class='line'>    <span class="nv">$s2</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s2</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>위의 함수를 이용해서 처음 예시를 다시 실행해보자.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="o">&amp;</span><span class="nv">$map</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="nv">$matches</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">preg_match_all</span><span class="p">(</span><span class="s1">&#39;/[\xC0-\xF7][\x80-\xBF]+/&#39;</span><span class="p">,</span> <span class="nv">$str</span><span class="p">,</span> <span class="nv">$matches</span><span class="p">))</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span> <span class="c1">// plain ascii string</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">as</span> <span class="nv">$mbc</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]))</span>
+</span><span class='line'>            <span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">128</span> <span class="o">+</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$map</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">strtr</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$map</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">function</span> <span class="nf">levenshtein_utf8</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="nv">$charMap</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+</span><span class='line'>    <span class="nv">$s1</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
+</span><span class='line'>    <span class="nv">$s2</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s2</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">echo</span> <span class="nx">levenshtein_utf8</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;votre&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="nx">levenshtein_utf8</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;nôtre&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 결과</span>
+</span><span class='line'><span class="c1">// 1</span>
+</span><span class='line'><span class="c1">// 1</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>결과는 개선되어 1과 1이 나온다. 하지만 정확한 값이 필요한 것이 아니라면 개선된 함수말고 기본 함수를 써도 무방하다. 일반적으로 사용할 때는 가장 비슷한 문자열을 찾는 등에 사용할테니 인코딩에 따른 값차이는 크게 의미를 가지지 않는다. 게다가 처리 비용도 더 많이 든다.</p>
+</div>
+
+
+      <footer>
+        <p class="meta text-muted">
+          
+  
+
+<span class="glyphicon glyphicon-user"></span> <span class="byline author vcard" itemprop="author" itemscope itemtype="http://schema.org/Person">Posted by <span class="fn" itemprop="name">유영재</span></span>
+
+          
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-14T14:52:05+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.14</time>
+          
+
+<span class="glyphicon glyphicon-tags"></span>&nbsp;
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/php/'>php</a>
+  
+</span>
+
+
+        </p>
+        
+          <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php/" data-via="" data-counturl="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php/" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+        
+        
+          <ul class="meta text-muted pager">
+            
+            <li class="previous"><a href="/2015/09/13/online-css-image-sprites-generator/" title="Previous Post: 필요해서 만들어본 CSS Image Sprites 생성기">&laquo; 필요해서 만들어본 CSS Image Sprites 생성기</a></li>
+            
+            
+            <li class="next"><a href="/2015/09/14/calculate-distance-between-two-wgs84-points/" title="Next Post: 두지점(WGS84 좌표)간 km 거리 계산 함수(php, mysql, javascript)">두지점(WGS84 좌표)간 km 거리 계산 함수(php, mysql, javascript) &raquo;</a></li>
+            
+          </ul>
+        
+      </footer>
+
+	  <!-- adsense -->
+<div>
+	<br />
+	<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+	<!-- 블로그 하단 -->
+	<ins class="adsbygoogle"
+		 style="display:block"
+		 data-ad-client="ca-pub-8163803188491150"
+		 data-ad-slot="7841851420"
+		 data-ad-format="auto"></ins>
+	<script>
+	(adsbygoogle = window.adsbygoogle || []).push({});
+	</script>
+<br />
+</div>
+	  <!-- adsense -->
+
+    </article>
+    
+      <section>
+        <h2>Comments</h2>
+        <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+      </section>
+    
+  </div>
+
+  
+  <aside class="sidebar col-md-3">
+    
+      <section class="panel panel-default">
+	<style>
+		#google_translate_country { text-align:center; padding-top:5px; }
+		#google_translate_element > div { text-align:center; padding:5px 0; }
+		#google_translate_element > div > div { display:inline-block; *display:inline; *zoom:1; margin-right:10px; }
+	</style>
+	<div id="google_translate_country">
+		<a href="#googtrans(ko|en)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/English.gif?w=660" alt="English"/></a>
+		<!-- <a href="#googtrans(ko|ko)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/Korean.gif?w=660" alt="Korean"/></a> -->
+		<a href="#googtrans(ko|zh-CN)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/Chinese.gif?w=660" alt="Chinese"/></a>
+		<a href="#googtrans(ko|ja)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/Japanese.gif?w=660" alt="Japanese"/></a>
+		<a href="#googtrans(ko|fr)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/French.gif?w=660" alt="French"/></a>
+		<a href="#googtrans(ko|de)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/German.gif?w=660" alt="German"/></a>
+		<a href="#googtrans(ko|it)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/Italian.gif?w=660" alt="Italian"/></a>
+	</div>
+	<div id="google_translate_element"></div><script type="text/javascript">
+	function googleTranslateElementInit() {
+	  new google.translate.TranslateElement({pageLanguage: 'ko'}, 'google_translate_element');
+	}
+	</script><script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</section>
+<section class="panel panel-default">
+	<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+	<!-- 블로그 우측 -->
+	<ins class="adsbygoogle"
+		 style="display:block"
+		 data-ad-client="ca-pub-8163803188491150"
+		 data-ad-slot="1934918622"
+		 data-ad-format="auto"></ins>
+	<script>
+	(adsbygoogle = window.adsbygoogle || []).push({});
+	</script>
+</section>
+<section class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Categories</h3>
+  </div>
+  
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (9)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (2)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/javascript'>javascript (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (1)</a></li><li class="list-group-item"><a href='/blog/categories/mysql'>mysql, (1)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (4)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (4)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php, (1)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+</section>
+<section class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Recent Posts</h3>
+  </div>
+  
+  <div id="recent_posts" class="list-group">
+    
+    <a class="list-group-item " href="/2015/09/14/calculate-distance-between-two-wgs84-points/">두지점(WGS84 좌표)간 km 거리 계산 함수(php, mysql, javascript)</a>
+    
+    <a class="list-group-item active" href="/2015/09/14/calculate-distance-between-two-strings-in-php/">PHP에서 두 문자열의 거리(유사도) 구하기</a>
+    
+    <a class="list-group-item " href="/2015/09/13/online-css-image-sprites-generator/">필요해서 만들어본 CSS Image Sprites 생성기</a>
+    
+    <a class="list-group-item " href="/2015/09/11/using-sql-calc-found-rows-and-found-rows-with-mysql/">MySql의 SQL_CALC_FOUND_ROWS와 FOUND_ROWS()</a>
+    
+    <a class="list-group-item " href="/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/">htmlspecialchars_decode와 html_entity_decode의 문자열 처리의 다른 점</a>
+    
+  </div>
+</section>
+
+
+
+
+
+
+    
+  </aside>
+  
+</div>
+
+        </div>
+      </div>
+    </div>
+    <footer role="contentinfo"><div class="container">
+    <p class="text-muted credits">
+  Copyright &copy; 2015 - 유영재<br>
+  <small>
+      <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>,
+      <span class="credit">customized with <a href="https://github.com/kAworu/octostrap3">octostrap3</a></span>.
+  </small>
+</p>
+
+</div>
+</footer>
+    
+
+<script type="text/javascript">
+      var disqus_shortname = 'asamaru7';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php/';
+        var disqus_url = 'http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+<script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="/javascripts/modernizr.js"></script>
+
+
+  </body>
+</html>

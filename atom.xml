@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-13T21:30:46+09:00</updated>
+  <updated>2015-09-14T20:09:13+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,329 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[두지점(WGS84 좌표)간 km 거리 계산 함수(php, mysql, javascript)]]></title>
+    <link href="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-wgs84-points/"/>
+    <updated>2015-09-14T14:52:05+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-wgs84-points</id>
+    <content type="html"><![CDATA[<p>WGS84 좌표계는 <a href="https://ko.wikipedia.org/wiki/%EC%84%B8%EA%B3%84_%EC%A7%80%EA%B5%AC_%EC%A2%8C%ED%91%9C_%EC%8B%9C%EC%8A%A4%ED%85%9C">위키피디아</a>에 따르면 다음과 같다.</p>
+
+<blockquote><p>World Geodetic System (WGS) 1984년에 제정된 범 지구적 측위 시스템으로 지도학, 측지학, 항법에 많이 사용된다.</p>
+
+<p>통칭 및 약칭은 WGS 84 (aka WGS 1984, EPSG:4326, WGS84)라고 부르며, 2004년에 마지막으로 개정되었다. 이전에 쓰던 초안으로 WGS 72, WGS 66, 그리고 WGS 60이 있다.</p></blockquote>
+
+<p>기존에는 네이버 지도 등에서 KTM 좌표를 사용하기도 했지만 요즘엔 WGS84 좌표를 주로 사용한다.</p>
+
+<p>이번에 작업을 하면서 WGS84 좌표 두개의 거리를 계산해야하는 일이 생겼다. 관련된 내용을 찾아보니 여러자료가 있긴하지만 바로 사용할만한 정보를 찾기가 어려웠다. 사실 계산방법이 조금씩 다르다(따라서 아래의 내용이 아주 정확한 값은 아닐 수 있다). 그래서 조사한김에 내용을 정리해둔다.</p>
+
+<p>아래는 몇가지 언어로 구현된 함수들이다. 반환값은 모두 km 단위로 반환된다. 필요한 단위로의 변환은 당연히 산술계산을 하면된다.</p>
+
+<h2>php</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="k">function</span> <span class="nf">getDistance</span><span class="p">(</span><span class="nv">$lat1</span><span class="p">,</span> <span class="nv">$lon1</span><span class="p">,</span> <span class="nv">$lat2</span><span class="p">,</span> <span class="nv">$lon2</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="nv">$earth_radius</span> <span class="o">=</span> <span class="mi">6371</span><span class="p">;</span>
+</span><span class='line'>    <span class="nv">$dLat</span> <span class="o">=</span> <span class="nb">deg2rad</span><span class="p">(</span><span class="nv">$lat2</span> <span class="o">-</span> <span class="nv">$lat1</span><span class="p">);</span>
+</span><span class='line'>    <span class="nv">$dLon</span> <span class="o">=</span> <span class="nb">deg2rad</span><span class="p">(</span><span class="nv">$lng2</span> <span class="o">-</span> <span class="nv">$lng1</span><span class="p">);</span>
+</span><span class='line'>    <span class="nv">$a</span> <span class="o">=</span> <span class="nb">sin</span><span class="p">(</span><span class="nv">$dLat</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nb">sin</span><span class="p">(</span><span class="nv">$dLat</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nb">cos</span><span class="p">(</span><span class="nb">deg2rad</span><span class="p">(</span><span class="nv">$lat1</span><span class="p">))</span> <span class="o">*</span> <span class="nb">cos</span><span class="p">(</span><span class="nb">deg2rad</span><span class="p">(</span><span class="nv">$lat2</span><span class="p">))</span> <span class="o">*</span> <span class="nb">sin</span><span class="p">(</span><span class="nv">$dLon</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nb">sin</span><span class="p">(</span><span class="nv">$dLon</span><span class="o">/</span><span class="mi">2</span><span class="p">);</span>
+</span><span class='line'>    <span class="nv">$c</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">asin</span><span class="p">(</span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">$a</span><span class="p">));</span>
+</span><span class='line'>    <span class="nv">$d</span> <span class="o">=</span> <span class="nv">$earth_radius</span> <span class="o">*</span> <span class="nv">$c</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nv">$d</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>MySql</h2>
+
+<p>함수로 구현된 예시이지만 당연히 query에서 return 부분을 직접 사용해도 된다.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">CREATE</span> <span class="n">FUNCTION</span> <span class="nf">distance_between</span> <span class="p">(</span><span class="n">from_lat</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">from_lng</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">to_lat</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">to_lng</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="n">RETURNS</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">RETURN</span> <span class="mi">6371</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="nf">ATAN2</span><span class="p">(</span><span class="nf">SQRT</span><span class="p">(</span><span class="nf">POW</span><span class="p">(</span><span class="nf">SIN</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lat</span> <span class="o">-</span> <span class="n">from_lat</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nf">POW</span><span class="p">(</span><span class="nf">SIN</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lng</span> <span class="o">-</span> <span class="n">from_lng</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nf">COS</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">from_lat</span><span class="p">))</span> <span class="o">*</span> <span class="nf">COS</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lat</span><span class="p">))),</span> <span class="nf">SQRT</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="nf">POW</span><span class="p">(</span><span class="nf">SIN</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lat</span> <span class="o">-</span> <span class="n">from_lat</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nf">POW</span><span class="p">(</span><span class="nf">SIN</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lng</span> <span class="o">-</span> <span class="n">from_lng</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nf">COS</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">from_lat</span><span class="p">))</span> <span class="o">*</span> <span class="nf">COS</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lat</span><span class="p">))));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>javascript</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">function</span> <span class="nx">getDistanceFromLatLonInKm</span><span class="p">(</span><span class="nx">lat1</span><span class="p">,</span><span class="nx">lng1</span><span class="p">,</span><span class="nx">lat2</span><span class="p">,</span><span class="nx">lng2</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="kd">function</span> <span class="nx">deg2rad</span><span class="p">(</span><span class="nx">deg</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nx">deg</span> <span class="o">*</span> <span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span><span class="o">/</span><span class="mi">180</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">R</span> <span class="o">=</span> <span class="mi">6371</span><span class="p">;</span> <span class="c1">// Radius of the earth in km</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">dLat</span> <span class="o">=</span> <span class="nx">deg2rad</span><span class="p">(</span><span class="nx">lat2</span><span class="o">-</span><span class="nx">lat1</span><span class="p">);</span>  <span class="c1">// deg2rad below</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">dLon</span> <span class="o">=</span> <span class="nx">deg2rad</span><span class="p">(</span><span class="nx">lng2</span><span class="o">-</span><span class="nx">lng1</span><span class="p">);</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">a</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">dLat</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">dLat</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">cos</span><span class="p">(</span><span class="nx">deg2rad</span><span class="p">(</span><span class="nx">lat1</span><span class="p">))</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">cos</span><span class="p">(</span><span class="nx">deg2rad</span><span class="p">(</span><span class="nx">lat2</span><span class="p">))</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">dLon</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">dLon</span><span class="o">/</span><span class="mi">2</span><span class="p">);</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">c</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">atan2</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">sqrt</span><span class="p">(</span><span class="nx">a</span><span class="p">),</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="nx">a</span><span class="p">));</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="nx">R</span> <span class="o">*</span> <span class="nx">c</span><span class="p">;</span> <span class="c1">// Distance in km</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nx">d</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><a href="http://www.mapanet.eu/EN/Resources/Script-Distance.htm">http://www.mapanet.eu/EN/Resources/Script-Distance.htm</a> 이 사이트에서는 여러가지 언어로 사용하는 방법이 나와 있으나 위에 나열된 함수와는 계산이 조금 다르다. 특히 &ldquo;Earth radius in km (WGS84)"라고 설명된 값이 6378.137를 사용하고 있다.
+<a href="https://en.wikipedia.org/wiki/Earth_radius">위키피디아</a>에서 셜명된 Earth radius 값이 6371이기 때문이다.(지구가 둥글기 때문에 지역마다 값의 차이가 있는 것으로 보인다.)</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[PHP에서 두 문자열의 거리(유사도) 구하기]]></title>
+    <link href="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php/"/>
+    <updated>2015-09-14T14:52:05+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php</id>
+    <content type="html"><![CDATA[<p>php 프로그램 개발중 문자열의 유사도를 계산해야 할 일이 생겼다. 그래서 찾다보니 php 내장 함수에 해당 기능이 이미 구현되어 있었다. 비슷한 함수가 몇가지 존재하고 있어서 조금 더 자세히 알아 보았다.</p>
+
+<h2><a href="http://php.net/manual/en/function.levenshtein.php">levenshtein()</a> 함수</h2>
+
+<p>위키피디아에 <a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein distance</a>에 대한 상세한 설명이 나와있다.</p>
+
+<p><a href="http://php.net/manual/en/function.levenshtein.php">php 메뉴얼의 설명</a>에 따르면 Levenshtein distance는 문자열1을 문자열2로 변환하는데 필요한 최소한의 치환, 추가, 삭제의 횟수를 나타낸다고 되어 있다. 이 알고리즘의 시간복잡도는 <code>O(m*n)</code>이며, 여기서 m과 n은 str1, str2의 각각의 길이다. 비슷한 함수인 <a href="http://php.net/manual/en/function.similar-text.php">similar_text()</a>가 가지는 시간 복잡도 <code>O(max(n,m)**3)</code>에 비해서는 덜하지만 그래도 비싼 처리 비용이 든다.</p>
+
+<p>함수의 기본형 사용시 위의 설명대로 변환에 필요한 최소한의 치환, 추가, 삭제의 횟수를 계산하지만 추가 인자를 사용하면 각 변환에 필요한 비용을 지정할 수 있다. 이것은 더 일반적이고 적용성이 높지만 효율적이지 못하다.</p>
+
+<h3>기본 사용법</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nx">int</span> <span class="nb">levenshtein</span> <span class="p">(</span> <span class="nx">string</span> <span class="nv">$str1</span> <span class="p">,</span> <span class="nx">string</span> <span class="nv">$str2</span> <span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>확장 사용법</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nx">int</span> <span class="nb">levenshtein</span> <span class="p">(</span> <span class="nx">string</span> <span class="nv">$str1</span> <span class="p">,</span> <span class="nx">string</span> <span class="nv">$str2</span> <span class="p">,</span> <span class="nx">int</span> <span class="nv">$cost_ins</span> <span class="p">,</span> <span class="nx">int</span> <span class="nv">$cost_rep</span> <span class="p">,</span> <span class="nx">int</span> <span class="nv">$cost_del</span> <span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>함수 인자</h3>
+
+<h4>str1</h4>
+
+<p>Levenshtein distance를 계산할 문자열1</p>
+
+<h4>str2</h4>
+
+<p>Levenshtein distance를 계산할 문자열2</p>
+
+<h4>cost_ins</h4>
+
+<p>문자 추가 비용(가중치)</p>
+
+<h4>cost_rep</h4>
+
+<p>문자 치환 비용(가중치)</p>
+
+<h4>cost_del</h4>
+
+<p>문자 삭제 비용(가중치)</p>
+
+<h3>예시</h3>
+
+<p>메뉴얼에 나와 있는 예시 중 UTF-8 인코딩에 관련된 문제와 해결방법이 나와있어서 그 예시를 제시한다.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="k">echo</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;votre&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;nôtre&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 결과</span>
+</span><span class='line'><span class="c1">// 1</span>
+</span><span class='line'><span class="c1">// 2</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>위의 결과를 보면 의아할 수 있다. 분명 두 예시 모두에서 글자가 하나씩 다르므로 결과가 1과 1이 나올 것이라고 예상되지만 결과는 1과 2가 나왔다. 이유는 UTF-8문자열 때문이다. 이를 개선하는 함수의 예시는 다음과 같다.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="c1">// Convert an UTF-8 encoded string to a single-byte string suitable for</span>
+</span><span class='line'><span class="c1">// functions such as levenshtein.</span>
+</span><span class='line'><span class="c1">//</span>
+</span><span class='line'><span class="c1">// The function simply uses (and updates) a tailored dynamic encoding</span>
+</span><span class='line'><span class="c1">// (in/out map parameter) where non-ascii characters are remapped to</span>
+</span><span class='line'><span class="c1">// the range [128-255] in order of appearance.</span>
+</span><span class='line'><span class="c1">//</span>
+</span><span class='line'><span class="c1">// Thus it supports up to 128 different multibyte code points max over</span>
+</span><span class='line'><span class="c1">// the whole set of strings sharing this encoding.</span>
+</span><span class='line'><span class="c1">//</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="o">&amp;</span><span class="nv">$map</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="c1">// find all multibyte characters (cf. utf-8 encoding specs)</span>
+</span><span class='line'>    <span class="nv">$matches</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">preg_match_all</span><span class="p">(</span><span class="s1">&#39;/[\xC0-\xF7][\x80-\xBF]+/&#39;</span><span class="p">,</span> <span class="nv">$str</span><span class="p">,</span> <span class="nv">$matches</span><span class="p">))</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span> <span class="c1">// plain ascii string</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// update the encoding map with the characters not already met</span>
+</span><span class='line'>    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">as</span> <span class="nv">$mbc</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]))</span>
+</span><span class='line'>            <span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">128</span> <span class="o">+</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$map</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// finally remap non-ascii characters</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">strtr</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$map</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// Didactic example showing the usage of the previous conversion function but,</span>
+</span><span class='line'><span class="c1">// for better performance, in a real application with a single input string</span>
+</span><span class='line'><span class="c1">// matched against many strings from a database, you will probably want to</span>
+</span><span class='line'><span class="c1">// pre-encode the input only once.</span>
+</span><span class='line'><span class="c1">//</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">levenshtein_utf8</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="nv">$charMap</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+</span><span class='line'>    <span class="nv">$s1</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
+</span><span class='line'>    <span class="nv">$s2</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s2</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>위의 함수를 이용해서 처음 예시를 다시 실행해보자.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="k">function</span> <span class="nf">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="o">&amp;</span><span class="nv">$map</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="nv">$matches</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">preg_match_all</span><span class="p">(</span><span class="s1">&#39;/[\xC0-\xF7][\x80-\xBF]+/&#39;</span><span class="p">,</span> <span class="nv">$str</span><span class="p">,</span> <span class="nv">$matches</span><span class="p">))</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span> <span class="c1">// plain ascii string</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">as</span> <span class="nv">$mbc</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]))</span>
+</span><span class='line'>            <span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">128</span> <span class="o">+</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$map</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">strtr</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$map</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">function</span> <span class="nf">levenshtein_utf8</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="nv">$charMap</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+</span><span class='line'>    <span class="nv">$s1</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
+</span><span class='line'>    <span class="nv">$s2</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s2</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">echo</span> <span class="nx">levenshtein_utf8</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;votre&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="nx">levenshtein_utf8</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;nôtre&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 결과</span>
+</span><span class='line'><span class="c1">// 1</span>
+</span><span class='line'><span class="c1">// 1</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>결과는 개선되어 1과 1이 나온다. 하지만 정확한 값이 필요한 것이 아니라면 개선된 함수말고 기본 함수를 써도 무방하다. 일반적으로 사용할 때는 가장 비슷한 문자열을 찾는 등에 사용할테니 인코딩에 따른 값차이는 크게 의미를 가지지 않는다. 게다가 처리 비용도 더 많이 든다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[필요해서 만들어본 CSS Image Sprites 생성기]]></title>
@@ -1694,374 +2017,6 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
 
 <p>드디어 이상없이 동작한다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[옥토프레스 rake deploy에서 오류가 날 경우]]></title>
-    <link href="http://blog.asamaru.net/2015/08/20/octopress-rake-deploy-error/"/>
-    <updated>2015-08-20T22:56:20+09:00</updated>
-    <id>http://blog.asamaru.net/2015/08/20/octopress-rake-deploy-error</id>
-    <content type="html"><![CDATA[<p>옥토프레스를 설치하고 테스트 포스팅을 한 후 본격적으로 세팅을 하려고 시작했다.
-도메인도 세팅하고 구글 어날리틱스, disqus 등도 연결을 하고자 _config.xml 파일을 수정하고 몇가지 글도 포스팅하려고 저장 후 generate 했다.</p>
-
-<p>이제 배포를 하려고 rake deploy를 하니 아래와 같은 오류가 나타났다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>To https://github.com/asamaru7/blog.git
-</span><span class='line'> ! <span class="o">[</span>rejected<span class="o">]</span>        gh-pages -&gt; gh-pages <span class="o">(</span>non-fast-forward<span class="o">)</span>
-</span><span class='line'>error: failed to push some refs to <span class="s1">&#39;https://github.com/asamaru7/blog.git&#39;</span>
-</span><span class='line'>hint: Updates were rejected because the tip of your current branch is behind
-</span><span class='line'>hint: its remote counterpart. Integrate the remote changes <span class="o">(</span>e.g.
-</span><span class='line'>hint: <span class="s1">&#39;git pull ...&#39;</span><span class="o">)</span> before pushing again.
-</span><span class='line'>hint: See the <span class="s1">&#39;Note about fast-forwards&#39;</span> in <span class="s1">&#39;git push --help&#39;</span> <span class="k">for</span> details.
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>구글에서 검색해서 여러가지 방법들을 따라 시도해도 진행이 되지 않다가 발견한 stackoverflow에서 강제 업데이트하는 방법을 안내하고 있었다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi Rakefile
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Rakefile을 열어 deploy_branch로 검색하다 보면 아래와 같은 부분을 볼 수 있다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">desc</span> <span class="s2">&quot;deploy public directory to github pages&quot;</span>
-</span><span class='line'><span class="n">multitask</span> <span class="ss">:push</span> <span class="k">do</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;## Deploying branch to Github Pages &quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;## Pulling any updates from Github Pages &quot;</span>
-</span><span class='line'>  <span class="n">cd</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">do</span>
-</span><span class='line'>    <span class="no">Bundler</span><span class="o">.</span><span class="n">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">&quot;git pull&quot;</span> <span class="p">}</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>  <span class="p">(</span><span class="no">Dir</span><span class="o">[</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">/*&quot;</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">rm_rf</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">}</span>
-</span><span class='line'>  <span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="o">[</span><span class="ss">:copydot</span><span class="o">].</span><span class="n">invoke</span><span class="p">(</span><span class="n">public_dir</span><span class="p">,</span> <span class="n">deploy_dir</span><span class="p">)</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Copying </span><span class="si">#{</span><span class="n">public_dir</span><span class="si">}</span><span class="s2"> to </span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="n">cp_r</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">public_dir</span><span class="si">}</span><span class="s2">/.&quot;</span><span class="p">,</span> <span class="n">deploy_dir</span>
-</span><span class='line'>  <span class="n">cd</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">do</span>
-</span><span class='line'>    <span class="nb">system</span> <span class="s2">&quot;git add -A&quot;</span>
-</span><span class='line'>    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Site updated at </span><span class="si">#{</span><span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">utc</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Committing: </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="nb">system</span> <span class="s2">&quot;git commit -m </span><span class="se">\&quot;</span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Pushing generated </span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2"> website&quot;</span>
-</span><span class='line'>    <span class="no">Bundler</span><span class="o">.</span><span class="n">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">&quot;git push origin </span><span class="si">#{</span><span class="n">deploy_branch</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">}</span>
-</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Github Pages deploy complete&quot;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>여기서 고칠 부분은 <code>Bundler.with_clean_env { system "git push origin #{deploy_branch}" }</code> 이 부분이다.
-<code>#{deploy_branch}"</code> 앞에 +를 붙여준다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Bundler</span><span class="o">.</span><span class="n">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">&quot;git push origin </span><span class="si">#{</span><span class="n">deploy_branch</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이제 저장후 나와서 다시 deploy&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">## Pushing generated _deploy website</span>
-</span><span class='line'>Counting objects: 36, <span class="k">done</span>.
-</span><span class='line'>Delta compression using up to <span class="m">4</span> threads.
-</span><span class='line'>Compressing objects: 100% <span class="o">(</span>27/27<span class="o">)</span>, <span class="k">done</span>.
-</span><span class='line'>Writing objects: 100% <span class="o">(</span>36/36<span class="o">)</span>, 12.90 KiB <span class="p">|</span> <span class="m">0</span> bytes/s, <span class="k">done</span>.
-</span><span class='line'>Total <span class="m">36</span> <span class="o">(</span>delta 14<span class="o">)</span>, reused <span class="m">0</span> <span class="o">(</span>delta 0<span class="o">)</span>
-</span><span class='line'>To https://github.com/asamaru7/blog.git
-</span><span class='line'> + 9295247...d6c0b14 gh-pages -&gt; gh-pages <span class="o">(</span>forced update<span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번엔 gh-pages (forced update) 안내를 보여주며 push 성공.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Octopress 설치]]></title>
-    <link href="http://blog.asamaru.net/2015/08/19/octopress-install/"/>
-    <updated>2015-08-19T23:29:26+09:00</updated>
-    <id>http://blog.asamaru.net/2015/08/19/octopress-install</id>
-    <content type="html"><![CDATA[<h1>Octopress 설치</h1>
-
-<p><a href="http://octopress.org/">Octopress</a>는 <a href="http://jekyllrb.com/">Jekyll</a>을 위해 디자인된 프레임워크다.
-Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블로그 사이트를 생성할 수 있다.
-하지만 해커들을 위한 블로깅 프레임워크이라고도 불리는 Jekyll은 사용이 그리 간단하지만은 않다.
-자세한 내용은 검색하면 많이 찾을 수 있으니 그만 넘어가자.</p>
-
-<h2>기본 설치</h2>
-
-<p>Octopress에 안내된 설치방법은 아래의 사이트를 참고하자.
-<a href="http://octopress.org/docs/setup/">http://octopress.org/docs/setup/</a></p>
-
-<p>하지만 위의 설명대로 잘 되지 않는다면 아래의 내용을 참고해 볼수도 있다. 나의 경우엔 설치가 그리 쉽지만은 않았다.</p>
-
-<p>우선 설치 환경은 osx 10.10 기준이다.</p>
-
-<p>이미 git, brew 등은 설치가 되어있었기 때문에 rvm으로 ruby 1.9.3을 설치하려고 했으나 아래와 같은 오류를 만났다.</p>
-
-<h3>오류 : requirements_osx_brew_libs_install gcc49 openssl</h3>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo rvm install 1.9.3
-</span><span class='line'>Searching <span class="k">for</span> binary rubies, this might take some time.
-</span><span class='line'>No binary rubies available <span class="k">for</span>: osx/10.10/x86_64/ruby-1.9.3-p551.
-</span><span class='line'>Continuing with compilation. Please <span class="nb">read</span> <span class="s1">&#39;rvm help mount&#39;</span> to get more information on binary rubies.
-</span><span class='line'>Checking requirements <span class="k">for</span> osx.
-</span><span class='line'>Installing requirements <span class="k">for</span> osx.
-</span><span class='line'>Updating system.....
-</span><span class='line'>Installing required packages: gcc49, openssl....
-</span><span class='line'>Error running <span class="s1">&#39;requirements_osx_brew_libs_install gcc49 openssl&#39;</span>,
-</span><span class='line'>showing last <span class="m">15</span> lines of /Users/yyj/.rvm/log/1439982916_ruby-1.9.3-p551/package_install_gcc49_openssl.log
-</span><span class='line'>++ <span class="k">case</span> <span class="s2">&quot;$1&quot;</span> in
-</span><span class='line'>++ <span class="o">[[</span> -t <span class="m">1</span> <span class="o">]]</span>
-</span><span class='line'>++ <span class="k">return</span> 1
-</span><span class='line'>++ <span class="nb">printf</span> %b <span class="s1">&#39;There were package installation errors, make sure to read the log.</span>
-</span><span class='line'>
-</span><span class='line'><span class="s1">Try `brew tap --repair` and make sure `brew doctor` looks reasonable.</span>
-</span><span class='line'>
-</span><span class='line'><span class="s1">Check Homebrew requirements https://github.com/Homebrew/homebrew/wiki/Installation\n&#39;</span>
-</span><span class='line'>There were package installation errors, make sure to <span class="nb">read </span>the log.
-</span><span class='line'>
-</span><span class='line'>Try <span class="sb">`</span>brew tap --repair<span class="sb">`</span> and make sure <span class="sb">`</span>brew doctor<span class="sb">`</span> looks reasonable.
-</span><span class='line'>
-</span><span class='line'>Check Homebrew requirements https://github.com/Homebrew/homebrew/wiki/Installation
-</span><span class='line'>++ <span class="k">case</span> <span class="s2">&quot;$_system_version&quot;</span> in
-</span><span class='line'>++ <span class="k">return</span> 1
-</span><span class='line'>Requirements installation failed with status: 1.
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>우선 안내에 나온대로 <code>brew tap --repair</code>와 <code>brew doctor</code>를 실행해서 안내하는대로 처리를 완료했음에도 문제는 해결이 되지 않았다.
-그래서 다음과 같이 rvm에서 필요로하는 lib을 먼저 설치했다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rvm get head --autolibs<span class="o">=</span>3
-</span><span class='line'><span class="nv">$ </span>rvm requirements
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>재시도 &hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo rvm install 1.9.3
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번엔 오류가 나지않고 ruby를 다운로드 시작&hellip; 그러나 엄청나게 느림&hellip; 중간에 끊어짐&hellip; 이런&hellip;
-오랜 기다림 끝에 이제 ruby 1.9.3 설치 완료.
-이제 ruby 1.9.3을 사용하도록 하고&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rvm use 1.9.3
-</span><span class='line'><span class="nv">$ </span>rvm rubygems latest
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>그다음은 공식 사이트 설명대로&hellip; 단, Octopress를 clone 받은 경로로 가서&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>gem install bundler
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번엔 그냥 넘아가나 했더니 아래와 같은 오류&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>ERROR:  Could not find a valid gem <span class="s1">&#39;bundler&#39;</span> <span class="o">(</span>&gt;<span class="o">=</span> 0<span class="o">)</span>, here is why:
-</span><span class='line'>          Unable to download data from https://rubygems.org/ - server did not <span class="k">return</span> a valid file <span class="o">(</span>https://rubygems.org/latest_specs.4.8.gz<span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번에도 아래와 같이 하고&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rvm use 1.9.3
-</span><span class='line'>Using /Users/yyj/.rvm/gems/ruby-1.9.3-p551
-</span><span class='line'><span class="nv">$ </span>rvm rubygems latest
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p> 재시도&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>gem install bundler
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번엔 퍼미션 에러&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo gem install bundler
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>드디어 설치.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rbenv rehash <span class="c"># 이건 필요시에만 한다고하니 명령이 없다는 오류가 나면 무시</span>
-</span><span class='line'><span class="nv">$ </span>bundle install
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번에도 <code>bundle install</code>에서 퍼미션 에러&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo bundle install
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>아.. 드디어 기본 설치 완료</p>
-
-<h2>테마설치</h2>
-
-<p>기본 테마 설치</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake install
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>다른 테마를 원한다면 <a href="https://github.com/imathis/octopress/wiki/3rd-Party-Octopress-Themes">https://github.com/imathis/octopress/wiki/3rd-Party-Octopress-Themes</a> 에 가서 고르면 된다.</p>
-
-<p>설치는 다음과 같이</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>git clone https://github.com/~~~.git .themes/테마이름
-</span><span class='line'><span class="nv">$ </span>rake install<span class="o">[</span><span class="s1">&#39;테마이름&#39;</span><span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>octostrap3 테마 적용 예시.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>% git clone https://github.com/kAworu/octostrap3.git .themes/octostrap3
-</span><span class='line'>% rake install<span class="o">[</span><span class="s2">&quot;octostrap3&quot;</span><span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>설정</h2>
-
-<p>아래와 같이 명령을 실행하고 생성해둔 github 프로젝트 주소를 넣으면 설치는 완료된다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake setup_github_pages
-</span><span class='line'>Enter the <span class="nb">read</span>/write url <span class="k">for</span> your repository
-</span><span class='line'><span class="o">(</span>For example, <span class="s1">&#39;git@github.com:your_username/your_username.github.io.git)</span>
-</span><span class='line'><span class="s1">           or &#39;</span>https://github.com/your_username/your_username.github.io<span class="err">&#39;</span><span class="o">)</span>
-</span><span class='line'>Repository url: https://github.com/~~~/~~~.git
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>배포</h2>
-
-<p>아직 작성한 글이 아무것도 없지만 일단 deploy 해본다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake generate
-</span><span class='line'><span class="nv">$ </span>rake deploy
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>deploy를 하고나면 기본적으로 생성해 주는 아주 간단한 index.html 파일이 push되어 있는 것을 볼 수 있다.</p>
-
-<p>이제 페이지가 정상적으로 뜨는지만 확인하면 기본 설치는 모두 완료.</p>
-
-<h2>repository 연결</h2>
-
-<p>블로그는 gh-pages branch로 연결되어 있으니 원소스를 master로 연결하여 백업의 역할을 할 수 있도록 설정해보자.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>git remote add origin https://github.com/~~~/~~~.git
-</span><span class='line'><span class="nv">$ </span>git config branch.master.remote origin
-</span><span class='line'>
-</span><span class='line'><span class="nv">$ </span>git push
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>독립 도메인 연결</h2>
-
-<p>이왕이면 내 도메인도 연결해보자. 아래의 명령은 CNAME 파일을 통해 도메인 연결을 github에 알려주는 것으로 이후 deploy가 될 때 이 파일이 함께 배포되면 적용된다. 단, 도메인을 변경했으므로 이에 맞춰 _config.yml 파일도 함께 수정해야 한다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s1">&#39;blog.asamaru.net&#39;</span> &gt;&gt; <span class="nb">source</span>/CNAME
-</span></code></pre></td></tr></table></div></figure>
-
 ]]></content>
   </entry>
   

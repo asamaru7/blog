@@ -1,11 +1,10 @@
 ---
 layout: post
-title: "PHP에서 두 문자열의 거리(유사도) 구하기"
-date: 2015-09-14 14:52:05 +0900
+title: "PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()"
+date: 2015-09-14 20:12:59 +0900
 comments: true
 categories: php
 ---
-
 php 프로그램 개발중 문자열의 유사도를 계산해야 할 일이 생겼다. 그래서 찾다보니 php 내장 함수에 해당 기능이 이미 구현되어 있었다. 비슷한 함수가 몇가지 존재하고 있어서 조금 더 자세히 알아 보았다.
 
 ## [levenshtein()](http://php.net/manual/en/function.levenshtein.php) 함수
@@ -44,6 +43,10 @@ Levenshtein distance를 계산할 문자열2
 
 #### cost_del
 문자 삭제 비용(가중치)
+
+### 반환값
+
+두 문자열의 Levenshtein-Distance 반환한다. 단, 입력된 두 문자열 중 하나라도 255 글자를 넘는다면 -1을 반환한다.
 
 ### 예시
 
@@ -144,3 +147,9 @@ echo "\n";
 ```
 
 결과는 개선되어 1과 1이 나온다. 하지만 정확한 값이 필요한 것이 아니라면 개선된 함수말고 기본 함수를 써도 무방하다. 일반적으로 사용할 때는 가장 비슷한 문자열을 찾는 등에 사용할테니 인코딩에 따른 값차이는 크게 의미를 가지지 않는다. 게다가 처리 비용도 더 많이 든다.
+
+### 유사함수
+
+비슷한 역할을 하는 함수에 대해 알고 싶다면 아래의 포스팅을 참고하자.
+
+* [PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()](/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/)

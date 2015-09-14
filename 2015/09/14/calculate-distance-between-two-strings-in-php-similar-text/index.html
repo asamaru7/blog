@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>java reflection을 사용해서 private static final field 변경하기 - 이 세상에 하나는 남기고 가자</title>
+  <title>PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text() - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/09/01/change-private-static-final-field-using-java-reflection/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/09/01/change-private-static-final-field-using-java-reflection/">
-  <meta property="og:title" content="java reflection을 사용해서 private static final field 변경하기 - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/">
+  <meta property="og:title" content="PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text() - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -121,7 +121,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-01T22:29:00+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.01</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-14T20:13:22+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.14</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -130,19 +130,53 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        java reflection을 사용해서 private static final field 변경하기
+        PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p>java에서 final로 지정한 것은 당연히 변경을 하지 말라는 뜻이다.
-하지만 간혹 작업을 하다보면 그 값을 수정하고 싶을 때가 있다. 이번에도 안드로이드 작업을 하던 중 중요한 값도 아닐뿐아니라 유연성을 위해 값 변경이 필요한 값을 상수라는 이유만으로 final을 붙여 놓은 필드가 있었다.(아마도 자바 개발자들의 습관인 것 같다.)</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>앞선 포스팅 <a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a>에서 levenshtein() 함수에 대해 알아보았다. 이번엔 이와 유사한 함수인 similar_text()에 대해 알아보고자 한다.</p>
 
-<p>그래서 관련된 내용을 검색하던 중 해답을 알려주는 내용을 찾았다.</p>
+<h2><a href="http://php.net/manual/en/function.similar-text.php">similar_text()</a> 함수</h2>
 
-<p><a href="http://stackoverflow.com/questions/3301635/change-private-static-final-field-using-java-reflection">http://stackoverflow.com/questions/3301635/change-private-static-final-field-using-java-reflection</a></p>
+<p><a href="http://php.net/manual/en/function.similar-text.php">php 메뉴얼의 설명</a>에 따르면 similar_text() 함수는 두 문자열의 유사도를 계산한다고 되어 있다.</p>
+
+<p>두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World&rsquo;s Best Algorithms by Oliver (ISBN 0-131-00413-1) 에서 설명되어 있다. 이 구현은 pseudo code와 다르게 스택은 아니지만, 재귀 호출이므로 전체 프로세스의 속도에 영향을 줄 수 있다. 이 계산 알고리즘은 시간복잡도 <code>O(N**3)</code>를 가지며 여기서 N은 두 문자열 중 긴 문자열의 길이를 뜻한다.</p>
+
+<p>문자열의 길이에 따라 성능이 극도로 떨어질 수 있으므로 가급적 짧은 문장의 비교에 사용하는 것이 좋다. 메뉴얼에서 paul은 20000자 이상에서만 성능에 문제가 있었다고는 하나 시간복잡도를 보더라도 긴 문자열은 자제하는게 좋겠다.</p>
+
+<h3>기본 사용법</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nx">int</span> <span class="nb">similar_text</span> <span class="p">(</span> <span class="nx">string</span> <span class="nv">$first</span> <span class="p">,</span> <span class="nx">string</span> <span class="nv">$second</span> <span class="p">[,</span> <span class="nx">float</span> <span class="o">&amp;</span><span class="nv">$percent</span> <span class="p">]</span> <span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>함수 인자</h3>
+
+<h4>first</h4>
+
+<p>첫번째 문자열</p>
+
+<h4>second</h4>
+
+<p>두번째 문자열</p>
+
+<h4>percent</h4>
+
+<p>reference로 넘겨져야하는 세번째 인자는 similar_text() 함수의 계산 결과인 문서 유사도를 퍼센트(%)로 제공해 준다.</p>
+
+<h3>반환값</h3>
+
+<p>두 문자열에서 매칭되는 문자수를 반환한다.</p>
+
+<h3>예시</h3>
+
+<p>이 함수는 몇가지 특성을 가지고 있으므로 메뉴얼에 안내되어 있는 아래의 예시들을 통해 차이를 알고 사용해야 한다.</p>
+
+<h4>인자의 입력 순서에 따라 결과가 달라진다.</h4>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -153,21 +187,94 @@
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">static</span> <span class="kt">void</span> <span class="nf">setFinalStatic</span><span class="o">(</span><span class="n">Field</span> <span class="n">field</span><span class="o">,</span> <span class="n">Object</span> <span class="n">newValue</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
-</span><span class='line'>  <span class="n">field</span><span class="o">.</span><span class="na">setAccessible</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="nv">$var_1</span> <span class="o">=</span> <span class="s1">&#39;PHP IS GREAT&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="nv">$var_2</span> <span class="o">=</span> <span class="s1">&#39;WITH MYSQL&#39;</span><span class="p">;</span>
 </span><span class='line'>
-</span><span class='line'>  <span class="n">Field</span> <span class="n">modifiersField</span> <span class="o">=</span> <span class="n">Field</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getDeclaredField</span><span class="o">(</span><span class="s">&quot;modifiers&quot;</span><span class="o">);</span>
-</span><span class='line'>  <span class="n">modifiersField</span><span class="o">.</span><span class="na">setAccessible</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
-</span><span class='line'>  <span class="n">modifiersField</span><span class="o">.</span><span class="na">setInt</span><span class="o">(</span><span class="n">field</span><span class="o">,</span> <span class="n">field</span><span class="o">.</span><span class="na">getModifiers</span><span class="o">()</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">Modifier</span><span class="o">.</span><span class="na">FINAL</span><span class="o">);</span>
+</span><span class='line'><span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var_1</span><span class="p">,</span> <span class="nv">$var_2</span><span class="p">,</span> <span class="nv">$percent</span><span class="p">);</span>
 </span><span class='line'>
-</span><span class='line'>  <span class="n">field</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="n">newValue</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="k">echo</span> <span class="nv">$percent</span><span class="p">;</span>
+</span><span class='line'><span class="c1">// 27.272727272727</span>
+</span><span class='line'>
+</span><span class='line'><span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var_2</span><span class="p">,</span> <span class="nv">$var_1</span><span class="p">,</span> <span class="nv">$percent</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">echo</span> <span class="nv">$percent</span><span class="p">;</span>
+</span><span class='line'><span class="c1">// 18.181818181818</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>상세한 내용은 원본 주소에 가서 보면 친절히 설명되어 있다. 사실 코드를 굳이 해석할 이유도 없고 그냥 저 함수를 써서 원하는 처리를 하면 그만이다.</p>
+<h4>공백은 비교에서 제외된다.(그렇다고 trim이 되거나 문자열 내 공백이 제거되고 비교하는 것은 아니다.)</h4>
 
-<p>이번 작업과 상관은 없지만 개인적으로 java는 정말 맘에 들지 않는다. 개인적으로 느끼기에 너무 고지식한 언어 같다. 이렇게 얘기하면 java 추종자들이 난리나겠지만 길게 얘기할 맘은 없다. 난 Objective-C가 좋아.</p>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="nv">$sim</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">&quot;ab c&quot;</span><span class="p">,</span> <span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="nv">$sim</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">&quot; abc&quot;</span><span class="p">,</span> <span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="nv">$sim</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 결과</span>
+</span><span class='line'><span class="c1">// 0 -&gt; 0</span>
+</span><span class='line'><span class="c1">// 3 -&gt; 85.714285714286</span>
+</span><span class='line'><span class="c1">// 3 -&gt; 85.714285714286</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>대소문자를 구분한다.</h4>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="nv">$var1</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="nv">$var2</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="nv">$var3</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var1</span><span class="p">,</span> <span class="nv">$var2</span><span class="p">);</span>  <span class="c1">// 5</span>
+</span><span class='line'><span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var1</span><span class="p">,</span> <span class="nv">$var3</span><span class="p">);</span>  <span class="c1">// 4</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>유사함수</h3>
+
+<p>비슷한 역할을 하는 함수에 대해 알고 싶다면 아래의 포스팅을 참고하자.</p>
+
+<ul>
+<li><a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a></li>
+</ul>
+
 </div>
 
 
@@ -191,13 +298,13 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-01T22:29:00+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.01</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-14T20:13:22+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.14</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
 <span class="categories">
   
-    <a class='category' href='/blog/categories/java/'>java</a>
+    <a class='category' href='/blog/categories/php/'>php</a>
   
 </span>
 
@@ -206,7 +313,7 @@
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/09/01/change-private-static-final-field-using-java-reflection/" data-via="" data-counturl="http://blog.asamaru.net/2015/09/01/change-private-static-final-field-using-java-reflection/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/" data-via="" data-counturl="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -220,10 +327,10 @@
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/08/30/realty-tax/" title="Previous Post: 증여받은 부동산의 양도소득세">&laquo; 증여받은 부동산의 양도소득세</a></li>
+            <li class="previous"><a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/" title="Previous Post: PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()">&laquo; PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a></li>
             
             
-            <li class="next"><a href="/2015/09/02/decoding-byte-escaped-strings-in-php/" title="Next Post: PHP에서 Byte-escaped(\xFF)된 문자열 decode하기">PHP에서 Byte-escaped(\xFF)된 문자열 decode하기 &raquo;</a></li>
+            <li class="next"><a href="/2015/09/14/soundex-metaphone-key-in-php/" title="Next Post: PHP에서 soundex / metaphone key 구하기">PHP에서 soundex / metaphone key 구하기 &raquo;</a></li>
             
           </ul>
         
@@ -310,7 +417,7 @@
     
     <a class="list-group-item " href="/2015/09/14/soundex-metaphone-key-in-php/">PHP에서 soundex / metaphone key 구하기</a>
     
-    <a class="list-group-item " href="/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/">PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()</a>
+    <a class="list-group-item active" href="/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/">PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()</a>
     
     <a class="list-group-item " href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a>
     
@@ -350,8 +457,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/09/01/change-private-static-final-field-using-java-reflection/';
-        var disqus_url = 'http://blog.asamaru.net/2015/09/01/change-private-static-final-field-using-java-reflection/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/';
+        var disqus_url = 'http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/';
         var disqus_script = 'embed.js';
       
     (function () {

@@ -3,7 +3,7 @@ layout: post
 title: "두지점(WGS84 좌표)간 km 거리 계산 함수(php, mysql, javascript)"
 date: 2015-09-14 14:52:05 +0900
 comments: true
-categories: php, mysql, javascript
+categories: [php, db, js]
 ---
 
 WGS84 좌표계는 [위키피디아](https://ko.wikipedia.org/wiki/%EC%84%B8%EA%B3%84_%EC%A7%80%EA%B5%AC_%EC%A2%8C%ED%91%9C_%EC%8B%9C%EC%8A%A4%ED%85%9C)에 따르면 다음과 같다.

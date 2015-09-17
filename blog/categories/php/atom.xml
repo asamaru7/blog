@@ -4,7 +4,7 @@
   <title><![CDATA[Category: php | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/php/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-17T16:52:28+09:00</updated>
+  <updated>2015-09-17T20:47:54+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,71 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[PHP의 DateTime을 Java (Android)로 전달하기]]></title>
+    <link href="http://blog.asamaru.net/2015/09/17/datetime-from-php-to-java-android/"/>
+    <updated>2015-09-17T18:45:26+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/17/datetime-from-php-to-java-android</id>
+    <content type="html"><![CDATA[<p>안드로이드 앱을 개발하게되면 많은 경우에 서버와의 데이터 연결이 필요하다. 대부분의 데이터 타입은 이 과정에서 큰 문제를 일으키지 않는다(데이터 타입만 명확히 한다면). 하지만 DateTime은 조금 까다로울 수 있다. 프로그램에서 시간은 TimeZone을 가지고 있기 때문에 이 부분을 명확히 하지 않으면 의도치 않은 시간으로 표시된다. 게다가 형식이 맞지 않는다면 제대로 전달되지 않을 수도 있다.</p>
+
+<blockquote><p>네이버 D2에 있는 <a href="http://d2.naver.com/helloworld/645609">Java의 날짜와 시간 API</a>를 보면 Java에서의 Date 처리가 불편하다는 얘기가 있다.</p></blockquote>
+
+<p>이번 작업에서는 서버는 PHP를 사용하고 있는 상황이었고 클라이언트는 <a href="http://androidannotations.org/">AndroidAnnotations</a>의 <a href="https://github.com/excilys/androidannotations/wiki/Rest-API#rest">Rest-API</a>를 사용했다. 수신 데이터의 파싱은 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>를 사용하는 상황이다. 이 글의 주제에서 벗어나므로 <a href="http://androidannotations.org/">AndroidAnnotations</a>나 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>에 대한 부분은 설명하지 않겠다.</p>
+
+<p>GsonHttpMessageConverter를 사용해서 데이터를 파싱하는 경우 대상이되는 class의 멤버변수의 데이터 타입에 맞추어 데이터를 채워준다. 당연히 전송되는 데이터가 JSON 형식이어야 한다. 다른 데이터 타입의 경우 앞서 설명한 것과 같이 데이터 타입만 맞춰준다면 아주 쉽게 데이터를 받을 수 있다(그것이 이것을 사용하는 주요 목적이다). 그런데 DateTime 타입은 조금 신경을 써줘야 한다.</p>
+
+<p>자 그럼 서버에서 데이터를 보낼 수 있는 방법에 어떤 것이 있을까? 가장 일반적인 방법으로는 timestamp(int), string, Date가 있다. 어떤 것을 쓰더라도 무방하지만 앞서 얘기한 것처럼 GsonHttpMessageConverter를 써서 간단히 데이터를 정확한 형식으로 받는 것이 편리하기 때문에 전송시 데이터 타입을 맞추는 것이 좋다.</p>
+
+<pre><code class="php">// string 타입으로 전송
+$date = "2015-09-17 10:00:00";
+// int 타입으로 전송
+$date = (new \DateTime("2015-09-17 10:00:00"))-&gt;getTimestamp();
+// Date 타입으로 전송
+$date = (new \DateTime("2015-09-17 10:00:00"))-&gt;setTimeZone(new \DateTimeZone('UTC'))-&gt;format('Y-m-d\TH:i:s\Z');
+</code></pre>
+
+<p>위의 코드를 보면 PHP에서 전송할 때 넘겨줄 데이터의 예시를 타입별로 제시했다. 앞서 강조했던대로 안드로이드 클라이언트에서 GsonHttpMessageConverter를 이용해 Date 타입으로 바로 받으려면 마지막에 있는 &ldquo;Date 타입으로 전송&rdquo; 방식을 사용하면 된다.</p>
+
+<p>해당 부분을 보면 두가지 처리를 해주고 있다. 첫번째로 TimeZone을 설정한 것이고, 두번째로 Date Format을 지정한 것이다. 사실 이 부분들을 잘 몰라서 삽질을 조금 했었다. 처음엔 Date Format을 어떻게 전달해야할지 몰라 해맸다. 제대로 수신을 하지 못했던 것이다. Format을 맞추고 나니 이젠 보낸 시간과 받은 시간이 달랐다. 이 부분은 TimeZone의 문제이므로 TimeZone을 지정해서 해결했다. TimeZone에 사용한 UTC는 <a href="https://ko.wikipedia.org/wiki/%ED%98%91%EC%A0%95_%EC%84%B8%EA%B3%84%EC%8B%9C">협정 세계시</a>라는 뜻이다. 이것과 세트로 format에서 끝에 \Z를 붙여 데이터가 <a href="https://ko.wikipedia.org/wiki/ISO_8601">ISO 8601</a>에 따라 UTC를 따르고 있음을 표시한 것이다.</p>
+
+<p>결론적으로 위의 형식을 사용하면 GSON으로 바로 받아도 정확한 시간을 사용할 수 있다.</p>
+
+<p>사실 위의 경우는 GsonHttpMessageConverter를 사용한다는 상황을 가정한 것으로 이것을 사용하지 않고 직접 데이터를 받아 GSON을 통해 파싱한다면 아래의 방법을 쓸 수도 있다. Format을 보면 알겠지만 UTC Date여야 한다(정확한 시간 처리를 위해). &ldquo;yyyy-MM-dd HH:mm:ss"이 Format을 쓸 수도 있으나 TimeZone 명시되지 않으므로 시간이 다르게 보일 수 있다.</p>
+
+<pre><code class="java">Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
+</code></pre>
+
+<p>아래는 추가적으로 다른 타입으로 수신했을 때 안드로이드 클라이언트에서 Date 타입으로 변환하고자 할때 사용할 수 있는 참고 코드들이다.</p>
+
+<p><strong> string 타입으로 수신시 </strong>
+<code>java
+try {
+    String dateTime = "2015-09-17 10:00:00";
+    SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+    Date date = dateParser.parse(dateTime);
+} catch (ParseException e) {
+    e.printStackTrace();
+}
+</code></p>
+
+<p><strong> timestamp(int) 타입으로 수신시 </strong></p>
+
+<p>PHP에서의 TimeStamp는 초단위(s)지만 Java에서는 밀리초(ms) 단위이므로 1000을 곱해서 넣어 주어야 한다.
+그리고 Java에서는 Date가 Deprecated되어 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>를 더 권장한다고 한다. <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Date.html">정확하게는 완전히 Deprecated된 것은 아니고 일부 생성자가 그렇다는 것</a>이지만 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>가 더 다양한 기능을 제공하므로 더 권장된다는 것이다. 자세한 이유는 검색해보면 많이 나온다.</p>
+
+<pre><code class="java">// Calendar 사용
+Calendar c = Calendar.getInstance();
+c.setTimeInMillis(timestamp * 1000);
+Date date = c.getTime();
+
+// OR
+
+// Date 사용
+Date d = new Date(timestamp * 1000);
+</code></pre>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[PHP에서 soundex / metaphone key 구하기]]></title>
@@ -415,86 +480,6 @@ echo "\n";
 
 <p><a href="http://www.mapanet.eu/EN/Resources/Script-Distance.htm">http://www.mapanet.eu/EN/Resources/Script-Distance.htm</a> 이 사이트에서는 여러가지 언어로 사용하는 방법이 나와 있으나 위에 나열된 함수와는 계산이 조금 다르다. 특히 &ldquo;Earth radius in km (WGS84)"라고 설명된 값이 6378.137를 사용하고 있다.
 <a href="https://en.wikipedia.org/wiki/Earth_radius">위키피디아</a>에서 셜명된 Earth radius 값이 6371이기 때문이다.(지구가 둥글기 때문에 지역마다 값의 차이가 있는 것으로 보인다.)</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[htmlspecialchars_decode와 html_entity_decode의 문자열 처리의 다른 점]]></title>
-    <link href="http://blog.asamaru.net/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/"/>
-    <updated>2015-09-10T14:27:01+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces</id>
-    <content type="html"><![CDATA[<p>php에서 html 구문을 그대로 출력하기 위해 <a href="http://php.net/manual/kr/function.htmlspecialchars.php">htmlspecialchars</a>를 사용한다. 반대로 출력된 문장(Special HTML entities)을 되돌리기 위해서는 일반적으로 <a href="http://php.net/manual/kr/function.htmlspecialchars-decode.php">htmlspecialchars_decode</a>를 많이 사용한다. 그런데 이 함수를 사용하는데 문제가 있다.
-htmlspecialchars_decode는 <code>&amp;nbsp;</code>를 공백으로 다시 되돌려 주지 않는다.</p>
-
-<p>다시 htmlspecialchars로 돌아가서 메뉴얼을 보면 아래와 같이 변환된다고 설명되어 있다.</p>
-
-<ul>
-<li>&lsquo;&amp;&rsquo;(앰퍼샌드)는 &lsquo;<code>&amp;amp;</code>'가 됩니다</li>
-<li>&lsquo;&ldquo;&rsquo;(겹따옴표)는 ENT_NOQUOTES를 설정하지 않았을 때 &lsquo;&quot;'가 됩니다.</li>
-<li>&lsquo;&rsquo;&lsquo;(홑따옴표)는 ENT_QUOTES가 설정되었을 때만 &rsquo;&#039;&lsquo;가 됩니다.</li>
-<li>&lsquo;&lt;&rsquo;(미만)은 &lsquo;<code>&amp;lt;</code>'가 됩니다.</li>
-<li>&lsquo;>&rsquo;(이상)은 &lsquo;<code>&amp;gt;</code>'가 됩니다.</li>
-</ul>
-
-
-<p>보다시피 엄밀히 말하자면 htmlspecialchars는 공백을 변환시키지 않는다. 따라서 대응되는 함수인 htmlspecialchars_decode는 <code>&amp;nbsp;</code> 공백 문자열을 되돌리지도 않는다.</p>
-
-<p>그럼 <code>&amp;nbsp;</code>와 같은 것은 어떻게 처리를 해야할까?
-<a href="http://php.net/manual/en/function.html-entity-decode.php">html_entity_decode</a>를 사용하면 된다. 이 함수는 <a href="http://php.net/manual/kr/function.htmlentities.php">htmlentities</a>와 대응되는 함수이다.</p>
-
-<p>그럼 htmlentities 함수는 무엇인가? 메뉴얼에 따르면 다음과 같다.</p>
-
-<blockquote><p>htmlentities()는 HTML 문자 엔티티에 존재하는 모든 문자를 엔티티로 변환하는 점을 제외하면, htmlspecialchars()와 완전히 동일합니다.</p></blockquote>
-
-<p>중요한 부분은 모든 문자를 변환한다는 점이다. 이 부분이 htmlspecialchars와의 차이라고 한다.</p>
-
-<p>정리하자면</p>
-
-<blockquote><p>htmlspecialchars와 htmlentities는 유사하나 htmlentities가 더 많은 문자를 변환한다.
-htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode가 더 많은 문자를 되돌린다.</p></blockquote>
-
-<p>따라서 결론은 <code>&amp;nbsp;</code>와 같은 문자열까지 모두 decode 하려면 html_entity_decode를 사용하면 된다.</p>
-
-<h2>주의</h2>
-
-<p>자.. 이렇게 해피앤딩이 되면 좋겠지만 몇가지 주의 사항이 있다. html_entity_decode 메뉴얼을 보면 다음과 같은 설명이 있다.</p>
-
-<blockquote><p>You might wonder why trim(html_entity_decode(&lsquo;&nbsp;&rsquo;)); doesn&rsquo;t reduce the string to an empty string, that&rsquo;s because the &lsquo;&nbsp;&rsquo; entity is not ASCII code 32 (which is stripped by trim()) but ASCII code 160 (0xa0) in the default ISO 8859-1 encoding.</p></blockquote>
-
-<p>그렇다. html_entity_decode를 사용해서 <code>&amp;nbsp;</code>를 변환하면 공백이 일반적인 공백과는 다른 공백이다. 이게 왜 문제가 되느냐? 아래의 예시를 보자.</p>
-
-<pre><code class="php">&lt;?php
-$str = trim(html_entity_decode("&amp;nbsp;X&amp;nbsp;"));
-echo (strcmp($str, 'X') == 0) ? 'ok' : 'oops';
-</code></pre>
-
-<p>쉽게 생각하면 &lsquo;ok'가 나올것 같지만 위에 설명했던 것과 같이 'oops'가 나온다. 그럼 어떻게 해결을 해야할까?</p>
-
-<p>메뉴얼에서 ASCII code 160 (0xa0)로 변경된다고 하니 이것을 참고해서 조금 고쳐보자.</p>
-
-<pre><code class="php">&lt;?php
-$str = trim(str_replace("\xa0", "", html_entity_decode("&amp;nbsp;X&amp;nbsp;")));
-echo (strcmp($str, 'X') == 0) ? 'ok' : 'oops';
-</code></pre>
-
-<p>이제 해결이 되었을까? 아니다. 결과는 oops이다.(사실 default_charset에 따라 ok가 나올 수도 있다.) 이유는 위에 메뉴얼에 있다.
-&lsquo;default ISO 8859-1&rsquo; 인코딩일 때 0xa0로 변환된다고 되어 있다. 사실 나의 환경은 &lsquo;UTF-8'이다. 대부분 그럴 것이라고 생각한다. 일단 맞는지 확인해 보자. 아래와 같이 default_charset을 ISO-8859-1에 맞추고 실행해보자.</p>
-
-<pre><code class="php">&lt;?php
-$str = trim(str_replace("\xa0", "", html_entity_decode(iconv('UTF-8', 'ISO-8859-1', "&amp;nbsp;X&amp;nbsp;"))));
-echo (strcmp($str, 'X') == 0) ? 'ok' : 'oops';
-</code></pre>
-
-<p>결과는 메뉴얼대로 &lsquo;ok&rsquo; 이다. 그럼 &lsquo;UTF-8'에서는 어떻게 하나? 아래의 코드를 보자.</p>
-
-<pre><code class="php">&lt;?php
-$str = trim(str_replace("\xc2\xa0", "", html_entity_decode("&amp;nbsp;X&amp;nbsp;")));
-echo (strcmp($str, 'X') == 0) ? 'ok' : 'oops';
-</code></pre>
-
-<p>드디어 &lsquo;ok'가 나온다. 중요한 차이는 &ldquo;\xc2\xa0&rdquo; 이다. UTF-8에서는 &ldquo;\xc2\xa0"는 <a href="http://www.utf8-chartable.de/unicode-utf8-table.pl?start=128&amp;number=128&amp;utf8=string-literal&amp;unicodeinhtml=hex">UTF-8 encoding table and Unicode characters</a>에서 확인해보면 UTF-8에서의 "NO-BREAK SPACE"라고 되어 있다.</p>
-
-<p>참 별것 아닌것 같은 함수가 잘모르고 사용하다보면 예상치 못한 문제들을 일으킨다. 사실 <code>&amp;nbsp;</code>만 처리하면 된다면 더 간단하게 <code>str_replace('&amp;nbsp;', ' ', $str)</code>로 해결해도 된다. 하지만 프로그램에선 항상 어떤 값이 들어올지 모르는 것이니 보다 명확하게 처리하는 것이 낫지 않을까?</p>
 ]]></content>
   </entry>
   

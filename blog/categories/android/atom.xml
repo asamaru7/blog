@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-17T16:52:28+09:00</updated>
+  <updated>2015-09-17T20:47:54+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,71 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[PHP의 DateTime을 Java (Android)로 전달하기]]></title>
+    <link href="http://blog.asamaru.net/2015/09/17/datetime-from-php-to-java-android/"/>
+    <updated>2015-09-17T18:45:26+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/17/datetime-from-php-to-java-android</id>
+    <content type="html"><![CDATA[<p>안드로이드 앱을 개발하게되면 많은 경우에 서버와의 데이터 연결이 필요하다. 대부분의 데이터 타입은 이 과정에서 큰 문제를 일으키지 않는다(데이터 타입만 명확히 한다면). 하지만 DateTime은 조금 까다로울 수 있다. 프로그램에서 시간은 TimeZone을 가지고 있기 때문에 이 부분을 명확히 하지 않으면 의도치 않은 시간으로 표시된다. 게다가 형식이 맞지 않는다면 제대로 전달되지 않을 수도 있다.</p>
+
+<blockquote><p>네이버 D2에 있는 <a href="http://d2.naver.com/helloworld/645609">Java의 날짜와 시간 API</a>를 보면 Java에서의 Date 처리가 불편하다는 얘기가 있다.</p></blockquote>
+
+<p>이번 작업에서는 서버는 PHP를 사용하고 있는 상황이었고 클라이언트는 <a href="http://androidannotations.org/">AndroidAnnotations</a>의 <a href="https://github.com/excilys/androidannotations/wiki/Rest-API#rest">Rest-API</a>를 사용했다. 수신 데이터의 파싱은 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>를 사용하는 상황이다. 이 글의 주제에서 벗어나므로 <a href="http://androidannotations.org/">AndroidAnnotations</a>나 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>에 대한 부분은 설명하지 않겠다.</p>
+
+<p>GsonHttpMessageConverter를 사용해서 데이터를 파싱하는 경우 대상이되는 class의 멤버변수의 데이터 타입에 맞추어 데이터를 채워준다. 당연히 전송되는 데이터가 JSON 형식이어야 한다. 다른 데이터 타입의 경우 앞서 설명한 것과 같이 데이터 타입만 맞춰준다면 아주 쉽게 데이터를 받을 수 있다(그것이 이것을 사용하는 주요 목적이다). 그런데 DateTime 타입은 조금 신경을 써줘야 한다.</p>
+
+<p>자 그럼 서버에서 데이터를 보낼 수 있는 방법에 어떤 것이 있을까? 가장 일반적인 방법으로는 timestamp(int), string, Date가 있다. 어떤 것을 쓰더라도 무방하지만 앞서 얘기한 것처럼 GsonHttpMessageConverter를 써서 간단히 데이터를 정확한 형식으로 받는 것이 편리하기 때문에 전송시 데이터 타입을 맞추는 것이 좋다.</p>
+
+<pre><code class="php">// string 타입으로 전송
+$date = "2015-09-17 10:00:00";
+// int 타입으로 전송
+$date = (new \DateTime("2015-09-17 10:00:00"))-&gt;getTimestamp();
+// Date 타입으로 전송
+$date = (new \DateTime("2015-09-17 10:00:00"))-&gt;setTimeZone(new \DateTimeZone('UTC'))-&gt;format('Y-m-d\TH:i:s\Z');
+</code></pre>
+
+<p>위의 코드를 보면 PHP에서 전송할 때 넘겨줄 데이터의 예시를 타입별로 제시했다. 앞서 강조했던대로 안드로이드 클라이언트에서 GsonHttpMessageConverter를 이용해 Date 타입으로 바로 받으려면 마지막에 있는 &ldquo;Date 타입으로 전송&rdquo; 방식을 사용하면 된다.</p>
+
+<p>해당 부분을 보면 두가지 처리를 해주고 있다. 첫번째로 TimeZone을 설정한 것이고, 두번째로 Date Format을 지정한 것이다. 사실 이 부분들을 잘 몰라서 삽질을 조금 했었다. 처음엔 Date Format을 어떻게 전달해야할지 몰라 해맸다. 제대로 수신을 하지 못했던 것이다. Format을 맞추고 나니 이젠 보낸 시간과 받은 시간이 달랐다. 이 부분은 TimeZone의 문제이므로 TimeZone을 지정해서 해결했다. TimeZone에 사용한 UTC는 <a href="https://ko.wikipedia.org/wiki/%ED%98%91%EC%A0%95_%EC%84%B8%EA%B3%84%EC%8B%9C">협정 세계시</a>라는 뜻이다. 이것과 세트로 format에서 끝에 \Z를 붙여 데이터가 <a href="https://ko.wikipedia.org/wiki/ISO_8601">ISO 8601</a>에 따라 UTC를 따르고 있음을 표시한 것이다.</p>
+
+<p>결론적으로 위의 형식을 사용하면 GSON으로 바로 받아도 정확한 시간을 사용할 수 있다.</p>
+
+<p>사실 위의 경우는 GsonHttpMessageConverter를 사용한다는 상황을 가정한 것으로 이것을 사용하지 않고 직접 데이터를 받아 GSON을 통해 파싱한다면 아래의 방법을 쓸 수도 있다. Format을 보면 알겠지만 UTC Date여야 한다(정확한 시간 처리를 위해). &ldquo;yyyy-MM-dd HH:mm:ss"이 Format을 쓸 수도 있으나 TimeZone 명시되지 않으므로 시간이 다르게 보일 수 있다.</p>
+
+<pre><code class="java">Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
+</code></pre>
+
+<p>아래는 추가적으로 다른 타입으로 수신했을 때 안드로이드 클라이언트에서 Date 타입으로 변환하고자 할때 사용할 수 있는 참고 코드들이다.</p>
+
+<p><strong> string 타입으로 수신시 </strong>
+<code>java
+try {
+    String dateTime = "2015-09-17 10:00:00";
+    SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
+    Date date = dateParser.parse(dateTime);
+} catch (ParseException e) {
+    e.printStackTrace();
+}
+</code></p>
+
+<p><strong> timestamp(int) 타입으로 수신시 </strong></p>
+
+<p>PHP에서의 TimeStamp는 초단위(s)지만 Java에서는 밀리초(ms) 단위이므로 1000을 곱해서 넣어 주어야 한다.
+그리고 Java에서는 Date가 Deprecated되어 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>를 더 권장한다고 한다. <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Date.html">정확하게는 완전히 Deprecated된 것은 아니고 일부 생성자가 그렇다는 것</a>이지만 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>가 더 다양한 기능을 제공하므로 더 권장된다는 것이다. 자세한 이유는 검색해보면 많이 나온다.</p>
+
+<pre><code class="java">// Calendar 사용
+Calendar c = Calendar.getInstance();
+c.setTimeInMillis(timestamp * 1000);
+Date date = c.getTime();
+
+// OR
+
+// Date 사용
+Date d = new Date(timestamp * 1000);
+</code></pre>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[안드로이드에서 구글맵 사용시 맵의 보여지는 영역의 좌표를 원하는 pixel만큼 제외하고 가져오기]]></title>
@@ -290,55 +355,6 @@ shell@hltelgt:/ $ exit
 
 <pre><code class="bash">adb -s &lt;DEVICE_IP_ADDRESS&gt;:5555 usb
 </code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[안드로이드에서 Dialog 사용시 WindowManager$BadTokenException 발생]]></title>
-    <link href="http://blog.asamaru.net/2015/09/04/android-dialog-windowmanager-badtokenexception/"/>
-    <updated>2015-09-04T20:49:21+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/04/android-dialog-windowmanager-badtokenexception</id>
-    <content type="html"><![CDATA[<p>안드로이드에서는 거의 모든 작업에 context를 사용한다. 그런데 이 context는 크게 application contet와 activity context가 있다. 문제는 사용시에 구분해서 사용하지 않는다는 것이다. 명시적으로 특정 context를 요구하지 않는다. 이로 인해 많은 혼란이 있고 crash도 많이 발생한다.</p>
-
-<p>사실 오류를 줄이려면 가능한한 activity context를 사용하는 것이 좋다.(경험상&hellip;) 하지만 안드로이드에서는 가급적 application context를 사용하기를 권장한다.</p>
-
-<p>가장 대표적인 이유는 메모리릭 때문이다. 메모리릭에 대한 문제는 context의 종류에 직접적인 관련이 있는 것은 아니나 activity 내부에서 객체를 생성하면서 자신을 context로 넘겨줄 경우 순환참조 등의 이유로 객체가 소멸하지 못할 수 있다. 메모리릭 문제는 상상보다 더 다양한 경우에 발생하는데 여기서 논하고자하는 범위를 벋어나니 일단 넘어가자. 사실 검색해 보면 많은 자료가 있다.
-어쨌든 생성된 객체가 죽지 못한다면 activity도 소멸하지 못하므로 대량의 메모리 점유를 경험하게 될 수 있다. 당연히 앱이 크지 않다면 OOM(Out Of Memory)을 쉽게 만나지는 않을 것이다.
-사설이 길었는데 어쨌든 이러한 이유로 나는 가급적 application context를 사용하려고 한다.
-문제는 여기서 시작되었다.</p>
-
-<p>기존에 WebView를 생성할 때는 activity를 넘겨주었었다. 이 코드를 얼마전 확인하고 application context로 변경했다. 그리고 빌드, 실행. 문제가 없었다. 잘 나왔다. 안심했다.</p>
-
-<p>그런데 오늘 동료 직원이 이상한 부분이 있다고 확인을 요청했다.</p>
-
-<blockquote><p>WebView 내부에 있는 select box를 터치하면 앱이 죽는다.</p></blockquote>
-
-<p>처음엔 뭔가 했다. 그런데 오류를 확인하니 다음과 같았다.</p>
-
-<pre><code>W/System.err﹕ android.view.WindowManager$BadTokenException: Unable to add window -- token null is not for an application
-W/System.err﹕ at android.view.ViewRootImpl.setView(ViewRootImpl.java:691)
-W/System.err﹕ at android.view.WindowManagerGlobal.addView(WindowManagerGlobal.java:288)
-W/System.err﹕ at android.view.WindowManagerImpl.addView(WindowManagerImpl.java:69)
-W/System.err﹕ at android.app.Dialog.show(Dialog.java:312)
-W/System.err﹕ at org.chromium.content.browser.input.SelectPopupDialog.show(SelectPopupDialog.java:133)
-W/System.err﹕ at org.chromium.content.browser.ContentViewCore.showSelectPopup(ContentViewCore.java:2437)
-W/System.err﹕ at org.chromium.base.SystemMessageHandler.nativeDoRunLoopOnce(Native Method)
-W/System.err﹕ at org.chromium.base.SystemMessageHandler.handleMessage(SystemMessageHandler.java:53)
-W/System.err﹕ at android.os.Handler.dispatchMessage(Handler.java:102)
-W/System.err﹕ at android.os.Looper.loop(Looper.java:145)
-W/System.err﹕ at android.app.ActivityThread.main(ActivityThread.java:5942)
-W/System.err﹕ at java.lang.reflect.Method.invoke(Native Method)
-W/System.err﹕ at java.lang.reflect.Method.invoke(Method.java:372)
-W/System.err﹕ at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:1399)
-</code></pre>
-
-<p>이런 Dialog를 생성하려는 시점에서 context가 적절하지 못하다. 그렇다. WebView에서 select box를 선택하면 앱의 경우는 선택 dialog가 자동으로 뜬다. 이때 이 dialog를 생성할 때 WebView 생성시 넣어 줬던 context를 사용하는 것이다.</p>
-
-<p>아&hellip; 그럼 처음부터 application context를 넣지 못하도록 하던지&hellip; 정말 안드로이드는 누가 설계 했는지 너무 엉망이다. UIThread 문제, Network Main Thread 문제.. 등등 상식적으로 해결 방법이 있을 법한데 모두 개발자가 알아서 하란다. 이런&hellip;</p>
-
-<p>어쨌든 Dialog 생성시에는 activity context를 사용해야 한다. 일반 dialog는 테스트시에 바로 표시가 나니 금방 고칠 수 있지만 이런 경우는 참 난해하다.</p>
-
-<p>결론은 WebView 생성시에는 activity context를 넣자.</p>
 ]]></content>
   </entry>
   

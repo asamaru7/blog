@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-17T20:47:54+09:00</updated>
+  <updated>2015-09-18T10:20:35+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,236 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[AutoCompleteAdapter(ArrayAdapter with Filterable) : The content of the adapter has changed but ListView did not receive a notification]]></title>
+    <link href="http://blog.asamaru.net/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/"/>
+    <updated>2015-09-18T09:48:32+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification</id>
+    <content type="html"><![CDATA[<p>AppCompatAutoCompleteTextView를 사용하고자 할때 필요한 것이 데이터를 넘겨주는 Adapter이다. 단, 이 Adepter는 <code>extends ListAdapter &amp; Filterable</code> 가 적용되어야 한다. 그래서 보통은 <code>public class StringAutoCompleteAdapter extends ArrayAdapter&lt;String&gt; implements Filterable</code> 형태의 구현을 많이 사용한다. 그리고 대부분의 경우에 AutoCompleteTextView를 사용하는 이유는 검색어 자동완성 등에 사용되고 이 데이터는 서버에서 데이터를 호출해서 적용하도록 한다.</p>
+
+<p>위에 설명한 내용대로 하나의 예시를 보면 아래와 같다(미리 설명하자면 아래의 예제는 잘못된 예제이다. 생각지 못한 오류를 비주기적으로 만나게 된다).</p>
+
+<pre><code class="java">package net.asamaru.android.test;
+
+import android.content.Context;
+import android.widget.ArrayAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+
+public class StringAutoCompleteAdapter extends ArrayAdapter&lt;String&gt; implements Filterable {
+    private List&lt;String&gt; resultList;
+
+    public StringAutoCompleteAdapter(Context context, int textViewResourceId) {
+        super(context, textViewResourceId);
+    }
+
+    @Override
+    public int getCount() {
+        return resultList.size();
+    }
+
+    @Override
+    public String getItem(int index) {
+        if ((resultList.size() - 1) &gt;= index) {
+            return resultList.get(index);
+        }
+        return null;
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                FilterResults filterResults = new FilterResults();
+                if (constraint != null) {
+                    resultList = autocomplete(constraint.toString());
+                    if (resultList != null) {
+                        filterResults.values = resultList;
+                        filterResults.count = resultList.size();
+                    }
+                }
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                if (results.count &gt; 0) {
+                    notifyDataSetChanged();
+                } else {
+                    notifyDataSetInvalidated();
+                }
+            }
+        };
+    }
+
+    public ArrayList&lt;String&gt; autocomplete(String input) {
+        HttpURLConnection conn = null;
+        StringBuilder jsonResults = new StringBuilder();
+        try {
+            URL url = new URL("http://www.abc.com/search/?kwd=" + URLEncoder.encode(input, "utf8"));
+            conn = (HttpURLConnection) url.openConnection();
+            InputStreamReader in = new InputStreamReader(conn.getInputStream());
+            int read;
+            char[] buff = new char[1024];
+            while ((read = in.read(buff)) != -1) {
+                jsonResults.append(buff, 0, read);
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+        }
+        return (new Gson()).fromJson(jsonResults.toString(), new TypeToken&lt;ArrayList&lt;String&gt;&gt;() {}.getType());
+    }
+}
+</code></pre>
+
+<p>위의 예제를 보면 얼핏봐서는 문제가 없어 보인다. 실제로 동작도 잘된다. 하지만 아주 낮은 빈도로 Exception이 발생해 앱이 죽는다. 이 문제로 인하여 원인을 찾지못해 고생하는 경우가 많다. 내가 작업하면서 발생했던 오류는 다음과 같다.</p>
+
+<ul>
+<li>The content of the adapter has changed but ListView did not receive a notification.</li>
+<li>java.lang.NullPointerException: Attempt to invoke virtual method &lsquo;java.lang.String java.lang.Object.toString()&rsquo; on a null object reference</li>
+</ul>
+
+
+<p>내부적 동작 코드들을 보면 이 외에도 View의 구성이나 기타 코딩에 따라 다른 오류가 날 수도 있을 것 같다. 하지만 원인은 대부분 아래의 부분 때문이다(정확하게는 저 부분에서 오류가 나는 것이 아니라 저 부분이 들어간 위치 때문에 다른 부분에서 오류가 난다).</p>
+
+<pre><code class="java">resultList = autocomplete(constraint.toString());
+</code></pre>
+
+<p>이유를 설명하자면 Filter의 performFiltering() 함수는 백그라운드 쓰레드에서 동작하도록 되어 있다. 그런데 이 함수 안에서 Adapter의 데이터를 변경하는 코드가 들어있기 때문에 Adapter가 데이터의 변경을 확인하는 시점과 notify 되는 시점이 엉킬 경우 오류를 내게 된다. 따라서 타이밍에 따라서 오류가 발생하기도 안하기도 하는 것이다(나의 경우는 키워드를 입력하거나 지우는 등의 변경이 빠르게 반복될 때 데이터의 변경이 빈번히 반복되면서 오류가 나타났다). 실제로 오류를 재현하기가 어려울 정도로 잘 안나오는 경우도 있었다.</p>
+
+<p>그럼 잘못된 예제와 오류, 원인을 알아봤으니 정확한 처리 예시를 보자.</p>
+
+<pre><code class="java">package net.asamaru.android.test;
+
+import android.content.Context;
+import android.widget.ArrayAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+
+public class StringAutoCompleteAdapter extends ArrayAdapter&lt;String&gt; implements Filterable {
+    private List&lt;String&gt; resultList;
+
+    public StringAutoCompleteAdapter(Context context, int textViewResourceId) {
+        super(context, textViewResourceId);
+    }
+
+    @Override
+    public int getCount() {
+        return resultList.size();
+    }
+
+    @Override
+    public String getItem(int index) {
+        if ((resultList.size() - 1) &gt;= index) {
+            return resultList.get(index);
+        }
+        return null;
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                FilterResults filterResults = new FilterResults();
+                ArrayList&lt;String&gt; queryResults;
+                if ((constraint != null) &amp;&amp; (constraint.length() != 0)) {
+                    queryResults = autocomplete(constraint.toString());
+                } else {
+                    queryResults = new ArrayList&lt;&gt;();
+                }
+                filterResults.values = queryResults;
+                filterResults.count = queryResults.size();
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                // noinspection unchecked
+                resultList = (ArrayList&lt;String&gt;) results.values;
+                if (results.count &gt; 0) {
+                    notifyDataSetChanged();
+                } else {
+                    notifyDataSetInvalidated();
+                }
+            }
+        };
+    }
+
+    public ArrayList&lt;String&gt; autocomplete(String input) {
+        HttpURLConnection conn = null;
+        StringBuilder jsonResults = new StringBuilder();
+        try {
+            URL url = new URL("http://www.abc.com/search/?kwd=" + URLEncoder.encode(input, "utf8"));
+            conn = (HttpURLConnection) url.openConnection();
+            InputStreamReader in = new InputStreamReader(conn.getInputStream());
+            int read;
+            char[] buff = new char[1024];
+            while ((read = in.read(buff)) != -1) {
+                jsonResults.append(buff, 0, read);
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+        }
+        return (new Gson()).fromJson(jsonResults.toString(), new TypeToken&lt;ArrayList&lt;String&gt;&gt;() {}.getType());
+    }
+}
+</code></pre>
+
+<p>주요 변경 지점은 <code>getFilter()</code>이다. 기존에 <code>resultList = autocomplete(constraint.toString());</code> 부분을 통해 미리 Adapter의 데이터를 변경하던 것을 publishResults로 옮긴 것이다. 그리고 검색된 결과가 없더라도 빈 ArrayList를 만들어 넣어준 것이다.
+코드 상으로는 큰 차이가 나지않고 굳이 이렇게 해야하나 싶지만 내부 동작 방식을 보면 이렇게 하지 않으면 앞서 설명한 것과 같이 예기치 못한 상황을 만날 수 있다.</p>
+
+<p><strong>첨언 :</strong></p>
+
+<ul>
+<li>안드로이드는 조금만 잘못써도 오류가 발생하는 이런 경우를 많이 보게 되는데 아위운 점은 정확한 사용법을 제시하는 메뉴얼을 찾기 어렵다는 것이다.</li>
+<li>코드 중간에 보면 <code>// noinspection unchecked</code> 부분이 있는데 크게 중요한 부분은 아니지만 이 부분을 제외하면 warning이 뜬다(안드로이드 스튜디오에서 노란 밑줄). 이 warning을 안드로이드 스튜디오에서 숨기는 역할을 하는 코드다.</li>
+</ul>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[PHP의 DateTime을 Java (Android)로 전달하기]]></title>
@@ -293,68 +523,6 @@ ImageView image = findView(R.id.imageview);
 </code></pre>
 
 <p>사실 별차이 아니다. 하지만 작업 해본 사람은 안다. Type Casting을 일일이 넣는게 얼마나 귀찮은지.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[안드로이드 스튜디오에서 WIFI로 Run/Install/Debug 하기]]></title>
-    <link href="http://blog.asamaru.net/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi/"/>
-    <updated>2015-09-07T20:43:33+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi</id>
-    <content type="html"><![CDATA[<p>이제 안드로이드 개발을 시작한지 6개월 가량 된 것 같다. 나이 주 개발 영역은 웹이다. 프론드/백엔드, 서버 등등 웹에 관련된 일을 주로하며 예전엔 아이폰 개발도 일부 했었다. 하지만 회사 업무로 인해 안드로이드를 시작하게 되었고 6개월이나 했음에도 아직 초보를 벗어나지 못한 것 같다. 불필요한 사설이 길었지만 6개월간 왜 불편함을 그냥 당연하게 생각하고 작업을 했는지 안타깝다.</p>
-
-<p>어제는 불현듯 책생 위에 널브러져 케이블들을 보며 이걸 없앨 수 없나? 라는 생각이 들었다. 내 책상 위에는 아이폰이 3개, 안드로이드 폰이 2개, 충전선 등이 있다. 굳이 다 필요하진 않지만&hellip;
-그래서 찾아봤다. 안드로이드 빌드 후 실행을 케이블 없이 할 수 있는가? 결과는 있다. 아 왜 진작 찾아보지 않았던가? 사실은 선 정리보다 더 중요한 문제가 있었다. 안드로이드 연결 케이블이 불안정한 것이다. adb에 붙었다 떨어졌다 하는 현상이 사용하는 케이블에 따라 상태가 천차만별이었다. 정말 안드로이드는 맘에 안든다.</p>
-
-<p>이제 정말 각설하고 본론을&hellip;</p>
-
-<p>일단 이 방법에서의 최대 단점은 최초 연결시에는 USB 케이블이 필요하다는 것이다. 그리고 같은 망으로 연결되어야 한다는 점.</p>
-
-<h3>1. 일단 기존처럼 USB로 안드로이드폰을 연결한다.</h3>
-
-<h3>2. Shell을 열어 기기가 연결된 것을 확인한다. (사실 이 단계는 확인단계로 그냥 건너뛰어도 된다.)</h3>
-
-<pre><code class="bash">$ adb devices -l
-
-List of devices attached
-6a1d4134               device usb:4245815296X product:hltelgt model:SM_N900L device:hltelgt
-</code></pre>
-
-<h3>3. 연결된 기기의 IP를 확인한다. adb shell 실행 후 shell이 뜨면 netcfg 입력. exit로 종료.</h3>
-
-<pre><code class="bash">$ adb shell
-
-shell@hltelgt:/ $ netcfg
-
-rev_rmnet1 DOWN                                   0.0.0.0/0   0x00001002 2e:80:5c:86:19:5f
-...
-sit0     DOWN                                   0.0.0.0/0   0x00000080 00:00:00:00:00:00
-p2p0     UP                                     0.0.0.0/0   0x00001003 ca:14:79:ea:48:5f
-lo       UP                                   127.0.0.1/8   0x00000049 00:00:00:00:00:00
-wlan0    UP                             192.168.219.101/24  0x00001043 c8:14:79:ea:48:5f
-
-shell@hltelgt:/ $ exit
-</code></pre>
-
-<h3>4. adb를 통해 포트 5555(원하는 포트)로 변경한다.</h3>
-
-<pre><code class="bash">$ adb tcpip 5555
-</code></pre>
-
-<h3>5. 기기 IP를 통해서 연결</h3>
-
-<pre><code class="bash">$ adb connect &lt;DEVICE_IP_ADDRESS&gt;:5555
-</code></pre>
-
-<p>끝이다. 이제는 USB에서 기기를 분리해도 된다.
-이제부터는 안드로이드 스튜디오에서 빌드를 하고 실행하려고 하면 원격으로 연결된 기기가 뜬다.</p>
-
-<p>아직 많이 써보진 않았지만 아무래도 직접 USB로 연결한 것 보다는 조금 느린 것 같긴하다. 하지만 계속 션으로 연결하지 않아도 된다는 것으로 만족.</p>
-
-<p>마지막으로 리모트 연결을 다시 USB 연결로 바꾸는 방법</p>
-
-<pre><code class="bash">adb -s &lt;DEVICE_IP_ADDRESS&gt;:5555 usb
-</code></pre>
 ]]></content>
   </entry>
   

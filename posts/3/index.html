@@ -138,6 +138,93 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-03T18:48:08+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.03</time>
+        
+           | <a href="/2015/09/03/android-http-ping/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/03/android-http-ping/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/03/android-http-ping/" itemprop="url">안드로이드에서 android.os.NetworkOnMainThreadException을 발생시키지 않고 HTTP Ping 보내기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>오늘은 작업을 하던 중간에 서버로 ping을 보내야 하는 작업이 생겼다. 정확하게는 서버에 간단한 값을 전송해서 로그로 쌓기 위한 작업이다.
+우선 안드로이드는 main thread에서 network 작업을 할 수 없도록 되어있다. 억지로 하려고하면 android.os.NetworkOnMainThreadException이 발생한다.</p>
+
+<p>간단히 생각해서 handler를 사용하는 방법도 있으나 메인 handler를 사용하면 마찬가지다.
+그래서 가장 간단한 방법은 AsyncTask를 사용하는 것이다.</p>
+
+<p>아래는 url을 인자로 받아 http로 접속한 후 response가 200이 나왔는지를 반환한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">static</span> <span class="kd">class</span> <span class="nc">HttpPingAsyncTask</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Boolean</span><span class="o">&gt;</span> <span class="o">{</span>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">protected</span> <span class="n">Boolean</span> <span class="nf">doInBackground</span><span class="o">(</span><span class="n">String</span><span class="o">...</span> <span class="n">urls</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">try</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">HttpURLConnection</span><span class="o">.</span><span class="na">setFollowRedirects</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span><span class='line'>            <span class="n">HttpURLConnection</span> <span class="n">con</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="k">new</span> <span class="nf">URL</span><span class="o">(</span><span class="n">urls</span><span class="o">[</span><span class="mi">0</span><span class="o">]).</span><span class="na">openConnection</span><span class="o">();</span>
+</span><span class='line'>            <span class="n">con</span><span class="o">.</span><span class="na">setRequestMethod</span><span class="o">(</span><span class="s">&quot;HEAD&quot;</span><span class="o">);</span>
+</span><span class='line'>            <span class="k">return</span> <span class="o">(</span><span class="n">con</span><span class="o">.</span><span class="na">getResponseCode</span><span class="o">()</span> <span class="o">==</span> <span class="n">HttpURLConnection</span><span class="o">.</span><span class="na">HTTP_OK</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>사용법은 다음과 같다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">(</span><span class="k">new</span> <span class="nf">HttpPingAsyncTask</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">url</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>이는 가장 간단한 형태로 구현된 코드로 할 수 있는 일이 url을 호출하고 응답을 확인하는 것 밖에 없다. 하지만 조금만 응용하면 여러가지로 활용할 수 있다.
+url에 GET 인자로 전달하고자 하는 값을 넘기고 서버에서는 해당 값을 로그로 남기거나 필요한 처리를 한다. 그리고 정상처리가 되었다면 200을 반환하고 실패하면 500을 반환함으로써 처리 결과를 알 수 있다. 이러한 형태를 이용하면 간단한 구현으로 여러가지 일을 할 수 있다.</p>
+
+<p>또한 위의 코드에 필요한 기능을 조금씩 덧붙이면 보다 다양한 일을 할 수 있는 코드를 만들수도 있을 것이다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-02T21:49:21+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.02</time>
         
            | <a href="/2015/09/02/decoding-byte-escaped-strings-in-php/#disqus_thread" itemprop="discussionUrl"
@@ -167,7 +254,7 @@
 
 <p>이 문장을 decode 하려면 다음의 코드를 참조하면 된다. (인터넷에서 다른 소스를 참조해서 조금 개선했다.)</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -189,7 +276,7 @@
 <p>어땠든 이렇게 decode를 했는데도 글자가 깨졌다. 이런&hellip; 문자열이 UTF-8이 아니라 EUC-KR이다.
 그래서 조금더 추가. 여기서 UHC는 euc-kr과 거의 유사하다. 조금 더 확장되었다고 알고있는데 오래전 기억이라 확실치 않다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -218,7 +305,7 @@
 <p>이왕 이 일로 글을 적는 김에 몇가지 함수도 덤으로&hellip;
 php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등을 사용하면되나 javascript에서 인코딩된 문자열을 그대로 전달받는 경우 등에 사용할 수 있다. 쉽게 말해서 javascript 문자열 인코딩 함수 php 대응 함수다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -406,7 +493,7 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
 
 <p><a href="http://stackoverflow.com/questions/3301635/change-private-static-final-field-using-java-reflection">http://stackoverflow.com/questions/3301635/change-private-static-final-field-using-java-reflection</a></p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -569,7 +656,7 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
 </ul>
 
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -637,7 +724,7 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
 
 <p>그리고는 정상적으로 적용이 되는지 확인.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -658,7 +745,7 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
 
 <p>하지만 오류.. 이런.. 불친절하게 어디가 문제인지 명확히 알려주지 않는다. 무작정 소스를 봤다. ruby를 아예 모르는 관계로 봐도 모르겠다. 하지만 nil 오류라고 하니 값이 없는 것이 문제라는 생각에 의심되는 부분들을 보다가 발견한 부분..</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -687,7 +774,7 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
 
 <p>다시 시도.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake generate
 </span></code></pre></td></tr></table></div></figure>
 
@@ -828,7 +915,7 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
 <p>함수는 아래와 같이 구성되어 있다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -849,7 +936,7 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
 <p>실제사용은</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ContextCompat</span><span class="o">.</span><span class="na">getColor</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">resourceId</span><span class="o">);</span>
 </span></code></pre></td></tr></table></div></figure>
 
@@ -859,7 +946,7 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 <p>추가로 보다 더 이전에 deprecated된 함수 getDrawable()가 있다. 이건 정확하지 않지만 API 21부터 deprecated 된 것 같다.
 이 문제도 동일한 class를 통해 해결 가능하다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -883,14 +970,14 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
 <p>마지막으로 PhoneNumberUtils.formatNumber 함수 예기만 하나더 하자면</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">static</span> <span class="n">String</span> <span class="nf">formatNumber</span><span class="o">(</span><span class="n">String</span> <span class="n">source</span><span class="o">);</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
 <p>이 함수도 deprecated 되었다. 이제는 두번째 인자로 포멧팅할 국가 코드를 넣어야 한다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">PhoneNumberUtils</span><span class="o">.</span><span class="na">formatNumber</span><span class="o">(</span><span class="n">number</span><span class="o">,</span> <span class="s">&quot;KR&quot;</span><span class="o">);</span>
 </span></code></pre></td></tr></table></div></figure>
 
@@ -899,7 +986,7 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 개인적인 생각으로 두번째 인자를 생략하면 기존처럼 국가코드를 자동으로 넣으면 되지 않는가? 일부 다국어 지원 앱에서 조금더 명확한 사용을 하기 위해 대다수의 단일국가 지원 앱들이 불편을 감수해야하는가?
 다음이 기존함수이다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -916,7 +1003,7 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
 <p>보다시피 <code>Locale.getDefault()</code> 부분을 넣어주고 있었다. 어쨌든 나는 아래와 같은 호환 함수를 만들어서 사용하고 있다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -976,7 +1063,7 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
   <div class="entry-content clearfix" itemprop="articleBody description"><p>일반적으로 ViewPager 사용시 layout xml에서 정의해서 사용한다.
 하지만 간혹 필요에 따라 ViewPager을 프로그램으로 생성해서 사용하는 경우 있다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ViewPager</span> <span class="n">viewPager</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ViewPager</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
 </span><span class='line'><span class="n">viewPager</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="n">Helper</span><span class="o">.</span><span class="na">generateViewId</span><span class="o">());</span>
@@ -985,7 +1072,7 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
 <p>그런데 이렇게 사용할 경우 아래와 같은 오류를 만나게 된다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -1020,7 +1107,7 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
 <p>그래서 아래처럼 해봤다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ViewPager</span> <span class="n">viewPager</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ViewPager</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
 </span><span class='line'><span class="n">viewPager</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
@@ -1030,7 +1117,7 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 <p>하지만 그렇게 간단히 해결되면 안드로이드가 아니지&hellip;
 그래서 다음과 같은 방법으로 id를 생성해 주어야 한다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -1081,7 +1168,7 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
 
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ViewPager</span> <span class="n">viewPager</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ViewPager</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
 </span><span class='line'><span class="n">viewPager</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="n">IdGen</span><span class="o">.</span><span class="na">generateViewId</span><span class="o">());</span>
@@ -1133,7 +1220,7 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
 <p>이제 배포를 하려고 rake deploy를 하니 아래와 같은 오류가 나타났다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -1152,14 +1239,14 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
 <p>구글에서 검색해서 여러가지 방법들을 따라 시도해도 진행이 되지 않다가 발견한 stackoverflow에서 강제 업데이트하는 방법을 안내하고 있었다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>vi Rakefile
 </span></code></pre></td></tr></table></div></figure>
 
 
 <p>Rakefile을 열어 deploy_branch로 검색하다 보면 아래와 같은 부분을 볼 수 있다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -1207,14 +1294,14 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 <p>여기서 고칠 부분은 <code>Bundler.with_clean_env { system "git push origin #{deploy_branch}" }</code> 이 부분이다.
 <code>#{deploy_branch}"</code> 앞에 +를 붙여준다.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Bundler</span><span class="o">.</span><span class="n">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">&quot;git push origin </span><span class="si">#{</span><span class="n">deploy_branch</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
 <p>이제 저장후 나와서 다시 deploy&hellip;</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -1234,291 +1321,6 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
 
 <p>이번엔 gh-pages (forced update) 안내를 보여주며 push 성공.</p>
-</div>
-  
-  
-
-
-        </article>
-      
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-08-19T23:29:26+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.08.19</time>
-        
-           | <a href="/2015/08/19/octopress-install/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/08/19/octopress-install/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/08/19/octopress-install/" itemprop="url">Octopress 설치</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><h1>Octopress 설치</h1>
-
-<p><a href="http://octopress.org/">Octopress</a>는 <a href="http://jekyllrb.com/">Jekyll</a>을 위해 디자인된 프레임워크다.
-Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블로그 사이트를 생성할 수 있다.
-하지만 해커들을 위한 블로깅 프레임워크이라고도 불리는 Jekyll은 사용이 그리 간단하지만은 않다.
-자세한 내용은 검색하면 많이 찾을 수 있으니 그만 넘어가자.</p>
-
-<h2>기본 설치</h2>
-
-<p>Octopress에 안내된 설치방법은 아래의 사이트를 참고하자.
-<a href="http://octopress.org/docs/setup/">http://octopress.org/docs/setup/</a></p>
-
-<p>하지만 위의 설명대로 잘 되지 않는다면 아래의 내용을 참고해 볼수도 있다. 나의 경우엔 설치가 그리 쉽지만은 않았다.</p>
-
-<p>우선 설치 환경은 osx 10.10 기준이다.</p>
-
-<p>이미 git, brew 등은 설치가 되어있었기 때문에 rvm으로 ruby 1.9.3을 설치하려고 했으나 아래와 같은 오류를 만났다.</p>
-
-<h3>오류 : requirements_osx_brew_libs_install gcc49 openssl</h3>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo rvm install 1.9.3
-</span><span class='line'>Searching <span class="k">for</span> binary rubies, this might take some time.
-</span><span class='line'>No binary rubies available <span class="k">for</span>: osx/10.10/x86_64/ruby-1.9.3-p551.
-</span><span class='line'>Continuing with compilation. Please <span class="nb">read</span> <span class="s1">&#39;rvm help mount&#39;</span> to get more information on binary rubies.
-</span><span class='line'>Checking requirements <span class="k">for</span> osx.
-</span><span class='line'>Installing requirements <span class="k">for</span> osx.
-</span><span class='line'>Updating system.....
-</span><span class='line'>Installing required packages: gcc49, openssl....
-</span><span class='line'>Error running <span class="s1">&#39;requirements_osx_brew_libs_install gcc49 openssl&#39;</span>,
-</span><span class='line'>showing last <span class="m">15</span> lines of /Users/yyj/.rvm/log/1439982916_ruby-1.9.3-p551/package_install_gcc49_openssl.log
-</span><span class='line'>++ <span class="k">case</span> <span class="s2">&quot;$1&quot;</span> in
-</span><span class='line'>++ <span class="o">[[</span> -t <span class="m">1</span> <span class="o">]]</span>
-</span><span class='line'>++ <span class="k">return</span> 1
-</span><span class='line'>++ <span class="nb">printf</span> %b <span class="s1">&#39;There were package installation errors, make sure to read the log.</span>
-</span><span class='line'>
-</span><span class='line'><span class="s1">Try `brew tap --repair` and make sure `brew doctor` looks reasonable.</span>
-</span><span class='line'>
-</span><span class='line'><span class="s1">Check Homebrew requirements https://github.com/Homebrew/homebrew/wiki/Installation\n&#39;</span>
-</span><span class='line'>There were package installation errors, make sure to <span class="nb">read </span>the log.
-</span><span class='line'>
-</span><span class='line'>Try <span class="sb">`</span>brew tap --repair<span class="sb">`</span> and make sure <span class="sb">`</span>brew doctor<span class="sb">`</span> looks reasonable.
-</span><span class='line'>
-</span><span class='line'>Check Homebrew requirements https://github.com/Homebrew/homebrew/wiki/Installation
-</span><span class='line'>++ <span class="k">case</span> <span class="s2">&quot;$_system_version&quot;</span> in
-</span><span class='line'>++ <span class="k">return</span> 1
-</span><span class='line'>Requirements installation failed with status: 1.
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>우선 안내에 나온대로 <code>brew tap --repair</code>와 <code>brew doctor</code>를 실행해서 안내하는대로 처리를 완료했음에도 문제는 해결이 되지 않았다.
-그래서 다음과 같이 rvm에서 필요로하는 lib을 먼저 설치했다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rvm get head --autolibs<span class="o">=</span>3
-</span><span class='line'><span class="nv">$ </span>rvm requirements
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>재시도 &hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo rvm install 1.9.3
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번엔 오류가 나지않고 ruby를 다운로드 시작&hellip; 그러나 엄청나게 느림&hellip; 중간에 끊어짐&hellip; 이런&hellip;
-오랜 기다림 끝에 이제 ruby 1.9.3 설치 완료.
-이제 ruby 1.9.3을 사용하도록 하고&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rvm use 1.9.3
-</span><span class='line'><span class="nv">$ </span>rvm rubygems latest
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>그다음은 공식 사이트 설명대로&hellip; 단, Octopress를 clone 받은 경로로 가서&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>gem install bundler
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번엔 그냥 넘아가나 했더니 아래와 같은 오류&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>ERROR:  Could not find a valid gem <span class="s1">&#39;bundler&#39;</span> <span class="o">(</span>&gt;<span class="o">=</span> 0<span class="o">)</span>, here is why:
-</span><span class='line'>          Unable to download data from https://rubygems.org/ - server did not <span class="k">return</span> a valid file <span class="o">(</span>https://rubygems.org/latest_specs.4.8.gz<span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번에도 아래와 같이 하고&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rvm use 1.9.3
-</span><span class='line'>Using /Users/yyj/.rvm/gems/ruby-1.9.3-p551
-</span><span class='line'><span class="nv">$ </span>rvm rubygems latest
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p> 재시도&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>gem install bundler
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번엔 퍼미션 에러&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo gem install bundler
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>드디어 설치.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rbenv rehash <span class="c"># 이건 필요시에만 한다고하니 명령이 없다는 오류가 나면 무시</span>
-</span><span class='line'><span class="nv">$ </span>bundle install
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번에도 <code>bundle install</code>에서 퍼미션 에러&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo bundle install
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>아.. 드디어 기본 설치 완료</p>
-
-<h2>테마설치</h2>
-
-<p>기본 테마 설치</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake install
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>다른 테마를 원한다면 <a href="https://github.com/imathis/octopress/wiki/3rd-Party-Octopress-Themes">https://github.com/imathis/octopress/wiki/3rd-Party-Octopress-Themes</a> 에 가서 고르면 된다.</p>
-
-<p>설치는 다음과 같이</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>git clone https://github.com/~~~.git .themes/테마이름
-</span><span class='line'><span class="nv">$ </span>rake install<span class="o">[</span><span class="s1">&#39;테마이름&#39;</span><span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>octostrap3 테마 적용 예시.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>% git clone https://github.com/kAworu/octostrap3.git .themes/octostrap3
-</span><span class='line'>% rake install<span class="o">[</span><span class="s2">&quot;octostrap3&quot;</span><span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>설정</h2>
-
-<p>아래와 같이 명령을 실행하고 생성해둔 github 프로젝트 주소를 넣으면 설치는 완료된다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake setup_github_pages
-</span><span class='line'>Enter the <span class="nb">read</span>/write url <span class="k">for</span> your repository
-</span><span class='line'><span class="o">(</span>For example, <span class="s1">&#39;git@github.com:your_username/your_username.github.io.git)</span>
-</span><span class='line'><span class="s1">           or &#39;</span>https://github.com/your_username/your_username.github.io<span class="err">&#39;</span><span class="o">)</span>
-</span><span class='line'>Repository url: https://github.com/~~~/~~~.git
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>배포</h2>
-
-<p>아직 작성한 글이 아무것도 없지만 일단 deploy 해본다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake generate
-</span><span class='line'><span class="nv">$ </span>rake deploy
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>deploy를 하고나면 기본적으로 생성해 주는 아주 간단한 index.html 파일이 push되어 있는 것을 볼 수 있다.</p>
-
-<p>이제 페이지가 정상적으로 뜨는지만 확인하면 기본 설치는 모두 완료.</p>
-
-<h2>repository 연결</h2>
-
-<p>블로그는 gh-pages branch로 연결되어 있으니 원소스를 master로 연결하여 백업의 역할을 할 수 있도록 설정해보자.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>git remote add origin https://github.com/~~~/~~~.git
-</span><span class='line'><span class="nv">$ </span>git config branch.master.remote origin
-</span><span class='line'>
-</span><span class='line'><span class="nv">$ </span>git push
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>독립 도메인 연결</h2>
-
-<p>이왕이면 내 도메인도 연결해보자. 아래의 명령은 CNAME 파일을 통해 도메인 연결을 github에 알려주는 것으로 이후 deploy가 될 때 이 파일이 함께 배포되면 적용된다. 단, 도메인을 변경했으므로 이에 맞춰 _config.yml 파일도 함께 수정해야 한다.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s1">&#39;blog.asamaru.net&#39;</span> &gt;&gt; <span class="nb">source</span>/CNAME
-</span></code></pre></td></tr></table></div></figure>
-
 </div>
   
   
@@ -1580,7 +1382,7 @@ Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블�
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (12)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (2)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (4)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (12)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (2)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1589,15 +1391,15 @@ Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블�
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/">AutoCompleteAdapter(ArrayAdapter with Filterable) 사용시 비주기 오류 발생 해결</a>
+    <a class="list-group-item " href="/2015/09/18/google-translate-exclude-words/">구글 번역 사용시 특정 영역을 번역에서 제외하기</a>
+    
+    <a class="list-group-item " href="/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/">AutoCompleteAdapter(ArrayAdapter with Filterable) 사용시 비주기적 오류 발생 해결</a>
     
     <a class="list-group-item " href="/2015/09/17/datetime-from-php-to-java-android/">PHP의 DateTime을 Java (Android)로 전달하기</a>
     
     <a class="list-group-item " href="/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/">안드로이드에서 구글맵 사용시 맵의 보여지는 영역의 좌표를 원하는 pixel만큼 제외하고 가져오기</a>
     
     <a class="list-group-item " href="/2015/09/17/sort-of-strings-that-start-with-numbers-in-mysql/">MySql에서 숫자로 시작하는 문자열의 정렬 문제</a>
-    
-    <a class="list-group-item " href="/2015/09/16/check-for-equality-on-a-mysql-float-field/">MySql에서 folat 필드 동일값 비교</a>
     
   </div>
 </section>

@@ -138,6 +138,101 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-04T20:49:21+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.04</time>
+        
+           | <a href="/2015/09/04/android-dialog-windowmanager-badtokenexception/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/04/android-dialog-windowmanager-badtokenexception/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/04/android-dialog-windowmanager-badtokenexception/" itemprop="url">안드로이드에서 Dialog 사용시 WindowManager$BadTokenException 발생</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드에서는 거의 모든 작업에 context를 사용한다. 그런데 이 context는 크게 application contet와 activity context가 있다. 문제는 사용시에 구분해서 사용하지 않는다는 것이다. 명시적으로 특정 context를 요구하지 않는다. 이로 인해 많은 혼란이 있고 crash도 많이 발생한다.</p>
+
+<p>사실 오류를 줄이려면 가능한한 activity context를 사용하는 것이 좋다.(경험상&hellip;) 하지만 안드로이드에서는 가급적 application context를 사용하기를 권장한다.</p>
+
+<p>가장 대표적인 이유는 메모리릭 때문이다. 메모리릭에 대한 문제는 context의 종류에 직접적인 관련이 있는 것은 아니나 activity 내부에서 객체를 생성하면서 자신을 context로 넘겨줄 경우 순환참조 등의 이유로 객체가 소멸하지 못할 수 있다. 메모리릭 문제는 상상보다 더 다양한 경우에 발생하는데 여기서 논하고자하는 범위를 벋어나니 일단 넘어가자. 사실 검색해 보면 많은 자료가 있다.
+어쨌든 생성된 객체가 죽지 못한다면 activity도 소멸하지 못하므로 대량의 메모리 점유를 경험하게 될 수 있다. 당연히 앱이 크지 않다면 OOM(Out Of Memory)을 쉽게 만나지는 않을 것이다.
+사설이 길었는데 어쨌든 이러한 이유로 나는 가급적 application context를 사용하려고 한다.
+문제는 여기서 시작되었다.</p>
+
+<p>기존에 WebView를 생성할 때는 activity를 넘겨주었었다. 이 코드를 얼마전 확인하고 application context로 변경했다. 그리고 빌드, 실행. 문제가 없었다. 잘 나왔다. 안심했다.</p>
+
+<p>그런데 오늘 동료 직원이 이상한 부분이 있다고 확인을 요청했다.</p>
+
+<blockquote><p>WebView 내부에 있는 select box를 터치하면 앱이 죽는다.</p></blockquote>
+
+<p>처음엔 뭔가 했다. 그런데 오류를 확인하니 다음과 같았다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>W/System.err﹕ android.view.WindowManager$BadTokenException: Unable to add window -- token null is not for an application
+</span><span class='line'>W/System.err﹕ at android.view.ViewRootImpl.setView(ViewRootImpl.java:691)
+</span><span class='line'>W/System.err﹕ at android.view.WindowManagerGlobal.addView(WindowManagerGlobal.java:288)
+</span><span class='line'>W/System.err﹕ at android.view.WindowManagerImpl.addView(WindowManagerImpl.java:69)
+</span><span class='line'>W/System.err﹕ at android.app.Dialog.show(Dialog.java:312)
+</span><span class='line'>W/System.err﹕ at org.chromium.content.browser.input.SelectPopupDialog.show(SelectPopupDialog.java:133)
+</span><span class='line'>W/System.err﹕ at org.chromium.content.browser.ContentViewCore.showSelectPopup(ContentViewCore.java:2437)
+</span><span class='line'>W/System.err﹕ at org.chromium.base.SystemMessageHandler.nativeDoRunLoopOnce(Native Method)
+</span><span class='line'>W/System.err﹕ at org.chromium.base.SystemMessageHandler.handleMessage(SystemMessageHandler.java:53)
+</span><span class='line'>W/System.err﹕ at android.os.Handler.dispatchMessage(Handler.java:102)
+</span><span class='line'>W/System.err﹕ at android.os.Looper.loop(Looper.java:145)
+</span><span class='line'>W/System.err﹕ at android.app.ActivityThread.main(ActivityThread.java:5942)
+</span><span class='line'>W/System.err﹕ at java.lang.reflect.Method.invoke(Native Method)
+</span><span class='line'>W/System.err﹕ at java.lang.reflect.Method.invoke(Method.java:372)
+</span><span class='line'>W/System.err﹕ at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:1399)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>이런 Dialog를 생성하려는 시점에서 context가 적절하지 못하다. 그렇다. WebView에서 select box를 선택하면 앱의 경우는 선택 dialog가 자동으로 뜬다. 이때 이 dialog를 생성할 때 WebView 생성시 넣어 줬던 context를 사용하는 것이다.</p>
+
+<p>아&hellip; 그럼 처음부터 application context를 넣지 못하도록 하던지&hellip; 정말 안드로이드는 누가 설계 했는지 너무 엉망이다. UIThread 문제, Network Main Thread 문제.. 등등 상식적으로 해결 방법이 있을 법한데 모두 개발자가 알아서 하란다. 이런&hellip;</p>
+
+<p>어쨌든 Dialog 생성시에는 activity context를 사용해야 한다. 일반 dialog는 테스트시에 바로 표시가 나니 금방 고칠 수 있지만 이런 경우는 참 난해하다.</p>
+
+<p>결론은 WebView 생성시에는 activity context를 넣자.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-04T10:12:29+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.04</time>
         
            | <a href="/2015/09/04/android-view-dot-islaidout-and-view-dot-post/#disqus_thread" itemprop="discussionUrl"
@@ -1183,161 +1278,6 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-08-27T10:56:56+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.08.27</time>
-        
-           | <a href="/2015/08/27/android-viewpager-setid/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/08/27/android-viewpager-setid/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/08/27/android-viewpager-setid/" itemprop="url">Android ViewPager를 직접 생성시 android.content.res.Resources$NotFoundException: Unable to find resource ID #0xffffffff 오류 발생</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>일반적으로 ViewPager 사용시 layout xml에서 정의해서 사용한다.
-하지만 간혹 필요에 따라 ViewPager을 프로그램으로 생성해서 사용하는 경우 있다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ViewPager</span> <span class="n">viewPager</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ViewPager</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
-</span><span class='line'><span class="n">viewPager</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="n">Helper</span><span class="o">.</span><span class="na">generateViewId</span><span class="o">());</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>그런데 이렇게 사용할 경우 아래와 같은 오류를 만나게 된다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">android</span><span class="o">.</span><span class="na">content</span><span class="o">.</span><span class="na">res</span><span class="o">.</span><span class="na">Resources$NotFoundException</span><span class="o">:</span> <span class="n">Unable</span> <span class="n">to</span> <span class="n">find</span> <span class="n">resource</span> <span class="n">ID</span> <span class="err">#</span><span class="mh">0xffffffff</span>
-</span><span class='line'>            <span class="n">at</span> <span class="n">android</span><span class="o">.</span><span class="na">content</span><span class="o">.</span><span class="na">res</span><span class="o">.</span><span class="na">Resources</span><span class="o">.</span><span class="na">getResourceName</span><span class="o">(</span><span class="n">Resources</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">3216</span><span class="o">)</span>
-</span><span class='line'>            <span class="n">at</span> <span class="n">android</span><span class="o">.</span><span class="na">support</span><span class="o">.</span><span class="na">v4</span><span class="o">.</span><span class="na">app</span><span class="o">.</span><span class="na">FragmentManagerImpl</span><span class="o">.</span><span class="na">moveToState</span><span class="o">(</span><span class="n">FragmentManager</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">1008</span><span class="o">)</span>
-</span><span class='line'>            <span class="n">at</span> <span class="n">android</span><span class="o">.</span><span class="na">support</span><span class="o">.</span><span class="na">v4</span><span class="o">.</span><span class="na">app</span><span class="o">.</span><span class="na">FragmentManagerImpl</span><span class="o">.</span><span class="na">moveToState</span><span class="o">(</span><span class="n">FragmentManager</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">1197</span><span class="o">)</span>
-</span><span class='line'>            <span class="n">at</span> <span class="n">android</span><span class="o">.</span><span class="na">support</span><span class="o">.</span><span class="na">v4</span><span class="o">.</span><span class="na">app</span><span class="o">.</span><span class="na">BackStackRecord</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">BackStackRecord</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">738</span><span class="o">)</span>
-</span><span class='line'>            <span class="n">at</span> <span class="n">android</span><span class="o">.</span><span class="na">support</span><span class="o">.</span><span class="na">v4</span><span class="o">.</span><span class="na">app</span><span class="o">.</span><span class="na">FragmentManagerImpl</span><span class="o">.</span><span class="na">execPendingActions</span><span class="o">(</span><span class="n">FragmentManager</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">1562</span><span class="o">)</span>
-</span><span class='line'>            <span class="n">at</span> <span class="n">android</span><span class="o">.</span><span class="na">support</span><span class="o">.</span><span class="na">v4</span><span class="o">.</span><span class="na">app</span><span class="o">.</span><span class="na">FragmentManagerImpl</span><span class="o">.</span><span class="na">executePendingTransactions</span><span class="o">(</span><span class="n">FragmentManager</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">535</span><span class="o">)</span>
-</span><span class='line'>            <span class="n">at</span> <span class="n">android</span><span class="o">.</span><span class="na">support</span><span class="o">.</span><span class="na">v4</span><span class="o">.</span><span class="na">app</span><span class="o">.</span><span class="na">FragmentPagerAdapter</span><span class="o">.</span><span class="na">finishUpdate</span><span class="o">(</span><span class="n">FragmentPagerAdapter</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">141</span><span class="o">)</span>
-</span><span class='line'>            <span class="n">at</span> <span class="n">android</span><span class="o">.</span><span class="na">support</span><span class="o">.</span><span class="na">v4</span><span class="o">.</span><span class="na">view</span><span class="o">.</span><span class="na">ViewPager</span><span class="o">.</span><span class="na">populate</span><span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">1106</span><span class="o">)</span>
-</span><span class='line'>            <span class="n">at</span> <span class="n">android</span><span class="o">.</span><span class="na">support</span><span class="o">.</span><span class="na">v4</span><span class="o">.</span><span class="na">view</span><span class="o">.</span><span class="na">ViewPager</span><span class="o">.</span><span class="na">populate</span><span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">952</span><span class="o">)</span>
-</span><span class='line'>            <span class="n">at</span> <span class="n">android</span><span class="o">.</span><span class="na">support</span><span class="o">.</span><span class="na">v4</span><span class="o">.</span><span class="na">view</span><span class="o">.</span><span class="na">ViewPager</span><span class="o">.</span><span class="na">onMeasure</span><span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">1474</span><span class="o">)</span>
-</span><span class='line'>            <span class="n">at</span> <span class="n">android</span><span class="o">.</span><span class="na">view</span><span class="o">.</span><span class="na">View</span><span class="o">.</span><span class="na">measure</span><span class="o">(</span><span class="n">View</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">18573</span><span class="o">)</span>
-</span><span class='line'><span class="o">...</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>처음엔 웬 리소스를 못 찾는다는 에러가 나오는지 한참을 헤맸다.
-결국 알아낸 문제는 사실 개인적으로 조금 어이가 없었다. xml에서 정의된 ViewPager는 인스턴스화되면서 임시 id가 알아서 지정되는 것으로 보이나 프로그램에서 생성한 ViewPager는 그 과정이 누락되는 것이다.
-어이없는 상황. 그러나 해결법은 간단하다. id를 지정해 주면 된다.</p>
-
-<p>그래서 아래처럼 해봤다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ViewPager</span> <span class="n">viewPager</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ViewPager</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
-</span><span class='line'><span class="n">viewPager</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>하지만 그렇게 간단히 해결되면 안드로이드가 아니지&hellip;
-그래서 다음과 같은 방법으로 id를 생성해 주어야 한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">IdGen</span> <span class="o">{</span>
-</span><span class='line'>  <span class="kd">final</span> <span class="kd">static</span> <span class="kd">private</span> <span class="n">AtomicInteger</span> <span class="n">sNextGeneratedId</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">AtomicInteger</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">static</span> <span class="kd">private</span> <span class="kt">int</span> <span class="nf">_generateViewId</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">for</span> <span class="o">(;</span> <span class="o">;</span> <span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>            <span class="kd">final</span> <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="n">sNextGeneratedId</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
-</span><span class='line'>            <span class="c1">// aapt-generated IDs have the high byte nonzero; clamp to the range under that.</span>
-</span><span class='line'>            <span class="kt">int</span> <span class="n">newValue</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">newValue</span> <span class="o">&gt;</span> <span class="mh">0x00FFFFFF</span><span class="o">)</span> <span class="n">newValue</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span> <span class="c1">// Roll over to 1, not 0.</span>
-</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">sNextGeneratedId</span><span class="o">.</span><span class="na">compareAndSet</span><span class="o">(</span><span class="n">result</span><span class="o">,</span> <span class="n">newValue</span><span class="o">))</span> <span class="o">{</span>
-</span><span class='line'>                <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
-</span><span class='line'>            <span class="o">}</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">static</span> <span class="kd">public</span> <span class="kt">int</span> <span class="nf">generateViewId</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">&lt;</span> <span class="n">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">JELLY_BEAN_MR1</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="nf">_generateViewId</span><span class="o">();</span>
-</span><span class='line'>        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="n">View</span><span class="o">.</span><span class="na">generateViewId</span><span class="o">();</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ViewPager</span> <span class="n">viewPager</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ViewPager</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
-</span><span class='line'><span class="n">viewPager</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="n">IdGen</span><span class="o">.</span><span class="na">generateViewId</span><span class="o">());</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>드디어 이상없이 동작한다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1392,7 +1332,7 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (12)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (2)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (12)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1401,6 +1341,8 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/09/20/css-units/">CSS Units - px, pt, em, % 등</a>
+    
     <a class="list-group-item " href="/2015/09/19/x-ua-compatible-ie-equals-edge-compatibility-view/">익스플로러 호환성 보기</a>
     
     <a class="list-group-item " href="/2015/09/18/google-translate-exclude-words/">구글 번역 사용시 특정 영역을 번역에서 제외하기</a>
@@ -1408,8 +1350,6 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
     <a class="list-group-item " href="/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/">AutoCompleteAdapter(ArrayAdapter with Filterable) 사용시 비주기적 오류 발생 해결</a>
     
     <a class="list-group-item " href="/2015/09/17/datetime-from-php-to-java-android/">PHP의 DateTime을 Java (Android)로 전달하기</a>
-    
-    <a class="list-group-item " href="/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/">안드로이드에서 구글맵 사용시 맵의 보여지는 영역의 좌표를 원하는 pixel만큼 제외하고 가져오기</a>
     
   </div>
 </section>

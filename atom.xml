@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-21T11:37:16+09:00</updated>
+  <updated>2015-09-21T12:00:50+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -14,13 +14,90 @@
 
   
   <entry>
+    <title type="html"><![CDATA[안드로이드 TabLayout에서 setupWithViewPager() 사용시 Swipe 후 Tab 클릭시 ViewPager가 변경되지 않는 버그 수정]]></title>
+    <link href="http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/"/>
+    <updated>2015-09-21T11:40:02+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe</id>
+    <content type="html"><![CDATA[<p><a href="http://android-developers.blogspot.kr/2015/05/android-design-support-library.html">Android Design Support Library</a>에 있는 <a href="https://developer.android.com/intl/ko/reference/android/support/design/widget/TabLayout.html">TabLayout</a>과 ViewPager를 연동해서 사용하기 위해 <a href="https://developer.android.com/intl/ko/reference/android/support/design/widget/TabLayout.html#setupWithViewPager%28android.support.v4.view.ViewPager%29">setupWithViewPager()</a> 함수를 사용한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setupWithViewPager</span> <span class="o">(</span><span class="n">ViewPager</span> <span class="n">viewPager</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<blockquote><p>TabLayout와 ViewPager를 연동한다.</p></blockquote>
+
+<p>이 함수는 아래의 동작을 수행한다.</p>
+
+<ul>
+<li>Add a ViewPager.OnPageChangeListener that will forward events to this TabLayout.</li>
+<li>Populate the TabLayout&rsquo;s tabs from the ViewPager&rsquo;s PagerAdapter.</li>
+<li>Set our TabLayout.OnTabSelectedListener which will forward selected events to the ViewPager</li>
+</ul>
+
+
+<p>결론은 setupWithViewPager()를 사용하면 손쉽게 TabLayout와 ViewPager를 연동할 수 있다. 다시말해 ViewPager를 넘기면 이에 맞추어 TabLayout의 선택이 변경되고 TabLayout에서 Tab을 터치하면 이에 맞게 ViewPager가 변경된다.</p>
+
+<p>하지만 이 기능에는 버그가 있다. 그냥 쉽게 넘어가면 안드로이드가 아니지&hellip;
+이 문제도 항상 발생하는 것은 아니나 간헐적으로 ViewPager을 Swipe하여 변경을 하다가 Tab을 터치하면 Tab은 터치에 맞게 변경되나 ViewPaper는 함께 변경되지 않는 문제가 발생한다. 이 문제에 대해서는 <a href="https://code.google.com/p/android/issues/detail?id=183123%EC%97%90">https://code.google.com/p/android/issues/detail?id=183123%EC%97%90</a> 버그 리포트 되어 있다.</p>
+
+<p>패치를 기다리기 전에 문제를 해결할 필요가 있어 아래와 같이 직접 수정해서 사용했다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">tabLayout</span><span class="o">.</span><span class="na">setOnTabSelectedListener</span><span class="o">(</span><span class="k">new</span> <span class="n">TabLayout</span><span class="o">.</span><span class="na">OnTabSelectedListener</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTabSelected</span><span class="o">(</span><span class="n">TabLayout</span><span class="o">.</span><span class="na">Tab</span> <span class="n">tab</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">()</span> <span class="o">!=</span> <span class="n">viewPager</span><span class="o">.</span><span class="na">getCurrentItem</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">viewPager</span><span class="o">.</span><span class="na">setCurrentItem</span><span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">());</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTabUnselected</span><span class="o">(</span><span class="n">TabLayout</span><span class="o">.</span><span class="na">Tab</span> <span class="n">tab</span><span class="o">)</span> <span class="o">{}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTabReselected</span><span class="o">(</span><span class="n">TabLayout</span><span class="o">.</span><span class="na">Tab</span> <span class="n">tab</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">()</span> <span class="o">!=</span> <span class="n">viewPager</span><span class="o">.</span><span class="na">getCurrentItem</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">viewPager</span><span class="o">.</span><span class="na">setCurrentItem</span><span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">());</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>간단히 원리를 설명하자면 다음과 같다.</p>
+
+<p>tab이 변경되었음에도 ViewPager에 반영되지 않는 것이 문제이므로 OnTabSelectedListener를 추가해서 변경된 Tab과 ViewPager의 위치가 맞지 않으면 강제로 ViewPager의 위치를 이동하는 것이다.</p>
+
+<p>그런데 최근 이 버그 이슈에 변경이 생겼는데 내용은 <strong>Android Design Support Library 23.0.1 버전에 패치(2015년 9월 5일자)가 되었다는 것</strong>. 확인해 보니 버그 패치가 되었다. 따라서 23.0.1 이상을 사용한다면 위의 방법을 사용할 필요는 없어졌다. setupWithViewPager를 사용할 수 없는 경우 등을 위해서 기록을 남겨둔다.</p>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[안드로이드 ViewPager.setOnPageChangeListener() Deprecated 대응]]></title>
     <link href="http://blog.asamaru.net/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/"/>
     <updated>2015-09-21T11:20:00+09:00</updated>
     <id>http://blog.asamaru.net/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated</id>
     <content type="html"><![CDATA[<p><a href="https://developer.android.com/intl/ko/tools/support-library/index.html">Android Support Library 22.2.0</a> 이후부터 ViewPager.setOnPageChangeListener() 함수가 Deprecated 되었다. 안드로이드는 무슨 Deprecated가 이렇게 빈번한지&hellip; 하지만 이번 변경은 옳은 결정이라고 생각한다. 그냥 Deprecated된 것이 아니라 대체할 수 있는 함수가 함께 추가되었다(더 유연한).</p>
 
-<h2><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#setOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.setOnPageChangeListener() - Deprecated</a></h2>
+<p><strong> <a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#setOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.setOnPageChangeListener() - Deprecated</a> </strong></p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setOnPageChangeListener</span> <span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">OnPageChangeListener</span> <span class="n">listener</span><span class="o">)</span>
@@ -33,7 +110,7 @@
 
 <p>대체 방법으로 아래의 함수들이 추가되었다.</p>
 
-<h2><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#addOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.addOnPageChangeListener()</a></h2>
+<p><strong> <a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#addOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.addOnPageChangeListener()</a></strong></p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">addOnPageChangeListener</span> <span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">OnPageChangeListener</span> <span class="n">listener</span><span class="o">)</span>
@@ -42,7 +119,7 @@
 
 <blockquote><p>OnPageChangeListener를 추가한다.</p></blockquote>
 
-<h2><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#clearOnPageChangeListeners%28%29">ViewPager.clearOnPageChangeListeners()</a></h2>
+<p><strong> <a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#clearOnPageChangeListeners%28%29">ViewPager.clearOnPageChangeListeners()</a> </strong></p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">clearOnPageChangeListeners</span> <span class="o">()</span>
@@ -51,7 +128,7 @@
 
 <blockquote><p>등록된 OnPageChangeListener를 모두 제거한다.</p></blockquote>
 
-<h2><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#removeOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.removeOnPageChangeListener()</a></h2>
+<p><strong> <a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#removeOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.removeOnPageChangeListener()</a></strong></p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">removeOnPageChangeListener</span> <span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">OnPageChangeListener</span> <span class="n">listener</span><span class="o">)</span>
@@ -2521,92 +2598,6 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
 
 
 <p>사실 별차이 아니다. 하지만 작업 해본 사람은 안다. Type Casting을 일일이 넣는게 얼마나 귀찮은지.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[안드로이드 스튜디오에서 WIFI로 Run/Install/Debug 하기]]></title>
-    <link href="http://blog.asamaru.net/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi/"/>
-    <updated>2015-09-07T20:43:33+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi</id>
-    <content type="html"><![CDATA[<p>이제 안드로이드 개발을 시작한지 6개월 가량 된 것 같다. 나이 주 개발 영역은 웹이다. 프론드/백엔드, 서버 등등 웹에 관련된 일을 주로하며 예전엔 아이폰 개발도 일부 했었다. 하지만 회사 업무로 인해 안드로이드를 시작하게 되었고 6개월이나 했음에도 아직 초보를 벗어나지 못한 것 같다. 불필요한 사설이 길었지만 6개월간 왜 불편함을 그냥 당연하게 생각하고 작업을 했는지 안타깝다.</p>
-
-<p>어제는 불현듯 책생 위에 널브러져 케이블들을 보며 이걸 없앨 수 없나? 라는 생각이 들었다. 내 책상 위에는 아이폰이 3개, 안드로이드 폰이 2개, 충전선 등이 있다. 굳이 다 필요하진 않지만&hellip;
-그래서 찾아봤다. 안드로이드 빌드 후 실행을 케이블 없이 할 수 있는가? 결과는 있다. 아 왜 진작 찾아보지 않았던가? 사실은 선 정리보다 더 중요한 문제가 있었다. 안드로이드 연결 케이블이 불안정한 것이다. adb에 붙었다 떨어졌다 하는 현상이 사용하는 케이블에 따라 상태가 천차만별이었다. 정말 안드로이드는 맘에 안든다.</p>
-
-<p>이제 정말 각설하고 본론을&hellip;</p>
-
-<p>일단 이 방법에서의 최대 단점은 최초 연결시에는 USB 케이블이 필요하다는 것이다. 그리고 같은 망으로 연결되어야 한다는 점.</p>
-
-<h3>1. 일단 기존처럼 USB로 안드로이드폰을 연결한다.</h3>
-
-<h3>2. Shell을 열어 기기가 연결된 것을 확인한다. (사실 이 단계는 확인단계로 그냥 건너뛰어도 된다.)</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>adb devices -l
-</span><span class='line'>
-</span><span class='line'>List of devices attached
-</span><span class='line'>6a1d4134               device usb:4245815296X product:hltelgt model:SM_N900L device:hltelgt
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>3. 연결된 기기의 IP를 확인한다. adb shell 실행 후 shell이 뜨면 netcfg 입력. exit로 종료.</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>adb shell
-</span><span class='line'>
-</span><span class='line'>shell@hltelgt:/ <span class="nv">$ </span>netcfg
-</span><span class='line'>
-</span><span class='line'>rev_rmnet1 DOWN                                   0.0.0.0/0   0x00001002 2e:80:5c:86:19:5f
-</span><span class='line'>...
-</span><span class='line'>sit0     DOWN                                   0.0.0.0/0   0x00000080 00:00:00:00:00:00
-</span><span class='line'>p2p0     UP                                     0.0.0.0/0   0x00001003 ca:14:79:ea:48:5f
-</span><span class='line'>lo       UP                                   127.0.0.1/8   0x00000049 00:00:00:00:00:00
-</span><span class='line'>wlan0    UP                             192.168.219.101/24  0x00001043 c8:14:79:ea:48:5f
-</span><span class='line'>
-</span><span class='line'>shell@hltelgt:/ <span class="nv">$ </span><span class="nb">exit</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>4. adb를 통해 포트 5555(원하는 포트)로 변경한다.</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>adb tcpip 5555
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>5. 기기 IP를 통해서 연결</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>adb connect &lt;DEVICE_IP_ADDRESS&gt;:5555
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>끝이다. 이제는 USB에서 기기를 분리해도 된다.
-이제부터는 안드로이드 스튜디오에서 빌드를 하고 실행하려고 하면 원격으로 연결된 기기가 뜬다.</p>
-
-<p>아직 많이 써보진 않았지만 아무래도 직접 USB로 연결한 것 보다는 조금 느린 것 같긴하다. 하지만 계속 션으로 연결하지 않아도 된다는 것으로 만족.</p>
-
-<p>마지막으로 리모트 연결을 다시 USB 연결로 바꾸는 방법</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>adb -s &lt;DEVICE_IP_ADDRESS&gt;:5555 usb
-</span></code></pre></td></tr></table></div></figure>
-
 ]]></content>
   </entry>
   

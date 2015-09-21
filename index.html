@@ -138,6 +138,238 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-21T13:58:12+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.21</time>
+        
+           | <a href="/2015/09/21/how-to-install-gogs-on-centos/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/21/how-to-install-gogs-on-centos/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/21/how-to-install-gogs-on-centos/" itemprop="url">CentOS에 gogs 설치하기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>기존에는 SCM(source code management)으로 SVN을 주로 사용했다. 하지만 git를 사용하기 시작하면서 부터 git를 주로 사용하긴 했는데 주로 github를 통해서만 사용했다. 그런데 이번에 회사 프로젝트에서 필요한 부분이 있어 자체 호스팅을 하기 위해 기존에 봐뒀던 <a href="https://about.gitlab.com/">gitlab</a>을 쓰려다가 <a href="http://gogs.io/">gogs</a>를 알게 되면서 이걸 설치했다. gogs를 고른 이유는 간단하기 때문이다(<a href="https://blog.deimos.fr/2014/08/19/github-vs-gitlab-vs-stash-vs-gogs/">GitHub vs GitLab vs Stash vs Gogs</a>를 참고). 사실 아직 제대로 사용해보지 않아서 맞는지는 모르겠지만 gitlab은 ruby 기반이고 난 ruby 환경을 별로 좋아하지 않는다(내가 몰라서 그렇겠지만 이상하게 ruby 기반 프로젝트들은 설치/관리가 어려워서).</p>
+
+<h2>git 설치</h2>
+
+<p><a href="https://www.digitalocean.com/community/tutorials/how-to-install-git-on-centos-7">How To Install Git on CentOS 7</a>를 참고하자. 다른 곳을 참조해도 당연히 무방하다. 난 사실 예전에 yum으로 git가 설치되어 있던 상황으로 이 단계는 건너뛰었다(게다가 나의 centos는 6이다).</p>
+
+<h2>gogs 설치</h2>
+
+<p>기본적으로 설치방법은 <a href="http://gogs.io/docs/installation">gogs Installation</a>에 잘 설명되어 있다. 하지만 centos가 없다. 조금 더 자세히 보면 대신 <a href="http://gogs.io/docs/installation/install_from_packages.html">Install from packages</a>가 있다. 이곳의 설명/링크를 따라 <a href="https://packager.io/gh/pkgr/gogs">packager.io</a>에 가면 설치 방법을 안내받을 수 있다.</p>
+
+<p>찾아가는 수고를 덜어주기 위해 필요한 부분을 옮겨왔다. 2015.09.21 기준이므로 최신 내용을 확인하려면 위의 안내대로 사이트를 방문해서 안내받자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo rpm --import https://rpm.packager.io/key
+</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;[gogs]</span>
+</span><span class='line'><span class="s2">name=Repository for pkgr/gogs application.</span>
+</span><span class='line'><span class="s2">baseurl=https://rpm.packager.io/gh/pkgr/gogs/centos6/pkgr</span>
+</span><span class='line'><span class="s2">enabled=1&quot;</span> <span class="p">|</span> sudo tee /etc/yum.repos.d/gogs.repo
+</span><span class='line'>sudo yum install gogs
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>그냥 시키는대로 따라하면 설치는 간단히 완료된다. 단, gogs는 계정을 추가하는 부분이 있어 passwd, shadow 파일에 lock이 걸려있으면 아래와 같은 오류가 나며 제대로 설치가 되지 않는다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>Error in PREIN scriptlet in rpm package gogs-0.6.9-1442807350.69b1d65.centos6.x86_64
+</span><span class='line'>useradd: /etc/passwd을<span class="o">(</span>를<span class="o">)</span> 열 수 없습니다
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>일단 풀어주고 설치하자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>chattr -i /etc/passwd
+</span><span class='line'><span class="nv">$ </span>chattr -i /etc/shadow
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>설치가 완료되면 다시 원상복구.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>chattr +i /etc/passwd
+</span><span class='line'><span class="nv">$ </span>chattr +i /etc/shadow
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>설치가 정상적으로 되었다면 아래의 파일이 존재할 것이다.`</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>ls /etc/init.d/gogs
+</span><span class='line'>la /home/gogs
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>환경구성</h2>
+
+<p>환경설정 파일은 <code>/etc/gogs/conf/app.ini</code>에 있다. 하지만 최초 웹페이지 접속시 자동으로 설치 화면이 뜬다. 따라서 그냥 웹에서 설정하자. 기본적으로 port 3000이 세팅되어 있다.</p>
+
+<p>본격적으로 세팅을 하기 전에 주의사항이 있다. gogs는 DB가 있어야 된다. 따라서 mysql 또는 postgresql이 미리 설치되어 있어야 한다. 이건 뭐 굳이 여기서 설명하지 않아도 다른 곳에 많으니 설치가 되어 있다고 가정하고 설명한다.</p>
+
+<h3>DB 설정</h3>
+
+<p>우선 DB를 세팅한다.</p>
+
+<p>root 계정을 설정하는데 필요없다면 하지 않아도 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>mysqladmin -u root password <span class="s2">&quot;${MYSQL_PASSWORD}&quot;</span>
+</span><span class='line'>mysqladmin -u root --password<span class="o">=</span><span class="s2">&quot;${MYSQL_PASSWORD}&quot;</span> password <span class="s2">&quot;${MYSQL_PASSWORD}&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>하지만 DB는 만들어 줘야 한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>mysql -u root -p<span class="k">${</span><span class="nv">MYSQL_PASSWORD</span><span class="k">}</span> -e <span class="s2">&quot;CREATE DATABASE IF NOT EXISTS ${APP_NAME}; use ${APP_NAME}; set global storage_engine=INNODB;&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>mysql -u root -p -e <span class="s2">&quot;CREATE DATABASE IF NOT EXISTS gogs; use gogs; set global storage_engine=INNODB;&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>WEB UI를 이용한 설정</h3>
+
+<p>그럼 본격적으로 설정.</p>
+
+<p><a href="http://userdomain:3000/">http://userdomain:3000/</a></p>
+
+<p>필요한 사항을 설정한다. 대부분 보면 뭘 해야할지 알 수 있다. 그리고 설치 후에도 초기화 과정에 관련된 부분이 아니라면 관리페이지에서 다시 설정할 수 있다. 단, 관리자는 먼저 설정. 그리고 오류가 나면 해당 안내에 따라 설정하면 된다.</p>
+
+<h3>도메인 연결</h3>
+
+<p>이제는 도메인 연결을 할 차례이다.</p>
+
+<p><strong>httpd 2 기준</strong></p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='apache'><span class='line'><span class="nt">&lt;VirtualHost</span> <span class="s">*:80</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nb">ServerName</span> your.domain.com
+</span><span class='line'>
+</span><span class='line'>  <span class="nt">&lt;IfModule</span> <span class="s">!mod_proxy.c</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nb">LoadModule</span> proxy_module modules/mod_proxy.so
+</span><span class='line'>  <span class="nt">&lt;/IfModule&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;IfModule</span> <span class="s">!proxy_http_module.c</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nb">LoadModule</span> proxy_http_module modules/mod_proxy_http.so
+</span><span class='line'>  <span class="nt">&lt;/IfModule&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nb">ProxyPass</span> / http://localhost:3000/
+</span><span class='line'>  <span class="nb">ProxyPassReverse</span> / http://localhost:3000/
+</span><span class='line'><span class="nt">&lt;/VirtualHost&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>나의 경우는 apache를 사용중이라 위와 같이 설정하면 되나 nginx를 사용하는 경우라면 아래를 참고하자(packager.io에 안내된 내용이다.).</p>
+
+<p><strong>nginx</strong></p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>cat &gt; /etc/nginx/sites-available/default <span class="s">&lt;&lt;EOF</span>
+</span><span class='line'><span class="s">server {</span>
+</span><span class='line'><span class="s">  listen          80;</span>
+</span><span class='line'><span class="s">  server_name     ${HOSTNAME};</span>
+</span><span class='line'><span class="s">  location / {</span>
+</span><span class='line'><span class="s">    proxy_pass      http://localhost:6000;</span>
+</span><span class='line'><span class="s">  }</span>
+</span><span class='line'><span class="s">}</span>
+</span><span class='line'><span class="s">EOF</span>
+</span><span class='line'>sudo service nginx restart
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>서버 시작시 자동시작</h3>
+
+<p>우선 서버 시작시 자동 시작 되도록 설정하자(필요하다면). 나의 경우 <code>setup</code>으로 확인해보니 자동으로 들어가 있지 않았다. 그래서 아래와 같이 시도했다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 서버 부팅시 자동 시작</span>
+</span><span class='line'>/sbin/chkconfig --add gogs
+</span><span class='line'>/sbin/chkconfig --level <span class="m">35</span> gogs on
+</span><span class='line'>/sbin/chkconfig --list
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>첫줄부터 안된다. &ldquo;gogs 서비스는 chkconfig 를 지원하지 않습니다"라고 오류를 내보낸다. 말그대로 gogs는 chkconfig를 지원하지 않는다. 해서 아래와 같이 서버 시작시 스크립트를 실행하도록 넣어 버렸다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>vi /etc/rc.d/rc.local
+</span><span class='line'>
+</span><span class='line'><span class="c"># 아래 줄을 추가</span>
+</span><span class='line'>/etc/init.d/gogs start
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-21T11:40:02+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.21</time>
         
            | <a href="/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/#disqus_thread" itemprop="discussionUrl"
@@ -1615,71 +1847,6 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-16T18:09:56+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.16</time>
-        
-           | <a href="/2015/09/16/check-for-equality-on-a-mysql-float-field/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/16/check-for-equality-on-a-mysql-float-field/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/16/check-for-equality-on-a-mysql-float-field/" itemprop="url">MySql에서 folat 필드 동일값 비교</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>이번에 작업하면서 mysql의 float 필드를 사용할 일이 있었다. 사실 오랜기간동안 mysql을 사용해 오면서 float 필드를 사용해 본 적이 많지 않았고 float 필드를 범위 검사가 아닌 동일값 검사를 할일이 없었다.</p>
-
-<p>이번 작업에서는 float 필드의 동일값 검사를 하면서 당연히 아래와 같이 query를 만들면 될 줄 알았다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">TABLE1</span> <span class="k">WHERE</span> <span class="n">FloatField</span> <span class="o">=</span> <span class="mi">10</span><span class="p">.</span><span class="mi">1</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>그런데 분명 동일한 값이 있음에도 불구하고 검색된 결과가 없었다. 처음엔 어의가 없었다. 당연히 동일한 값이 있는데 왜 검색이 되지 않을까?
-그래서 구글에서 검색을 해보니 float 필드는 &ldquo;="을 이용한 동일값 검사를 할 수 없었다. 아래는 float 필드의 동일값 검사를 하는 예시다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">TABLE1</span> <span class="k">WHERE</span> <span class="nf">ABS</span><span class="p">(</span><span class="n">FloatField</span> <span class="o">-</span> <span class="mi">10</span><span class="p">.</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>아.. 이런 웬 해괴망측한 방법이란 말인가? 사실 여러글에서 보면 문자열로 Casting(변환)해서 검사하는 방법 등도 있었다.</p>
-
-<p>MySql 사이트에서 보면 <a href="https://dev.mysql.com/doc/refman/5.0/en/problems-with-float.html">B.5.5.8 Problems with Floating-Point Values</a> 이라는 글이 있다.</p>
-
-<p>첫줄에 설명된 것과 같이 mysql에서는 부동 소수점을 정확한 값으로 저장하지 않기 때문에 내부적으로 나타내는 값이 동일하지 않을 수 있다고 되어 있다.</p>
-
-<p>원인은 설명되어 있지만 사실 왜 이래야만 하는 것인지 이해는 잘되지 않는다. 원래 부동 소수점에 대한 문제는 여러 프로그램에서 있는 문제이긴하나 mysql에서도 이 문제가 있을 줄은 생각하지 못했다.</p>
-
-<p>어쨌든 보다 다양한 예시와 설명은 위에 링크한 mysql 메뉴얼을 참고하면 된다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1734,7 +1901,7 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (14)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (14)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (1)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1743,6 +1910,8 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/09/21/how-to-install-gogs-on-centos/">CentOS에 gogs 설치하기</a>
+    
     <a class="list-group-item " href="/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/">안드로이드 TabLayout에서 setupWithViewPager() 사용시 Swipe 후 Tab 클릭시 ViewPager가 변경되지 않는 버그 수정</a>
     
     <a class="list-group-item " href="/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/">안드로이드 ViewPager.setOnPageChangeListener() Deprecated 대응</a>
@@ -1750,8 +1919,6 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
     <a class="list-group-item " href="/2015/09/20/css-units/">CSS Units - px, pt, em, % 등</a>
     
     <a class="list-group-item " href="/2015/09/19/x-ua-compatible-ie-equals-edge-compatibility-view/">익스플로러 호환성 보기</a>
-    
-    <a class="list-group-item " href="/2015/09/18/google-translate-exclude-words/">구글 번역 사용시 특정 영역을 번역에서 제외하기</a>
     
   </div>
 </section>

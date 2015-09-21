@@ -26,7 +26,7 @@ module BacktickCodeBlock
       end
       if @lang.nil? || @lang == 'plain'
         code = HighlightCode::tableize_code(str.gsub('<','&lt;').gsub('>','&gt;'))
-        "<figure class='code'>#{@caption}#{code}</figure>"
+        "<figure class='code notranslate'>#{@caption}#{code}</figure>"
       else
         if @lang.include? "-raw"
           raw = "``` #{@options.sub('-raw', '')}\n"
@@ -34,7 +34,7 @@ module BacktickCodeBlock
           raw += "\n```\n"
         else
           code = HighlightCode::highlight(str, @lang)
-          "<figure class='code'>#{@caption}#{code}</figure>"
+          "<figure class='code notranslate'>#{@caption}#{code}</figure>"
         end
       end
     end

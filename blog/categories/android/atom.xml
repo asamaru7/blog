@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-20T20:39:40+09:00</updated>
+  <updated>2015-09-21T11:37:16+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,49 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[안드로이드 ViewPager.setOnPageChangeListener() Deprecated 대응]]></title>
+    <link href="http://blog.asamaru.net/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/"/>
+    <updated>2015-09-21T11:20:00+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated</id>
+    <content type="html"><![CDATA[<p><a href="https://developer.android.com/intl/ko/tools/support-library/index.html">Android Support Library 22.2.0</a> 이후부터 ViewPager.setOnPageChangeListener() 함수가 Deprecated 되었다. 안드로이드는 무슨 Deprecated가 이렇게 빈번한지&hellip; 하지만 이번 변경은 옳은 결정이라고 생각한다. 그냥 Deprecated된 것이 아니라 대체할 수 있는 함수가 함께 추가되었다(더 유연한).</p>
+
+<h2><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#setOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.setOnPageChangeListener() - Deprecated</a></h2>
+
+<pre><code class="java">public void setOnPageChangeListener (ViewPager.OnPageChangeListener listener)
+</code></pre>
+
+<blockquote><p>ViewPager의 페이지가 변경(선택된 페이지의 변경 : UI의 변경이 아닌)되거나 스크롤이 이동될 때 불려지는 listener를 지정한다.</p></blockquote>
+
+<p>기존 setOnPageChangeListener의 문제점은 listener를 하나만 사용할 수 있다는 것이다. 그래서 이번에 Deprecated되면서 여러개의 listener를 사용할 수 있도록 변경되었다.</p>
+
+<p>대체 방법으로 아래의 함수들이 추가되었다.</p>
+
+<h2><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#addOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.addOnPageChangeListener()</a></h2>
+
+<pre><code class="java">public void addOnPageChangeListener (ViewPager.OnPageChangeListener listener)
+</code></pre>
+
+<blockquote><p>OnPageChangeListener를 추가한다.</p></blockquote>
+
+<h2><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#clearOnPageChangeListeners%28%29">ViewPager.clearOnPageChangeListeners()</a></h2>
+
+<pre><code class="java">public void clearOnPageChangeListeners ()
+</code></pre>
+
+<blockquote><p>등록된 OnPageChangeListener를 모두 제거한다.</p></blockquote>
+
+<h2><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#removeOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.removeOnPageChangeListener()</a></h2>
+
+<pre><code class="java">public void removeOnPageChangeListener (ViewPager.OnPageChangeListener listener)
+</code></pre>
+
+<blockquote><p>지정된 OnPageChangeListener를 제거한다.</p></blockquote>
+
+<p>사용법은 설명하지 않아도 바로 이해할 수 있을 생각된다. setOnPageChangeListener와 addOnPageChangeListener의 인자가 동일하므로 함수명만 바꾸면 그대로 동작한다. 단, 기존 것은 setOnPageChangeListener는 removeOnPageChangeListener와 addOnPageChangeListener 동작을 합친 것처럼 동작했으니 동일한 역할이 필요하다면 removeOnPageChangeListener와 addOnPageChangeListener를 함께 사용해야 한다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[AutoCompleteAdapter(ArrayAdapter with Filterable) 사용시 비주기적 오류 발생 해결]]></title>
@@ -490,39 +533,6 @@ private static class InternalHandler extends Handler {
     }
 }
 </code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[안드로이드에서 findViewById 사용시 Generics을 이용해 Type Casting 없애기]]></title>
-    <link href="http://blog.asamaru.net/2015/09/08/cleaner-view-casting-with-generics/"/>
-    <updated>2015-09-08T22:27:15+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/08/cleaner-view-casting-with-generics</id>
-    <content type="html"><![CDATA[<p>안드로이드 작업을 하다보면 findViewById를 아주 빈번하게 사용하게 된다. 이 작업이 생각보다 귀찮다보니 <a href="" title="http://jakewharton.github.io/butterknife/">butterknife</a>나 <a href="" title="http://androidannotations.org/">androidannotations</a> 같은 라이브러리를 사용하게 된다.(당연히 그 함수를 사용이 귀찮다는 이유만은 아니지만)</p>
-
-<p>아래의 방법은 저런 라이브러리를 사용할 때만큼 여러가지 일을 할 수는 없지만 findViewById를 사용함에 가장 귀찮은 작업인 View Type Casting을 하지 않아도 된다.</p>
-
-<p>우린 일반적으로 아래와 같은 방식으로 함수를 사용한다.</p>
-
-<pre><code class="java">TextView textView = (TextView) findViewById(R.id.textview);
-</code></pre>
-
-<p>이를 개선하기 위해 아래의 함수 하나를 추가한다. 어디든 상관 없이 사용하고자 하는 클래스의 내부에 넣는다. 사실 사용시마다 이 함수를 추가하는 작업이 더 귀찮을 수 있다. 그래서 난 기본 Activity와 Fragment 안에 넣어두고 사용한다. (난 여러가지 이유로 작업시 base activity, fragment를 만들어 두고 실제 작업시 상속받아 사용한다. 이렇게하면 이번 경우와 같이 유틸성 함수를 함께 쓰기도 좋고 제어하기도 좋기 때문이다.)</p>
-
-<pre><code class="java">@SuppressWarnings("unchecked")
-public final &lt;E extends View&gt; E findView (int id) {
-    return (E) findViewById(id);
-}
-</code></pre>
-
-<p>그리고 아래와 같이 사용할 수 있다.</p>
-
-<pre><code class="java">TextView textView = findView(R.id.textview);
-Button button = findView(R.id.button);
-ImageView image = findView(R.id.imageview);
-</code></pre>
-
-<p>사실 별차이 아니다. 하지만 작업 해본 사람은 안다. Type Casting을 일일이 넣는게 얼마나 귀찮은지.</p>
 ]]></content>
   </entry>
   

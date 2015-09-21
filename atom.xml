@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-20T20:39:40+09:00</updated>
+  <updated>2015-09-21T11:37:16+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,57 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[안드로이드 ViewPager.setOnPageChangeListener() Deprecated 대응]]></title>
+    <link href="http://blog.asamaru.net/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/"/>
+    <updated>2015-09-21T11:20:00+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated</id>
+    <content type="html"><![CDATA[<p><a href="https://developer.android.com/intl/ko/tools/support-library/index.html">Android Support Library 22.2.0</a> 이후부터 ViewPager.setOnPageChangeListener() 함수가 Deprecated 되었다. 안드로이드는 무슨 Deprecated가 이렇게 빈번한지&hellip; 하지만 이번 변경은 옳은 결정이라고 생각한다. 그냥 Deprecated된 것이 아니라 대체할 수 있는 함수가 함께 추가되었다(더 유연한).</p>
+
+<h2><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#setOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.setOnPageChangeListener() - Deprecated</a></h2>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setOnPageChangeListener</span> <span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">OnPageChangeListener</span> <span class="n">listener</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<blockquote><p>ViewPager의 페이지가 변경(선택된 페이지의 변경 : UI의 변경이 아닌)되거나 스크롤이 이동될 때 불려지는 listener를 지정한다.</p></blockquote>
+
+<p>기존 setOnPageChangeListener의 문제점은 listener를 하나만 사용할 수 있다는 것이다. 그래서 이번에 Deprecated되면서 여러개의 listener를 사용할 수 있도록 변경되었다.</p>
+
+<p>대체 방법으로 아래의 함수들이 추가되었다.</p>
+
+<h2><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#addOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.addOnPageChangeListener()</a></h2>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">addOnPageChangeListener</span> <span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">OnPageChangeListener</span> <span class="n">listener</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<blockquote><p>OnPageChangeListener를 추가한다.</p></blockquote>
+
+<h2><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#clearOnPageChangeListeners%28%29">ViewPager.clearOnPageChangeListeners()</a></h2>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">clearOnPageChangeListeners</span> <span class="o">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<blockquote><p>등록된 OnPageChangeListener를 모두 제거한다.</p></blockquote>
+
+<h2><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#removeOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.removeOnPageChangeListener()</a></h2>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">removeOnPageChangeListener</span> <span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">OnPageChangeListener</span> <span class="n">listener</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<blockquote><p>지정된 OnPageChangeListener를 제거한다.</p></blockquote>
+
+<p>사용법은 설명하지 않아도 바로 이해할 수 있을 생각된다. setOnPageChangeListener와 addOnPageChangeListener의 인자가 동일하므로 함수명만 바꾸면 그대로 동작한다. 단, 기존 것은 setOnPageChangeListener는 removeOnPageChangeListener와 addOnPageChangeListener 동작을 합친 것처럼 동작했으니 동일한 역할이 필요하다면 removeOnPageChangeListener와 addOnPageChangeListener를 함께 사용해야 한다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[CSS Units - px, pt, em, % 등]]></title>
@@ -2554,73 +2605,6 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>adb -s &lt;DEVICE_IP_ADDRESS&gt;:5555 usb
-</span></code></pre></td></tr></table></div></figure>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[옥토프레스에 구글 번역기 달기]]></title>
-    <link href="http://blog.asamaru.net/2015/09/05/octopress-google-translate/"/>
-    <updated>2015-09-05T06:47:14+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/05/octopress-google-translate</id>
-    <content type="html"><![CDATA[<p>구글에서는 웹사이트에 여러가지 언어로 번역해서 보여줄 수 있는 기능을 제공해 준다.
-이 블로그에 한국어가 아닌 다른 언어를 사용하는 사람이 누가 오겠냐만은 이 블로그는 여러가지 실험을 하기 위한 블로그이므로 구글 번역기도 달아봤다. 생각보다 간단하다.</p>
-
-<h2>구글 번역 스크립트 생성</h2>
-
-<p><a href="http://translate.google.com/manager/website/">http://translate.google.com/manager/website/</a></p>
-
-<p><img src="http://blog.asamaru.net/img/2015-09-05-octopress-google-translate-1.png" title="웹사이트에 지금 추가" alt="웹사이트에 지금 추가" /></p>
-
-<p>&ldquo;웹사이트에 지금 추가"를 눌러 다음으로.</p>
-
-<p><img src="http://blog.asamaru.net/img/2015-09-05-octopress-google-translate-2.png" alt="웹사이트 정보" /></p>
-
-<p>번역기를 넣을 웹사이트 주소를 입력하고 언어 선택 후 다음.</p>
-
-<p><img src="http://blog.asamaru.net/img/2015-09-05-octopress-google-translate-3.png" alt="플러그인 설정" /></p>
-
-<p>원하는 옵션을 선택하고 다음.</p>
-
-<p><img src="http://blog.asamaru.net/img/2015-09-05-octopress-google-translate-4.png" alt="플러그인 추가" /></p>
-
-<p>번역 스크립트 완성. 이제 이 스크립트를 복사해서 원하는 곳에 넣으면 끝이다.</p>
-
-<h2>옥토프레스에 추가</h2>
-
-<p>옥토프레스에 추가하는 방법은 템플릿 html 어딘가에(노출을 원하는 위치) 넣으면 끝이다.
-맨 상단 메뉴에 넣고 싶다면 source/_includes/navigation.html 파일 내부에 원하는 곳에 넣으면 된다. 당연히 하단, 본문 등 원하는 곳에 그냥 넣으면 끝이다.</p>
-
-<p>하지만. 난 우측 aside 영역에 넣기로 했다. 그리고 그냥 넣지않고 파일을 분리하기로 했다. 플러그인 처럼.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi <span class="nb">source</span>/_includes/custom/asides/google_translate.html
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>우선 google_translate.html을 열어 구글에서 제공해준 스크립트를 넣는다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi _config.yml
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>_config.yml 파일을 열어 아래처럼 default_asides 항목에 생성한 파일을 넣어준다.(원하는 순서에)</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">default_asides</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">custom/asides/google_translate.html</span><span class="p-Indicator">,</span> <span class="nv">...</span><span class="p-Indicator">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이것으로 끝.</p>
-
-<p>확인을 위해</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>rake generate
-</span><span class='line'>rake deploy
 </span></code></pre></td></tr></table></div></figure>
 
 ]]></content>

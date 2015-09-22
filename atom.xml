@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-22T08:39:44+09:00</updated>
+  <updated>2015-09-22T15:44:44+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -89,7 +89,7 @@
 
 <p>자세히 본 것은 아니라서 정확하진 않지만 Gitlab은 내부적으로 <a href="http://unicorn.bogomips.org/">unicorn</a>과 nginx의 조합으로 이뤄져 있고 기능적 처리는 unicon과 연결된다. unicon의 기본 port가 8080으로 설정되어 있기 때문에 이 부분만 연결해주면 외부 웹서버로 연결하는 것도 당연히 가능하다.</p>
 
-<p>아래는 아파치를 사용하는 상황에서의 설정 방법이다.</p>
+<p>아래는 아파치를 사용하는 상황에서의 설정 방법이다. 내용중 LimitRequestBody을 잊지말고 해주는 것이 좋다. 아니면 push에서 오류를 만날 수 있다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -118,6 +118,8 @@
 <span class='line-number'>25</span>
 <span class='line-number'>26</span>
 <span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
 </pre></td><td class='code'><pre><code class='apache'><span class='line'><span class="nt">&lt;VirtualHost</span> <span class="s">*:80</span><span class="nt">&gt;</span>
 </span><span class='line'>  <span class="nb">ServerName</span> your.domain
 </span><span class='line'>  <span class="nb">ServerSignature</span> <span class="k">Off</span>
@@ -134,6 +136,8 @@
 </span><span class='line'>  <span class="nt">&lt;Location</span> <span class="s">/</span><span class="nt">&gt;</span>
 </span><span class='line'>    <span class="nb">Order</span> deny,allow
 </span><span class='line'>    <span class="nb">Allow</span> from <span class="k">all</span>
+</span><span class='line'>    <span class="c"># push 전송시 용량 문제를 막기 위해 지정 : error: RPC failed; result=22, HTTP code = 413</span>
+</span><span class='line'>    <span class="nb">LimitRequestBody</span> <span class="m">52428800</span>
 </span><span class='line'>
 </span><span class='line'>    <span class="nb">ProxyPassReverse</span> http://127.0.0.1:8080
 </span><span class='line'>  <span class="nt">&lt;/Location&gt;</span>
@@ -185,6 +189,9 @@
 </span><span class='line'>git config --global user.email <span class="s2">&quot;사용자 이메일&quot;</span>
 </span></code></pre></td></tr></table></div></figure>
 
+
+<p>이 사용자명(특히 이메일)을 gitlab에 가입된 user와 맞춰주면 변경사항 기록시 서로 연결된다. 따라서 그냥 설정할 것이 아니라 Gitlab 설치와 기본 설정 후 사용할 계정으로 가입 후 그 계정에 맞게 맞추는 것을 권장한다. 나의 경우엔 이메일만 연관이 있고 user는 달라도 상관은 없었다(정확한 기준은 확인해 보지 못했고 실수로 다르게 넣었는데 이메일이 같으니 알아서 연결해 주더라).
+사실 Gitlab에서 프로젝트를 생성하고 최초 commit/push 전에 나오는 안내화면에 관련 설정 부분을 안내해 주고 있다.</p>
 ]]></content>
   </entry>
   

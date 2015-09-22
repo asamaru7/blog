@@ -138,6 +138,133 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-10T14:27:01+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.10</time>
+        
+           | <a href="/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/" itemprop="url">htmlspecialchars_decode와 html_entity_decode의 문자열 처리의 다른 점</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>php에서 html 구문을 그대로 출력하기 위해 <a href="http://php.net/manual/kr/function.htmlspecialchars.php">htmlspecialchars</a>를 사용한다. 반대로 출력된 문장(Special HTML entities)을 되돌리기 위해서는 일반적으로 <a href="http://php.net/manual/kr/function.htmlspecialchars-decode.php">htmlspecialchars_decode</a>를 많이 사용한다. 그런데 이 함수를 사용하는데 문제가 있다.
+htmlspecialchars_decode는 <code>&amp;nbsp;</code>를 공백으로 다시 되돌려 주지 않는다.</p>
+
+<p>다시 htmlspecialchars로 돌아가서 메뉴얼을 보면 아래와 같이 변환된다고 설명되어 있다.</p>
+
+<ul>
+<li>&lsquo;&amp;&rsquo;(앰퍼샌드)는 &lsquo;<code>&amp;amp;</code>'가 됩니다</li>
+<li>&lsquo;&ldquo;&rsquo;(겹따옴표)는 ENT_NOQUOTES를 설정하지 않았을 때 &lsquo;&quot;'가 됩니다.</li>
+<li>&lsquo;&rsquo;&lsquo;(홑따옴표)는 ENT_QUOTES가 설정되었을 때만 &rsquo;&#039;&lsquo;가 됩니다.</li>
+<li>&lsquo;&lt;&rsquo;(미만)은 &lsquo;<code>&amp;lt;</code>'가 됩니다.</li>
+<li>&lsquo;>&rsquo;(이상)은 &lsquo;<code>&amp;gt;</code>'가 됩니다.</li>
+</ul>
+
+
+<p>보다시피 엄밀히 말하자면 htmlspecialchars는 공백을 변환시키지 않는다. 따라서 대응되는 함수인 htmlspecialchars_decode는 <code>&amp;nbsp;</code> 공백 문자열을 되돌리지도 않는다.</p>
+
+<p>그럼 <code>&amp;nbsp;</code>와 같은 것은 어떻게 처리를 해야할까?
+<a href="http://php.net/manual/en/function.html-entity-decode.php">html_entity_decode</a>를 사용하면 된다. 이 함수는 <a href="http://php.net/manual/kr/function.htmlentities.php">htmlentities</a>와 대응되는 함수이다.</p>
+
+<p>그럼 htmlentities 함수는 무엇인가? 메뉴얼에 따르면 다음과 같다.</p>
+
+<blockquote><p>htmlentities()는 HTML 문자 엔티티에 존재하는 모든 문자를 엔티티로 변환하는 점을 제외하면, htmlspecialchars()와 완전히 동일합니다.</p></blockquote>
+
+<p>중요한 부분은 모든 문자를 변환한다는 점이다. 이 부분이 htmlspecialchars와의 차이라고 한다.</p>
+
+<p>정리하자면</p>
+
+<blockquote><p>htmlspecialchars와 htmlentities는 유사하나 htmlentities가 더 많은 문자를 변환한다.
+htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode가 더 많은 문자를 되돌린다.</p></blockquote>
+
+<p>따라서 결론은 <code>&amp;nbsp;</code>와 같은 문자열까지 모두 decode 하려면 html_entity_decode를 사용하면 된다.</p>
+
+<h2>주의</h2>
+
+<p>자.. 이렇게 해피앤딩이 되면 좋겠지만 몇가지 주의 사항이 있다. html_entity_decode 메뉴얼을 보면 다음과 같은 설명이 있다.</p>
+
+<blockquote><p>You might wonder why trim(html_entity_decode(&lsquo;&nbsp;&rsquo;)); doesn&rsquo;t reduce the string to an empty string, that&rsquo;s because the &lsquo;&nbsp;&rsquo; entity is not ASCII code 32 (which is stripped by trim()) but ASCII code 160 (0xa0) in the default ISO 8859-1 encoding.</p></blockquote>
+
+<p>그렇다. html_entity_decode를 사용해서 <code>&amp;nbsp;</code>를 변환하면 공백이 일반적인 공백과는 다른 공백이다. 이게 왜 문제가 되느냐? 아래의 예시를 보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="nv">$str</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">html_entity_decode</span><span class="p">(</span><span class="s2">&quot;&amp;nbsp;X&amp;nbsp;&quot;</span><span class="p">));</span>
+</span><span class='line'><span class="k">echo</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;ok&#39;</span> <span class="o">:</span> <span class="s1">&#39;oops&#39;</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>쉽게 생각하면 &lsquo;ok'가 나올것 같지만 위에 설명했던 것과 같이 'oops'가 나온다. 그럼 어떻게 해결을 해야할까?</p>
+
+<p>메뉴얼에서 ASCII code 160 (0xa0)로 변경된다고 하니 이것을 참고해서 조금 고쳐보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="nv">$str</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">str_replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\xa0</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nb">html_entity_decode</span><span class="p">(</span><span class="s2">&quot;&amp;nbsp;X&amp;nbsp;&quot;</span><span class="p">)));</span>
+</span><span class='line'><span class="k">echo</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;ok&#39;</span> <span class="o">:</span> <span class="s1">&#39;oops&#39;</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>이제 해결이 되었을까? 아니다. 결과는 oops이다.(사실 default_charset에 따라 ok가 나올 수도 있다.) 이유는 위에 메뉴얼에 있다.
+&lsquo;default ISO 8859-1&rsquo; 인코딩일 때 0xa0로 변환된다고 되어 있다. 사실 나의 환경은 &lsquo;UTF-8'이다. 대부분 그럴 것이라고 생각한다. 일단 맞는지 확인해 보자. 아래와 같이 default_charset을 ISO-8859-1에 맞추고 실행해보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="nv">$str</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">str_replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\xa0</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nb">html_entity_decode</span><span class="p">(</span><span class="nb">iconv</span><span class="p">(</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">,</span> <span class="s1">&#39;ISO-8859-1&#39;</span><span class="p">,</span> <span class="s2">&quot;&amp;nbsp;X&amp;nbsp;&quot;</span><span class="p">))));</span>
+</span><span class='line'><span class="k">echo</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;ok&#39;</span> <span class="o">:</span> <span class="s1">&#39;oops&#39;</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>결과는 메뉴얼대로 &lsquo;ok&rsquo; 이다. 그럼 &lsquo;UTF-8'에서는 어떻게 하나? 아래의 코드를 보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="nv">$str</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">str_replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\xc2\xa0</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nb">html_entity_decode</span><span class="p">(</span><span class="s2">&quot;&amp;nbsp;X&amp;nbsp;&quot;</span><span class="p">)));</span>
+</span><span class='line'><span class="k">echo</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;ok&#39;</span> <span class="o">:</span> <span class="s1">&#39;oops&#39;</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>드디어 &lsquo;ok'가 나온다. 중요한 차이는 &ldquo;\xc2\xa0&rdquo; 이다. UTF-8에서는 &ldquo;\xc2\xa0"는 <a href="http://www.utf8-chartable.de/unicode-utf8-table.pl?start=128&amp;number=128&amp;utf8=string-literal&amp;unicodeinhtml=hex">UTF-8 encoding table and Unicode characters</a>에서 확인해보면 UTF-8에서의 "NO-BREAK SPACE"라고 되어 있다.</p>
+
+<p>참 별것 아닌것 같은 함수가 잘모르고 사용하다보면 예상치 못한 문제들을 일으킨다. 사실 <code>&amp;nbsp;</code>만 처리하면 된다면 더 간단하게 <code>str_replace('&amp;nbsp;', ' ', $str)</code>로 해결해도 된다. 하지만 프로그램에선 항상 어떤 값이 들어올지 모르는 것이니 보다 명확하게 처리하는 것이 낫지 않을까?</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-09T21:36:59+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.09</time>
         
            | <a href="/2015/09/09/asynctask-init-problem/#disqus_thread" itemprop="discussionUrl"
@@ -1241,93 +1368,6 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-08-30T07:11:54+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.08.30</time>
-        
-           | <a href="/2015/08/30/realty-tax/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/08/30/realty-tax/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/08/30/realty-tax/" itemprop="url">증여받은 부동산의 양도소득세</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>2015년 현재. 1가구 1주택의 경우 주택매매시 양도 소득세가 비과세된다. 하지만 1가구 1주택에 해당하는 상황에서도 비과세가 되지 않는 경우들이 있는데 그중 하나가 증여받은 부동산이다.</p>
-
-<p>증여받은 부동산의 경우 증여 후 5년 이내에 매매가 일어날 경우 부당행위계산에 해당될 수 있다.
-법이라는 것이 워낙에 복잡하고 다양하며 해석이 상황에 따라 달라질 수 있어 참 많이 알아둬야 한다는 생각이 든다.</p>
-
-<p>몇달전 내가 이 경우에 해당하여 골치가 아팠던 적이 있다. 증여 후 5년이 되지 않은 상황에 이런 사실을 모르고 매매를 해버렸고 이후에 이 사실을 알게되었을 때는 난감하기 그지 없었다. 법무사, 지인 등을 통해서 알아봐도 명쾌한 답을 받을 수 없었다. &ldquo;대부분 세금을 내는 수 밖에 없다."라는 결론 이었다. 하지만 상황이 조금 복잡하게 얽혀있어 세금이 감당할 수 없는 수준이다보니 그냥 쉽게 생각할 수 없었다.</p>
-
-<p>하지만&hellip; 몇일을 조사해본 결과. 세금은 낼 필요가 없다는 것을 발견했다.</p>
-
-<blockquote><p>▣ 소득세법 제101조 [ 양도소득의 부당행위계산 ] 제2항 각 호</p>
-
-<p>② 거주자가 제1항에서 규정하는 특수관계인(제97조의2 제1항을 적용받는 배우자 및 직계존비속의 경우는 제외한다)에게 자산을 증여한 후 그 자산을 증여받은 자가 그 증여일부터 5년 이내에 다시 타인에게 양도한 경우로서 제1호에 따른 세액이 제2호에 따른 세액보다 적은 경우에는 증여자가 그 자산을 직접 양도한 것으로 본다. 다만, 양도소득이 해당 수증자에게 실질적으로 귀속된 경우에는 그러하지 아니하다.(2014.01.01 개정)</p></blockquote>
-
-<p>여기서 중요한 부분. 양도소득이 해당 수증자에게 실질적으로 귀속된 경우에는 그러하지 아니하다.
-이 부분의 예외조항으로 인해 나의 경우는 비과세에 해당되었다.
-정리하자면 부당행위계산의 경우 탈세를 위한 증여를 막기위한 법이니 탈세 목적을 위한 증여가 아니면 해당되지 않는다는 것.</p>
-
-<p>아래에는 내가 찾았던 자료 중 참고가 되었던 사이트 목록이다.</p>
-
-<p>직계존비속으로부터 증여받은 주택의 비과세.
-<a href="http://www.taxboy.co.kr/gnuboard4/bbs/board.php?bo_table=QNA1&amp;wr_id=8142">http://www.taxboy.co.kr/gnuboard4/bbs/board.php?bo_table=QNA1&amp;wr_id=8142</a></p>
-
-<p>증여받은집, 3년후에 매매가능한가요?
-<a href="http://startline.tistory.com/179">http://startline.tistory.com/179</a></p>
-
-<p>증여받은 아파트 비과세요건
-<a href="http://www.etaxkorea.net/sub/sub_page.php?sp=s0107&amp;md=view&amp;minno=999995&amp;code1=&amp;nts_year=2014&amp;CURRENT_PAGE=5775">http://www.etaxkorea.net/sub/sub_page.php?sp=s0107&amp;md=view&amp;minno=999995&amp;code1=&amp;nts_year=2014&amp;CURRENT_PAGE=5775</a></p>
-
-<p>증여주택은 몇년후 매매하면 비과세가 됩니까 ?
-<a href="http://tj4.joinsland.com/consult/read.asp?qno=30389&amp;ReplyUserID=7300">http://tj4.joinsland.com/consult/read.asp?qno=30389&amp;ReplyUserID=7300</a></p>
-
-<p>부모님으로 부터 증여받은 부동산(주택) 매도
-<a href="http://blog.daum.net/_blog/BlogTypeView.do?blogid=08Ku8&amp;articleno=16153767&amp;categoryId=540732&amp;regdt=20130522170301">http://blog.daum.net/_blog/BlogTypeView.do?blogid=08Ku8&amp;articleno=16153767&amp;categoryId=540732&amp;regdt=20130522170301</a></p>
-
-<p>O 직계존비속간 이월과세 및 비과세
-<a href="http://www.cnprea.com/information/tax.cnp?cid=3643">http://www.cnprea.com/information/tax.cnp?cid=3643</a></p>
-
-<p>O 우회양도에 대한 부당행위계산의 부인
-<a href="https://books.google.co.kr/books?id=kNtpBQAAQBAJ&amp;pg=PA696&amp;lpg=PA696&amp;dq=%EB%B6%80%EB%8B%B9%ED%96%89%EC%9C%84%EA%B3%84%EC%82%B0%EB%B6%80%EC%9D%B8+%EC%A6%9D%EC%97%AC&amp;source=bl&amp;ots=xWtH0GZjWi&amp;sig=X2k_gEaXq4RkOSsTc8iteqTIaK4&amp;hl=ko&amp;sa=X&amp;ei=SfpJVZfbHoK5mAWY64DoAw&amp;ved=0CEIQ6AEwBg#v=onepage&amp;q=%EB%B6%80%EB%8B%B9%ED%96%89%EC%9C%84%EA%B3%84%EC%82%B0%EB%B6%80%EC%9D%B8%20%EC%A6%9D%EC%97%AC&amp;f=false">https://books.google.co.kr/books?id=kNtpBQAAQBAJ&amp;pg=PA696&amp;lpg=PA696&amp;dq=%EB%B6%80%EB%8B%B9%ED%96%89%EC%9C%84%EA%B3%84%EC%82%B0%EB%B6%80%EC%9D%B8+%EC%A6%9D%EC%97%AC&amp;source=bl&amp;ots=xWtH0GZjWi&amp;sig=X2k_gEaXq4RkOSsTc8iteqTIaK4&amp;hl=ko&amp;sa=X&amp;ei=SfpJVZfbHoK5mAWY64DoAw&amp;ved=0CEIQ6AEwBg#v=onepage&amp;q=%EB%B6%80%EB%8B%B9%ED%96%89%EC%9C%84%EA%B3%84%EC%82%B0%EB%B6%80%EC%9D%B8%20%EC%A6%9D%EC%97%AC&amp;f=false</a></p>
-
-<p>양도소득세부과처분취소 : 판례 - 양도소득이 증여자 귀속
-<a href="http://www.law.go.kr/LSW/precInfoP.do?precSeq=172450">http://www.law.go.kr/LSW/precInfoP.do?precSeq=172450</a></p>
-
-<p>양도소득이 수증자에게 실질적으로 귀속된 경우는? - 수증자에게 실질적으로 귀속될 경우 제외, 자산의 취득가액은 증여일 기준으로 책정이 맞다
-<a href="http://www.intn.co.kr/news/articleView.html?idxno=327710">http://www.intn.co.kr/news/articleView.html?idxno=327710</a></p>
-
-<p>양도소득이 수증자에게 실질적으로 귀속되는 경우 부당행위계산 부인 외
-<a href="http://www.cnprea.com/information/tax.cnp?cid=3600">http://www.cnprea.com/information/tax.cnp?cid=3600</a></p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1382,7 +1422,7 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (14)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (2)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (14)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (2)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1391,6 +1431,8 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/09/22/adding-external-blog-to-naver-blog-search-section/">외부 블로그를 네이버 블로그 검색 섹션에 노출시키기</a>
+    
     <a class="list-group-item " href="/2015/09/22/how-to-install-gitlib-on-centos/">CentOS에 Gitlab 설치하기</a>
     
     <a class="list-group-item " href="/2015/09/21/how-to-install-gogs-on-centos/">CentOS에 gogs 설치하기</a>
@@ -1398,8 +1440,6 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
     <a class="list-group-item " href="/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/">안드로이드 TabLayout에서 setupWithViewPager() 사용시 Swipe 후 Tab 클릭시 ViewPager가 변경되지 않는 버그 수정</a>
     
     <a class="list-group-item " href="/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/">안드로이드 ViewPager.setOnPageChangeListener() Deprecated 대응</a>
-    
-    <a class="list-group-item " href="/2015/09/20/css-units/">CSS Units - px, pt, em, % 등</a>
     
   </div>
 </section>

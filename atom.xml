@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-25T11:03:54+09:00</updated>
+  <updated>2015-09-25T20:21:49+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,201 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[안드로이드 테마 정의시 parent를 지정하지 않을 경우]]></title>
+    <link href="http://blog.asamaru.net/2015/09/25/if-android-theme-parent-doesnt-set-attribute/"/>
+    <updated>2015-09-25T14:18:08+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/25/if-android-theme-parent-doesnt-set-attribute</id>
+    <content type="html"><![CDATA[<p>이번 포스팅은 정확하지 않은 정보일 확률이 높다. 하지만 비슷한 경우를 만나게되면 임시 해결 방법으론 도움이 될 것 같아 글을 남겨 본다.
+이번에 작업하면서 발생한 문제를 해결하는 과정에서 이것저것 해보면서 알게된 부분을 정리해보려고 한다. 일단 문제를 만난 상황부터 이야기하자면 이렇다.</p>
+
+<p>작업 중에 DialogTheme를 정의해서 사용할 일이 있었다. 그래서 다음과 같이 정의해서 사용중이었다. Theme가 무엇인지에 대해서는 <a href="http://developer.android.com/intl/ko/guide/topics/ui/themes.html">http://developer.android.com/intl/ko/guide/topics/ui/themes.html</a> 를 참고하자.</p>
+
+<p><strong> values/styles.xml </strong></p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowNoTitle&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowFullscreen&quot;</span><span class="nt">&gt;</span>false<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowBackground&quot;</span><span class="nt">&gt;</span>@android:color/transparent<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:colorBackgroundCacheHint&quot;</span><span class="nt">&gt;</span>@null<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowIsTranslucent&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'><span class="nt">&lt;/style&gt;</span>
+</span><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">/&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>굳이 <code>af_DialogTheme.Base</code>를 정의하고 다시 <code>af_DialogTheme</code>에서 이를 상속받아 처리하는 것에는 이유가 있다. Theme에서 사용하는 속성들 또는 상황이 API 버전에 따라 다르기 때문이다. 예를 들어 내가 버전별로 다르게 사용한 style은 아래와 같다.</p>
+
+<p><strong> values-v19/styles.xml </strong></p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowTranslucentStatus&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'><span class="nt">&lt;/style&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong> values-v21/styles.xml </strong></p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:statusBarColor&quot;</span><span class="nt">&gt;</span>@android:color/transparent<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowTranslucentStatus&quot;</span><span class="nt">&gt;</span>false<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'><span class="nt">&lt;/style&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>위 처럼 일부 속성만 replace하려면 공통 부분을 부모 스타일로 정의하고 받아서 쓰도록 해야한다. 같은 테마 이름을 사용하게되면 대체 xml 문서(values-v19/styles.xml, values-v21/styles.xml)에서 정의된 속성을 반영하는게 아니라 통째로 덮어써서 공통 부분은 정의가 안된 것과 동일하게 처리된다. 이렇게 통째로 덮어쓰지 않고 부분만 변경되게 하기 위해 parent 속성을 사용하는 것이다.</p>
+
+<p>여기까지가 문제가 되는 부분에 대한 설명이다. 위의 내용을 보고 문제가 될 수 있는 부분을 찾을 수 있겠는가? 이유를 안다면 아래의 내용을 볼 필요가 없다. 나는 몰랐기 때문에 당혹스러웠다.</p>
+
+<p>이 상태로 빌드해서 테스트하면 아무 이상도 없고 예상대로 동작한다. 그런데 release를 위해 빌드를 하는 순간 아래의 에러를 만나게 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='XML'><span class='line'>Error:(11) Error: Style Resource definition cycle: AppThemeDialog =&gt; af_DialogTheme =&gt; af_DialogTheme.Base =&gt; af_DialogTheme [ResourceCycle]
+</span><span class='line'>    <span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;AppThemeDialog&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>                                 ~~~~~~~~~~~~~~~~~~~~~~~
+</span><span class='line'>   Explanation for issues of type &quot;ResourceCycle&quot;:
+</span><span class='line'>   There should be no cycles in resource definitions as this can lead to
+</span><span class='line'>   runtime exceptions.
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>당황스럽다. 분명 테스트시에는 한번도 본 적 없는 오류다. 내용을 보자. <code>ResourceCycle</code>에 관련된 문제로 보인다. 맨 위의 문장과 함께 보면 Resource의 순환참조라는 이야기로 보인다. 하지만 위의 코드들을 보면 알겠지만 순환참조라고 할만한 내용은 없다. 난 절대로 오류 메시지처럼 참조 시키지 않았다.</p>
+
+<p>처음엔 이유를 몰라 어떻게 해야 할지 몰랐다. <code>af_DialogTheme.Base =&gt; af_DialogTheme</code>라고 나오는데 그렇게 지정하지 않았는데 왜 알아서 참조를 한다고 난리일까? 고민을 하던 중 옆에 있던 후배가 하는 말이 &ldquo;저기 이름에 있는 . 때문에 그런것 아니냐?"라는 것이다. 난 말도 안된다고 했다. 어떻게 그렇게 해석 될 수 있느냐? 게다가 .Base라는 구문은 안드로이드 내부 테마들이 정의될 때 사용하던 네이밍 규칙을 따라 한 것인데 그럴리가 없다는 것이 내 생각이었다. 하지만 <strong>결함의 발견은 절대 그럴리가 없다는 부분부터 시작해야 한다.</strong></p>
+
+<p>결론은 후배의 말이 맞았다. name을 <code>af_DialogTheme.Base</code>에서 <code>af_DialogTheme_Base</code>로 변경하자 오류는 사라졌다. 아&hellip; 어의없다.
+보다 확실히 하기 위해 아래와 같이 name을 둔 채로 parent를 추가했다. 당연히 상속받을 것은 없으므로 공백으로&hellip;</p>
+
+<p><strong> values/styles.xml </strong></p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span> <span class="na">parent=</span><span class="s">&quot;&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowNoTitle&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>이렇게 처리해도 오류는 사라졌다. 그럼 이제 경험에 의한 결론을 내려보자(서두에 이야기한 것 처럼 그냥 내가 추측하는 것이니 틀릴 확률이 높다는 것을 감안하고 보자).</p>
+
+<blockquote><p>style 정의시 name에 .을 사용하고 parent가 지정되지 않았다면 . 앞부분의 name을 parent로 정의한 것으로 보고 상속을 시도한다.</p></blockquote>
+
+<p>결론적으로 내 의도는 .Base가 붙은 녀석이 부모가 되는 것을 원하고 네이밍한 것이 반대로 자식이 되어 순환참조를 발생시키게 한 것이다.</p>
+
+<p>그런데 상황을 보자면 위에 정리한 내용이 맞다고 보아진다. 그런데 이상하다. 왜 release 모드에서만 오류가 나는가? 그래서 오류 부분을 조금 더 자세히 보니 <code>:app:lintVitalRelease</code> 영역에서 오류가 난다. 그렇다. <a href="https://ko.wikipedia.org/wiki/Lint">lint</a> 오류다. 오류가 의심되는 코드를 검증하는 과정에서 오류를 발생시킨 것이다.</p>
+
+<p>여기서 최종적인 나의 생각(추측)을 정리하겠다.</p>
+
+<blockquote><p>예전(구버전 안드로이드)에는 위의 설명대로 .을 기준으로한 theme(style) 상속의 개념이 사용되었기 때문에 lint에 추가되어 있었다. 그런데 시간이 지나면서 이 기능은 제거되고 parent라는 속성이 추가되었으나 lint에서는 검증 코드가 제외되지 않았다.</p></blockquote>
+
+<p>이렇게 생각하는 이유는 실제로 lint 영역에서만 오류가 나지 동작시에는 아무런 문제가 없다.</p>
+
+<h3>그래서 어떻게 하면 되나?</h3>
+
+<blockquote><p>style를 사용한 theme 정의시 parent가 없다면 name에 .을 사용하지 말거나 공백으로라도 parent 속성을 사용하자.</p></blockquote>
+
+<p><code>Style Resource definition cycle</code> 오류를 만난다면 위의 글을 참고해서 해결에 도움이 되었으면 하는 바램이다. 나도 오늘 후배의 한마디가 아니었다면 아직도 헬게이트를 경험하고 있을지도 모른다.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거]]></title>
+    <link href="http://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal/"/>
+    <updated>2015-09-25T13:47:37+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal</id>
+    <content type="html"><![CDATA[<p>지난 포스팅 <a href="http://blog.asamaru.net/2015/08/28/android-getcolor-getdrawable-deprecated/">Android 6(API 23)의 getColor() deprecated 대응 + getDrawable() deprecated</a>에서 잠깐 언급했던 <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a>에 대해 이야기하고자 한다.</p>
+
+<p>우선 안드로이드에 안내하고 있는 원문은 아래와 같다.</p>
+
+<ul>
+<li>영문 : <a href="https://developer.android.com/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP Client Removal</a></li>
+<li>한글 : <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a></li>
+</ul>
+
+
+<p>한글 문서의 내용은 아래와 같다.</p>
+
+<blockquote><p>Apache HTTP 클라이언트에 대한 지원을 제거합니다. 앱이 이 클라이언트를 사용하고 Android 2.3(API 레벨 9) 이상을 대상으로 하는 경우, HttpURLConnection 클래스를 대신 사용하세요. 이는 투명한 압축과 응답 캐싱을 통해 네트워크 사용량을 줄이고 전력 소모를 최소화하기 때문에 API가 더 효율적입니다. Apache HTTP API를 계속 사용하려면 우선 다음과 같은 컴파일-시간 종속성을 build.gradle 파일에서 선언해야 합니다.
+<code>gradle
+android {
+    useLibrary 'org.apache.http.legacy'
+}
+</code></p></blockquote>
+
+<p>이 부분이 제거되면서 문제가 되는 부분은 위의 안내와 같이 gradle에 임시 코드를 넣음으로써 해결이 가능하다. 하지만 제거 과정이 여러가지 문제를 일으켰다. 사실 안드로이드에서는 해당 기능을 Deprecated하고 대체  기능의 사용을 권장하고 있었으나 이를 사용하는 오픈소스 라이브러리들이 미리 대응을 하지 않았던 것이 문제가 되었다. 나의 경우는 <a href="https://github.com/ACRA/acra">ACRA</a>와 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>가 해당 기능을 사용해서 구현되어 있어서 <code>org.apache.http.legacy</code>를 통해 급한 문제들은 해결했었다.</p>
+
+<p>현재 기준으로 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>는 1.4.9로 버전업 되면서 Http에 관련된 부분을 대체 라이브러리로 교체함으로써 문제가 해결되었고 <a href="https://github.com/ACRA/acra">ACRA</a>의 경우는 4.6.2로 버전 기준으로 처리가 되었다고 어디서 본것 같았는데 실제로는 빌드 과정에서 오류가 발생했다. 그래서 다시 알아보니 4.7.0 버전에서 HtttpUrlConnection를 사용함으로써 Android M (6.0)을 정식 지원한다고 안내되어 있다. 하지만 아직 RC2로 정식 버전업이 되지 않았다. 나의 경우는 조금만 더 기다리면 useLibrary &lsquo;org.apache.http.legacy'를 사용하지 않아도 될 것으로 예상된다.</p>
+
+<p>사실 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>도 현재 버전에서는 문제가 있다. 공식 사이트에서는 해당 현상에 대한 이야기는 없으나 나의 경우엔 proguard 적용시 완료 callback이 호출되지 않는 문제가 있었다. 관련해서는 <a href="http://blog.asamaru.net/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/">Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결</a>에 별도로 포스팅한다.</p>
+
+<p>어쨌든 이 문제는 시간이 지나면서 오픈 소스들이 대응을 시작하면 대부분 해결될 것으로 생각된다.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결]]></title>
+    <link href="http://blog.asamaru.net/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/"/>
+    <updated>2015-09-25T12:10:09+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure</id>
+    <content type="html"><![CDATA[<p>안드로이드 앱 개발시 사용하던 <a href="https://github.com/loopj/android-async-http">android-async-http</a>가 최근 1.4.9 버전으로 버전업되었다. 1.4.8 이하 버전을 사용할 경우 이전에 포스팅한 <a href="http://blog.asamaru.net/2015-09-25-android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>와 관련된 문제가 있다.</p>
+
+<p>그런데 나는 이 1.4.9 버전을 사용하면서 다른 문제가 생겼다. 빌드에서 오류나 경고는 전혀 나타나지 않지만 URL 호출을 하면 onStart, onProgress까지는 들어오는데 onSuccess, onFailure를 호출해 주지 않았다. 그런데 이 현상이 proguard를 적용할 때만 발생한다는 것이다. 정밀하게 테스트해보지 않아 정확한 원인을 찾지는 못했지만 대략적인 상황을 보면 proguard에 의해 난독화 처리되는 부분이 문제로 보인다(그런데 실제로 내부 소스를 살펴보면 reflection 등을 사용하거나해서 난독화에 영향을 받을 만한 부분을 찾지 못했다).</p>
+
+<p>우선 내가 사용했던 proguard의 설정 중 영향을 줄만한 부분은 다음과 같다. 나머지는 대부분 keep 등의 설정으로 <a href="https://github.com/loopj/android-async-http">android-async-http</a>에 영향을 줄 만한 부분은 없다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>-optimizationpasses 5
+</span><span class='line'>-repackageclasses ''
+</span><span class='line'>-allowaccessmodification
+</span><span class='line'>-overloadaggressively
+</span><span class='line'>-verbose</span></code></pre></td></tr></table></div></figure>
+
+
+<p>사실 이 문제에 대해서 검색해보면 다른 이야기들이 많다. 대부분 호출이 되지 않는다는 질문을 하는 사람들의 경우는 onSuccess, onFailure의 오버로딩에 관련된 문제이다. 실제로 android-async-http는 ResponseHandler에 따라 여러 개의 onSuccess, onFailure 함수들을 가지고 있다. 이 함수들은 반환되는 데이터의 형태에 따라 다른 함수를 호출해주도록 되어있다. 이 부분은 편리하긴하나 개인적으론 조금 꺼려지는 형태다. 질문이 많이 올라오는 것처럼 반환 형태에 맞는 함수를 구현하는 것을 누락시킬 수 있기 때문이다. 어쨌든 나의 경우는 이에 해당하지 않았다. 확인을 위해 라이브러리 소스를 일부 수정해서 테스트 했으나 그 전단계까지도 들어오지 않았다.</p>
+
+<p>이 문제는 proguard를 적용했을 때만 발생하는 문제였으므로 아래와 같이 proguard에 추가해주면 간단히 해결된다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>-keep class com.loopj.android.http.** { *; }
+</span><span class='line'>-keep interface com.loopj.android.** { *; }</span></code></pre></td></tr></table></div></figure>
+
+
+<p>그런데 개인적으로 이 해결법은 어떤 것이 문제인지 확인하지도 못했을 뿐아니라 문제를 해결하기 위해 통째로 proguard에서 제외하는 것이 맘에들지 않았다. 그래서 수십번의 빌드를 통해 어느 클래스가 문제를 일으키는지 찾아냈다. 아.. 인간 승리다. 수십여개의 클래스들을 넣어보고 빼보고&hellip;</p>
+
+<p>결론은 아래의 코드를 proguard에 추가하면 문제가 해결된다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>-keep class com.loopj.android.http.HttpGet { *; }</span></code></pre></td></tr></table></div></figure>
+
+
+<p>대충 소스를 보니 HttpGet는 이번에 Apache HTTP 클라이언트가 제거되면서 이를 대체하기 위한 라이브러리를 교체하면서 추가된 클래스로 보인다. 그런데 소스를 봐도 이게 왜 proguard에 영향을 받는지 잘 모르겠지만 위의 코드를 넣음으로써 해결이 되는 것은 확인했다. 더 자세히 코드를 추적해 간다면 원인을 찾을 수 있을지도 모르지만 굳이 거기까지 내가할 필요는 없다고 보고 github에 이슈를 등록하려고 한다. 해당 개발자들이 다음버전에 문제를 해결해 주기를 바라며&hellip;</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Git : 빈 디렉토리 추가하기]]></title>
@@ -2251,403 +2446,6 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
 <li><a href="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a></li>
 </ul>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()]]></title>
-    <link href="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/"/>
-    <updated>2015-09-14T20:12:59+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein</id>
-    <content type="html"><![CDATA[<p>php 프로그램 개발중 문자열의 유사도를 계산해야 할 일이 생겼다. 그래서 찾다보니 php 내장 함수에 해당 기능이 이미 구현되어 있었다. 비슷한 함수가 몇가지 존재하고 있어서 조금 더 자세히 알아 보았다.</p>
-
-<h2><a href="http://php.net/manual/en/function.levenshtein.php">levenshtein()</a> 함수</h2>
-
-<p>위키피디아에 <a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein distance</a>에 대한 상세한 설명이 나와있다.</p>
-
-<p><a href="http://php.net/manual/en/function.levenshtein.php">php 메뉴얼의 설명</a>에 따르면 Levenshtein distance는 문자열1을 문자열2로 변환하는데 필요한 최소한의 치환, 추가, 삭제의 횟수를 나타낸다고 되어 있다. 이 알고리즘의 시간복잡도는 <code>O(m*n)</code>이며, 여기서 m과 n은 str1, str2의 각각의 길이다. 비슷한 함수인 <a href="http://php.net/manual/en/function.similar-text.php">similar_text()</a>가 가지는 시간 복잡도 <code>O(max(n,m)**3)</code>에 비해서는 덜하지만 그래도 비싼 처리 비용이 든다.</p>
-
-<p>함수의 기본형 사용시 위의 설명대로 변환에 필요한 최소한의 치환, 추가, 삭제의 횟수를 계산하지만 추가 인자를 사용하면 각 변환에 필요한 비용을 지정할 수 있다. 이것은 더 일반적이고 적용성이 높지만 효율적이지 못하다.</p>
-
-<h3>기본 사용법</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nx">int</span> <span class="nb">levenshtein</span> <span class="p">(</span> <span class="nx">string</span> <span class="nv">$str1</span> <span class="p">,</span> <span class="nx">string</span> <span class="nv">$str2</span> <span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>확장 사용법</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nx">int</span> <span class="nb">levenshtein</span> <span class="p">(</span> <span class="nx">string</span> <span class="nv">$str1</span> <span class="p">,</span> <span class="nx">string</span> <span class="nv">$str2</span> <span class="p">,</span> <span class="nx">int</span> <span class="nv">$cost_ins</span> <span class="p">,</span> <span class="nx">int</span> <span class="nv">$cost_rep</span> <span class="p">,</span> <span class="nx">int</span> <span class="nv">$cost_del</span> <span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>함수 인자</h3>
-
-<h4>str1</h4>
-
-<p>Levenshtein distance를 계산할 문자열1</p>
-
-<h4>str2</h4>
-
-<p>Levenshtein distance를 계산할 문자열2</p>
-
-<h4>cost_ins</h4>
-
-<p>문자 추가 비용(가중치)</p>
-
-<h4>cost_rep</h4>
-
-<p>문자 치환 비용(가중치)</p>
-
-<h4>cost_del</h4>
-
-<p>문자 삭제 비용(가중치)</p>
-
-<h3>반환값</h3>
-
-<p>두 문자열의 Levenshtein-Distance 반환한다. 단, 입력된 두 문자열 중 하나라도 255 글자를 넘는다면 -1을 반환한다.</p>
-
-<h3>예시</h3>
-
-<p>메뉴얼에 나와 있는 예시 중 UTF-8 인코딩에 관련된 문제와 해결방법이 나와있어서 그 예시를 제시한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
-</span><span class='line'><span class="k">echo</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;votre&#39;</span><span class="p">);</span>
-</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-</span><span class='line'><span class="k">echo</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;nôtre&#39;</span><span class="p">);</span>
-</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// 결과</span>
-</span><span class='line'><span class="c1">// 1</span>
-</span><span class='line'><span class="c1">// 2</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>위의 결과를 보면 의아할 수 있다. 분명 두 예시 모두에서 글자가 하나씩 다르므로 결과가 1과 1이 나올 것이라고 예상되지만 결과는 1과 2가 나왔다. 이유는 UTF-8문자열 때문이다. 이를 개선하는 함수의 예시는 다음과 같다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
-</span><span class='line'><span class="c1">// Convert an UTF-8 encoded string to a single-byte string suitable for</span>
-</span><span class='line'><span class="c1">// functions such as levenshtein.</span>
-</span><span class='line'><span class="c1">//</span>
-</span><span class='line'><span class="c1">// The function simply uses (and updates) a tailored dynamic encoding</span>
-</span><span class='line'><span class="c1">// (in/out map parameter) where non-ascii characters are remapped to</span>
-</span><span class='line'><span class="c1">// the range [128-255] in order of appearance.</span>
-</span><span class='line'><span class="c1">//</span>
-</span><span class='line'><span class="c1">// Thus it supports up to 128 different multibyte code points max over</span>
-</span><span class='line'><span class="c1">// the whole set of strings sharing this encoding.</span>
-</span><span class='line'><span class="c1">//</span>
-</span><span class='line'><span class="k">function</span> <span class="nf">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="o">&amp;</span><span class="nv">$map</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>    <span class="c1">// find all multibyte characters (cf. utf-8 encoding specs)</span>
-</span><span class='line'>    <span class="nv">$matches</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">preg_match_all</span><span class="p">(</span><span class="s1">&#39;/[\xC0-\xF7][\x80-\xBF]+/&#39;</span><span class="p">,</span> <span class="nv">$str</span><span class="p">,</span> <span class="nv">$matches</span><span class="p">))</span>
-</span><span class='line'>        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span> <span class="c1">// plain ascii string</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="c1">// update the encoding map with the characters not already met</span>
-</span><span class='line'>    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">as</span> <span class="nv">$mbc</span><span class="p">)</span>
-</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]))</span>
-</span><span class='line'>            <span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">128</span> <span class="o">+</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$map</span><span class="p">));</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="c1">// finally remap non-ascii characters</span>
-</span><span class='line'>    <span class="k">return</span> <span class="nb">strtr</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$map</span><span class="p">);</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// Didactic example showing the usage of the previous conversion function but,</span>
-</span><span class='line'><span class="c1">// for better performance, in a real application with a single input string</span>
-</span><span class='line'><span class="c1">// matched against many strings from a database, you will probably want to</span>
-</span><span class='line'><span class="c1">// pre-encode the input only once.</span>
-</span><span class='line'><span class="c1">//</span>
-</span><span class='line'><span class="k">function</span> <span class="nf">levenshtein_utf8</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>    <span class="nv">$charMap</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
-</span><span class='line'>    <span class="nv">$s1</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
-</span><span class='line'>    <span class="nv">$s2</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s2</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="k">return</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">);</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="cp">?&gt;</span><span class="x"></span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>위의 함수를 이용해서 처음 예시를 다시 실행해보자.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
-</span><span class='line'><span class="k">function</span> <span class="nf">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="o">&amp;</span><span class="nv">$map</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>    <span class="nv">$matches</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">preg_match_all</span><span class="p">(</span><span class="s1">&#39;/[\xC0-\xF7][\x80-\xBF]+/&#39;</span><span class="p">,</span> <span class="nv">$str</span><span class="p">,</span> <span class="nv">$matches</span><span class="p">))</span>
-</span><span class='line'>        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span> <span class="c1">// plain ascii string</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">as</span> <span class="nv">$mbc</span><span class="p">)</span>
-</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]))</span>
-</span><span class='line'>            <span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">128</span> <span class="o">+</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$map</span><span class="p">));</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="k">return</span> <span class="nb">strtr</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$map</span><span class="p">);</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">function</span> <span class="nf">levenshtein_utf8</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>    <span class="nv">$charMap</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
-</span><span class='line'>    <span class="nv">$s1</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
-</span><span class='line'>    <span class="nv">$s2</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s2</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="k">return</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">);</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">echo</span> <span class="nx">levenshtein_utf8</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;votre&#39;</span><span class="p">);</span>
-</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-</span><span class='line'><span class="k">echo</span> <span class="nx">levenshtein_utf8</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;nôtre&#39;</span><span class="p">);</span>
-</span><span class='line'><span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// 결과</span>
-</span><span class='line'><span class="c1">// 1</span>
-</span><span class='line'><span class="c1">// 1</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>결과는 개선되어 1과 1이 나온다. 하지만 정확한 값이 필요한 것이 아니라면 개선된 함수말고 기본 함수를 써도 무방하다. 일반적으로 사용할 때는 가장 비슷한 문자열을 찾는 등에 사용할테니 인코딩에 따른 값차이는 크게 의미를 가지지 않는다. 게다가 처리 비용도 더 많이 든다.</p>
-
-<h3>유사함수</h3>
-
-<p>비슷한 역할을 하는 함수에 대해 알고 싶다면 아래의 포스팅을 참고하자.</p>
-
-<ul>
-<li><a href="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/">PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()</a></li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[두지점(WGS84 좌표)간 km 거리 계산 함수(php, mysql, javascript)]]></title>
-    <link href="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-wgs84-points/"/>
-    <updated>2015-09-14T14:52:05+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-wgs84-points</id>
-    <content type="html"><![CDATA[<p>WGS84 좌표계는 <a href="https://ko.wikipedia.org/wiki/%EC%84%B8%EA%B3%84_%EC%A7%80%EA%B5%AC_%EC%A2%8C%ED%91%9C_%EC%8B%9C%EC%8A%A4%ED%85%9C">위키피디아</a>에 따르면 다음과 같다.</p>
-
-<blockquote><p>World Geodetic System (WGS) 1984년에 제정된 범 지구적 측위 시스템으로 지도학, 측지학, 항법에 많이 사용된다.</p>
-
-<p>통칭 및 약칭은 WGS 84 (aka WGS 1984, EPSG:4326, WGS84)라고 부르며, 2004년에 마지막으로 개정되었다. 이전에 쓰던 초안으로 WGS 72, WGS 66, 그리고 WGS 60이 있다.</p></blockquote>
-
-<p>기존에는 네이버 지도 등에서 KTM 좌표를 사용하기도 했지만 요즘엔 WGS84 좌표를 주로 사용한다.</p>
-
-<p>이번에 작업을 하면서 WGS84 좌표 두개의 거리를 계산해야하는 일이 생겼다. 관련된 내용을 찾아보니 여러자료가 있긴하지만 바로 사용할만한 정보를 찾기가 어려웠다. 사실 계산방법이 조금씩 다르다(따라서 아래의 내용이 아주 정확한 값은 아닐 수 있다). 그래서 조사한김에 내용을 정리해둔다.</p>
-
-<p>아래는 몇가지 언어로 구현된 함수들이다. 반환값은 모두 km 단위로 반환된다. 필요한 단위로의 변환은 당연히 산술계산을 하면된다.</p>
-
-<h2>php</h2>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="k">function</span> <span class="nf">getDistance</span><span class="p">(</span><span class="nv">$lat1</span><span class="p">,</span> <span class="nv">$lon1</span><span class="p">,</span> <span class="nv">$lat2</span><span class="p">,</span> <span class="nv">$lon2</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>    <span class="nv">$earth_radius</span> <span class="o">=</span> <span class="mi">6371</span><span class="p">;</span>
-</span><span class='line'>    <span class="nv">$dLat</span> <span class="o">=</span> <span class="nb">deg2rad</span><span class="p">(</span><span class="nv">$lat2</span> <span class="o">-</span> <span class="nv">$lat1</span><span class="p">);</span>
-</span><span class='line'>    <span class="nv">$dLon</span> <span class="o">=</span> <span class="nb">deg2rad</span><span class="p">(</span><span class="nv">$lng2</span> <span class="o">-</span> <span class="nv">$lng1</span><span class="p">);</span>
-</span><span class='line'>    <span class="nv">$a</span> <span class="o">=</span> <span class="nb">sin</span><span class="p">(</span><span class="nv">$dLat</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nb">sin</span><span class="p">(</span><span class="nv">$dLat</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nb">cos</span><span class="p">(</span><span class="nb">deg2rad</span><span class="p">(</span><span class="nv">$lat1</span><span class="p">))</span> <span class="o">*</span> <span class="nb">cos</span><span class="p">(</span><span class="nb">deg2rad</span><span class="p">(</span><span class="nv">$lat2</span><span class="p">))</span> <span class="o">*</span> <span class="nb">sin</span><span class="p">(</span><span class="nv">$dLon</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nb">sin</span><span class="p">(</span><span class="nv">$dLon</span><span class="o">/</span><span class="mi">2</span><span class="p">);</span>
-</span><span class='line'>    <span class="nv">$c</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">asin</span><span class="p">(</span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">$a</span><span class="p">));</span>
-</span><span class='line'>    <span class="nv">$d</span> <span class="o">=</span> <span class="nv">$earth_radius</span> <span class="o">*</span> <span class="nv">$c</span><span class="p">;</span>
-</span><span class='line'>    <span class="k">return</span> <span class="nv">$d</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>MySql</h2>
-
-<p>함수로 구현된 예시이지만 당연히 query에서 return 부분을 직접 사용해도 된다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">CREATE</span> <span class="n">FUNCTION</span> <span class="nf">distance_between</span> <span class="p">(</span><span class="n">from_lat</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">from_lng</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">to_lat</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">to_lng</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="n">RETURNS</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-</span><span class='line'>  <span class="k">RETURN</span> <span class="mi">6371</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="nf">ATAN2</span><span class="p">(</span><span class="nf">SQRT</span><span class="p">(</span><span class="nf">POW</span><span class="p">(</span><span class="nf">SIN</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lat</span> <span class="o">-</span> <span class="n">from_lat</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nf">POW</span><span class="p">(</span><span class="nf">SIN</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lng</span> <span class="o">-</span> <span class="n">from_lng</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nf">COS</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">from_lat</span><span class="p">))</span> <span class="o">*</span> <span class="nf">COS</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lat</span><span class="p">))),</span> <span class="nf">SQRT</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="nf">POW</span><span class="p">(</span><span class="nf">SIN</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lat</span> <span class="o">-</span> <span class="n">from_lat</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nf">POW</span><span class="p">(</span><span class="nf">SIN</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lng</span> <span class="o">-</span> <span class="n">from_lng</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nf">COS</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">from_lat</span><span class="p">))</span> <span class="o">*</span> <span class="nf">COS</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lat</span><span class="p">))));</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>javascript</h2>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">function</span> <span class="nx">getDistanceFromLatLonInKm</span><span class="p">(</span><span class="nx">lat1</span><span class="p">,</span><span class="nx">lng1</span><span class="p">,</span><span class="nx">lat2</span><span class="p">,</span><span class="nx">lng2</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>    <span class="kd">function</span> <span class="nx">deg2rad</span><span class="p">(</span><span class="nx">deg</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>        <span class="k">return</span> <span class="nx">deg</span> <span class="o">*</span> <span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span><span class="o">/</span><span class="mi">180</span><span class="p">)</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">var</span> <span class="nx">R</span> <span class="o">=</span> <span class="mi">6371</span><span class="p">;</span> <span class="c1">// Radius of the earth in km</span>
-</span><span class='line'>    <span class="kd">var</span> <span class="nx">dLat</span> <span class="o">=</span> <span class="nx">deg2rad</span><span class="p">(</span><span class="nx">lat2</span><span class="o">-</span><span class="nx">lat1</span><span class="p">);</span>  <span class="c1">// deg2rad below</span>
-</span><span class='line'>    <span class="kd">var</span> <span class="nx">dLon</span> <span class="o">=</span> <span class="nx">deg2rad</span><span class="p">(</span><span class="nx">lng2</span><span class="o">-</span><span class="nx">lng1</span><span class="p">);</span>
-</span><span class='line'>    <span class="kd">var</span> <span class="nx">a</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">dLat</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">dLat</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">cos</span><span class="p">(</span><span class="nx">deg2rad</span><span class="p">(</span><span class="nx">lat1</span><span class="p">))</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">cos</span><span class="p">(</span><span class="nx">deg2rad</span><span class="p">(</span><span class="nx">lat2</span><span class="p">))</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">dLon</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">dLon</span><span class="o">/</span><span class="mi">2</span><span class="p">);</span>
-</span><span class='line'>    <span class="kd">var</span> <span class="nx">c</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">atan2</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">sqrt</span><span class="p">(</span><span class="nx">a</span><span class="p">),</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="nx">a</span><span class="p">));</span>
-</span><span class='line'>    <span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="nx">R</span> <span class="o">*</span> <span class="nx">c</span><span class="p">;</span> <span class="c1">// Distance in km</span>
-</span><span class='line'>    <span class="k">return</span> <span class="nx">d</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><a href="http://www.mapanet.eu/EN/Resources/Script-Distance.htm">http://www.mapanet.eu/EN/Resources/Script-Distance.htm</a> 이 사이트에서는 여러가지 언어로 사용하는 방법이 나와 있으나 위에 나열된 함수와는 계산이 조금 다르다. 특히 &ldquo;Earth radius in km (WGS84)"라고 설명된 값이 6378.137를 사용하고 있다.
-<a href="https://en.wikipedia.org/wiki/Earth_radius">위키피디아</a>에서 셜명된 Earth radius 값이 6371이기 때문이다.(지구가 둥글기 때문에 지역마다 값의 차이가 있는 것으로 보인다.)</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[필요해서 만들어본 CSS Image Sprites 생성기]]></title>
-    <link href="http://blog.asamaru.net/2015/09/13/online-css-image-sprites-generator/"/>
-    <updated>2015-09-13T20:15:23+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/13/online-css-image-sprites-generator</id>
-    <content type="html"><![CDATA[<p>웹 기반 프로그램 개발을 주업으로 하다보니 CSS에 관련된 작업도 많이 하게 된다. 게다가 웹 서비스 성능에 대해 고민을 많이 하게되는 것도 당연하다.
-그중에서도 간혹 필요하지만 마땅한 도구가 없어 고민을 하게되던 것 중 하나가 CSS Image Sprite 도구다.
-얼마전에도 비슷한 작업이 필요하게되어 온라인 도구들을 찾던 중 마땅한 것이 없어 필요에 의해 도구를 하나 만들어 버렸다.</p>
-
-<p>일단 이 도구에 대해 설명하기 전에 CSS Image Sprite가 무엇인지 부터 알아보자.</p>
-
-<h2>CSS Image Sprite 기법</h2>
-
-<p>간단하게 설명하자면 웹 페이지에서 필요한 이미지들을 한장의 이미지로 묶어 제작/배포하여 HTTP request를 줄임으로써 웹페이지 성능을 높이는 기법이다.
-이 부분을 이해하기 위해서는 왜 HTTP request를 줄이는 것이 성능에 관련이 있는지를 알아야한다.
-일반적으로 복잡한 웹페이지의 경우 페이지를 읽는데 수십에서 수백개의 request(CSS, JS, Image 등)가 발생한다. 이러한 페이지를 브라우저가 로딩할때 한꺼번에 모든 request를 처리하는 것이 아니라 순차적(보통 동시에 2~4개를 동시에 처리 : 브라우저마다 설정에 따라 다름)으로 처리함에 따라 이 수가 많다면 완료 시간이 늘어날 수 밖에 없다. 이와 관련된 자세한 내용은 얘기가 길어지므로 일단 이 정도만 설명하겠다. 조금 더 자세한 내용이 필요하다면 아래의 사이트를 참고하자.</p>
-
-<ul>
-<li><a href="https://css-tricks.com/css-sprites/">https://css-tricks.com/css-sprites/</a></li>
-<li><a href="http://alistapart.com/article/sprites">http://alistapart.com/article/sprites</a></li>
-<li><a href="http://windtale.net/blog/css-image-sprite-automation-with-grunt-spritesmith/">http://windtale.net/blog/css-image-sprite-automation-with-grunt-spritesmith/</a> (한글)</li>
-</ul>
-
-
-<h2>CSS Image Sprites 생성기</h2>
-
-<p><a href="https://asamaru7.github.io/SpriteImageGenerator/">https://asamaru7.github.io/SpriteImageGenerator/</a>  또는  <a href="http://sprite.asamaru.net">http://sprite.asamaru.net</a>  으로 접속해서 사용할 수 있다.</p>
-
-<p>Github :  <a href="https://github.com/asamaru7/SpriteImageGenerator">https://github.com/asamaru7/SpriteImageGenerator</a>
-(만들어서 나와 같은 필요을 느끼는 사람이 있을까 싶어 페이지도 개설할 겸 Github에 등록했다.)</p>
-
-<p>그리고 만든 김에 크롬 익스텐션도 만들어 올렸다. 사실 그냥 바로가기 링크랑 기능이 동일하다.</p>
-
-<p><a href="https://chrome.google.com/webstore/detail/sprite-image-generator/ckdkgoopenkcogopkfpehfcjkkhhofgo?utm_source=gmail">https://chrome.google.com/webstore/detail/sprite-image-generator/ckdkgoopenkcogopkfpehfcjkkhhofgo?utm_source=gmail</a></p>
-
-<p>참고로 사이트는 내용이 크게 어려울 것이 없기 때문에 영어로 만들었다.(사실 영어 잘 못한다. 그래서 오탈자가 많을 수 있다.) 혹시나 다른 나라에서도 사용할까 싶어서 하긴 했는데 아직은 방문자가 거의 없다.</p>
-
-<p>사실 이미 잘만들어진 많은 도구들이 있다. 하지만 굳이 새로 만든 이유는 Export 기능 때문이다. 보통 sprite image를 생성한 후에 사용된 작은 이미지들을 따로 관리하지 않아서 수정하거나 추가할 것이 생겼을 때 골치 아플 수 있다. 그래서 export 기능을 추가 했다. sprite.json 파일을 함께 export하는데 이 파일에서 생성시에 설정한 옵션과 원본 이미지들이 모두 포함되어 있어서 수정이 필요하면 이 파일만 import해서 수정할 수 있다. 나의 경우는 프로그램 소스에 함께 포함시켜 두고 관리한다.</p>
-
-<h3>특징</h3>
-
-<ul>
-<li>Retina/Normal sprites 동시 생성 가능</li>
-<li>Drag and drop 파일 첨부</li>
-<li>이미지 이름 변경 가능(CSS 클래스명에 사용됨)</li>
-<li>이미지 이름별/사이즈별 정렬, drag and drop으로 직접 정렬</li>
-<li>Support DataURL Export</li>
-<li>Export: Sprites 이미지 / 설정 파일 다운로드</li>
-<li>설정 파일 Import 기능 : *.sprite.json File (향후 수정시 기존 export를 첨부하여 재작업 가능)</li>
-</ul>
-
-
-<h3>스크린샷</h3>
-
-<p><img src="http://blog.asamaru.net/img/2015-09-13-online-css-image-sprites-generator-1.png" alt="Sprite CSS Image Generator 설정" />
-<img src="http://blog.asamaru.net/img/2015-09-13-online-css-image-sprites-generator-2.png" alt="Sprite CSS Image Generator 확인" />
-<img src="http://blog.asamaru.net/img/2015-09-13-online-css-image-sprites-generator-3.png" alt="Sprite CSS Image Generator 생성" />
-<img src="http://blog.asamaru.net/img/2015-09-13-online-css-image-sprites-generator-4.png" alt="Sprite CSS Image Generator 추출" /></p>
 ]]></content>
   </entry>
   

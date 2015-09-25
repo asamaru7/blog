@@ -138,6 +138,496 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-04T10:12:29+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.04</time>
+        
+           | <a href="/2015/09/04/android-view-dot-islaidout-and-view-dot-post/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/04/android-view-dot-islaidout-and-view-dot-post/" itemprop="url">안드로이드 View.isLaidOut / View.post</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 View는 isLaidOut이라는 함수를 가지고 있다. 단, API 19(KITKAT)부터 사용가능하다. 사실 그 이하의 기기에서도 다른 방법을 통해서 사용가능하다. 아주 간단히. 이 부분은 나중에 다시 설명하겠다.</p>
+
+<p>우선 isLaidOut 함수에 대해 안드로이드 메뉴얼에는 다음과 같이 나와있다.</p>
+
+<blockquote><p>public boolean isLaidOut ()</p>
+
+<p>Added in API level 19</p>
+
+<p>Returns true if this view has been through at least one layout since it was last attached to or detached from a window.</p></blockquote>
+
+<p>쉽게 말해서 &ldquo;해당 View가 layout이 그려졌는가?"를 반환하는 함수다.</p>
+
+<p>다음은 post 함수에 대한 안드로이드 메뉴얼이다.</p>
+
+<blockquote><p>public boolean post (Runnable action)</p>
+
+<p>Added in API level 1</p>
+
+<p>Causes the Runnable to be added to the message queue. The runnable will be run on the user interface thread.</p></blockquote>
+
+<p>Runnalbe을 넘겨 받아 UIThread에서 실행시켜준다고 한다.</p>
+
+<p>그래서 어디에 써먹을 수 있나?
+한가지 예를들어 보자면 TextView의 getLineCount()의 반환값 문제를 해결할 수 있다.</p>
+
+<p>구글에서 &ldquo;<a href="https://www.google.co.kr/search?q=isLaidOut&amp;gws_rd=ssl#newwindow=1&amp;safe=off&amp;q=textview+getlinecount">textview getlinecount</a>"로 검색하면 많이 나오는 것 중 하나가 "textview.getLineCount always 0 in android"라는 질문이다.</p>
+
+<p>textview의 getLineCount()를 요청하면 항상 0이 나오는 문제가 있다는 얘기인데, 이런 문제의 원인은 getLineCount() 함수가 TextView가 그려진 후 그 상황에 맞는 라인수를 반환한다는 것이다. 따라서 그려지기 전에는 항상 0을 반환한다.</p>
+
+<p>그럼 이 문제를 isLaidOut을 써서 해결해보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">TextView</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;test message&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="k">if</span> <span class="o">(</span><span class="n">textView</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">textView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
+</span><span class='line'><span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="n">TextView</span> <span class="n">postTextView</span> <span class="o">=</span> <span class="n">textView</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">textView</span><span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="nd">@Override</span>
+</span><span class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">postTextView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">});</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>여러가지 상황이 있을 수 있다. 위의 예시와 다르게 layout xml에서 TextView가 정의될 수도 있고.
+중요한 것은 TextView가 그려지기 전에 getLineCount() 함수를 사용하려는 것이다.</p>
+
+<p>그런데 여기서도 한계는 있다. 값을 가져오는 부분이 비동기 방식이 된다는 것이다. 이를 해결하기 위해서는 다른 방법이 필요하다. 하지만 여기서는 isLaidOut에 대한 설명을 하고자 하는 것이므로 다음으로 넘긴다. 사실 찾아보면 여러가지 방법들이 제시되어 있는데 아주 깔끔한 방법은 현재로써는 찾기 힘들다.</p>
+
+<p>위의 TextView 사례는 말그대로 예시일뿐 isLaidOut에 대한 활용 범위는 아주 다양할 수 있다.</p>
+
+<p>마지막으로 isLaidOut을 API 19 이하에서 사용할 수 있는 방법은 다음의 예시를 참고하자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">TextView</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;test message&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="k">if</span> <span class="o">(</span><span class="n">ViewCompat</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">(</span><span class="n">textView</span><span class="o">))</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">textView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
+</span><span class='line'><span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="n">TextView</span> <span class="n">postTextView</span> <span class="o">=</span> <span class="n">textView</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">textView</span><span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="nd">@Override</span>
+</span><span class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">postTextView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">});</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>중요한 부분은 ViewCompat을 사용한다는 부분이다. 아주 간단한 방법으로 사용할 수 있으므로 하위 버전을 지원해야 한다하더라도 사용할 수 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ViewCompat</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">(</span><span class="n">textView</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-03T18:48:08+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.03</time>
+        
+           | <a href="/2015/09/03/android-http-ping/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/03/android-http-ping/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/03/android-http-ping/" itemprop="url">안드로이드에서 android.os.NetworkOnMainThreadException을 발생시키지 않고 HTTP Ping 보내기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>오늘은 작업을 하던 중간에 서버로 ping을 보내야 하는 작업이 생겼다. 정확하게는 서버에 간단한 값을 전송해서 로그로 쌓기 위한 작업이다.
+우선 안드로이드는 main thread에서 network 작업을 할 수 없도록 되어있다. 억지로 하려고하면 android.os.NetworkOnMainThreadException이 발생한다.</p>
+
+<p>간단히 생각해서 handler를 사용하는 방법도 있으나 메인 handler를 사용하면 마찬가지다.
+그래서 가장 간단한 방법은 AsyncTask를 사용하는 것이다.</p>
+
+<p>아래는 url을 인자로 받아 http로 접속한 후 response가 200이 나왔는지를 반환한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">static</span> <span class="kd">class</span> <span class="nc">HttpPingAsyncTask</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Boolean</span><span class="o">&gt;</span> <span class="o">{</span>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">protected</span> <span class="n">Boolean</span> <span class="nf">doInBackground</span><span class="o">(</span><span class="n">String</span><span class="o">...</span> <span class="n">urls</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">try</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">HttpURLConnection</span><span class="o">.</span><span class="na">setFollowRedirects</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span><span class='line'>            <span class="n">HttpURLConnection</span> <span class="n">con</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="k">new</span> <span class="nf">URL</span><span class="o">(</span><span class="n">urls</span><span class="o">[</span><span class="mi">0</span><span class="o">]).</span><span class="na">openConnection</span><span class="o">();</span>
+</span><span class='line'>            <span class="n">con</span><span class="o">.</span><span class="na">setRequestMethod</span><span class="o">(</span><span class="s">&quot;HEAD&quot;</span><span class="o">);</span>
+</span><span class='line'>            <span class="k">return</span> <span class="o">(</span><span class="n">con</span><span class="o">.</span><span class="na">getResponseCode</span><span class="o">()</span> <span class="o">==</span> <span class="n">HttpURLConnection</span><span class="o">.</span><span class="na">HTTP_OK</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>사용법은 다음과 같다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">(</span><span class="k">new</span> <span class="nf">HttpPingAsyncTask</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">url</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>이는 가장 간단한 형태로 구현된 코드로 할 수 있는 일이 url을 호출하고 응답을 확인하는 것 밖에 없다. 하지만 조금만 응용하면 여러가지로 활용할 수 있다.
+url에 GET 인자로 전달하고자 하는 값을 넘기고 서버에서는 해당 값을 로그로 남기거나 필요한 처리를 한다. 그리고 정상처리가 되었다면 200을 반환하고 실패하면 500을 반환함으로써 처리 결과를 알 수 있다. 이러한 형태를 이용하면 간단한 구현으로 여러가지 일을 할 수 있다.</p>
+
+<p>또한 위의 코드에 필요한 기능을 조금씩 덧붙이면 보다 다양한 일을 할 수 있는 코드를 만들수도 있을 것이다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-02T21:49:21+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.02</time>
+        
+           | <a href="/2015/09/02/decoding-byte-escaped-strings-in-php/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/02/decoding-byte-escaped-strings-in-php/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/02/decoding-byte-escaped-strings-in-php/" itemprop="url">PHP에서 Byte-escaped(\xFF)된 문자열 decode하기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>어제 회사 직원 한명이 협력사에서 데이터 전달을 위해 생성해서 알려준 URL에서 데이터를 받지 못해 고생을 하고 있었다. 협력사는 PC용 어플리케이션을 만드는 회사(Delphi 사용)로 웹에 대해서 잘 모른다.</p>
+
+<p>처리하고자 하는 일은 다음과 같았다. PC용 어플리케이션에서 버튼을 누르면 해당 어플리케이션에서 가지고 있던 데이터를 특정 URL로 호출(전달)해주는 것이었다.</p>
+
+<p>처음엔 데이터를 &ldquo;뭐뭐 주세요&rdquo; 했더니 그냥 넘겨주는 바람에 특수문자가 들어가 내용이 정상적으로 전달되지 않았다. 당연히 POST 방식으로 값을 전달해주면 문제가 없겠지만 그렇게는 더 어렵다고하니&hellip; 그냥 GET으로 달라고 했다. 그 바람에 이런 일들이 벌어진 것이다.</p>
+
+<p>그리하여 우여곡절 끝에 문자열을 인코딩해서 보내달라는 요청을하고 받은 결과가 다시 문제가 되었다. 분명 인코딩은 되어 있는데 일반적으로 웹에서 쓰는 인코딩이 아니었다.</p>
+
+<blockquote><p>\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</p></blockquote>
+
+<p>뭐 이런식이다. 어딘가 낯익은 모양이면서도 흔히 보지못한 형태였다.</p>
+
+<p>검색을 해보니 javascript escape sequences라고 부르는 사람도 있고 Byte-escaped string이라고 하기도 하고.. 어쨌든 byte 단위로 변환된 문자열이다.</p>
+
+<p>이 문장을 decode 하려면 다음의 코드를 참조하면 된다. (인터넷에서 다른 소스를 참조해서 조금 개선했다.)</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nv">$string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="nb">preg_replace_callback</span><span class="p">(</span>
+</span><span class='line'>    <span class="s1">&#39;/\\\x([0-9a-f]{2})/i&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="k">function</span><span class="p">(</span><span class="nv">$matches</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">hexdec</span><span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">1</span><span class="p">]));</span>
+</span><span class='line'>    <span class="p">},</span>
+</span><span class='line'>    <span class="nv">$string</span>
+</span><span class='line'><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>어땠든 이렇게 decode를 했는데도 글자가 깨졌다. 이런&hellip; 문자열이 UTF-8이 아니라 EUC-KR이다.
+그래서 조금더 추가. 여기서 UHC는 euc-kr과 거의 유사하다. 조금 더 확장되었다고 알고있는데 오래전 기억이라 확실치 않다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nv">$string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</span><span class="s2">&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="k">echo</span> <span class="nb">iconv</span><span class="p">(</span><span class="s2">&quot;UHC&quot;</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nb">preg_replace_callback</span><span class="p">(</span>
+</span><span class='line'>    <span class="s1">&#39;/\\\x([0-9a-f]{2})/i&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="k">function</span><span class="p">(</span><span class="nv">$matches</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">hexdec</span><span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">1</span><span class="p">]));</span>
+</span><span class='line'>    <span class="p">},</span>
+</span><span class='line'>    <span class="nv">$string</span>
+</span><span class='line'><span class="p">));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>이렇게 해피앤딩이 되면 좋겠지만 현실을 그렇지 않다. 문제는 이 인코딩이 특수문자는 인코딩하지 않는다는 것.(비 ascii 코드만 인코딩)
+따라서 웹에서 데이터로 URL에 사용해서는 안되는 &amp;, # 등이 그대로 남아있어 데이터가 잘려서 넘어오는 문제는 해결되지 않는다. 가장 좋은 해결책은 urlencode를 해서 넘겨 벋는 것이지만 협력사를 내맘대로 할 수는 없고&hellip;</p>
+
+<p>자체적인 해결을 위한 해결법(꼼수)은 다음과 같다.
+특히 #이 가장 큰 문제를 일으키므로 초출된 URL에서 데이터를 즉시 처리하지 않고 javascript로 현재 브라우저의 URL을 받아 다른 처리 페이지로 직접 넘겨서 파싱한다. 이렇게하면 일이 많이 번거로워지지만 협력사의 변경없이 여기서 모두 해결된다.
+다만.. urlencode만 제대로 해줘도 되는걸 이런 꼼수를 써가며 억지로 해야하는가? 하는&hellip;</p>
+
+<p>이왕 이 일로 글을 적는 김에 몇가지 함수도 덤으로&hellip;
+php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등을 사용하면되나 javascript에서 인코딩된 문자열을 그대로 전달받는 경우 등에 사용할 수 있다. 쉽게 말해서 javascript 문자열 인코딩 함수 php 대응 함수다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="sd">/**</span>
+</span><span class='line'><span class="sd"> * @desc javascript의 encodeURIComponent함수와 같은기능으로 문자열을 변환한다.</span>
+</span><span class='line'><span class="sd"> * @param mixed $str 처리할 배열변수나 단일변수</span>
+</span><span class='line'><span class="sd"> * @param String $fromEncofing 입력 인코딩</span>
+</span><span class='line'><span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
+</span><span class='line'><span class="sd"> * @exam $arr = String::encodeURI($arr);</span>
+</span><span class='line'><span class="sd"> *       String::encodeURI($arr);</span>
+</span><span class='line'><span class="sd"> */</span>
+</span><span class='line'><span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">encodeURI</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$fromEncofing</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nb">is_array</span><span class="p">(</span><span class="nv">$str</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nx">String</span><span class="o">::</span><span class="na">arrayProc</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;String::encodeURI&#39;</span><span class="p">);</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">is_null</span><span class="p">(</span><span class="nv">$fromEncofing</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nv">$trans</span> <span class="o">=</span> <span class="nb">iconv</span><span class="p">(</span><span class="nv">$fromEncofing</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nv">$str</span><span class="p">);</span> <span class="c1">// UHC 확장 완성형 한글</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="nv">$trans</span> <span class="o">=</span> <span class="nb">rawurlencode</span><span class="p">(</span><span class="nv">$trans</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nv">$str</span> <span class="o">=</span> <span class="nv">$trans</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="sd">/**</span>
+</span><span class='line'><span class="sd"> * @desc javascript의 decodeURIComponent함수와 같은기능으로 문자열을 변환한다.</span>
+</span><span class='line'><span class="sd"> * @param mixed $str 처리할 배열변수나 단일변수</span>
+</span><span class='line'><span class="sd"> * @param String $toEncofing 반환 인코딩</span>
+</span><span class='line'><span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
+</span><span class='line'><span class="sd"> * @exam $arr = String::decodeURI($arr);</span>
+</span><span class='line'><span class="sd"> *       String::decodeURI($arr); //리턴받지 않아도 입력변수에 저장되어 나옴.</span>
+</span><span class='line'><span class="sd"> */</span>
+</span><span class='line'><span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">decodeURI</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$toEncofing</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nb">is_array</span><span class="p">(</span><span class="nv">$str</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nx">String</span><span class="o">::</span><span class="na">arrayProc</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;String::decodeURI&#39;</span><span class="p">);</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//  euc-kr의 경우 확장완성형 한글에 대한 처리가 불가능함(예 : ㅂ ㅞ ㄺ)</span>
+</span><span class='line'>    <span class="c1">//  return iconv(&quot;UTF-8&quot;, &quot;EUC-KR&quot;, rawurldecode($text));</span>
+</span><span class='line'>    <span class="nv">$str</span> <span class="o">=</span> <span class="nb">rawurldecode</span><span class="p">(</span><span class="nv">$str</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">is_null</span><span class="p">(</span><span class="nv">$toEncofing</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nv">$str</span> <span class="o">=</span> <span class="nb">iconv</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nv">$toEncofing</span><span class="p">,</span> <span class="nv">$str</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="sd">/**</span>
+</span><span class='line'><span class="sd"> * @desc javascript의 escape함수로 인코딩된 문자를 디코딩한다.(encodeURIComponent추천)</span>
+</span><span class='line'><span class="sd"> * @param String $str 처리할 배열변수나 단일변수</span>
+</span><span class='line'><span class="sd"> * @param String $toEncofing 반환 인코딩</span>
+</span><span class='line'><span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
+</span><span class='line'><span class="sd"> * @exam $decStr = String::unescape($str);</span>
+</span><span class='line'><span class="sd"> */</span>
+</span><span class='line'><span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">unescape</span><span class="p">(</span><span class="nv">$text</span><span class="p">,</span> <span class="nv">$toEncofing</span> <span class="o">=</span> <span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="c1">//return urldecode(preg_replace_callback(&#39;/%u([[:alnum:]]{4})/&#39;, array(&#39;self&#39;, &#39;tostring&#39;), $text));</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">urldecode</span><span class="p">(</span>
+</span><span class='line'>        <span class="nb">preg_replace_callback</span><span class="p">(</span>
+</span><span class='line'>            <span class="s1">&#39;/%u([[:alnum:]]{4})/&#39;</span><span class="p">,</span>
+</span><span class='line'>            <span class="nb">create_function</span><span class="p">(</span>
+</span><span class='line'>                <span class="s1">&#39;$text&#39;</span><span class="p">,</span>
+</span><span class='line'>                <span class="s2">&quot;echo &#39;123&#39;; return iconv(&#39;UTF-16LE&#39;, &#39;&quot;</span> <span class="o">.</span> <span class="nv">$toEncofing</span> <span class="o">.</span> <span class="s2">&quot;&#39;, chr(hexdec(substr(</span><span class="se">\$</span><span class="s2">text[1], 2, 2))).chr(hexdec(substr(</span><span class="se">\$</span><span class="s2">text[1], 0, 2))));&quot;</span>
+</span><span class='line'>            <span class="p">),</span>
+</span><span class='line'>            <span class="nv">$text</span>
+</span><span class='line'>        <span class="p">)</span>
+</span><span class='line'>    <span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-01T22:29:00+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.01</time>
         
            | <a href="/2015/09/01/change-private-static-final-field-using-java-reflection/#disqus_thread" itemprop="discussionUrl"
@@ -573,7 +1063,8 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
 <p><a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a></p>
 
-<p>하지만 임시방편일 뿐 계속 사용하기엔 석연치 않다. 조금더 자세한 내용은 다음에 다시 글을 쓰도록 하겠다.</p>
+<p>하지만 임시방편일 뿐 계속 사용하기엔 석연치 않다. 조금더 자세한 내용은 다음에 다시 글을 쓰도록 하겠다.
+(추가 포스팅 : <a href="/2015-09-25-android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>)</p>
 
 <p>다시 본론으로 돌아와서 이 부분을 해결하기 위해서는 ContextCompat(android.support.v4.content.ContextCompat)을 사용하면 된다.
 단, support library 23 이상이 필요할 수 있다. 이하에서는 확인을 못했다.</p>
@@ -848,616 +1339,6 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-08-20T22:56:20+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.08.20</time>
-        
-           | <a href="/2015/08/20/octopress-rake-deploy-error/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/08/20/octopress-rake-deploy-error/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/08/20/octopress-rake-deploy-error/" itemprop="url">옥토프레스 rake deploy에서 오류가 날 경우</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>옥토프레스를 설치하고 테스트 포스팅을 한 후 본격적으로 세팅을 하려고 시작했다.
-도메인도 세팅하고 구글 어날리틱스, disqus 등도 연결을 하고자 _config.xml 파일을 수정하고 몇가지 글도 포스팅하려고 저장 후 generate 했다.</p>
-
-<p>이제 배포를 하려고 rake deploy를 하니 아래와 같은 오류가 나타났다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>To https://github.com/asamaru7/blog.git
-</span><span class='line'> ! <span class="o">[</span>rejected<span class="o">]</span>        gh-pages -&gt; gh-pages <span class="o">(</span>non-fast-forward<span class="o">)</span>
-</span><span class='line'>error: failed to push some refs to <span class="s1">&#39;https://github.com/asamaru7/blog.git&#39;</span>
-</span><span class='line'>hint: Updates were rejected because the tip of your current branch is behind
-</span><span class='line'>hint: its remote counterpart. Integrate the remote changes <span class="o">(</span>e.g.
-</span><span class='line'>hint: <span class="s1">&#39;git pull ...&#39;</span><span class="o">)</span> before pushing again.
-</span><span class='line'>hint: See the <span class="s1">&#39;Note about fast-forwards&#39;</span> in <span class="s1">&#39;git push --help&#39;</span> <span class="k">for</span> details.
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>구글에서 검색해서 여러가지 방법들을 따라 시도해도 진행이 되지 않다가 발견한 stackoverflow에서 강제 업데이트하는 방법을 안내하고 있었다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi Rakefile
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Rakefile을 열어 deploy_branch로 검색하다 보면 아래와 같은 부분을 볼 수 있다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">desc</span> <span class="s2">&quot;deploy public directory to github pages&quot;</span>
-</span><span class='line'><span class="n">multitask</span> <span class="ss">:push</span> <span class="k">do</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;## Deploying branch to Github Pages &quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;## Pulling any updates from Github Pages &quot;</span>
-</span><span class='line'>  <span class="n">cd</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">do</span>
-</span><span class='line'>    <span class="no">Bundler</span><span class="o">.</span><span class="n">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">&quot;git pull&quot;</span> <span class="p">}</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>  <span class="p">(</span><span class="no">Dir</span><span class="o">[</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">/*&quot;</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">rm_rf</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">}</span>
-</span><span class='line'>  <span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="o">[</span><span class="ss">:copydot</span><span class="o">].</span><span class="n">invoke</span><span class="p">(</span><span class="n">public_dir</span><span class="p">,</span> <span class="n">deploy_dir</span><span class="p">)</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Copying </span><span class="si">#{</span><span class="n">public_dir</span><span class="si">}</span><span class="s2"> to </span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="n">cp_r</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">public_dir</span><span class="si">}</span><span class="s2">/.&quot;</span><span class="p">,</span> <span class="n">deploy_dir</span>
-</span><span class='line'>  <span class="n">cd</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">do</span>
-</span><span class='line'>    <span class="nb">system</span> <span class="s2">&quot;git add -A&quot;</span>
-</span><span class='line'>    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Site updated at </span><span class="si">#{</span><span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">utc</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Committing: </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="nb">system</span> <span class="s2">&quot;git commit -m </span><span class="se">\&quot;</span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Pushing generated </span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2"> website&quot;</span>
-</span><span class='line'>    <span class="no">Bundler</span><span class="o">.</span><span class="n">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">&quot;git push origin </span><span class="si">#{</span><span class="n">deploy_branch</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">}</span>
-</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Github Pages deploy complete&quot;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>여기서 고칠 부분은 <code>Bundler.with_clean_env { system "git push origin #{deploy_branch}" }</code> 이 부분이다.
-<code>#{deploy_branch}"</code> 앞에 +를 붙여준다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Bundler</span><span class="o">.</span><span class="n">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">&quot;git push origin </span><span class="si">#{</span><span class="n">deploy_branch</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이제 저장후 나와서 다시 deploy&hellip;</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">## Pushing generated _deploy website</span>
-</span><span class='line'>Counting objects: 36, <span class="k">done</span>.
-</span><span class='line'>Delta compression using up to <span class="m">4</span> threads.
-</span><span class='line'>Compressing objects: 100% <span class="o">(</span>27/27<span class="o">)</span>, <span class="k">done</span>.
-</span><span class='line'>Writing objects: 100% <span class="o">(</span>36/36<span class="o">)</span>, 12.90 KiB <span class="p">|</span> <span class="m">0</span> bytes/s, <span class="k">done</span>.
-</span><span class='line'>Total <span class="m">36</span> <span class="o">(</span>delta 14<span class="o">)</span>, reused <span class="m">0</span> <span class="o">(</span>delta 0<span class="o">)</span>
-</span><span class='line'>To https://github.com/asamaru7/blog.git
-</span><span class='line'> + 9295247...d6c0b14 gh-pages -&gt; gh-pages <span class="o">(</span>forced update<span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번엔 gh-pages (forced update) 안내를 보여주며 push 성공.</p>
-</div>
-  
-  
-
-
-        </article>
-      
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-08-19T23:29:26+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.08.19</time>
-        
-           | <a href="/2015/08/19/octopress-install/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/08/19/octopress-install/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/08/19/octopress-install/" itemprop="url">Octopress 설치</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><h1>Octopress 설치</h1>
-
-<p><a href="http://octopress.org/">Octopress</a>는 <a href="http://jekyllrb.com/">Jekyll</a>을 위해 디자인된 프레임워크다.
-Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블로그 사이트를 생성할 수 있다.
-하지만 해커들을 위한 블로깅 프레임워크이라고도 불리는 Jekyll은 사용이 그리 간단하지만은 않다.
-자세한 내용은 검색하면 많이 찾을 수 있으니 그만 넘어가자.</p>
-
-<h2>기본 설치</h2>
-
-<p>Octopress에 안내된 설치방법은 아래의 사이트를 참고하자.
-<a href="http://octopress.org/docs/setup/">http://octopress.org/docs/setup/</a></p>
-
-<p>하지만 위의 설명대로 잘 되지 않는다면 아래의 내용을 참고해 볼수도 있다. 나의 경우엔 설치가 그리 쉽지만은 않았다.</p>
-
-<p>우선 설치 환경은 osx 10.10 기준이다.</p>
-
-<p>이미 git, brew 등은 설치가 되어있었기 때문에 rvm으로 ruby 1.9.3을 설치하려고 했으나 아래와 같은 오류를 만났다.</p>
-
-<h3>오류 : requirements_osx_brew_libs_install gcc49 openssl</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo rvm install 1.9.3
-</span><span class='line'>Searching <span class="k">for</span> binary rubies, this might take some time.
-</span><span class='line'>No binary rubies available <span class="k">for</span>: osx/10.10/x86_64/ruby-1.9.3-p551.
-</span><span class='line'>Continuing with compilation. Please <span class="nb">read</span> <span class="s1">&#39;rvm help mount&#39;</span> to get more information on binary rubies.
-</span><span class='line'>Checking requirements <span class="k">for</span> osx.
-</span><span class='line'>Installing requirements <span class="k">for</span> osx.
-</span><span class='line'>Updating system.....
-</span><span class='line'>Installing required packages: gcc49, openssl....
-</span><span class='line'>Error running <span class="s1">&#39;requirements_osx_brew_libs_install gcc49 openssl&#39;</span>,
-</span><span class='line'>showing last <span class="m">15</span> lines of /Users/yyj/.rvm/log/1439982916_ruby-1.9.3-p551/package_install_gcc49_openssl.log
-</span><span class='line'>++ <span class="k">case</span> <span class="s2">&quot;$1&quot;</span> in
-</span><span class='line'>++ <span class="o">[[</span> -t <span class="m">1</span> <span class="o">]]</span>
-</span><span class='line'>++ <span class="k">return</span> 1
-</span><span class='line'>++ <span class="nb">printf</span> %b <span class="s1">&#39;There were package installation errors, make sure to read the log.</span>
-</span><span class='line'>
-</span><span class='line'><span class="s1">Try `brew tap --repair` and make sure `brew doctor` looks reasonable.</span>
-</span><span class='line'>
-</span><span class='line'><span class="s1">Check Homebrew requirements https://github.com/Homebrew/homebrew/wiki/Installation\n&#39;</span>
-</span><span class='line'>There were package installation errors, make sure to <span class="nb">read </span>the log.
-</span><span class='line'>
-</span><span class='line'>Try <span class="sb">`</span>brew tap --repair<span class="sb">`</span> and make sure <span class="sb">`</span>brew doctor<span class="sb">`</span> looks reasonable.
-</span><span class='line'>
-</span><span class='line'>Check Homebrew requirements https://github.com/Homebrew/homebrew/wiki/Installation
-</span><span class='line'>++ <span class="k">case</span> <span class="s2">&quot;$_system_version&quot;</span> in
-</span><span class='line'>++ <span class="k">return</span> 1
-</span><span class='line'>Requirements installation failed with status: 1.
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>우선 안내에 나온대로 <code>brew tap --repair</code>와 <code>brew doctor</code>를 실행해서 안내하는대로 처리를 완료했음에도 문제는 해결이 되지 않았다.
-그래서 다음과 같이 rvm에서 필요로하는 lib을 먼저 설치했다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rvm get head --autolibs<span class="o">=</span>3
-</span><span class='line'><span class="nv">$ </span>rvm requirements
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>재시도 &hellip;</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo rvm install 1.9.3
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번엔 오류가 나지않고 ruby를 다운로드 시작&hellip; 그러나 엄청나게 느림&hellip; 중간에 끊어짐&hellip; 이런&hellip;
-오랜 기다림 끝에 이제 ruby 1.9.3 설치 완료.
-이제 ruby 1.9.3을 사용하도록 하고&hellip;</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rvm use 1.9.3
-</span><span class='line'><span class="nv">$ </span>rvm rubygems latest
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>그다음은 공식 사이트 설명대로&hellip; 단, Octopress를 clone 받은 경로로 가서&hellip;</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>gem install bundler
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번엔 그냥 넘아가나 했더니 아래와 같은 오류&hellip;</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>ERROR:  Could not find a valid gem <span class="s1">&#39;bundler&#39;</span> <span class="o">(</span>&gt;<span class="o">=</span> 0<span class="o">)</span>, here is why:
-</span><span class='line'>          Unable to download data from https://rubygems.org/ - server did not <span class="k">return</span> a valid file <span class="o">(</span>https://rubygems.org/latest_specs.4.8.gz<span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번에도 아래와 같이 하고&hellip;</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rvm use 1.9.3
-</span><span class='line'>Using /Users/yyj/.rvm/gems/ruby-1.9.3-p551
-</span><span class='line'><span class="nv">$ </span>rvm rubygems latest
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p> 재시도&hellip;</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>gem install bundler
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번엔 퍼미션 에러&hellip;</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo gem install bundler
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>드디어 설치.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rbenv rehash <span class="c"># 이건 필요시에만 한다고하니 명령이 없다는 오류가 나면 무시</span>
-</span><span class='line'><span class="nv">$ </span>bundle install
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이번에도 <code>bundle install</code>에서 퍼미션 에러&hellip;</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo bundle install
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>아.. 드디어 기본 설치 완료</p>
-
-<h2>테마설치</h2>
-
-<p>기본 테마 설치</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake install
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>다른 테마를 원한다면 <a href="https://github.com/imathis/octopress/wiki/3rd-Party-Octopress-Themes">https://github.com/imathis/octopress/wiki/3rd-Party-Octopress-Themes</a> 에 가서 고르면 된다.</p>
-
-<p>설치는 다음과 같이</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>git clone https://github.com/~~~.git .themes/테마이름
-</span><span class='line'><span class="nv">$ </span>rake install<span class="o">[</span><span class="s1">&#39;테마이름&#39;</span><span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>octostrap3 테마 적용 예시.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>% git clone https://github.com/kAworu/octostrap3.git .themes/octostrap3
-</span><span class='line'>% rake install<span class="o">[</span><span class="s2">&quot;octostrap3&quot;</span><span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>설정</h2>
-
-<p>아래와 같이 명령을 실행하고 생성해둔 github 프로젝트 주소를 넣으면 설치는 완료된다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake setup_github_pages
-</span><span class='line'>Enter the <span class="nb">read</span>/write url <span class="k">for</span> your repository
-</span><span class='line'><span class="o">(</span>For example, <span class="s1">&#39;git@github.com:your_username/your_username.github.io.git)</span>
-</span><span class='line'><span class="s1">           or &#39;</span>https://github.com/your_username/your_username.github.io<span class="err">&#39;</span><span class="o">)</span>
-</span><span class='line'>Repository url: https://github.com/~~~/~~~.git
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>배포</h2>
-
-<p>아직 작성한 글이 아무것도 없지만 일단 deploy 해본다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake generate
-</span><span class='line'><span class="nv">$ </span>rake deploy
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>deploy를 하고나면 기본적으로 생성해 주는 아주 간단한 index.html 파일이 push되어 있는 것을 볼 수 있다.</p>
-
-<p>이제 페이지가 정상적으로 뜨는지만 확인하면 기본 설치는 모두 완료.</p>
-
-<h2>repository 연결</h2>
-
-<p>블로그는 gh-pages branch로 연결되어 있으니 원소스를 master로 연결하여 백업의 역할을 할 수 있도록 설정해보자.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>git remote add origin https://github.com/~~~/~~~.git
-</span><span class='line'><span class="nv">$ </span>git config branch.master.remote origin
-</span><span class='line'>
-</span><span class='line'><span class="nv">$ </span>git push
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>독립 도메인 연결</h2>
-
-<p>이왕이면 내 도메인도 연결해보자. 아래의 명령은 CNAME 파일을 통해 도메인 연결을 github에 알려주는 것으로 이후 deploy가 될 때 이 파일이 함께 배포되면 적용된다. 단, 도메인을 변경했으므로 이에 맞춰 _config.yml 파일도 함께 수정해야 한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s1">&#39;blog.asamaru.net&#39;</span> &gt;&gt; <span class="nb">source</span>/CNAME
-</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-        </article>
-      
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2012-10-03T06:22:02+09:00"  data-updated="true" itemprop="datePublished dateCreated">12.10.03</time>
-        
-           | <a href="/2012/10/03/android-tap-highlight-layer/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2012/10/03/android-tap-highlight-layer/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2012/10/03/android-tap-highlight-layer/" itemprop="url">안드로이드 tap highlight 레이어로 대체하기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>오늘은 지난번 <a href="/2012/09/26/webkit-tap-highlight-color/">-webkit-tap-highlight-color 사용하기</a> 에서 얘기했던 안드로이드 tap highlight 버그를 회피할 수 있는 방법에 대해 포스팅하고자 한다.</p>
-
-<p>일단 기본적인 아이디어는 이렇다. webkit 브라우저는 기본적으로 tap highlight를 숨길 수 있으므로 tap highlight를 투명하게 변경하고 해당 링크의 위치에 원하는 모양의 레이어를 띄우는 것이다. 여기서 또 다른 문제를 함께 해결해야 하는데, 삼성 갤럭시 계열의 스마트폰에서는 숨기는 것 조차 안된다는 것.</p>
-
-<p>그래서 조금 더 꼼수를 부려야 한다. tap highlight가 된다는 것은 결국 이벤트가 전달되기 때문이므로 브라우저에 전달될 이벤트를 가로채서 필요한 처리를 하고 브라우저에게는 이벤트를 전달하지 않는 것이다. (왜 이런 짓을 해야하는지는 위에 링크한 포스팅을 참고바람)</p>
-
-<p>그럼 하나씩 처리 방법을 정리 해보자.</p>
-
-<p>터치를 지원하는 기기는 mousedown, mouseup에 대응되는 touchstart, touchend라는 이벤트가 있다. (사실 대응된다고 하기엔 차이가 있긴하다. 하지만 이해를 쉽게하기 위해 그냥 그렇게 생각하자.)</p>
-
-<p>이 touchstart 이벤트를 사용해서 click 이벤트가 발생하는 것을 막을 수 있다. (touchstart가 발생하지 않으면 click 이벤트도 발생하지 않는다.)</p>
-
-<p>그래서 먼저 안드로이드 기기에서 테스트 다음과 같이 테스트를 해봤다.</p>
-
-<p>링크 객체에서 touchstart 이벤트를 받아 이벤트 버블링과 캡쳐링을 제거하여 이벤트를 전달하지 않고 상위 부모에게 이벤트를 trigger로 강제 생성했다. 결과는.. tap highlight 가 숨겨지지 않았다. 이런 삼성&hellip; 사실 특별한 경우가 아니라면 이벤트를 부모에게 전달하지 않아도 된다. click과 같은 효과만 내면 되므로. 하지만 경우에 따라 부모가 touchstart를 받아야 하는 상황이 자주 발생할 수 있다.</p>
-
-<p>부모를 한단계씩 건너뛰며 테스트 해볼 수 있지만 시간 관계상 나는 바로 touchstart를 받아야하는 객체에게 바로 trigger 했다. 결과는 일단 성공. touchstart는 정상적으로 동작하고 tap highlight는 보여지지 않았다.</p>
-
-<p>이제 남은 작업은 링크 객체에 tap highlight를 대신할 레이어를 띄우는 것과 click 이벤트를 대체하는 것이다.</p>
-
-<p>우선 click 이벤트를 대체하는 것에 대해서 생각해보자. 간단하게 생각해서 touchstart에서 바로 click 시 동작할 일을 수행해도 된다. 하지만 이것은 실제 click과 다르다. 테스트 해보면 알겠지만 click은 손가락이 화면에서 떨어질 때 발생한다. 따라서 touchend에서 click 이벤트를 대체해야 한다는 것이다. 문제는 여기서 끝나지 않는다. 터치를 시작하고 swife한 다음 터치를 종료하면 click 이벤트는 발생되지 않아야 한다. 이 문제를 해결하기 위해 touchstart에서 좌표를 기억하고 touchend에서 좌표를 검사하여 swife 되었는지를 확인하고 click 이벤트를 대체해야 한다. 그런데 문제는 끝이 없다. touchstart에서는 좌표를 받을 수 있으나 touchend에서는 좌표를 받을 수 없다. 따라서 touchmove 이벤트에서 좌표의 변경을 추적해야 한다.</p>
-
-<p>다음으로 링크 객체의 위에 tap highlight 대신 레이어를 올리는 방법이다. 이 부분은 간단할 것 같지만 한가지 문제가 있다. 정확하게 링크 객체의 위에 레이어를 올리려면 객체의 위치를 알아야 한다는 것. 이 부분도 여러가지 방법을 통해 알아낼 수 있지만 부모 중에 position:relative 속성을 가진 경우 등 신경써야 할 것이 많다. 하지만 아주 간단한 방법이 있다. 링크 객체의 앞에 레이어 객체를 넣고 position:absolute를 주면 레이어는 공간을 차지하지 않으므로 링크 객체의 위치는 유지되면서도 동일한 좌표에 위치 시킬 수 있다. 단, 당연히 top, left를 따로 지정하지 않아야 한다. 그리고 객체 사이즈는 간단히 구할 수 있으므로 사이즈만 지정해 주면 완료. top, left css 속성을 줄 수 없으므로 상대적인 위치 등의 조정은 margin으로 하면 된다. (예를들어 margin:-2px 0 0 -2px, width:+2px, height:+2px 이런 방법으로 링크객체보다 사방으로 2px 큰 레이어를 정확하게 위치 시킬 수 있다.)</p>
-
-<p>아주 상세히 설명하자면 더 해야 겠지만 이 정도면 원리 정도는 설명했다고 생각된다. 혹 이해가 안되는 부분은 블로그로 문의 바란다.</p>
-
-<p>자 그럼 소스를 첨부한다. 정리를 해야 겠지만 시간 관계상&hellip; (그리고 jquery는 기본적으로 사용한다는 가정하에서 제작된 소스다. jquery를 사용하지 않는다면 사용 부분은 수정이 필요하다. 사실 jquery 문제가 아니더라도 범용으로 사용하기 위해 제작되 것이 아니므로 그냥 그대로 가져다 쓸 수는 없으니 참고로만 보면 된다.)</p>
-
-<h3>css 소스</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='css'><span class='line'><span class="nc">.p_tap_highlight</span> <span class="p">{</span> <span class="k">position</span><span class="o">:</span><span class="k">absolute</span><span class="p">;</span> <span class="k">background-color</span><span class="o">:</span><span class="m">#333</span><span class="p">;</span> <span class="o">-</span><span class="n">moz</span><span class="o">-</span><span class="k">opacity</span><span class="o">:.</span><span class="m">30</span><span class="p">;</span> <span class="n">filter</span><span class="o">:</span><span class="n">alpha</span><span class="p">(</span><span class="k">opacity</span><span class="o">=</span><span class="m">30</span><span class="p">);</span> <span class="k">opacity</span><span class="o">:.</span><span class="m">30</span><span class="p">;</span> <span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>js 소스</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>    <span class="kd">var</span> <span class="nx">isAndroid</span> <span class="o">=</span> <span class="p">(</span><span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgent</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">().</span><span class="nx">indexOf</span><span class="p">(</span><span class="s2">&quot;android&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span> <span class="c1">//&amp;&amp; ua.indexOf(&quot;mobile&quot;);</span>
-</span><span class='line'>    <span class="k">if</span><span class="p">(</span><span class="nx">isAndroid</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// 안드로이드 계열에서 탭 하이라이트 위치가 맞지 않아 프로그램으로 대체</span>
-</span><span class='line'>      <span class="c1">// 탭 하이라이트 숨김 : 삼성 계열은 소용없음</span>
-</span><span class='line'>        <span class="nx">$</span><span class="p">(</span><span class="s2">&quot;&lt;style type=&#39;text/css&#39;&gt; html, body, body * { -webkit-tap-highlight-color:rgba(0,0,0,0); } &lt;/style&gt;&quot;</span><span class="p">).</span><span class="nx">appendTo</span><span class="p">(</span><span class="s2">&quot;head&quot;</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="kd">var</span> <span class="nx">fcSx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="nx">fcSy</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
-</span><span class='line'>        <span class="kd">var</span> <span class="nx">fcEx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="nx">fcEy</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
-</span><span class='line'>        <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;touchmove&#39;</span><span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">event</span><span class="p">){</span> <span class="c1">// touchmove로 터치 마지막 좌표 추적</span>
-</span><span class='line'>            <span class="kd">var</span> <span class="nx">t</span><span class="o">=</span><span class="nx">event</span><span class="p">.</span><span class="nx">originalEvent</span><span class="p">.</span><span class="nx">targetTouches</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-</span><span class='line'>            <span class="nx">fcSx</span><span class="o">=</span><span class="nx">t</span><span class="p">.</span><span class="nx">pageX</span><span class="p">;</span>
-</span><span class='line'>            <span class="nx">fcSy</span><span class="o">=</span><span class="nx">t</span><span class="p">.</span><span class="nx">pageY</span><span class="p">;</span>
-</span><span class='line'>        <span class="p">});</span>
-</span><span class='line'>        <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;touchstart&#39;</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">event</span><span class="p">){</span>
-</span><span class='line'>            <span class="kd">var</span> <span class="nx">t</span><span class="o">=</span><span class="nx">event</span><span class="p">.</span><span class="nx">originalEvent</span><span class="p">.</span><span class="nx">targetTouches</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-</span><span class='line'>            <span class="nx">fcSx</span><span class="o">=</span><span class="nx">fcEx</span><span class="o">=</span><span class="nx">t</span><span class="p">.</span><span class="nx">pageX</span><span class="p">;</span>
-</span><span class='line'>            <span class="nx">fcSy</span><span class="o">=</span><span class="nx">fcEy</span><span class="o">=</span><span class="nx">t</span><span class="p">.</span><span class="nx">pageY</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'>            <span class="nx">event</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
-</span><span class='line'>            <span class="c1">// touchstart를 사용해야 하는 부모 객체에 이벤트 trigger</span>
-</span><span class='line'>            <span class="nx">$</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">).</span><span class="nx">parents</span><span class="p">(</span><span class="s1">&#39;.ui-scrollview-view&#39;</span><span class="p">).</span><span class="nx">triggerHandler</span><span class="p">(</span><span class="s1">&#39;touchstart&#39;</span><span class="p">);</span>
-</span><span class='line'>            <span class="nx">event</span><span class="p">.</span><span class="nx">stopPropagation</span><span class="p">();</span>
-</span><span class='line'>            <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
-</span><span class='line'>        <span class="p">}).</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;touchend&#39;</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">event</span><span class="p">){</span>
-</span><span class='line'>          <span class="c1">// 가로/세로 이동 거리의 합이 10 이하인 경우만 click으로 인정(swife 제외를 위함)</span>
-</span><span class='line'>            <span class="k">if</span><span class="p">((</span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">fcSx</span><span class="o">-</span><span class="nx">fcEx</span><span class="p">)</span><span class="o">+</span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">fcSy</span><span class="o">-</span><span class="nx">fcEy</span><span class="p">))</span><span class="o">&lt;</span><span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>                <span class="kd">var</span> <span class="nx">target</span><span class="o">=</span><span class="nx">$</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">currentTarget</span><span class="p">);</span>
-</span><span class='line'>                <span class="c1">// 탭 하이라이트 표시</span>
-</span><span class='line'>                <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;&lt;div class=&quot;p_tap_highlight&quot; style=&quot;width:&#39;</span><span class="o">+</span><span class="p">(</span><span class="nx">target</span><span class="p">.</span><span class="nx">width</span><span class="p">())</span><span class="o">+</span><span class="s1">&#39;px; height:&#39;</span><span class="o">+</span><span class="p">(</span><span class="nx">target</span><span class="p">.</span><span class="nx">height</span><span class="p">())</span><span class="o">+</span><span class="s1">&#39;px;&quot;&gt;&lt;/div&gt;&#39;</span><span class="p">).</span><span class="nx">insertBefore</span><span class="p">(</span><span class="nx">target</span><span class="p">).</span><span class="nx">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">).</span><span class="nx">queue</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">remove</span><span class="p">();});</span>
-</span><span class='line'>                <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">t</span><span class="p">){</span> <span class="k">return</span> <span class="kd">function</span><span class="p">(){</span>
-</span><span class='line'>                    <span class="kd">var</span> <span class="nx">href</span> <span class="o">=</span> <span class="nx">t</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">);</span>
-</span><span class='line'>                    <span class="k">if</span><span class="p">((</span><span class="k">typeof</span><span class="p">(</span><span class="nx">href</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="nx">href</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="nx">href</span> <span class="o">==</span> <span class="s1">&#39;#&#39;</span><span class="p">))</span> <span class="p">{</span>    <span class="c1">// 이동할 주소가 없을 경우 이벤트 트리거</span>
-</span><span class='line'>                        <span class="nx">t</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">);</span>
-</span><span class='line'>                        <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
-</span><span class='line'>                    <span class="p">}</span>
-</span><span class='line'>                    <span class="c1">//event.preventDefault();</span>
-</span><span class='line'>                    <span class="c1">//event.stopPropagation();</span>
-</span><span class='line'>                    <span class="c1">// 링크 객체의 주소 형태에 맞게 처리</span>
-</span><span class='line'>                    <span class="k">if</span><span class="p">(</span><span class="nx">href</span><span class="p">.</span><span class="nx">substring</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">==</span><span class="s1">&#39;#&#39;</span><span class="p">){</span>
-</span><span class='line'>                        <span class="c1">// TODO hash 변경에 따른 처리</span>
-</span><span class='line'>                    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">href</span><span class="p">.</span><span class="nx">substring</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">11</span><span class="p">).</span><span class="nx">toLowerCase</span><span class="p">()</span><span class="o">==</span><span class="s1">&#39;javascript:&#39;</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>                        <span class="nb">eval</span><span class="p">(</span><span class="nx">href</span><span class="p">.</span><span class="nx">substring</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="nx">href</span><span class="p">.</span><span class="nx">length</span><span class="p">));</span>
-</span><span class='line'>                    <span class="p">}</span>
-</span><span class='line'>                    <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="o">=</span><span class="nx">href</span><span class="p">;</span>
-</span><span class='line'>                <span class="p">};}(</span><span class="nx">target</span><span class="p">),</span><span class="mi">10</span><span class="p">);</span>
-</span><span class='line'>                <span class="nx">target</span><span class="o">=</span><span class="kc">null</span><span class="p">;</span>
-</span><span class='line'>            <span class="p">}</span>
-</span><span class='line'>            <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
-</span><span class='line'>        <span class="p">});</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">})();</span>
-</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1512,7 +1393,7 @@ Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블�
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (14)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (3)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (17)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (3)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1521,15 +1402,15 @@ Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블�
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/09/25/if-android-theme-parent-doesnt-set-attribute/">안드로이드 테마 정의시 parent를 지정하지 않을 경우</a>
+    
+    <a class="list-group-item " href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>
+    
+    <a class="list-group-item " href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/">Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결</a>
+    
     <a class="list-group-item " href="/2015/09/25/git-tracking-empty-directories/">Git : 빈 디렉토리 추가하기</a>
     
     <a class="list-group-item " href="/2015/09/22/adding-external-blog-to-naver-blog-search-section/">외부 블로그를 네이버 블로그 검색 섹션에 노출시키기</a>
-    
-    <a class="list-group-item " href="/2015/09/22/how-to-install-gitlib-on-centos/">CentOS에 Gitlab 설치하기</a>
-    
-    <a class="list-group-item " href="/2015/09/21/how-to-install-gogs-on-centos/">CentOS에 gogs 설치하기</a>
-    
-    <a class="list-group-item " href="/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/">안드로이드 TabLayout에서 setupWithViewPager() 사용시 Swipe 후 Tab 클릭시 ViewPager가 변경되지 않는 버그 수정</a>
     
   </div>
 </section>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-25T11:03:54+09:00</updated>
+  <updated>2015-09-25T20:21:49+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,162 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[안드로이드 테마 정의시 parent를 지정하지 않을 경우]]></title>
+    <link href="http://blog.asamaru.net/2015/09/25/if-android-theme-parent-doesnt-set-attribute/"/>
+    <updated>2015-09-25T14:18:08+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/25/if-android-theme-parent-doesnt-set-attribute</id>
+    <content type="html"><![CDATA[<p>이번 포스팅은 정확하지 않은 정보일 확률이 높다. 하지만 비슷한 경우를 만나게되면 임시 해결 방법으론 도움이 될 것 같아 글을 남겨 본다.
+이번에 작업하면서 발생한 문제를 해결하는 과정에서 이것저것 해보면서 알게된 부분을 정리해보려고 한다. 일단 문제를 만난 상황부터 이야기하자면 이렇다.</p>
+
+<p>작업 중에 DialogTheme를 정의해서 사용할 일이 있었다. 그래서 다음과 같이 정의해서 사용중이었다. Theme가 무엇인지에 대해서는 <a href="http://developer.android.com/intl/ko/guide/topics/ui/themes.html">http://developer.android.com/intl/ko/guide/topics/ui/themes.html</a> 를 참고하자.</p>
+
+<p><strong> values/styles.xml </strong></p>
+
+<p>```XML</p>
+
+
+
+<p><style name="af_DialogTheme" parent="af_DialogTheme.Base"/>
+```</p>
+
+<p>굳이 <code>af_DialogTheme.Base</code>를 정의하고 다시 <code>af_DialogTheme</code>에서 이를 상속받아 처리하는 것에는 이유가 있다. Theme에서 사용하는 속성들 또는 상황이 API 버전에 따라 다르기 때문이다. 예를 들어 내가 버전별로 다르게 사용한 style은 아래와 같다.</p>
+
+<p><strong> values-v19/styles.xml </strong>
+<code>XML
+&lt;style name="af_DialogTheme" parent="af_DialogTheme.Base"&gt;
+    &lt;item name="android:windowTranslucentStatus"&gt;true&lt;/item&gt;
+&lt;/style&gt;
+</code></p>
+
+<p><strong> values-v21/styles.xml </strong>
+<code>XML
+&lt;style name="af_DialogTheme" parent="af_DialogTheme.Base"&gt;
+    &lt;item name="android:statusBarColor"&gt;@android:color/transparent&lt;/item&gt;
+    &lt;item name="android:windowTranslucentStatus"&gt;false&lt;/item&gt;
+&lt;/style&gt;
+</code></p>
+
+<p>위 처럼 일부 속성만 replace하려면 공통 부분을 부모 스타일로 정의하고 받아서 쓰도록 해야한다. 같은 테마 이름을 사용하게되면 대체 xml 문서(values-v19/styles.xml, values-v21/styles.xml)에서 정의된 속성을 반영하는게 아니라 통째로 덮어써서 공통 부분은 정의가 안된 것과 동일하게 처리된다. 이렇게 통째로 덮어쓰지 않고 부분만 변경되게 하기 위해 parent 속성을 사용하는 것이다.</p>
+
+<p>여기까지가 문제가 되는 부분에 대한 설명이다. 위의 내용을 보고 문제가 될 수 있는 부분을 찾을 수 있겠는가? 이유를 안다면 아래의 내용을 볼 필요가 없다. 나는 몰랐기 때문에 당혹스러웠다.</p>
+
+<p>이 상태로 빌드해서 테스트하면 아무 이상도 없고 예상대로 동작한다. 그런데 release를 위해 빌드를 하는 순간 아래의 에러를 만나게 된다.</p>
+
+<pre><code>Error:(11) Error: Style Resource definition cycle: AppThemeDialog =&gt; af_DialogTheme =&gt; af_DialogTheme.Base =&gt; af_DialogTheme [ResourceCycle]
+    &lt;style name="AppThemeDialog" parent="af_DialogTheme"/&gt;
+                                 ~~~~~~~~~~~~~~~~~~~~~~~
+   Explanation for issues of type "ResourceCycle":
+   There should be no cycles in resource definitions as this can lead to
+   runtime exceptions.
+</code></pre>
+
+<p>당황스럽다. 분명 테스트시에는 한번도 본 적 없는 오류다. 내용을 보자. <code>ResourceCycle</code>에 관련된 문제로 보인다. 맨 위의 문장과 함께 보면 Resource의 순환참조라는 이야기로 보인다. 하지만 위의 코드들을 보면 알겠지만 순환참조라고 할만한 내용은 없다. 난 절대로 오류 메시지처럼 참조 시키지 않았다.</p>
+
+<p>처음엔 이유를 몰라 어떻게 해야 할지 몰랐다. <code>af_DialogTheme.Base =&gt; af_DialogTheme</code>라고 나오는데 그렇게 지정하지 않았는데 왜 알아서 참조를 한다고 난리일까? 고민을 하던 중 옆에 있던 후배가 하는 말이 &ldquo;저기 이름에 있는 . 때문에 그런것 아니냐?"라는 것이다. 난 말도 안된다고 했다. 어떻게 그렇게 해석 될 수 있느냐? 게다가 .Base라는 구문은 안드로이드 내부 테마들이 정의될 때 사용하던 네이밍 규칙을 따라 한 것인데 그럴리가 없다는 것이 내 생각이었다. 하지만 <strong>결함의 발견은 절대 그럴리가 없다는 부분부터 시작해야 한다.</strong></p>
+
+<p>결론은 후배의 말이 맞았다. name을 <code>af_DialogTheme.Base</code>에서 <code>af_DialogTheme_Base</code>로 변경하자 오류는 사라졌다. 아&hellip; 어의없다.
+보다 확실히 하기 위해 아래와 같이 name을 둔 채로 parent를 추가했다. 당연히 상속받을 것은 없으므로 공백으로&hellip;</p>
+
+<p><strong> values/styles.xml </strong>
+<code>XML
+&lt;style name="af_DialogTheme.Base" parent=""&gt;
+    &lt;item name="android:windowNoTitle"&gt;true&lt;/item&gt;
+</code></p>
+
+<p>이렇게 처리해도 오류는 사라졌다. 그럼 이제 경험에 의한 결론을 내려보자(서두에 이야기한 것 처럼 그냥 내가 추측하는 것이니 틀릴 확률이 높다는 것을 감안하고 보자).</p>
+
+<blockquote><p>style 정의시 name에 .을 사용하고 parent가 지정되지 않았다면 . 앞부분의 name을 parent로 정의한 것으로 보고 상속을 시도한다.</p></blockquote>
+
+<p>결론적으로 내 의도는 .Base가 붙은 녀석이 부모가 되는 것을 원하고 네이밍한 것이 반대로 자식이 되어 순환참조를 발생시키게 한 것이다.</p>
+
+<p>그런데 상황을 보자면 위에 정리한 내용이 맞다고 보아진다. 그런데 이상하다. 왜 release 모드에서만 오류가 나는가? 그래서 오류 부분을 조금 더 자세히 보니 <code>:app:lintVitalRelease</code> 영역에서 오류가 난다. 그렇다. <a href="https://ko.wikipedia.org/wiki/Lint">lint</a> 오류다. 오류가 의심되는 코드를 검증하는 과정에서 오류를 발생시킨 것이다.</p>
+
+<p>여기서 최종적인 나의 생각(추측)을 정리하겠다.</p>
+
+<blockquote><p>예전(구버전 안드로이드)에는 위의 설명대로 .을 기준으로한 theme(style) 상속의 개념이 사용되었기 때문에 lint에 추가되어 있었다. 그런데 시간이 지나면서 이 기능은 제거되고 parent라는 속성이 추가되었으나 lint에서는 검증 코드가 제외되지 않았다.</p></blockquote>
+
+<p>이렇게 생각하는 이유는 실제로 lint 영역에서만 오류가 나지 동작시에는 아무런 문제가 없다.</p>
+
+<h3>그래서 어떻게 하면 되나?</h3>
+
+<blockquote><p>style를 사용한 theme 정의시 parent가 없다면 name에 .을 사용하지 말거나 공백으로라도 parent 속성을 사용하자.</p></blockquote>
+
+<p><code>Style Resource definition cycle</code> 오류를 만난다면 위의 글을 참고해서 해결에 도움이 되었으면 하는 바램이다. 나도 오늘 후배의 한마디가 아니었다면 아직도 헬게이트를 경험하고 있을지도 모른다.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거]]></title>
+    <link href="http://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal/"/>
+    <updated>2015-09-25T13:47:37+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal</id>
+    <content type="html"><![CDATA[<p>지난 포스팅 <a href="/2015/08/28/android-getcolor-getdrawable-deprecated/">Android 6(API 23)의 getColor() deprecated 대응 + getDrawable() deprecated</a>에서 잠깐 언급했던 <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a>에 대해 이야기하고자 한다.</p>
+
+<p>우선 안드로이드에 안내하고 있는 원문은 아래와 같다.</p>
+
+<ul>
+<li>영문 : <a href="https://developer.android.com/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP Client Removal</a></li>
+<li>한글 : <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a></li>
+</ul>
+
+
+<p>한글 문서의 내용은 아래와 같다.</p>
+
+<blockquote><p>Apache HTTP 클라이언트에 대한 지원을 제거합니다. 앱이 이 클라이언트를 사용하고 Android 2.3(API 레벨 9) 이상을 대상으로 하는 경우, HttpURLConnection 클래스를 대신 사용하세요. 이는 투명한 압축과 응답 캐싱을 통해 네트워크 사용량을 줄이고 전력 소모를 최소화하기 때문에 API가 더 효율적입니다. Apache HTTP API를 계속 사용하려면 우선 다음과 같은 컴파일-시간 종속성을 build.gradle 파일에서 선언해야 합니다.
+<code>gradle
+android {
+    useLibrary 'org.apache.http.legacy'
+}
+</code></p></blockquote>
+
+<p>이 부분이 제거되면서 문제가 되는 부분은 위의 안내와 같이 gradle에 임시 코드를 넣음으로써 해결이 가능하다. 하지만 제거 과정이 여러가지 문제를 일으켰다. 사실 안드로이드에서는 해당 기능을 Deprecated하고 대체  기능의 사용을 권장하고 있었으나 이를 사용하는 오픈소스 라이브러리들이 미리 대응을 하지 않았던 것이 문제가 되었다. 나의 경우는 <a href="https://github.com/ACRA/acra">ACRA</a>와 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>가 해당 기능을 사용해서 구현되어 있어서 <code>org.apache.http.legacy</code>를 통해 급한 문제들은 해결했었다.</p>
+
+<p>현재 기준으로 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>는 1.4.9로 버전업 되면서 Http에 관련된 부분을 대체 라이브러리로 교체함으로써 문제가 해결되었고 <a href="https://github.com/ACRA/acra">ACRA</a>의 경우는 4.6.2로 버전 기준으로 처리가 되었다고 어디서 본것 같았는데 실제로는 빌드 과정에서 오류가 발생했다. 그래서 다시 알아보니 4.7.0 버전에서 HtttpUrlConnection를 사용함으로써 Android M (6.0)을 정식 지원한다고 안내되어 있다. 하지만 아직 RC2로 정식 버전업이 되지 않았다. 나의 경우는 조금만 더 기다리면 useLibrary &lsquo;org.apache.http.legacy'를 사용하지 않아도 될 것으로 예상된다.</p>
+
+<p>사실 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>도 현재 버전에서는 문제가 있다. 공식 사이트에서는 해당 현상에 대한 이야기는 없으나 나의 경우엔 proguard 적용시 완료 callback이 호출되지 않는 문제가 있었다. 관련해서는 <a href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/">Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결</a>에 별도로 포스팅한다.</p>
+
+<p>어쨌든 이 문제는 시간이 지나면서 오픈 소스들이 대응을 시작하면 대부분 해결될 것으로 생각된다.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결]]></title>
+    <link href="http://blog.asamaru.net/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/"/>
+    <updated>2015-09-25T12:10:09+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure</id>
+    <content type="html"><![CDATA[<p>안드로이드 앱 개발시 사용하던 <a href="https://github.com/loopj/android-async-http">android-async-http</a>가 최근 1.4.9 버전으로 버전업되었다. 1.4.8 이하 버전을 사용할 경우 이전에 포스팅한 <a href="/2015-09-25-android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>와 관련된 문제가 있다.</p>
+
+<p>그런데 나는 이 1.4.9 버전을 사용하면서 다른 문제가 생겼다. 빌드에서 오류나 경고는 전혀 나타나지 않지만 URL 호출을 하면 onStart, onProgress까지는 들어오는데 onSuccess, onFailure를 호출해 주지 않았다. 그런데 이 현상이 proguard를 적용할 때만 발생한다는 것이다. 정밀하게 테스트해보지 않아 정확한 원인을 찾지는 못했지만 대략적인 상황을 보면 proguard에 의해 난독화 처리되는 부분이 문제로 보인다(그런데 실제로 내부 소스를 살펴보면 reflection 등을 사용하거나해서 난독화에 영향을 받을 만한 부분을 찾지 못했다).</p>
+
+<p>우선 내가 사용했던 proguard의 설정 중 영향을 줄만한 부분은 다음과 같다. 나머지는 대부분 keep 등의 설정으로 <a href="https://github.com/loopj/android-async-http">android-async-http</a>에 영향을 줄 만한 부분은 없다.</p>
+
+<pre><code>-optimizationpasses 5
+-repackageclasses ''
+-allowaccessmodification
+-overloadaggressively
+-verbose
+</code></pre>
+
+<p>사실 이 문제에 대해서 검색해보면 다른 이야기들이 많다. 대부분 호출이 되지 않는다는 질문을 하는 사람들의 경우는 onSuccess, onFailure의 오버로딩에 관련된 문제이다. 실제로 android-async-http는 ResponseHandler에 따라 여러 개의 onSuccess, onFailure 함수들을 가지고 있다. 이 함수들은 반환되는 데이터의 형태에 따라 다른 함수를 호출해주도록 되어있다. 이 부분은 편리하긴하나 개인적으론 조금 꺼려지는 형태다. 질문이 많이 올라오는 것처럼 반환 형태에 맞는 함수를 구현하는 것을 누락시킬 수 있기 때문이다. 어쨌든 나의 경우는 이에 해당하지 않았다. 확인을 위해 라이브러리 소스를 일부 수정해서 테스트 했으나 그 전단계까지도 들어오지 않았다.</p>
+
+<p>이 문제는 proguard를 적용했을 때만 발생하는 문제였으므로 아래와 같이 proguard에 추가해주면 간단히 해결된다.</p>
+
+<pre><code>-keep class com.loopj.android.http.** { *; }
+-keep interface com.loopj.android.** { *; }
+</code></pre>
+
+<p>그런데 개인적으로 이 해결법은 어떤 것이 문제인지 확인하지도 못했을 뿐아니라 문제를 해결하기 위해 통째로 proguard에서 제외하는 것이 맘에들지 않았다. 그래서 수십번의 빌드를 통해 어느 클래스가 문제를 일으키는지 찾아냈다. 아.. 인간 승리다. 수십여개의 클래스들을 넣어보고 빼보고&hellip;</p>
+
+<p>결론은 아래의 코드를 proguard에 추가하면 문제가 해결된다.</p>
+
+<pre><code>-keep class com.loopj.android.http.HttpGet { *; }
+</code></pre>
+
+<p>대충 소스를 보니 HttpGet는 이번에 Apache HTTP 클라이언트가 제거되면서 이를 대체하기 위한 라이브러리를 교체하면서 추가된 클래스로 보인다. 그런데 소스를 봐도 이게 왜 proguard에 영향을 받는지 잘 모르겠지만 위의 코드를 넣음으로써 해결이 되는 것은 확인했다. 더 자세히 코드를 추적해 간다면 원인을 찾을 수 있을지도 모르지만 굳이 거기까지 내가할 필요는 없다고 보고 github에 이슈를 등록하려고 한다. 해당 개발자들이 다음버전에 문제를 해결해 주기를 바라며&hellip;</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[안드로이드 TabLayout에서 setupWithViewPager() 사용시 Swipe 후 Tab 클릭시 ViewPager가 변경되지 않는 버그 수정]]></title>
@@ -109,386 +265,6 @@ public void removeOnPageChangeListener (ViewPager.OnPageChangeListener listener)
 <blockquote><p>지정된 OnPageChangeListener를 제거한다.</p></blockquote>
 
 <p>사용법은 설명하지 않아도 바로 이해할 수 있을 생각된다. setOnPageChangeListener와 addOnPageChangeListener의 인자가 동일하므로 함수명만 바꾸면 그대로 동작한다. 단, 기존 것은 setOnPageChangeListener는 removeOnPageChangeListener와 addOnPageChangeListener 동작을 합친 것처럼 동작했으니 동일한 역할이 필요하다면 removeOnPageChangeListener와 addOnPageChangeListener를 함께 사용해야 한다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[AutoCompleteAdapter(ArrayAdapter with Filterable) 사용시 비주기적 오류 발생 해결]]></title>
-    <link href="http://blog.asamaru.net/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/"/>
-    <updated>2015-09-18T09:48:32+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification</id>
-    <content type="html"><![CDATA[<p>AppCompatAutoCompleteTextView를 사용하고자 할때 필요한 것이 데이터를 넘겨주는 Adapter이다. 단, 이 Adepter는 <code>extends ListAdapter &amp; Filterable</code> 가 적용되어야 한다. 그래서 보통은 <code>public class StringAutoCompleteAdapter extends ArrayAdapter&lt;String&gt; implements Filterable</code> 형태의 구현을 많이 사용한다. 그리고 대부분의 경우에 AutoCompleteTextView를 사용하는 이유는 검색어 자동완성 등에 사용되고 이 데이터는 서버에서 데이터를 호출해서 적용하도록 한다.</p>
-
-<p>위에 설명한 내용대로 하나의 예시를 보면 아래와 같다(미리 설명하자면 아래의 예제는 잘못된 예제이다. 생각지 못한 오류를 비주기적으로 만나게 된다).</p>
-
-<pre><code class="java">package net.asamaru.android.test;
-
-import android.content.Context;
-import android.widget.ArrayAdapter;
-import android.widget.Filter;
-import android.widget.Filterable;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-
-public class StringAutoCompleteAdapter extends ArrayAdapter&lt;String&gt; implements Filterable {
-    private List&lt;String&gt; resultList;
-
-    public StringAutoCompleteAdapter(Context context, int textViewResourceId) {
-        super(context, textViewResourceId);
-    }
-
-    @Override
-    public int getCount() {
-        return resultList.size();
-    }
-
-    @Override
-    public String getItem(int index) {
-        if ((resultList.size() - 1) &gt;= index) {
-            return resultList.get(index);
-        }
-        return null;
-    }
-
-    @Override
-    public Filter getFilter() {
-        return new Filter() {
-            @Override
-            protected FilterResults performFiltering(CharSequence constraint) {
-                FilterResults filterResults = new FilterResults();
-                if (constraint != null) {
-                    resultList = autocomplete(constraint.toString());
-                    if (resultList != null) {
-                        filterResults.values = resultList;
-                        filterResults.count = resultList.size();
-                    }
-                }
-                return filterResults;
-            }
-
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                if (results.count &gt; 0) {
-                    notifyDataSetChanged();
-                } else {
-                    notifyDataSetInvalidated();
-                }
-            }
-        };
-    }
-
-    public ArrayList&lt;String&gt; autocomplete(String input) {
-        HttpURLConnection conn = null;
-        StringBuilder jsonResults = new StringBuilder();
-        try {
-            URL url = new URL("http://www.abc.com/search/?kwd=" + URLEncoder.encode(input, "utf8"));
-            conn = (HttpURLConnection) url.openConnection();
-            InputStreamReader in = new InputStreamReader(conn.getInputStream());
-            int read;
-            char[] buff = new char[1024];
-            while ((read = in.read(buff)) != -1) {
-                jsonResults.append(buff, 0, read);
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return null;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
-        return (new Gson()).fromJson(jsonResults.toString(), new TypeToken&lt;ArrayList&lt;String&gt;&gt;() {}.getType());
-    }
-}
-</code></pre>
-
-<p>위의 예제를 보면 얼핏봐서는 문제가 없어 보인다. 실제로 동작도 잘된다. 하지만 아주 낮은 빈도로 Exception이 발생해 앱이 죽는다. 이 문제로 인하여 원인을 찾지못해 고생하는 경우가 많다. 내가 작업하면서 발생했던 오류는 다음과 같다.</p>
-
-<ul>
-<li>The content of the adapter has changed but ListView did not receive a notification.</li>
-<li>java.lang.NullPointerException: Attempt to invoke virtual method &lsquo;java.lang.String java.lang.Object.toString()&rsquo; on a null object reference</li>
-</ul>
-
-
-<p>내부적 동작 코드들을 보면 이 외에도 View의 구성이나 기타 코딩에 따라 다른 오류가 날 수도 있을 것 같다. 하지만 원인은 대부분 아래의 부분 때문이다(정확하게는 저 부분에서 오류가 나는 것이 아니라 저 부분이 들어간 위치 때문에 다른 부분에서 오류가 난다).</p>
-
-<pre><code class="java">resultList = autocomplete(constraint.toString());
-</code></pre>
-
-<p>이유를 설명하자면 Filter의 performFiltering() 함수는 백그라운드 쓰레드에서 동작하도록 되어 있다. 그런데 이 함수 안에서 Adapter의 데이터를 변경하는 코드가 들어있기 때문에 Adapter가 데이터의 변경을 확인하는 시점과 notify 되는 시점이 엉킬 경우 오류를 내게 된다. 따라서 타이밍에 따라서 오류가 발생하기도 안하기도 하는 것이다(나의 경우는 키워드를 입력하거나 지우는 등의 변경이 빠르게 반복될 때 데이터의 변경이 빈번히 반복되면서 오류가 나타났다). 실제로 오류를 재현하기가 어려울 정도로 잘 안나오는 경우도 있었다.</p>
-
-<p>그럼 잘못된 예제와 오류, 원인을 알아봤으니 정확한 처리 예시를 보자.</p>
-
-<pre><code class="java">package net.asamaru.android.test;
-
-import android.content.Context;
-import android.widget.ArrayAdapter;
-import android.widget.Filter;
-import android.widget.Filterable;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-
-public class StringAutoCompleteAdapter extends ArrayAdapter&lt;String&gt; implements Filterable {
-    private List&lt;String&gt; resultList;
-
-    public StringAutoCompleteAdapter(Context context, int textViewResourceId) {
-        super(context, textViewResourceId);
-    }
-
-    @Override
-    public int getCount() {
-        return resultList.size();
-    }
-
-    @Override
-    public String getItem(int index) {
-        if ((resultList.size() - 1) &gt;= index) {
-            return resultList.get(index);
-        }
-        return null;
-    }
-
-    @Override
-    public Filter getFilter() {
-        return new Filter() {
-            @Override
-            protected FilterResults performFiltering(CharSequence constraint) {
-                FilterResults filterResults = new FilterResults();
-                ArrayList&lt;String&gt; queryResults;
-                if ((constraint != null) &amp;&amp; (constraint.length() != 0)) {
-                    queryResults = autocomplete(constraint.toString());
-                } else {
-                    queryResults = new ArrayList&lt;&gt;();
-                }
-                filterResults.values = queryResults;
-                filterResults.count = queryResults.size();
-                return filterResults;
-            }
-
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                // noinspection unchecked
-                resultList = (ArrayList&lt;String&gt;) results.values;
-                if (results.count &gt; 0) {
-                    notifyDataSetChanged();
-                } else {
-                    notifyDataSetInvalidated();
-                }
-            }
-        };
-    }
-
-    public ArrayList&lt;String&gt; autocomplete(String input) {
-        HttpURLConnection conn = null;
-        StringBuilder jsonResults = new StringBuilder();
-        try {
-            URL url = new URL("http://www.abc.com/search/?kwd=" + URLEncoder.encode(input, "utf8"));
-            conn = (HttpURLConnection) url.openConnection();
-            InputStreamReader in = new InputStreamReader(conn.getInputStream());
-            int read;
-            char[] buff = new char[1024];
-            while ((read = in.read(buff)) != -1) {
-                jsonResults.append(buff, 0, read);
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return null;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
-        return (new Gson()).fromJson(jsonResults.toString(), new TypeToken&lt;ArrayList&lt;String&gt;&gt;() {}.getType());
-    }
-}
-</code></pre>
-
-<p>주요 변경 지점은 <code>getFilter()</code>이다. 기존에 <code>resultList = autocomplete(constraint.toString());</code> 부분을 통해 미리 Adapter의 데이터를 변경하던 것을 publishResults로 옮긴 것이다. 그리고 검색된 결과가 없더라도 빈 ArrayList를 만들어 넣어준 것이다.
-코드 상으로는 큰 차이가 나지않고 굳이 이렇게 해야하나 싶지만 내부 동작 방식을 보면 이렇게 하지 않으면 앞서 설명한 것과 같이 예기치 못한 상황을 만날 수 있다.</p>
-
-<p><strong>첨언 :</strong></p>
-
-<ul>
-<li>안드로이드는 조금만 잘못써도 오류가 발생하는 이런 경우를 많이 보게 되는데 아위운 점은 정확한 사용법을 제시하는 메뉴얼을 찾기 어렵다는 것이다.</li>
-<li>코드 중간에 보면 <code>// noinspection unchecked</code> 부분이 있는데 크게 중요한 부분은 아니지만 이 부분을 제외하면 warning이 뜬다(안드로이드 스튜디오에서 노란 밑줄). 이 warning을 안드로이드 스튜디오에서 숨기는 역할을 하는 코드다.</li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[PHP의 DateTime을 Java (Android)로 전달하기]]></title>
-    <link href="http://blog.asamaru.net/2015/09/17/datetime-from-php-to-java-android/"/>
-    <updated>2015-09-17T18:45:26+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/17/datetime-from-php-to-java-android</id>
-    <content type="html"><![CDATA[<p>안드로이드 앱을 개발하게되면 많은 경우에 서버와의 데이터 연결이 필요하다. 대부분의 데이터 타입은 이 과정에서 큰 문제를 일으키지 않는다(데이터 타입만 명확히 한다면). 하지만 DateTime은 조금 까다로울 수 있다. 프로그램에서 시간은 TimeZone을 가지고 있기 때문에 이 부분을 명확히 하지 않으면 의도치 않은 시간으로 표시된다. 게다가 형식이 맞지 않는다면 제대로 전달되지 않을 수도 있다.</p>
-
-<blockquote><p>네이버 D2에 있는 <a href="http://d2.naver.com/helloworld/645609">Java의 날짜와 시간 API</a>를 보면 Java에서의 Date 처리가 불편하다는 얘기가 있다.</p></blockquote>
-
-<p>이번 작업에서는 서버는 PHP를 사용하고 있는 상황이었고 클라이언트는 <a href="http://androidannotations.org/">AndroidAnnotations</a>의 <a href="https://github.com/excilys/androidannotations/wiki/Rest-API#rest">Rest-API</a>를 사용했다. 수신 데이터의 파싱은 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>를 사용하는 상황이다. 이 글의 주제에서 벗어나므로 <a href="http://androidannotations.org/">AndroidAnnotations</a>나 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>에 대한 부분은 설명하지 않겠다.</p>
-
-<p>GsonHttpMessageConverter를 사용해서 데이터를 파싱하는 경우 대상이되는 class의 멤버변수의 데이터 타입에 맞추어 데이터를 채워준다. 당연히 전송되는 데이터가 JSON 형식이어야 한다. 다른 데이터 타입의 경우 앞서 설명한 것과 같이 데이터 타입만 맞춰준다면 아주 쉽게 데이터를 받을 수 있다(그것이 이것을 사용하는 주요 목적이다). 그런데 DateTime 타입은 조금 신경을 써줘야 한다.</p>
-
-<p>자 그럼 서버에서 데이터를 보낼 수 있는 방법에 어떤 것이 있을까? 가장 일반적인 방법으로는 timestamp(int), string, Date가 있다. 어떤 것을 쓰더라도 무방하지만 앞서 얘기한 것처럼 GsonHttpMessageConverter를 써서 간단히 데이터를 정확한 형식으로 받는 것이 편리하기 때문에 전송시 데이터 타입을 맞추는 것이 좋다.</p>
-
-<pre><code class="php">// string 타입으로 전송
-$date = "2015-09-17 10:00:00";
-// int 타입으로 전송
-$date = (new \DateTime("2015-09-17 10:00:00"))-&gt;getTimestamp();
-// Date 타입으로 전송
-$date = (new \DateTime("2015-09-17 10:00:00"))-&gt;setTimeZone(new \DateTimeZone('UTC'))-&gt;format('Y-m-d\TH:i:s\Z');
-</code></pre>
-
-<p>위의 코드를 보면 PHP에서 전송할 때 넘겨줄 데이터의 예시를 타입별로 제시했다. 앞서 강조했던대로 안드로이드 클라이언트에서 GsonHttpMessageConverter를 이용해 Date 타입으로 바로 받으려면 마지막에 있는 &ldquo;Date 타입으로 전송&rdquo; 방식을 사용하면 된다.</p>
-
-<p>해당 부분을 보면 두가지 처리를 해주고 있다. 첫번째로 TimeZone을 설정한 것이고, 두번째로 Date Format을 지정한 것이다. 사실 이 부분들을 잘 몰라서 삽질을 조금 했었다. 처음엔 Date Format을 어떻게 전달해야할지 몰라 해맸다. 제대로 수신을 하지 못했던 것이다. Format을 맞추고 나니 이젠 보낸 시간과 받은 시간이 달랐다. 이 부분은 TimeZone의 문제이므로 TimeZone을 지정해서 해결했다. TimeZone에 사용한 UTC는 <a href="https://ko.wikipedia.org/wiki/%ED%98%91%EC%A0%95_%EC%84%B8%EA%B3%84%EC%8B%9C">협정 세계시</a>라는 뜻이다. 이것과 세트로 format에서 끝에 \Z를 붙여 데이터가 <a href="https://ko.wikipedia.org/wiki/ISO_8601">ISO 8601</a>에 따라 UTC를 따르고 있음을 표시한 것이다.</p>
-
-<p>결론적으로 위의 형식을 사용하면 GSON으로 바로 받아도 정확한 시간을 사용할 수 있다.</p>
-
-<p>사실 위의 경우는 GsonHttpMessageConverter를 사용한다는 상황을 가정한 것으로 이것을 사용하지 않고 직접 데이터를 받아 GSON을 통해 파싱한다면 아래의 방법을 쓸 수도 있다. Format을 보면 알겠지만 UTC Date여야 한다(정확한 시간 처리를 위해). &ldquo;yyyy-MM-dd HH:mm:ss"이 Format을 쓸 수도 있으나 TimeZone 명시되지 않으므로 시간이 다르게 보일 수 있다.</p>
-
-<pre><code class="java">Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
-</code></pre>
-
-<p>아래는 추가적으로 다른 타입으로 수신했을 때 안드로이드 클라이언트에서 Date 타입으로 변환하고자 할때 사용할 수 있는 참고 코드들이다.</p>
-
-<p><strong> string 타입으로 수신시 </strong>
-<code>java
-try {
-    String dateTime = "2015-09-17 10:00:00";
-    SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA);
-    Date date = dateParser.parse(dateTime);
-} catch (ParseException e) {
-    e.printStackTrace();
-}
-</code></p>
-
-<p><strong> timestamp(int) 타입으로 수신시 </strong></p>
-
-<p>PHP에서의 TimeStamp는 초단위(s)지만 Java에서는 밀리초(ms) 단위이므로 1000을 곱해서 넣어 주어야 한다.
-그리고 Java에서는 Date가 Deprecated되어 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>를 더 권장한다고 한다. <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Date.html">정확하게는 완전히 Deprecated된 것은 아니고 일부 생성자가 그렇다는 것</a>이지만 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>가 더 다양한 기능을 제공하므로 더 권장된다는 것이다. 자세한 이유는 검색해보면 많이 나온다.</p>
-
-<pre><code class="java">// Calendar 사용
-Calendar c = Calendar.getInstance();
-c.setTimeInMillis(timestamp * 1000);
-Date date = c.getTime();
-
-// OR
-
-// Date 사용
-Date d = new Date(timestamp * 1000);
-</code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[안드로이드에서 구글맵 사용시 맵의 보여지는 영역의 좌표를 원하는 pixel만큼 제외하고 가져오기]]></title>
-    <link href="http://blog.asamaru.net/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/"/>
-    <updated>2015-09-17T14:18:50+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation</id>
-    <content type="html"><![CDATA[<p>이 글의 제목이 참 길고 어렵다. 나름대로 정하긴 했지만 어떻게 해야 내용을 설명할 수 있을지 잘 모르겠기에 그냥 필요한 상황을 차례로 적어보려 한다.</p>
-
-<ol>
-<li><p>안드로이드에서 구글맵을 사용하면서 현재 맵에서 보여지는 영역의 좌표를 얻고 싶을 때가 있다.
-중심 좌표와 확대 비율은 center와 zoom을 통해 쉽게 구할 수 있다. 하지만 필요한 것은 보여지는 영역을 모두 포함하는 좌표들이다.
-이 좌표들은 대부분 보여지는 화면 내부에 해당하는 데이터를 query 하기 위해서 사용될 것이다. 다른 경우도 당연히 있을 수 있고&hellip;</p></li>
-<li><p>위의 목적대로 좌표를 가져오긴 했는데 일부 영역을 제외하고 싶을 때가 있다. 예를들어 지도 상단에 버튼들이 나열되어 있다고 가정할 때 이 영역은 query에서 제외하고 싶을 때가 해당된다. 이 문제는 간단하지가 않은게 버튼들이 차지하는 공간이야 pixel로 얼마든지 계산 가능하지만 이 pixel 사이즈를 좌표에 반영해야 원하는 값을 얻을 수 있기 때문이다.</p></li>
-</ol>
-
-
-<p>위의 상황들의 목적은 결국 하나다. 구글 지도에서 원하는 영역의 평면 좌표를 얻고 싶다는 것이다.</p>
-
-<p>우선 해결 방법을 설명하기 전에 필요한 함수에 대한 설명부터 보자. 이 처리를 하기 위해 가장 중요한 요소는 Projection 이다.</p>
-
-<h2><a href="https://developers.google.com/android/reference/com/google/android/gms/maps/Projection.html">Google APIs for Android - Projection</a></h2>
-
-<p>위 링크를 참고하면 자세한 설명이 나와있지만 간단하게 필요한 것들에 대해서 정리하자면 다음과 같다.</p>
-
-<h3>Projection</h3>
-
-<blockquote><p>Projection은 화면상의 위치와 위경도 좌표(LatLng) 간의 변환하는데 사용된다. 그리고 화면의 위치는 항상 맵 화면의 좌상단(top left)을 기준으로 한다.</p></blockquote>
-
-<h3>getVisibleRegion()</h3>
-
-<pre><code class="java">public VisibleRegion getVisibleRegion ()
-</code></pre>
-
-<blockquote><p>화면상의 좌표와 위경도 좌표 간의 변환을 위한 Projection을 가져온다.</p></blockquote>
-
-<h3>toScreenLocation (LatLng location)</h3>
-
-<pre><code class="java">public Point toScreenLocation (LatLng location)
-</code></pre>
-
-<blockquote><p>인자로 넘겨준 위경도 좌표가 화면 상에서 어디에 위치하는지를 Point 객체로 반환해 준다. 반환되는 단위는 화면 상의 Pixel(화소가 아닌)이다.</p></blockquote>
-
-<h3>fromScreenLocation (Point point)</h3>
-
-<p>public LatLng fromScreenLocation (Point point)</p>
-
-<blockquote><p>인자로 넘겨준 화면 상의 좌표에 해당하는 위경도를 LatLng 객체로 반환해 준다.</p></blockquote>
-
-<h2>구현</h2>
-
-<p>위와 같이 기본적인 함수들에 대해서 알아보았고 이제는 실제 사용 사례를 살펴보자.</p>
-
-<p>아래는 서두에 얘기한 기능을 수행하게 하기 위해 만들어 본 함수이다.</p>
-
-<pre><code class="java">public LatLngBounds getBoundsWithoutSpacing(int top, int right, int bottom, int left) {
-    Projection projection = googleMap.getProjection();
-    LatLngBounds bounds = projection.getVisibleRegion().latLngBounds;
-    Point northeast = projection.toScreenLocation(bounds.northeast);
-    Point toNortheast = new Point(northeast.x - right, northeast.y + top);
-    Point southwest = projection.toScreenLocation(bounds.southwest);
-    Point toSouthwest = new Point(southwest.x + left, southwest.y - bottom);
-
-    LatLngBounds.Builder builder = new LatLngBounds.Builder();
-    builder.include(projection.fromScreenLocation(toNortheast));
-    builder.include(projection.fromScreenLocation(toSouthwest));
-    return builder.build();
-}
-</code></pre>
-
-<p>설명하자면 다음과 같다.</p>
-
-<p>우선 googleMap 개체에서 Projection을 가져와서 VisibleRegion을 통해 좌표를 받아온다. 당연히 googleMap은 따로 구성되어 있어야 한다. 함수를 고쳐서 인자로 넘겨주어도 당연히 상관없다.
-getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound를 알 수 있는데 사용할 수 있는 값은 두가지다. northeast(북동좌표)와 southwest(서남좌표)다. 이 두점은 bound의 최외곽 좌표이므로 전체 박스 영역을 얻은 것이다.</p>
-
-<p>1차적으로는 이 값을 바로 사용해서 원하는 영역에 대한 검색을 수행할 수 있다.</p>
-
-<p>하지만 정말로 원하는 것은 두번째 문제이다. 이 좌표에서 화면의 특정 영역을 제외한 부분의 위경도 bound를 구하고 싶은 것이다.</p>
-
-<p>원하는 결과를 얻기 위해 toScreenLocation() 함수를 이용해서 북동,서남 좌표를 화면 상의 좌표(Point)로 변환한다. 여기에 원하는 pixel만큼씩을 증감하여 fromScreenLocation() 함수를 통해 다시 위경도 좌표(LatLng)로 변환하면 최종적인 결과를 얻을 수 있다.</p>
-
-<p>사실 결과를 보면 아주 간단한 작업이다. 하지만 이 함수들의 역할을 모를때는 어떻게 그 값을 구할 수 있을지 막막했다. 처음엔 구글의 zoom 레벨을 가져와서 pixel 비율을 계산하여 적용하려고 했으나 만만치 않았다.</p>
-
-<p>결론은 위의 함수를 바탕으로 원하는 목적을 달성할 수 있으니 필요에 맞게 사용하면 된다.</p>
 ]]></content>
   </entry>
   

@@ -63,7 +63,7 @@ sudo gitlab-ctl stop
 
 자세히 본 것은 아니라서 정확하진 않지만 Gitlab은 내부적으로 [unicorn](http://unicorn.bogomips.org/)과 nginx의 조합으로 이뤄져 있고 기능적 처리는 unicon과 연결된다. unicon의 기본 port가 8080으로 설정되어 있기 때문에 이 부분만 연결해주면 외부 웹서버로 연결하는 것도 당연히 가능하다.
 
-아래는 아파치를 사용하는 상황에서의 설정 방법이다. 내용중 LimitRequestBody을 잊지말고 해주는 것이 좋다. 아니면 push에서 오류를 만날 수 있다.
+아래는 아파치를 사용하는 상황에서의 설정 방법이다. 내용중 LimitRequestBody를 잊지말고 해주는 것이 좋다. 아니면 push에서 오류를 만날 수 있다.
 
 ```apache
 <VirtualHost *:80>

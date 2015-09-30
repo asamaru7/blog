@@ -138,6 +138,114 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-21T11:40:02+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.21</time>
+        
+           | <a href="/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/" itemprop="url">안드로이드 TabLayout에서 setupWithViewPager() 사용시 Swipe 후 Tab 클릭시 ViewPager가 변경되지 않는 버그 수정</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p><a href="http://android-developers.blogspot.kr/2015/05/android-design-support-library.html">Android Design Support Library</a>에 있는 <a href="https://developer.android.com/intl/ko/reference/android/support/design/widget/TabLayout.html">TabLayout</a>과 ViewPager를 연동해서 사용하기 위해 <a href="https://developer.android.com/intl/ko/reference/android/support/design/widget/TabLayout.html#setupWithViewPager%28android.support.v4.view.ViewPager%29">setupWithViewPager()</a> 함수를 사용한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setupWithViewPager</span> <span class="o">(</span><span class="n">ViewPager</span> <span class="n">viewPager</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<blockquote><p>TabLayout와 ViewPager를 연동한다.</p></blockquote>
+
+<p>이 함수는 아래의 동작을 수행한다.</p>
+
+<ul>
+<li>Add a ViewPager.OnPageChangeListener that will forward events to this TabLayout.</li>
+<li>Populate the TabLayout&rsquo;s tabs from the ViewPager&rsquo;s PagerAdapter.</li>
+<li>Set our TabLayout.OnTabSelectedListener which will forward selected events to the ViewPager</li>
+</ul>
+
+
+<p>결론은 setupWithViewPager()를 사용하면 손쉽게 TabLayout와 ViewPager를 연동할 수 있다. 다시말해 ViewPager를 넘기면 이에 맞추어 TabLayout의 선택이 변경되고 TabLayout에서 Tab을 터치하면 이에 맞게 ViewPager가 변경된다.</p>
+
+<p>하지만 이 기능에는 버그가 있다. 그냥 쉽게 넘어가면 안드로이드가 아니지&hellip;
+이 문제도 항상 발생하는 것은 아니나 간헐적으로 ViewPager을 Swipe하여 변경을 하다가 Tab을 터치하면 Tab은 터치에 맞게 변경되나 ViewPaper는 함께 변경되지 않는 문제가 발생한다. 이 문제에 대해서는 <a href="https://code.google.com/p/android/issues/detail?id=183123%EC%97%90">https://code.google.com/p/android/issues/detail?id=183123%EC%97%90</a> 버그 리포트 되어 있다.</p>
+
+<p>패치를 기다리기 전에 문제를 해결할 필요가 있어 아래와 같이 직접 수정해서 사용했다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">tabLayout</span><span class="o">.</span><span class="na">setOnTabSelectedListener</span><span class="o">(</span><span class="k">new</span> <span class="n">TabLayout</span><span class="o">.</span><span class="na">OnTabSelectedListener</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTabSelected</span><span class="o">(</span><span class="n">TabLayout</span><span class="o">.</span><span class="na">Tab</span> <span class="n">tab</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">()</span> <span class="o">!=</span> <span class="n">viewPager</span><span class="o">.</span><span class="na">getCurrentItem</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">viewPager</span><span class="o">.</span><span class="na">setCurrentItem</span><span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">());</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTabUnselected</span><span class="o">(</span><span class="n">TabLayout</span><span class="o">.</span><span class="na">Tab</span> <span class="n">tab</span><span class="o">)</span> <span class="o">{}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTabReselected</span><span class="o">(</span><span class="n">TabLayout</span><span class="o">.</span><span class="na">Tab</span> <span class="n">tab</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">()</span> <span class="o">!=</span> <span class="n">viewPager</span><span class="o">.</span><span class="na">getCurrentItem</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">viewPager</span><span class="o">.</span><span class="na">setCurrentItem</span><span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">());</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>간단히 원리를 설명하자면 다음과 같다.</p>
+
+<p>tab이 변경되었음에도 ViewPager에 반영되지 않는 것이 문제이므로 OnTabSelectedListener를 추가해서 변경된 Tab과 ViewPager의 위치가 맞지 않으면 강제로 ViewPager의 위치를 이동하는 것이다.</p>
+
+<p>그런데 최근 이 버그 이슈에 변경이 생겼는데 내용은 <strong>Android Design Support Library 23.0.1 버전에 패치(2015년 9월 5일자)가 되었다는 것</strong>. 확인해 보니 버그 패치가 되었다. 따라서 23.0.1 이상을 사용한다면 위의 방법을 사용할 필요는 없어졌다. setupWithViewPager를 사용할 수 없는 경우 등을 위해서 기록을 남겨둔다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-21T11:20:00+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.21</time>
         
            | <a href="/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/#disqus_thread" itemprop="discussionUrl"
@@ -1572,240 +1680,6 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-15T19:02:43+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.15</time>
-        
-           | <a href="/2015/09/15/internationalization-i18n-for-javascript-i18next/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/15/internationalization-i18n-for-javascript-i18next/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/15/internationalization-i18n-for-javascript-i18next/" itemprop="url">Javascript 국제화(I18N) 라이브러리 - i18next</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><h2>국제화(internationalization : i18n)의 의미</h2>
-
-<p>국제화는 <a href="http://www.terms.co.kr/internationalization.htm">텀즈</a>의 정의에 따르면 아래와 같다.</p>
-
-<p>국제화는 때로 줄여서 그저 &ldquo;I18N"이라고도 표기하는데, 그 의미는 이 용어의 영어 표기에서 첫 글자인 "I"자와 마지막 글자인 "N"의 사이에 18글자가 들어가 있다는 의미이다. 국제화는 제품이나 서비스를 특정지역의 언어나 문화에 맞추는, 즉 현지화라고 불리는 과정을 쉽게 할 수 있도록 계획하거나 이행하는 과정을 말한다. 국제화는 때로 번역 및 현지화 능력부여 작업이라고도 불리는데, 여기에는 다음과 같은 것들이 포함된다.</p>
-
-<ul>
-<li>하드웨어 레이블이나, 도움말 페이지, 그리고 온라인 메뉴 등 사용자 인터페이스를 설계할 때, 더 많은 수의 글자가 들어갈 때를 대비하여 여유를 둔다.</li>
-<li>웹에디터나 저작도구 등과 같은 제품을 개발할 때 국제 문자셋, 즉 유니코드를 지원할 수 있게 한다.</li>
-<li>인쇄용 그래픽 이미지나, 웹사이트를 만들어서 텍스트 레이블을 번역할 때 비용이 많이 들지 않게 한다.</li>
-<li>전세계적으로 통용될 수 있는 예시를 사용한다.</li>
-<li>소프트웨어의 경우에는, 메시지들이 영어와 같은 단일 바이트 문자 코드에서, 한글과 같은 다중 바이트 문자 코드로 변환될 수 있도록 데이터 공간을 확보한다.</li>
-</ul>
-
-
-<p>위키피디아에는 <a href="https://ko.wikipedia.org/wiki/%EA%B5%AD%EC%A0%9C%ED%99%94%EC%99%80_%EC%A7%80%EC%97%AD%ED%99%94">&ldquo;국제화와 지역화&rdquo;</a>라는 주제로 설명되어 있기도 하다.</p>
-
-<h2>i18next</h2>
-
-<ul>
-<li>공식 사이트 : <a href="http://i18next.com/">http://i18next.com/</a></li>
-<li>Github : <a href="https://github.com/i18next/i18next">https://github.com/i18next/i18next</a></li>
-<li>CDN : <a href="http://cdnjs.com/libraries/i18next">http://cdnjs.com/libraries/i18next</a></li>
-<li>i18next-node : <a href="https://github.com/i18next/i18next-node">https://github.com/i18next/i18next-node</a></li>
-</ul>
-
-
-<p>i18next는 위에 설명한 i18n을 자바스크립트 상에서 사용할 수 있도록 제작된 라이브러리다. 아주 다양한 형태로의 사용을 지원하는데 사용해본 결과 메뉴얼이 조금 부실(?)하다. 확인해보면 메뉴얼의 양이 적은 건 아니다. 하지만 워낙 다양하게 지원하다 보니 개별적인 설명이 부족한 감이 든다.</p>
-
-<p>이번에 다국어용 one page 앱을 제작하면서 영어와 한국어를 지원하기 위해 사용하게되었는데 조금 해멨다. 사실 아직도 자유자재로 사용하지는 못하겠다. 하지만 아주 다양한 형태를 지원하므로 필요한 형태를 메뉴얼을 참고하여 사용한다면 유용하게 사용할 수 있을 것으로 생각한다.</p>
-
-<h3>사용예시</h3>
-
-<p>아래는 내가 작업한 일부를 간단하게 요약한 것이다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-<span class='line-number'>70</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;html&gt;</span>
-</span><span class='line'><span class="nt">&lt;body&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;translation&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;javascript:void(0);&quot;</span> <span class="na">onclick=</span><span class="s">&quot;changeLang(&#39;en-US&#39;);&quot;</span><span class="nt">&gt;</span>영어<span class="nt">&lt;/a&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;javascript:void(0);&quot;</span> <span class="na">onclick=</span><span class="s">&quot;changeLang(&#39;ko-KR&#39;);&quot;</span><span class="nt">&gt;</span>한국어<span class="nt">&lt;/a&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;ul&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">&quot;A:apple&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">&quot;A:banana&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">&quot;A:orange&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;/ul&gt;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="nt">&lt;ul&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">&quot;B:car&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">&quot;B:airplane&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">&quot;B:bicycle&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;/ul&gt;</span>
-</span><span class='line'><span class="nt">&lt;/div&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span> <span class="na">src=</span><span class="s">&quot;https://code.jquery.com/jquery-2.1.4.min.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
-</span><span class='line'><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js&quot;</span> <span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
-</span><span class='line'><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>  <span class="nx">$</span><span class="p">.</span><span class="nx">i18n</span><span class="p">.</span><span class="nx">init</span><span class="p">({</span>
-</span><span class='line'>      <span class="c1">//lng: &#39;en-US&#39;,</span>
-</span><span class='line'>      <span class="nx">lng</span><span class="o">:</span> <span class="s1">&#39;ko-KR&#39;</span><span class="p">,</span>
-</span><span class='line'>      <span class="nx">debug</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
-</span><span class='line'>      <span class="nx">useLocalStorage</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
-</span><span class='line'>      <span class="nx">localStorageExpirationTime</span><span class="o">:</span> <span class="mi">86400000</span><span class="p">,</span> <span class="c1">// in ms, default 1 week</span>
-</span><span class='line'>      <span class="nx">ns</span><span class="o">:</span> <span class="p">{</span>
-</span><span class='line'>          <span class="nx">namespaces</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">],</span>
-</span><span class='line'>          <span class="nx">defaultNs</span><span class="o">:</span> <span class="s1">&#39;A&#39;</span>
-</span><span class='line'>      <span class="p">},</span>
-</span><span class='line'>      <span class="c1">//resGetPath: &#39;js/locales/translation.json&#39;</span>
-</span><span class='line'>      <span class="nx">resStore</span><span class="o">:</span> <span class="p">{</span>
-</span><span class='line'>          <span class="s2">&quot;en-US&quot;</span><span class="o">:</span> <span class="p">{</span>
-</span><span class='line'>              <span class="s2">&quot;A&quot;</span><span class="o">:</span> <span class="p">{</span>
-</span><span class='line'>                  <span class="s2">&quot;apple&quot;</span><span class="o">:</span> <span class="s2">&quot;Apple&quot;</span><span class="p">,</span>
-</span><span class='line'>                  <span class="s2">&quot;banana&quot;</span><span class="o">:</span> <span class="s2">&quot;Banana&quot;</span><span class="p">,</span>
-</span><span class='line'>                  <span class="s2">&quot;orange&quot;</span><span class="o">:</span> <span class="s2">&quot;Orange&quot;</span>
-</span><span class='line'>              <span class="p">},</span>
-</span><span class='line'>              <span class="s2">&quot;B&quot;</span><span class="o">:</span> <span class="p">{</span>
-</span><span class='line'>                  <span class="s2">&quot;car&quot;</span><span class="o">:</span> <span class="s2">&quot;Car&quot;</span><span class="p">,</span>
-</span><span class='line'>                  <span class="s2">&quot;airplane&quot;</span><span class="o">:</span> <span class="s2">&quot;Airplane&quot;</span><span class="p">,</span>
-</span><span class='line'>                  <span class="s2">&quot;bicycle&quot;</span><span class="o">:</span> <span class="s2">&quot;Bicycle&quot;</span>
-</span><span class='line'>              <span class="p">}</span>
-</span><span class='line'>          <span class="p">},</span>
-</span><span class='line'>          <span class="s2">&quot;ko-KR&quot;</span><span class="o">:</span> <span class="p">{</span>
-</span><span class='line'>              <span class="s2">&quot;A&quot;</span><span class="o">:</span> <span class="p">{</span>
-</span><span class='line'>                  <span class="s2">&quot;apple&quot;</span><span class="o">:</span> <span class="s2">&quot;사과&quot;</span><span class="p">,</span>
-</span><span class='line'>                  <span class="s2">&quot;banana&quot;</span><span class="o">:</span> <span class="s2">&quot;바나나&quot;</span><span class="p">,</span>
-</span><span class='line'>                  <span class="s2">&quot;orange&quot;</span><span class="o">:</span> <span class="s2">&quot;오렌지&quot;</span>
-</span><span class='line'>              <span class="p">},</span>
-</span><span class='line'>              <span class="s2">&quot;B&quot;</span><span class="o">:</span> <span class="p">{</span>
-</span><span class='line'>                  <span class="s2">&quot;car&quot;</span><span class="o">:</span> <span class="s2">&quot;자동차&quot;</span><span class="p">,</span>
-</span><span class='line'>                  <span class="s2">&quot;airplane&quot;</span><span class="o">:</span> <span class="s2">&quot;비행기&quot;</span><span class="p">,</span>
-</span><span class='line'>                  <span class="s2">&quot;bicycle&quot;</span><span class="o">:</span> <span class="s2">&quot;자전거&quot;</span>
-</span><span class='line'>              <span class="p">}</span>
-</span><span class='line'>          <span class="p">}</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'>  <span class="p">},</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>      <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.translation&#39;</span><span class="p">).</span><span class="nx">i18n</span><span class="p">();</span>
-</span><span class='line'>  <span class="p">});</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="kd">var</span> <span class="nx">changeLang</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">lang</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>      <span class="nx">$</span><span class="p">.</span><span class="nx">i18n</span><span class="p">.</span><span class="nx">setLng</span><span class="p">(</span><span class="nx">lang</span><span class="p">);</span>
-</span><span class='line'>      <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.translation&#39;</span><span class="p">).</span><span class="nx">i18n</span><span class="p">();</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'><span class="nt">&lt;/script&gt;</span>
-</span><span class='line'><span class="nt">&lt;/body&gt;</span>
-</span><span class='line'><span class="nt">&lt;/html&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>위의 예시는 jquery와 함께 사용하는 예시이지만 jquery에 대한 의존성을 가진 것은 아니다. <a href="http://cdnjs.com/libraries/i18next">CDN</a> 목록에서 보여지는 것과 같이 amd, commonjs, 기본 등 여러가지 환경에서 사용 가능하다.</p>
-
-<p>여러번 얘기하게되지만 사용방법이 너무 다양하다. 그래서 위의 예시를 기준으로 몇가지 옵션만 설명하겠다. 보다 다양한 사용법은 제작 사이트의 <a href="http://i18next.com/pages/doc_init.html">메뉴얼</a>과 <a href="http://i18next.com/pages/sample.html">샘플</a>을 참고하자.</p>
-
-<ul>
-<li><strong>lng</strong> : 기본 언어를 지정한다. 위의 예시처럼 setLng 함수를 통해 언제든 변경할 수 있다.</li>
-<li><strong>debug</strong> : true로 설정시 내부적인 처리에 관련되 log를 확인할 수 있다.</li>
-<li><strong>useLocalStorage</strong> : true로 설정시 local storage에 내용을 저장하여 향후 재사용할 수 있도록 한다. 이 예시에서는 resStore를 사용해서 언어 설정을 했기 때문에 의미가 없지만 서버에서 언어 정보를 받아와서 사용하는 경우에는 성능에 이점을 얻을 수 있다.</li>
-<li><strong>localStorageExpirationTime</strong> : local storage에 저장된 데이터에 유효기간을 설정한다. 단위는 ms이며 기본값은 1주일이다.</li>
-<li><strong>ns</strong> : 사용할 Namespace를 정의한다. 필수는 아니며 필요시에만 사용하면 된다. Namespace의 구분은 ::로 한다.(예시 : &ldquo;A::apple&rdquo;)</li>
-<li><strong>resStore</strong> : i18n에 사용될 데이터를 설정한다.</li>
-<li><strong>resGetPath</strong> : i18n에서 사용할 데이터를 서버에서 요청할 경우 경로를 구성하는 방법을 정의한다. <code>'locales/__lng__/__ns__.json'</code> 이런 형식을 쓸 수 있는데 <code>__lng__</code>는 언어명으로 <code>__ns__</code>는 Namespace로 대체된다.</li>
-</ul>
-
-
-<p>그 외에도 다양한 옵션이 있을 뿐 아니라 여러가지 상황에 대입해서 사용할 수 있다. 위의 예시는 html에 data attribute를 사용하는 것을 예를 들었지만 js에서 직접적으로 데이터를 받아서 사용할 수도 있고, sprintf 등과 같이 데이터를 데입해서 내용을 생성하는 것도 가능하다.
-게다가 handlebars, angular, JQuery UI에서 template에 적용시킬 수도 있다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1874,7 +1748,7 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (19)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (3)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (19)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (3)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (1)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (3)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1883,6 +1757,8 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/09/30/loan-calculator/">필요해서 만든 대출 이자 계산기</a>
+    
     <a class="list-group-item " href="/2015/09/30/service-not-available-geocoder-android/">안드로이드 Geocoder 사용시 Service not Available 오류</a>
     
     <a class="list-group-item " href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>
@@ -1890,8 +1766,6 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
     <a class="list-group-item " href="/2015/09/25/if-android-theme-parent-doesnt-set-attribute/">안드로이드 테마 정의시 parent를 지정하지 않을 경우 Error: Style Resource definition cycle 발생</a>
     
     <a class="list-group-item " href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>
-    
-    <a class="list-group-item " href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/">Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결</a>
     
   </div>
 </section>

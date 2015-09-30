@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "안드로이드 테마 정의시 parent를 지정하지 않을 경우"
+title: "안드로이드 테마 정의시 parent를 지정하지 않을 경우 Error: Style Resource definition cycle 발생"
 date: 2015-09-25 14:18:08 +0900
 comments: true
 categories: android

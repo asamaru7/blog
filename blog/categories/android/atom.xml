@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-30T10:43:35+09:00</updated>
+  <updated>2015-09-30T16:34:44+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,159 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[안드로이드 Geocoder 사용시 Service not Available 오류]]></title>
+    <link href="http://blog.asamaru.net/2015/09/30/service-not-available-geocoder-android/"/>
+    <updated>2015-09-30T16:15:20+09:00</updated>
+    <id>http://blog.asamaru.net/2015/09/30/service-not-available-geocoder-android</id>
+    <content type="html"><![CDATA[<p>안드로이드에서 특정 지점의 좌표를 주소로 변환하는 것이 필요해서 Geocoder 사용했다. 대략적인 코드는 아래와 같다.</p>
+
+<pre><code class="java">static abstract public class GeoCoderTask extends AsyncTask&lt;LatLng, Void, Address[]&gt; {
+    @Override
+    protected Address[] doInBackground(LatLng... arg0) {
+        List&lt;Address&gt; res = new ArrayList&lt;&gt;();
+        if (arg0.length &gt; 0) {
+            try {
+                Geocoder geocoder = new Geocoder(Helper.getAppContext(), Locale.KOREA);
+                List&lt;android.location.Address&gt; addresses = geocoder.getFromLocation(arg0[0].latitude, arg0[0].longitude, 1);
+                if ((addresses != null) &amp;&amp; (addresses.size() &gt; 0)) {
+                    android.location.Address result = addresses.get(0);
+                    Address resultAddress = new Address();
+                    resultAddress.address = result.getAddressLine(0);
+                    resultAddress.lat = result.getLatitude();
+                    resultAddress.lng = result.getLongitude();
+                    resultAddress.premise = result.getPremises();
+                    resultAddress.administrative_area_level_1 = result.getAdminArea();
+                    resultAddress.sublocality_level_1 = result.getSubLocality();
+                    resultAddress.country = result.getCountryName();
+                    resultAddress.postal_code = result.getPostalCode();
+                    res.add(resultAddress);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        Address[] array = new Address[res.size()];
+        res.toArray(array);
+        return array;
+    }
+}
+</code></pre>
+
+<p>위 코드는 데이터를 다른 클래스로 넘겨서 반환하는 형태로 그대로 사용할 수는 없다. 그냥 이렇게 사용했다는 것을 보여주고자 넣은 코드니 참고만하기 바란다.</p>
+
+<p>어쨌든 중요한 것은 잘 동작하던 코드가 테스트 기기에서 Service not Available 오류가 난다는 것이다. 테스트 기기는 nexus s에 4.0.4로 오래된 기기다. 처음엔 OS 버전 문제로 생각했다. 그래서 일단 검색해 봤다. 결론은 아래의 링크를 보고 해결했다.</p>
+
+<p><a href="http://stackoverflow.com/a/13856839">Service not Available - Geocoder Android</a></p>
+
+<p>해결 방법은 <strong>기기 재부팅</strong>. 어의없다. 정말 안드로이드는 정이 안간다.</p>
+
+<p>사실 동일한 오류를 만났을 때 위의 방법으로 해결되지 않을 수 있다. 원인은 다양할 수 있으니&hellip; 그래서 조금 더 찾아보니 여러가지 이슈가 있는 것을 확인 했다. 해결되지 않는다면 구글에서 검색해 보면 여러가지 정보를 얻을 수 있다.</p>
+
+<p>이러한 정보 중에서 한가지는 Geocoder를 사용하지 않고 웹으로 호출해서 결과를 받는 것이다. 사실 나의 경우는 오류 때문이 아니라 api 사용량 때문에 사용하던 코드(API 키를 전달하지 않는 코드로 사용량에 제한을 받지 않는 것으로 보임)였는데 참고할 사람이 있을까하고 남겨본다. 그리고 한가지. 조금 전에 API key를 전달하지 않는다고 했는데 기존에는 이 방법으로 정상 동작했다. 그런데 최근 WIFI에서는 이상이 없는데 LTE 상태에서는 api 한계량 초과라는 메시지를 반환하고 있어서 사용하고 있지 않다. 이 부분은 이유를 정확히 확인해보지 못했다.</p>
+
+<pre><code class="java">static abstract public class WebGeoCoderTask extends AsyncTask&lt;LatLng, Void, Address[]&gt; {
+    @Override
+    final protected Address[] doInBackground(LatLng... arg0) {
+        List&lt;Address&gt; res = new ArrayList&lt;&gt;();
+        if (arg0.length &gt; 0) {
+            String address = String.format(Locale.getDefault(), "https://maps.googleapis.com/maps/api/geocode/json?latlng=%1$f,%2$f&amp;sensor=false&amp;language=" + Locale.getDefault(), arg0[0].latitude, arg0[0].longitude);
+            try {
+                URL url = new URL(address);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                InputStreamReader in = new InputStreamReader(conn.getInputStream());
+                StringBuilder jsonResults = new StringBuilder();
+
+                int read;
+                char[] buff = new char[1024];
+                while ((read = in.read(buff)) != -1) {
+                    jsonResults.append(buff, 0, read);
+                }
+                String json = jsonResults.toString();
+                JSONObject jsonObject = new JSONObject(json);
+                AFLog.d(json);
+
+                if ("OK".equalsIgnoreCase(jsonObject.getString("status"))) {
+                    JSONArray results = jsonObject.getJSONArray("results");
+                    if (results.length() &gt; 0) {
+                        for (int i = 0, iCnt = results.length(); i &lt; iCnt; i++) {
+                            try {
+                                JSONObject result = results.getJSONObject(i);
+
+                                Address resultAddress = new Address();
+                                resultAddress.address = result.getString("formatted_address");
+                                resultAddress.placeId = result.optString("place_id");
+                                JSONObject geometry = result.optJSONObject("geometry");
+                                if (geometry != null) {
+                                    geometry = geometry.optJSONObject("location");
+                                    if (geometry != null) {
+                                        resultAddress.lat = geometry.getDouble("lat");
+                                        resultAddress.lng = geometry.getDouble("lng");
+                                    }
+                                }
+
+                                JSONArray components = result.getJSONArray("address_components");
+                                for (int a = 0; a &lt; components.length(); a++) {
+                                    JSONObject component = components.getJSONObject(a);
+                                    JSONArray types = component.getJSONArray("types");
+                                    for (int j = 0; j &lt; types.length(); j++) {
+                                        String type = types.getString(j);
+                                        switch (type) {
+                                            case "premise":
+                                                resultAddress.premise = component.optString("long_name");
+                                                break;
+                                            case "administrative_area_level_1":
+                                                resultAddress.administrative_area_level_1 = component.optString("long_name");
+                                                break;
+                                            case "sublocality_level_1":
+                                                resultAddress.sublocality_level_1 = component.optString("long_name");
+                                                break;
+                                            case "sublocality_level_2":
+                                                resultAddress.sublocality_level_2 = component.optString("long_name");
+                                                break;
+                                            case "sublocality_level_3":
+                                                resultAddress.sublocality_level_3 = component.optString("long_name");
+                                                break;
+                                            case "sublocality_level_4":
+                                                resultAddress.sublocality_level_4 = component.optString("long_name");
+                                                break;
+                                            case "country":
+                                                resultAddress.country = component.optString("long_name");
+                                                break;
+                                            case "postal_code":
+                                                resultAddress.postal_code = component.optString("long_name");
+                                                break;
+                                            case "political":
+                                            case "sublocality":
+                                                break;
+                                            default:
+//                                                  AFLog.d("Not catched : " + type);
+                                                break;
+                                        }
+                                    }
+                                }
+                                res.add(resultAddress);
+                            } catch (JSONException e) {
+                                AFLog.e(e);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                AFLog.e(e);
+            }
+        }
+        Address[] array = new Address[res.size()];
+        res.toArray(array);
+        return array;
+    }
+}
+</code></pre>
+
+<p>이 코드도 마찬가지로 참고만 하기 바란다. 내부적으로 사용중인 클래스들이 있어서 그대로 넣으면 동작하지 않는다. 하지만 코드를 보면 반환 클래스에 관련된 부분이므로 어디를 수정해야 할지 바로 알 수 있을 것으로 보인다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Android Gradle 빌드 속도 높이기]]></title>
@@ -266,62 +419,6 @@ android {
 </code></pre>
 
 <p>대충 소스를 보니 HttpGet는 이번에 Apache HTTP 클라이언트가 제거되면서 이를 대체하기 위한 라이브러리를 교체하면서 추가된 클래스로 보인다. 그런데 소스를 봐도 이게 왜 proguard에 영향을 받는지 잘 모르겠지만 위의 코드를 넣음으로써 해결이 되는 것은 확인했다. 더 자세히 코드를 추적해 간다면 원인을 찾을 수 있을지도 모르지만 굳이 거기까지 내가할 필요는 없다고 보고 github에 이슈를 등록하려고 한다. 해당 개발자들이 다음버전에 문제를 해결해 주기를 바라며&hellip;</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[안드로이드 TabLayout에서 setupWithViewPager() 사용시 Swipe 후 Tab 클릭시 ViewPager가 변경되지 않는 버그 수정]]></title>
-    <link href="http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/"/>
-    <updated>2015-09-21T11:40:02+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe</id>
-    <content type="html"><![CDATA[<p><a href="http://android-developers.blogspot.kr/2015/05/android-design-support-library.html">Android Design Support Library</a>에 있는 <a href="https://developer.android.com/intl/ko/reference/android/support/design/widget/TabLayout.html">TabLayout</a>과 ViewPager를 연동해서 사용하기 위해 <a href="https://developer.android.com/intl/ko/reference/android/support/design/widget/TabLayout.html#setupWithViewPager%28android.support.v4.view.ViewPager%29">setupWithViewPager()</a> 함수를 사용한다.</p>
-
-<pre><code class="java">public void setupWithViewPager (ViewPager viewPager)
-</code></pre>
-
-<blockquote><p>TabLayout와 ViewPager를 연동한다.</p></blockquote>
-
-<p>이 함수는 아래의 동작을 수행한다.</p>
-
-<ul>
-<li>Add a ViewPager.OnPageChangeListener that will forward events to this TabLayout.</li>
-<li>Populate the TabLayout&rsquo;s tabs from the ViewPager&rsquo;s PagerAdapter.</li>
-<li>Set our TabLayout.OnTabSelectedListener which will forward selected events to the ViewPager</li>
-</ul>
-
-
-<p>결론은 setupWithViewPager()를 사용하면 손쉽게 TabLayout와 ViewPager를 연동할 수 있다. 다시말해 ViewPager를 넘기면 이에 맞추어 TabLayout의 선택이 변경되고 TabLayout에서 Tab을 터치하면 이에 맞게 ViewPager가 변경된다.</p>
-
-<p>하지만 이 기능에는 버그가 있다. 그냥 쉽게 넘어가면 안드로이드가 아니지&hellip;
-이 문제도 항상 발생하는 것은 아니나 간헐적으로 ViewPager을 Swipe하여 변경을 하다가 Tab을 터치하면 Tab은 터치에 맞게 변경되나 ViewPaper는 함께 변경되지 않는 문제가 발생한다. 이 문제에 대해서는 <a href="https://code.google.com/p/android/issues/detail?id=183123%EC%97%90">https://code.google.com/p/android/issues/detail?id=183123%EC%97%90</a> 버그 리포트 되어 있다.</p>
-
-<p>패치를 기다리기 전에 문제를 해결할 필요가 있어 아래와 같이 직접 수정해서 사용했다.</p>
-
-<pre><code class="java">tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-    @Override
-    public void onTabSelected(TabLayout.Tab tab) {
-        if (tab.getPosition() != viewPager.getCurrentItem()) {
-            viewPager.setCurrentItem(tab.getPosition());
-        }
-    }
-
-    @Override
-    public void onTabUnselected(TabLayout.Tab tab) {}
-
-    @Override
-    public void onTabReselected(TabLayout.Tab tab) {
-        if (tab.getPosition() != viewPager.getCurrentItem()) {
-            viewPager.setCurrentItem(tab.getPosition());
-        }
-    }
-});
-</code></pre>
-
-<p>간단히 원리를 설명하자면 다음과 같다.</p>
-
-<p>tab이 변경되었음에도 ViewPager에 반영되지 않는 것이 문제이므로 OnTabSelectedListener를 추가해서 변경된 Tab과 ViewPager의 위치가 맞지 않으면 강제로 ViewPager의 위치를 이동하는 것이다.</p>
-
-<p>그런데 최근 이 버그 이슈에 변경이 생겼는데 내용은 <strong>Android Design Support Library 23.0.1 버전에 패치(2015년 9월 5일자)가 되었다는 것</strong>. 확인해 보니 버그 패치가 되었다. 따라서 23.0.1 이상을 사용한다면 위의 방법을 사용할 필요는 없어졌다. setupWithViewPager를 사용할 수 없는 경우 등을 위해서 기록을 남겨둔다.</p>
 ]]></content>
   </entry>
   

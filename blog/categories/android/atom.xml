@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-01T20:20:19+09:00</updated>
+  <updated>2015-10-01T20:28:39+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -55,7 +55,7 @@ ACRA.init(this, config); // The following line triggers the initialization of AC
 }
 </code></pre>
 
-<p><code>final String className = context.getClass().getPackage().getName() + ".BuildConfig";</code> 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
+<p><code>java final String className = context.getClass().getPackage().getName() + ".BuildConfig";</code> 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
 해결을 위한 아래의 코드를 보자.</p>
 
 <pre><code class="java">ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
@@ -64,7 +64,7 @@ config.setFormUri("http://dev.yourdomain.net/AppCrash");
 ACRA.init(this, config); // The following line triggers the initialization of ACRA
 </code></pre>
 
-<p><code>config.setBuildConfigClass(BuildConfig.class);</code> 이 부분을 추가했다. ACRA 코드에서 보듯이 setBuildConfigClass로 직접 BuildConfig를 넘겨주면 패키지명으로 찾지 않는다. 따라서 Proguard가 적용되어도 문제가 없다.</p>
+<p><code>java config.setBuildConfigClass(BuildConfig.class);</code> 이 부분을 추가했다. ACRA 코드에서 보듯이 setBuildConfigClass로 직접 BuildConfig를 넘겨주면 패키지명으로 찾지 않는다. 따라서 Proguard가 적용되어도 문제가 없다.</p>
 
 <hr />
 

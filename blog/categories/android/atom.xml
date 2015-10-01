@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-09-30T21:37:27+09:00</updated>
+  <updated>2015-10-01T20:20:19+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,74 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[ACRA : Please configure 'buildConfigClass' in your ACRA config 오류]]></title>
+    <link href="http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/"/>
+    <updated>2015-10-01T19:48:09+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config</id>
+    <content type="html"><![CDATA[<p><a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a> 포스트에서 언급했던 것처럼 개발 중인 앱에서 Crash Report를 위해 <a href="https://github.com/ACRA/acra">ACRA</a>를 사용중이다. 아직 4.7.0으로 정식 버전업이 되지는 않았지만 4.7.0 RC1 버전이 maven에 올려져 있어서 적용해 보았다.
+사실은 미리 적용할 예정은 없었으나 <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>와 관련하여 Gradle을 2.4로 버전업 하면서 release 빌드 시에 다른 오류(setLatestEventInfo 함수가 제거됨)가 나타나서 어쩔 수 없이 버전업을 해야했다.</p>
+
+<p>그런데 버전업을하고 나서 Crash 테스트를 하는 도중 또 다른 오류를 만났다. 기존에도 오류가 나고 있었는지 버전업 후의 문제인지는 확실치는 않다. 안드로이드 작업은 끝없는 오류 해결의 연속인 듯하다. 오류는 아래와 같다.</p>
+
+<pre><code>E/ACRA: Not adding buildConfig to log. Class Not found : net.yourdomain.BuildConfig. Please configure 'buildConfigClass' in your ACRA config
+</code></pre>
+
+<p>우선 ACRA를 초기화하는 코드를 살펴보자. 당연하지만 실제 적용코드가 아닌 부분적으로 정리된 코드다.</p>
+
+<pre><code class="java">ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
+config.setFormUri("http://dev.yourdomain.net/AppCrash");
+ACRA.init(this, config); // The following line triggers the initialization of ACRA
+</code></pre>
+
+<p>@ReportsCrashes 어노테이션을 사용하지 않고 동적으로 초기화시켜주는 코드다. 실제로 Crash를 발생시키면 위에서 보여준 오류가 난다. 사실 이 문제는 원인을 확인한 결과 Proguard가 적용되었을 때만 오류가 발생한다. 아래의 ACRA 소스 코드의 일부를 보자.</p>
+
+<p>**<a href="https://github.com/ACRA/acra/blob/master/src/main/java/org/acra/collector/CrashReportDataFactory.java**">https://github.com/ACRA/acra/blob/master/src/main/java/org/acra/collector/CrashReportDataFactory.java**</a></p>
+
+<pre><code class="java">private Class&lt;?&gt; getBuildConfigClass() throws ClassNotFoundException {
+    final Class configuredBuildConfig = ACRA.getConfig().buildConfigClass();
+    if ((configuredBuildConfig != null) &amp;&amp; !configuredBuildConfig.equals(Object.class)) {
+        // If set via annotations or programatically then it will have a real value,
+        // otherwise it will be Object.class (annotation default) or null (explicit programmatic).
+        return configuredBuildConfig;
+    }
+
+    final String className = context.getClass().getPackage().getName() + ".BuildConfig";
+    try {
+        return Class.forName(className);
+    } catch (ClassNotFoundException e) {
+        ACRA.log.e(LOG_TAG, "Not adding buildConfig to log. Class Not found : " + className + ". Please configure 'buildConfigClass' in your ACRA config");
+        throw e;
+    }
+}
+</code></pre>
+
+<p><code>final String className = context.getClass().getPackage().getName() + ".BuildConfig";</code> 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
+해결을 위한 아래의 코드를 보자.</p>
+
+<pre><code class="java">ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
+config.setBuildConfigClass(BuildConfig.class);
+config.setFormUri("http://dev.yourdomain.net/AppCrash");
+ACRA.init(this, config); // The following line triggers the initialization of ACRA
+</code></pre>
+
+<p><code>config.setBuildConfigClass(BuildConfig.class);</code> 이 부분을 추가했다. ACRA 코드에서 보듯이 setBuildConfigClass로 직접 BuildConfig를 넘겨주면 패키지명으로 찾지 않는다. 따라서 Proguard가 적용되어도 문제가 없다.</p>
+
+<hr />
+
+<p>이 오류는 이것으로 해결이 가능하다. 하지만 나는 지금 다른 문제로 다시 고군분투 중이다.
+오류 발생시 HTTP/POST를 통해 오류 관련 정보를 전송하도록 사용중이었다. 그런데 앞서 이야기 한것과 같이 이번에 버전업이 되면서 HTTP 접속 관련 부분이 변경되었다. 여기에 문제가 있다.</p>
+
+<pre><code class="java">...
+urlConnection.setChunkedStreamingMode(0);
+...
+</code></pre>
+
+<p>위 부분은 ACRA에서 HTTP 전송시 사용하는 HttpRequest.java 의 일부분이다. <code>setChunkedStreamingMode</code>에 대해서는 여기서 설명하기엔 너무 길고 간단히 요약하자면 chunked 상태로 데이터가 전송된다.
+그런데 이 상태로 전송되면 현재 내가 사용하고 있는 서버에서 POST 값이 모두 비어 있다. request의 body가 수신되지 못하는 것이다. 이 부분은 나의 환경인 php-fpm가 proxy로 연결되어 있는 것과 관련이 있는 것으로 보인다. 이 부분에 대해서는 여러가지로 시도해 보았으나 해결이 되지 않았고 일단은 몇개의 클래스를 재정의해서 문제를 막아 놓았다. 그리고 관련해서는 ACRA에 Issue로 등록해 두었다. 개선이 될런지는 미지수인데 안된다면 앞으로 사용상에 걸림돌이 될 것 같다. 이 부분에 관련된 해결책이 나온다면 다시 포스팅을 하도록 하겠다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[안드로이드 Geocoder 사용시 Service not Available 오류]]></title>
@@ -382,43 +450,6 @@ android {
 <p>사실 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>도 현재 버전에서는 문제가 있다. 공식 사이트에서는 해당 현상에 대한 이야기는 없으나 나의 경우엔 proguard 적용시 완료 callback이 호출되지 않는 문제가 있었다. 관련해서는 <a href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/">Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결</a>에 별도로 포스팅한다.</p>
 
 <p>어쨌든 이 문제는 시간이 지나면서 오픈 소스들이 대응을 시작하면 대부분 해결될 것으로 생각된다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결]]></title>
-    <link href="http://blog.asamaru.net/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/"/>
-    <updated>2015-09-25T12:10:09+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure</id>
-    <content type="html"><![CDATA[<p>안드로이드 앱 개발시 사용하던 <a href="https://github.com/loopj/android-async-http">android-async-http</a>가 최근 1.4.9 버전으로 버전업되었다. 1.4.8 이하 버전을 사용할 경우 이전에 포스팅한 <a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>와 관련된 문제가 있다.</p>
-
-<p>그런데 나는 이 1.4.9 버전을 사용하면서 다른 문제가 생겼다. 빌드에서 오류나 경고는 전혀 나타나지 않지만 URL 호출을 하면 onStart, onProgress까지는 들어오는데 onSuccess, onFailure를 호출해 주지 않았다. 그런데 이 현상이 proguard를 적용할 때만 발생한다는 것이다. 정밀하게 테스트해보지 않아 정확한 원인을 찾지는 못했지만 대략적인 상황을 보면 proguard에 의해 난독화 처리되는 부분이 문제로 보인다(그런데 실제로 내부 소스를 살펴보면 reflection 등을 사용하거나해서 난독화에 영향을 받을 만한 부분을 찾지 못했다).</p>
-
-<p>우선 내가 사용했던 proguard의 설정 중 영향을 줄만한 부분은 다음과 같다. 나머지는 대부분 keep 등의 설정으로 <a href="https://github.com/loopj/android-async-http">android-async-http</a>에 영향을 줄 만한 부분은 없다.</p>
-
-<pre><code>-optimizationpasses 5
--repackageclasses ''
--allowaccessmodification
--overloadaggressively
--verbose
-</code></pre>
-
-<p>사실 이 문제에 대해서 검색해보면 다른 이야기들이 많다. 대부분 호출이 되지 않는다는 질문을 하는 사람들의 경우는 onSuccess, onFailure의 오버로딩에 관련된 문제이다. 실제로 android-async-http는 ResponseHandler에 따라 여러 개의 onSuccess, onFailure 함수들을 가지고 있다. 이 함수들은 반환되는 데이터의 형태에 따라 다른 함수를 호출해주도록 되어있다. 이 부분은 편리하긴하나 개인적으론 조금 꺼려지는 형태다. 질문이 많이 올라오는 것처럼 반환 형태에 맞는 함수를 구현하는 것을 누락시킬 수 있기 때문이다. 어쨌든 나의 경우는 이에 해당하지 않았다. 확인을 위해 라이브러리 소스를 일부 수정해서 테스트 했으나 그 전단계까지도 들어오지 않았다.</p>
-
-<p>이 문제는 proguard를 적용했을 때만 발생하는 문제였으므로 아래와 같이 proguard에 추가해주면 간단히 해결된다.</p>
-
-<pre><code>-keep class com.loopj.android.http.** { *; }
--keep interface com.loopj.android.** { *; }
-</code></pre>
-
-<p>그런데 개인적으로 이 해결법은 어떤 것이 문제인지 확인하지도 못했을 뿐아니라 문제를 해결하기 위해 통째로 proguard에서 제외하는 것이 맘에들지 않았다. 그래서 수십번의 빌드를 통해 어느 클래스가 문제를 일으키는지 찾아냈다. 아.. 인간 승리다. 수십여개의 클래스들을 넣어보고 빼보고&hellip;</p>
-
-<p>결론은 아래의 코드를 proguard에 추가하면 문제가 해결된다.</p>
-
-<pre><code>-keep class com.loopj.android.http.HttpGet { *; }
-</code></pre>
-
-<p>대충 소스를 보니 HttpGet는 이번에 Apache HTTP 클라이언트가 제거되면서 이를 대체하기 위한 라이브러리를 교체하면서 추가된 클래스로 보인다. 그런데 소스를 봐도 이게 왜 proguard에 영향을 받는지 잘 모르겠지만 위의 코드를 넣음으로써 해결이 되는 것은 확인했다. 더 자세히 코드를 추적해 간다면 원인을 찾을 수 있을지도 모르지만 굳이 거기까지 내가할 필요는 없다고 보고 github에 이슈를 등록하려고 한다. 해당 개발자들이 다음버전에 문제를 해결해 주기를 바라며&hellip;</p>
 ]]></content>
   </entry>
   

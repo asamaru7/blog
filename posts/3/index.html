@@ -1491,8 +1491,8 @@ htmlspecialchars_decode는 <code>&amp;nbsp;</code>를 공백으로 다시 되돌
 
 <ul>
 <li>&lsquo;&amp;&rsquo;(앰퍼샌드)는 &lsquo;<code>&amp;amp;</code>'가 됩니다</li>
-<li>&lsquo;&ldquo;&rsquo;(겹따옴표)는 ENT_NOQUOTES를 설정하지 않았을 때 &lsquo;&quot;'가 됩니다.</li>
-<li>&lsquo;&rsquo;&lsquo;(홑따옴표)는 ENT_QUOTES가 설정되었을 때만 &rsquo;&#039;&lsquo;가 됩니다.</li>
+<li>&lsquo;&ldquo;&rsquo;(겹따옴표)는 ENT_NOQUOTES를 설정하지 않았을 때 &lsquo;<code>&amp;quot;</code>'가 됩니다.</li>
+<li>&lsquo;&rsquo;&lsquo;(홑따옴표)는 ENT_QUOTES가 설정되었을 때만 &rsquo;<code>&amp;#039;</code>&lsquo;가 됩니다.</li>
 <li>&lsquo;&lt;&rsquo;(미만)은 &lsquo;<code>&amp;lt;</code>'가 됩니다.</li>
 <li>&lsquo;>&rsquo;(이상)은 &lsquo;<code>&amp;gt;</code>'가 됩니다.</li>
 </ul>
@@ -1671,7 +1671,7 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
 
 <p>AsyncTask 내에는 sHandler라는 static 멤버 변수가 있다고 해서 실제로 확인해 봤다. 현재 출처에서 밝힌 소스와는 조금 다르게 변경되어 있었다. sHandler는 앱에서 AsyncTask를 최초 선언한 순간 객체가 할당되고, UI작업을 처리하는 onPostExecute()가 호출될 때 사용된다고 설명되어 있었으나 설명과 다르게 선언시에는 아래와 같이 초기화를 하지 않도록 변경되었다. 대신 내부에서 getHandler() 함수가 처음 실행될 때 초기화 된다.</p>
 
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -1685,20 +1685,21 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
 <span class='line-number'>12</span>
 <span class='line-number'>13</span>
 <span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>private static final InternalHandler sHandler;
-</span><span class='line'>...
-</span><span class='line'>private static Handler getHandler() {
-</span><span class='line'>    synchronized (AsyncTask.class) {
-</span><span class='line'>        if (sHandler == null) {
-</span><span class='line'>            sHandler = new InternalHandler();
-</span><span class='line'>        }
-</span><span class='line'>        return sHandler;
-</span><span class='line'>    }
-</span><span class='line'>}
-</span><span class='line'>...
-</span><span class='line'>private static class InternalHandler extends Handler {
-</span><span class='line'>     ...
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">InternalHandler</span> <span class="n">sHandler</span><span class="o">;</span>
+</span><span class='line'><span class="o">...</span>
+</span><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="n">Handler</span> <span class="nf">getHandler</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">synchronized</span> <span class="o">(</span><span class="n">AsyncTask</span><span class="o">.</span><span class="na">class</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">sHandler</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">sHandler</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">InternalHandler</span><span class="o">();</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">sHandler</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">...</span>
+</span><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">InternalHandler</span> <span class="kd">extends</span> <span class="n">Handler</span> <span class="o">{</span>
+</span><span class='line'>     <span class="o">...</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <blockquote><p>앱을 실행하고 최초로 AsyncTask를 선언한 부분이 메인쓰레드가 아니라면 InternalHandler는 메인쓰레드가 아닌 쓰레드의 Handler를 가지고 있고 이 Handler로는 UI 작업을 하지 못하기 때문에 &ldquo;android.view.ViewRoot$CalledFromWrongThreadException&rdquo; 오류를 냅니다.</p>

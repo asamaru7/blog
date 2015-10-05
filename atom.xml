@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-05T10:03:03+09:00</updated>
+  <updated>2015-10-05T10:16:04+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,40 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Gradle applicationIdSuffix 사용시 AndroidAnnotations 설정]]></title>
+    <link href="http://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/"/>
+    <updated>2015-10-05T10:05:11+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations</id>
+    <content type="html"><![CDATA[<p><a href="http://blog.asamaru.net/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/">Gradle DSL method not found: &lsquo;packageNameSuffix()&rsquo; 오류 해결</a>에서 오류 해결 방법을 안내하면서 언급했던 applicationIdSuffix를 사용시 유의사항이 있다. <strong>applicationId가 debug 모드에서 변경됨에 따라 관련된 부분에서 문제가 일어날 수 있다는 것이다.</strong></p>
+
+<p>나의 경우는 AndroidAnnotations을 함께 사용하는 부분에서 오류를 만났다. AndroidAnnotations에서 applicationId를 기준으로 resource에 접근해서 자동 생성된 class들을 찾지 못하는 문제이다.</p>
+
+<p>이런 경우에 대비해서 AndroidAnnotations에는 resourcePackageName라는 속성을 제공한다.</p>
+
+<p><a href="https://github.com/excilys/androidannotations/wiki/CustomizeAnnotationProcessing">CustomizeAnnotationProcessing</a>에 보면 아래와 같이 안내되어 있다.</p>
+
+<blockquote><p><strong>resourcePackageName</strong></p>
+
+<p>Type: string
+By default, AndroidAnnotations try to find the R class by extracting application package from AndroidManifest.xml file. But in some cases you may want to specify a custom package to look for the R class. This is why we added resourcePackageName option.</p></blockquote>
+
+<p>결론은 아래처럼 resourcePackageName에 기존 packageName을 넣어줌으로써 해결이 가능하다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>apt {
+</span><span class='line'>    arguments {
+</span><span class='line'>        resourcePackageName "net.yourdomain"
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Gradle DSL method not found: 'packageNameSuffix()' 오류 해결]]></title>
@@ -2347,100 +2381,6 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 <li>안드로이드는 조금만 잘못써도 오류가 발생하는 이런 경우를 많이 보게 되는데 아위운 점은 정확한 사용법을 제시하는 메뉴얼을 찾기 어렵다는 것이다.</li>
 <li>코드 중간에 보면 <code>// noinspection unchecked</code> 부분이 있는데 크게 중요한 부분은 아니지만 이 부분을 제외하면 warning이 뜬다(안드로이드 스튜디오에서 노란 밑줄). 이 warning을 안드로이드 스튜디오에서 숨기는 역할을 하는 코드다.</li>
 </ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[PHP의 DateTime을 Java (Android)로 전달하기]]></title>
-    <link href="http://blog.asamaru.net/2015/09/17/datetime-from-php-to-java-android/"/>
-    <updated>2015-09-17T18:45:26+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/17/datetime-from-php-to-java-android</id>
-    <content type="html"><![CDATA[<p>안드로이드 앱을 개발하게되면 많은 경우에 서버와의 데이터 연결이 필요하다. 대부분의 데이터 타입은 이 과정에서 큰 문제를 일으키지 않는다(데이터 타입만 명확히 한다면). 하지만 DateTime은 조금 까다로울 수 있다. 프로그램에서 시간은 TimeZone을 가지고 있기 때문에 이 부분을 명확히 하지 않으면 의도치 않은 시간으로 표시된다. 게다가 형식이 맞지 않는다면 제대로 전달되지 않을 수도 있다.</p>
-
-<blockquote><p>네이버 D2에 있는 <a href="http://d2.naver.com/helloworld/645609">Java의 날짜와 시간 API</a>를 보면 Java에서의 Date 처리가 불편하다는 얘기가 있다.</p></blockquote>
-
-<p>이번 작업에서는 서버는 PHP를 사용하고 있는 상황이었고 클라이언트는 <a href="http://androidannotations.org/">AndroidAnnotations</a>의 <a href="https://github.com/excilys/androidannotations/wiki/Rest-API#rest">Rest-API</a>를 사용했다. 수신 데이터의 파싱은 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>를 사용하는 상황이다. 이 글의 주제에서 벗어나므로 <a href="http://androidannotations.org/">AndroidAnnotations</a>나 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>에 대한 부분은 설명하지 않겠다.</p>
-
-<p>GsonHttpMessageConverter를 사용해서 데이터를 파싱하는 경우 대상이되는 class의 멤버변수의 데이터 타입에 맞추어 데이터를 채워준다. 당연히 전송되는 데이터가 JSON 형식이어야 한다. 다른 데이터 타입의 경우 앞서 설명한 것과 같이 데이터 타입만 맞춰준다면 아주 쉽게 데이터를 받을 수 있다(그것이 이것을 사용하는 주요 목적이다). 그런데 DateTime 타입은 조금 신경을 써줘야 한다.</p>
-
-<p>자 그럼 서버에서 데이터를 보낼 수 있는 방법에 어떤 것이 있을까? 가장 일반적인 방법으로는 timestamp(int), string, Date가 있다. 어떤 것을 쓰더라도 무방하지만 앞서 얘기한 것처럼 GsonHttpMessageConverter를 써서 간단히 데이터를 정확한 형식으로 받는 것이 편리하기 때문에 전송시 데이터 타입을 맞추는 것이 좋다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="c1">// string 타입으로 전송</span>
-</span><span class='line'><span class="nv">$date</span> <span class="o">=</span> <span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">;</span>
-</span><span class='line'><span class="c1">// int 타입으로 전송</span>
-</span><span class='line'><span class="nv">$date</span> <span class="o">=</span> <span class="p">(</span><span class="k">new</span> <span class="nx">\DateTime</span><span class="p">(</span><span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">getTimestamp</span><span class="p">();</span>
-</span><span class='line'><span class="c1">// Date 타입으로 전송</span>
-</span><span class='line'><span class="nv">$date</span> <span class="o">=</span> <span class="p">(</span><span class="k">new</span> <span class="nx">\DateTime</span><span class="p">(</span><span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">setTimeZone</span><span class="p">(</span><span class="k">new</span> <span class="nx">\DateTimeZone</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">format</span><span class="p">(</span><span class="s1">&#39;Y-m-d\TH:i:s\Z&#39;</span><span class="p">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>위의 코드를 보면 PHP에서 전송할 때 넘겨줄 데이터의 예시를 타입별로 제시했다. 앞서 강조했던대로 안드로이드 클라이언트에서 GsonHttpMessageConverter를 이용해 Date 타입으로 바로 받으려면 마지막에 있는 &ldquo;Date 타입으로 전송&rdquo; 방식을 사용하면 된다.</p>
-
-<p>해당 부분을 보면 두가지 처리를 해주고 있다. 첫번째로 TimeZone을 설정한 것이고, 두번째로 Date Format을 지정한 것이다. 사실 이 부분들을 잘 몰라서 삽질을 조금 했었다. 처음엔 Date Format을 어떻게 전달해야할지 몰라 해맸다. 제대로 수신을 하지 못했던 것이다. Format을 맞추고 나니 이젠 보낸 시간과 받은 시간이 달랐다. 이 부분은 TimeZone의 문제이므로 TimeZone을 지정해서 해결했다. TimeZone에 사용한 UTC는 <a href="https://ko.wikipedia.org/wiki/%ED%98%91%EC%A0%95_%EC%84%B8%EA%B3%84%EC%8B%9C">협정 세계시</a>라는 뜻이다. 이것과 세트로 format에서 끝에 \Z를 붙여 데이터가 <a href="https://ko.wikipedia.org/wiki/ISO_8601">ISO 8601</a>에 따라 UTC를 따르고 있음을 표시한 것이다.</p>
-
-<p>결론적으로 위의 형식을 사용하면 GSON으로 바로 받아도 정확한 시간을 사용할 수 있다.</p>
-
-<p>사실 위의 경우는 GsonHttpMessageConverter를 사용한다는 상황을 가정한 것으로 이것을 사용하지 않고 직접 데이터를 받아 GSON을 통해 파싱한다면 아래의 방법을 쓸 수도 있다. Format을 보면 알겠지만 UTC Date여야 한다(정확한 시간 처리를 위해). &ldquo;yyyy-MM-dd HH:mm:ss"이 Format을 쓸 수도 있으나 TimeZone 명시되지 않으므로 시간이 다르게 보일 수 있다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Gson</span> <span class="n">gson</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">GsonBuilder</span><span class="o">().</span><span class="na">setDateFormat</span><span class="o">(</span><span class="s">&quot;yyyy-MM-dd&#39;T&#39;HH:mm:ssZ&quot;</span><span class="o">).</span><span class="na">create</span><span class="o">();</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>아래는 추가적으로 다른 타입으로 수신했을 때 안드로이드 클라이언트에서 Date 타입으로 변환하고자 할때 사용할 수 있는 참고 코드들이다.</p>
-
-<p><strong> string 타입으로 수신시 </strong></p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="k">try</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">String</span> <span class="n">dateTime</span> <span class="o">=</span> <span class="s">&quot;2015-09-17 10:00:00&quot;</span><span class="o">;</span>
-</span><span class='line'>    <span class="n">SimpleDateFormat</span> <span class="n">dateParser</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SimpleDateFormat</span><span class="o">(</span><span class="s">&quot;yyyy-MM-dd HH:mm:ss&quot;</span><span class="o">,</span> <span class="n">Locale</span><span class="o">.</span><span class="na">KOREA</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">Date</span> <span class="n">date</span> <span class="o">=</span> <span class="n">dateParser</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="n">dateTime</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ParseException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><strong> timestamp(int) 타입으로 수신시 </strong></p>
-
-<p>PHP에서의 TimeStamp는 초단위(s)지만 Java에서는 밀리초(ms) 단위이므로 1000을 곱해서 넣어 주어야 한다.
-그리고 Java에서는 Date가 Deprecated되어 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>를 더 권장한다고 한다. <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Date.html">정확하게는 완전히 Deprecated된 것은 아니고 일부 생성자가 그렇다는 것</a>이지만 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>가 더 다양한 기능을 제공하므로 더 권장된다는 것이다. 자세한 이유는 검색해보면 많이 나온다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">// Calendar 사용</span>
-</span><span class='line'><span class="n">Calendar</span> <span class="n">c</span> <span class="o">=</span> <span class="n">Calendar</span><span class="o">.</span><span class="na">getInstance</span><span class="o">();</span>
-</span><span class='line'><span class="n">c</span><span class="o">.</span><span class="na">setTimeInMillis</span><span class="o">(</span><span class="n">timestamp</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">);</span>
-</span><span class='line'><span class="n">Date</span> <span class="n">date</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">getTime</span><span class="o">();</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// OR</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// Date 사용</span>
-</span><span class='line'><span class="n">Date</span> <span class="n">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Date</span><span class="o">(</span><span class="n">timestamp</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
 
 ]]></content>
   </entry>

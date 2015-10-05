@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>안드로이드 TabLayout에서 setupWithViewPager() 사용시 Swipe 후 Tab 클릭시 ViewPager가 변경되지 않는 버그 수정 - 이 세상에 하나는 남기고 가자</title>
+  <title>Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands 오류 수정 - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/">
-  <meta property="og:title" content="안드로이드 TabLayout에서 setupWithViewPager() 사용시 Swipe 후 Tab 클릭시 ViewPager가 &hellip; - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/">
+  <meta property="og:title" content="Binary operator '|' cannot be applied to two 'UIViewAutoresizing' &hellip; - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -134,7 +134,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-21T11:40:02+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.21</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T12:44:59+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -143,37 +143,39 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        안드로이드 TabLayout에서 setupWithViewPager() 사용시 Swipe 후 Tab 클릭시 ViewPager가 변경되지 않는 버그 수정
+        Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands 오류 수정
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p><a href="http://android-developers.blogspot.kr/2015/05/android-design-support-library.html">Android Design Support Library</a>에 있는 <a href="https://developer.android.com/intl/ko/reference/android/support/design/widget/TabLayout.html">TabLayout</a>과 ViewPager를 연동해서 사용하기 위해 <a href="https://developer.android.com/intl/ko/reference/android/support/design/widget/TabLayout.html#setupWithViewPager%28android.support.v4.view.ViewPager%29">setupWithViewPager()</a> 함수를 사용한다.</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>이번에 iOS 작업중 Swift 2로 변경을 하면서 아래와 같은 오류를 만났다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands</span></code></pre></td></tr></table></div></figure>
+
+
+<p>사실 이 부분말고도 여러가지 오류가 나왔지만 기본적으로 swift 버전업을 도와주는 헬프 기능 등을 통해 어느 정도는 쉽게 고칠 수 있었다.</p>
+
+<p>어쨌든 이 오류는 아래의 코드를 보면 해결 방법을 바로 알 수 있다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setupWithViewPager</span> <span class="o">(</span><span class="n">ViewPager</span> <span class="n">viewPager</span><span class="o">)</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">let</span> <span class="n">view</span> <span class="o">=</span> <span class="bp">UIView</span><span class="p">(</span><span class="nl">frame</span><span class="p">:</span> <span class="bp">CGRect</span><span class="p">(</span><span class="nl">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nl">y</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nl">width</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="nl">height</span><span class="p">:</span> <span class="mi">100</span><span class="p">))</span>
+</span><span class='line'><span class="n">addSubview</span><span class="p">(</span><span class="n">view</span><span class="p">)</span>
+</span><span class='line'><span class="c1">// Swift 2.0 미만</span>
+</span><span class='line'><span class="n">view</span><span class="p">.</span><span class="n">autoresizingMask</span> <span class="o">=</span> <span class="n">UIViewAutoresizing</span><span class="p">.</span><span class="n">FlexibleWidth</span> <span class="o">|</span> <span class="n">UIViewAutoresizing</span><span class="p">.</span><span class="n">FlexibleHeight</span>
+</span><span class='line'><span class="c1">// Swift 2.0 이상</span>
+</span><span class='line'><span class="n">view</span><span class="p">.</span><span class="n">autoresizingMask</span> <span class="o">=</span> <span class="p">[.</span><span class="n">FlexibleWidth</span><span class="p">,</span> <span class="p">.</span><span class="n">FlexibleHeight</span><span class="p">]</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<blockquote><p>TabLayout와 ViewPager를 연동한다.</p></blockquote>
-
-<p>이 함수는 아래의 동작을 수행한다.</p>
-
-<ul>
-<li>Add a ViewPager.OnPageChangeListener that will forward events to this TabLayout.</li>
-<li>Populate the TabLayout&rsquo;s tabs from the ViewPager&rsquo;s PagerAdapter.</li>
-<li>Set our TabLayout.OnTabSelectedListener which will forward selected events to the ViewPager</li>
-</ul>
-
-
-<p>결론은 setupWithViewPager()를 사용하면 손쉽게 TabLayout와 ViewPager를 연동할 수 있다. 다시말해 ViewPager를 넘기면 이에 맞추어 TabLayout의 선택이 변경되고 TabLayout에서 Tab을 터치하면 이에 맞게 ViewPager가 변경된다.</p>
-
-<p>하지만 이 기능에는 버그가 있다. 그냥 쉽게 넘어가면 안드로이드가 아니지&hellip;
-이 문제도 항상 발생하는 것은 아니나 간헐적으로 ViewPager을 Swipe하여 변경을 하다가 Tab을 터치하면 Tab은 터치에 맞게 변경되나 ViewPaper는 함께 변경되지 않는 문제가 발생한다. 이 문제에 대해서는 <a href="https://code.google.com/p/android/issues/detail?id=183123%EC%97%90">https://code.google.com/p/android/issues/detail?id=183123%EC%97%90</a> 버그 리포트 되어 있다.</p>
-
-<p>패치를 기다리기 전에 문제를 해결할 필요가 있어 아래와 같이 직접 수정해서 사용했다.</p>
+<p>이와 유사하게 UIUserNotificationType의 경우도 아래와 같이 수정이 필요하다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -183,42 +185,16 @@
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">tabLayout</span><span class="o">.</span><span class="na">setOnTabSelectedListener</span><span class="o">(</span><span class="k">new</span> <span class="n">TabLayout</span><span class="o">.</span><span class="na">OnTabSelectedListener</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>    <span class="nd">@Override</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTabSelected</span><span class="o">(</span><span class="n">TabLayout</span><span class="o">.</span><span class="na">Tab</span> <span class="n">tab</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">()</span> <span class="o">!=</span> <span class="n">viewPager</span><span class="o">.</span><span class="na">getCurrentItem</span><span class="o">())</span> <span class="o">{</span>
-</span><span class='line'>            <span class="n">viewPager</span><span class="o">.</span><span class="na">setCurrentItem</span><span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">());</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="nd">@Override</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTabUnselected</span><span class="o">(</span><span class="n">TabLayout</span><span class="o">.</span><span class="na">Tab</span> <span class="n">tab</span><span class="o">)</span> <span class="o">{}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="nd">@Override</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTabReselected</span><span class="o">(</span><span class="n">TabLayout</span><span class="o">.</span><span class="na">Tab</span> <span class="n">tab</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">()</span> <span class="o">!=</span> <span class="n">viewPager</span><span class="o">.</span><span class="na">getCurrentItem</span><span class="o">())</span> <span class="o">{</span>
-</span><span class='line'>            <span class="n">viewPager</span><span class="o">.</span><span class="na">setCurrentItem</span><span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">());</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">});</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="c1">// Swift 2.0 미만</span>
+</span><span class='line'><span class="k">let</span> <span class="n">settings</span> <span class="o">=</span> <span class="n">UIUserNotificationSettings</span><span class="p">(</span><span class="nl">forTypes</span><span class="p">:</span> <span class="n">UIUserNotificationType</span><span class="p">.</span><span class="n">Alert</span> <span class="o">|</span> <span class="n">UIUserNotificationType</span><span class="p">.</span><span class="n">Badge</span><span class="p">,</span> <span class="nl">categories</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
+</span><span class='line'><span class="c1">// Swift 2.0 이상</span>
+</span><span class='line'><span class="k">let</span> <span class="n">settings</span> <span class="o">=</span> <span class="n">UIUserNotificationSettings</span><span class="p">(</span><span class="nl">forTypes</span><span class="p">:</span> <span class="p">[.</span><span class="n">Alert</span><span class="p">,</span> <span class="p">.</span><span class="n">Badge</span><span class="p">],</span> <span class="nl">categories</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
+</span><span class='line'><span class="bp">UIApplication</span><span class="p">.</span><span class="n">sharedApplication</span><span class="p">().</span><span class="n">registerUserNotificationSettings</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+</span><span class='line'><span class="k">if</span> <span class="n">settings</span><span class="p">.</span><span class="n">types</span><span class="p">.</span><span class="n">contains</span><span class="p">(.</span><span class="n">Badge</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1">// whatever</span>
+</span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
-<p>간단히 원리를 설명하자면 다음과 같다.</p>
-
-<p>tab이 변경되었음에도 ViewPager에 반영되지 않는 것이 문제이므로 OnTabSelectedListener를 추가해서 변경된 Tab과 ViewPager의 위치가 맞지 않으면 강제로 ViewPager의 위치를 이동하는 것이다.</p>
-
-<p>그런데 최근 이 버그 이슈에 변경이 생겼는데 내용은 <strong>Android Design Support Library 23.0.1 버전에 패치(2015년 9월 5일자)가 되었다는 것</strong>. 확인해 보니 버그 패치가 되었다. 따라서 23.0.1 이상을 사용한다면 위의 방법을 사용할 필요는 없어졌다. setupWithViewPager를 사용할 수 없는 경우 등을 위해서 기록을 남겨둔다.</p>
 </div>
 
 
@@ -242,13 +218,13 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-21T11:40:02+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.21</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T12:44:59+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
 <span class="categories">
   
-    <a class='category' href='/blog/categories/android/'>android</a>
+    <a class='category' href='/blog/categories/ios/'>ios</a>, <a class='category' href='/blog/categories/swift/'>swift</a>
   
 </span>
 
@@ -257,7 +233,7 @@
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/" data-via="" data-counturl="http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/" data-via="" data-counturl="http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -271,10 +247,8 @@
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/" title="Previous Post: 안드로이드 ViewPager.setOnPageChangeListener() Deprecated 대응">&laquo; 안드로이드 ViewPager.setOnPageChangeListener() Deprecated 대응</a></li>
+            <li class="previous"><a href="/2015/10/05/using-applicationidsuffix-with-androidannotations/" title="Previous Post: Gradle applicationIdSuffix 사용시 AndroidAnnotations 설정">&laquo; Gradle applicationIdSuffix 사용시 AndroidAnnotations 설정</a></li>
             
-            
-            <li class="next"><a href="/2015/09/21/how-to-install-gogs-on-centos/" title="Next Post: CentOS에 gogs 설치하기">CentOS에 gogs 설치하기 &raquo;</a></li>
             
           </ul>
         
@@ -353,7 +327,7 @@
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/">Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands 오류 수정</a>
+    <a class="list-group-item active" href="/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/">Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands 오류 수정</a>
     
     <a class="list-group-item " href="/2015/10/05/using-applicationidsuffix-with-androidannotations/">Gradle applicationIdSuffix 사용시 AndroidAnnotations 설정</a>
     
@@ -397,8 +371,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/';
-        var disqus_url = 'http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/';
+        var disqus_url = 'http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/';
         var disqus_script = 'embed.js';
       
     (function () {

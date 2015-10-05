@@ -54,7 +54,7 @@ mysql> SELECT FOUND_ROWS();
 1 row in set (0.00 sec)
 ```
 
-단, 여기서 주의할 것은 맨 마지막 결과다. "왜 10이 아닐까?" 하는 생각을 할 수 있으나 맨처음 적었듯이 "직전" 쿼리의 결과 row 수를 반환하기 때문에 1이 나오는 것이다.(이전 ```select FOUND_ROWS();```의 결과 row 수 반환)
+단, 여기서 주의할 것은 맨 마지막 결과다. "왜 10이 아닐까?" 하는 생각을 할 수 있으나 맨처음 적었듯이 "직전" 쿼리의 결과 row 수를 반환하기 때문에 1이 나오는 것이다.(이전 `select FOUND_ROWS();`의 결과 row 수 반환)
 
 ## SQL_CALC_FOUND_ROWS와 FOUND_ROWS()의 결합
 

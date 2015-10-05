@@ -35,13 +35,13 @@ sudo gitlab-ctl reconfigure
 
 이 명령은 초기설정 과정들을 진행하면서 시간이 조금 걸렸다. 처음엔 멈춰있는줄 알고 작업을 중지시키곤 했다. 그 후에 브라우저에서 접속해서 안내된 계정으로 접속한다. 사실 난 여기서 부터 조금 난해했다. 이미 해당 서버는 웹 서버가 돌고 있었으므로 어떻게 Gitlab 웹 서버가 동시에 뜰 수 있을까? 어딘가 분명 설정이 있을텐데...
 
-그래서 찾아보니 ```/etc/gitlab/gitlab.rb``` 파일을 통해 설정이 가능했다. 우선 다른 설정은 다 무시하고 external_url 설정만 보자(실제로 이것만 활성화되어 있고 나머지는 다 주석처리 되어 있다). 이 설정을 통해 웹 서버가 사용할 도메인과 port를 지정할 수 있다.
+그래서 찾아보니 `/etc/gitlab/gitlab.rb` 파일을 통해 설정이 가능했다. 우선 다른 설정은 다 무시하고 external_url 설정만 보자(실제로 이것만 활성화되어 있고 나머지는 다 주석처리 되어 있다). 이 설정을 통해 웹 서버가 사용할 도메인과 port를 지정할 수 있다.
 
 ```ruby
 external_url 'http://your.domain:port'
 ```
 
-이렇게 설정을 완료한 후 ```sudo gitlab-ctl reconfigure``` 명령을 실행하면 여기에 맞추어 서버를 알아서 구동해 준다(Gitlab은 내부적으로 웹 서버를 nginx를 사용한다).
+이렇게 설정을 완료한 후 `sudo gitlab-ctl reconfigure` 명령을 실행하면 여기에 맞추어 서버를 알아서 구동해 준다(Gitlab은 내부적으로 웹 서버를 nginx를 사용한다).
 
 이후에는 브라우저에서 접속해서 사용하면 된다.
 
@@ -97,7 +97,7 @@ sudo gitlab-ctl stop
 </VirtualHost>
 ```
 
-그리고 ```/etc/gitlab/gitlab.rb```에 아래의 내용을 추가한다.
+그리고 `/etc/gitlab/gitlab.rb`에 아래의 내용을 추가한다.
 ```ruby
 nginx['enable'] = false
 ```

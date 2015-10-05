@@ -11,7 +11,7 @@ php 프로그램 개발중 문자열의 유사도를 계산해야 할 일이 생
 
 위키피디아에 [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance)에 대한 상세한 설명이 나와있다.
 
-[php 메뉴얼의 설명](http://php.net/manual/en/function.levenshtein.php)에 따르면 Levenshtein distance는 문자열1을 문자열2로 변환하는데 필요한 최소한의 치환, 추가, 삭제의 횟수를 나타낸다고 되어 있다. 이 알고리즘의 시간복잡도는 ```O(m*n)```이며, 여기서 m과 n은 str1, str2의 각각의 길이다. 비슷한 함수인 [similar_text()](http://php.net/manual/en/function.similar-text.php)가 가지는 시간 복잡도 ```O(max(n,m)**3)```에 비해서는 덜하지만 그래도 비싼 처리 비용이 든다.
+[php 메뉴얼의 설명](http://php.net/manual/en/function.levenshtein.php)에 따르면 Levenshtein distance는 문자열1을 문자열2로 변환하는데 필요한 최소한의 치환, 추가, 삭제의 횟수를 나타낸다고 되어 있다. 이 알고리즘의 시간복잡도는 `O(m*n)`이며, 여기서 m과 n은 str1, str2의 각각의 길이다. 비슷한 함수인 [similar_text()](http://php.net/manual/en/function.similar-text.php)가 가지는 시간 복잡도 `O(max(n,m)**3)`에 비해서는 덜하지만 그래도 비싼 처리 비용이 든다.
 
 함수의 기본형 사용시 위의 설명대로 변환에 필요한 최소한의 치환, 추가, 삭제의 횟수를 계산하지만 추가 인자를 사용하면 각 변환에 필요한 비용을 지정할 수 있다. 이것은 더 일반적이고 적용성이 높지만 효율적이지 못하다.
 

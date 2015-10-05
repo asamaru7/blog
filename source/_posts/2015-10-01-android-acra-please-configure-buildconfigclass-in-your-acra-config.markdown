@@ -10,13 +10,13 @@ categories: android
 
 그런데 버전업을하고 나서 Crash 테스트를 하는 도중 또 다른 오류를 만났다. 기존에도 오류가 나고 있었는지 버전업 후의 문제인지는 확실치는 않다. 안드로이드 작업은 끝없는 오류 해결의 연속인 듯하다. 오류는 아래와 같다.
 
-```
+```java
 E/ACRA: Not adding buildConfig to log. Class Not found : net.yourdomain.BuildConfig. Please configure 'buildConfigClass' in your ACRA config
 ```
 
 우선 ACRA를 초기화하는 코드를 살펴보자. 당연하지만 실제 적용코드가 아닌 부분적으로 정리된 코드다.
 
-```java
+```
 ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
 config.setFormUri("http://dev.yourdomain.net/AppCrash");
 ACRA.init(this, config); // The following line triggers the initialization of ACRA
@@ -24,7 +24,7 @@ ACRA.init(this, config); // The following line triggers the initialization of AC
 
 @ReportsCrashes 어노테이션을 사용하지 않고 동적으로 초기화시켜주는 코드다. 실제로 Crash를 발생시키면 위에서 보여준 오류가 난다. 사실 이 문제는 원인을 확인한 결과 Proguard가 적용되었을 때만 오류가 발생한다. 아래의 ACRA 소스 코드의 일부를 보자.
 
-**https://github.com/ACRA/acra/blob/master/src/main/java/org/acra/collector/CrashReportDataFactory.java**
+**[CrashReportDataFactory.java](https://github.com/ACRA/acra/blob/master/src/main/java/org/acra/collector/CrashReportDataFactory.java)**
 
 ```java
 private Class<?> getBuildConfigClass() throws ClassNotFoundException {
@@ -45,7 +45,7 @@ private Class<?> getBuildConfigClass() throws ClassNotFoundException {
 }
 ```
 
-```final String className = context.getClass().getPackage().getName() + ".BuildConfig";``` 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
+`final String className = context.getClass().getPackage().getName() + ".BuildConfig";` 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
 해결을 위한 아래의 코드를 보자.
 
 ```java
@@ -55,7 +55,7 @@ config.setFormUri("http://dev.yourdomain.net/AppCrash");
 ACRA.init(this, config); // The following line triggers the initialization of ACRA
 ```
 
-```config.setBuildConfigClass(BuildConfig.class);``` 이 부분을 추가했다. ACRA 코드에서 보듯이 setBuildConfigClass로 직접 BuildConfig를 넘겨주면 패키지명으로 찾지 않는다. 따라서 Proguard가 적용되어도 문제가 없다.
+`config.setBuildConfigClass(BuildConfig.class);` 이 부분을 추가했다. ACRA 코드에서 보듯이 setBuildConfigClass로 직접 BuildConfig를 넘겨주면 패키지명으로 찾지 않는다. 따라서 Proguard가 적용되어도 문제가 없다.
 
 ___
 
@@ -68,5 +68,5 @@ urlConnection.setChunkedStreamingMode(0);
 ...
 ```
 
-위 부분은 ACRA에서 HTTP 전송시 사용하는 HttpRequest.java 의 일부분이다. ```setChunkedStreamingMode```에 대해서는 여기서 설명하기엔 너무 길고 간단히 요약하자면 chunked 상태로 데이터가 전송된다.
+위 부분은 ACRA에서 HTTP 전송시 사용하는 HttpRequest.java 의 일부분이다. `setChunkedStreamingMode`에 대해서는 여기서 설명하기엔 너무 길고 간단히 요약하자면 chunked 상태로 데이터가 전송된다.
 그런데 이 상태로 전송되면 현재 내가 사용하고 있는 서버에서 POST 값이 모두 비어 있다. request의 body가 수신되지 못하는 것이다. 이 부분은 나의 환경인 php-fpm가 proxy로 연결되어 있는 것과 관련이 있는 것으로 보인다. 이 부분에 대해서는 여러가지로 시도해 보았으나 해결이 되지 않았고 일단은 몇개의 클래스를 재정의해서 문제를 막아 놓았다. 그리고 관련해서는 ACRA에 Issue로 등록해 두었다. 개선이 될런지는 미지수인데 안된다면 앞으로 사용상에 걸림돌이 될 것 같다. 이 부분에 관련된 해결책이 나온다면 다시 포스팅을 하도록 하겠다.

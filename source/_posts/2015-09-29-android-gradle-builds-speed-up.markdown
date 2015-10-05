@@ -15,7 +15,7 @@ categories: android
 ## 1. gradle.properties 파일을 변경
 
 프로젝트 Root에 있는 gradle.properties을 편집한다. 기존에 파일이 없다면 추가한다. 여기에는 gradle 빌드 할 때 인수를 설정할 수 있다.
-한가지 더 알려주자면 프로젝트별로 설정하는 것외에도 모든 프로젝트에 설정을 추가할 수도 있다. 해당 파일의 경로는 OSX 기준으로 ```~/.gradle/gradle.properties``` 이다. 윈도우나 리눅스도 비슷한 경로에 있을 것으로 생각된다.
+한가지 더 알려주자면 프로젝트별로 설정하는 것외에도 모든 프로젝트에 설정을 추가할 수도 있다. 해당 파일의 경로는 OSX 기준으로 `~/.gradle/gradle.properties` 이다. 윈도우나 리눅스도 비슷한 경로에 있을 것으로 생각된다.
 
 **gradle.properties**
 

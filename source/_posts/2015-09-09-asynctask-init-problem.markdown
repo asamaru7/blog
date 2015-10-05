@@ -44,7 +44,7 @@ android.view.ViewRoot$CalledFromWrongThreadException: Only the original thread t
 
 AsyncTask 내에는 sHandler라는 static 멤버 변수가 있다고 해서 실제로 확인해 봤다. 현재 출처에서 밝힌 소스와는 조금 다르게 변경되어 있었다. sHandler는 앱에서 AsyncTask를 최초 선언한 순간 객체가 할당되고, UI작업을 처리하는 onPostExecute()가 호출될 때 사용된다고 설명되어 있었으나 설명과 다르게 선언시에는 아래와 같이 초기화를 하지 않도록 변경되었다. 대신 내부에서 getHandler() 함수가 처음 실행될 때 초기화 된다.
 
-```
+```java
 private static final InternalHandler sHandler;
 ...
 private static Handler getHandler() {

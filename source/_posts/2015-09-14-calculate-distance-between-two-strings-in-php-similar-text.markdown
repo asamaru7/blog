@@ -11,7 +11,7 @@ categories: php
 
 [php 메뉴얼의 설명](http://php.net/manual/en/function.similar-text.php)에 따르면 similar_text() 함수는 두 문자열의 유사도를 계산한다고 되어 있다.
 
-두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World's Best Algorithms by Oliver (ISBN 0-131-00413-1) 에서 설명되어 있다. 이 구현은 pseudo code와 다르게 스택은 아니지만, 재귀 호출이므로 전체 프로세스의 속도에 영향을 줄 수 있다. 이 계산 알고리즘은 시간복잡도 ```O(N**3)```를 가지며 여기서 N은 두 문자열 중 긴 문자열의 길이를 뜻한다.
+두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World's Best Algorithms by Oliver (ISBN 0-131-00413-1) 에서 설명되어 있다. 이 구현은 pseudo code와 다르게 스택은 아니지만, 재귀 호출이므로 전체 프로세스의 속도에 영향을 줄 수 있다. 이 계산 알고리즘은 시간복잡도 `O(N**3)`를 가지며 여기서 N은 두 문자열 중 긴 문자열의 길이를 뜻한다.
 
 문자열의 길이에 따라 성능이 극도로 떨어질 수 있으므로 가급적 짧은 문장의 비교에 사용하는 것이 좋다. 메뉴얼에서 paul은 20000자 이상에서만 성능에 문제가 있었다고는 하나 시간복잡도를 보더라도 긴 문자열은 자제하는게 좋겠다.
 

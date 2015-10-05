@@ -83,7 +83,7 @@ public static String formatNumber(String source) {
 }
 ```
 
-보다시피 ```Locale.getDefault()``` 부분을 넣어주고 있었다. 어쨌든 나는 아래와 같은 호환 함수를 만들어서 사용하고 있다.
+보다시피 `Locale.getDefault()` 부분을 넣어주고 있었다. 어쨌든 나는 아래와 같은 호환 함수를 만들어서 사용하고 있다.
 
 ```java
 static public String getFormattedPhoneNumber(String number) {

@@ -28,7 +28,7 @@ Html의 head 영역에 아래의 Meta 정보를 추가한다.
 
 ## 옥토프레스에 적용하기
 
-문제는 옥토프레스의 결과 HTML은 직접 만드는 것이 아니라는 것이다. 여러가지 방법이 있을 수 있으나 나는 code block만 검색에서 제외되면 되므로 그냥 관련 플러그인을 수정해 버렸다. ```backtick_code_block.rb``` 파일에서 ```<figure class='code'>``` 부분을 찾아서 ```<figure class='code notranslate'>```로 바꿔 버렸다.
+문제는 옥토프레스의 결과 HTML은 직접 만드는 것이 아니라는 것이다. 여러가지 방법이 있을 수 있으나 나는 code block만 검색에서 제외되면 되므로 그냥 관련 플러그인을 수정해 버렸다. `backtick_code_block.rb` 파일에서 `<figure class='code'>` 부분을 찾아서 `<figure class='code notranslate'>`로 바꿔 버렸다.
 
 이것으로 모든 것이 해결된 것은 아니다. 문장 내에서 사용된 코드 블록은 backtick_code_block 플러그인에서 처리하지 않으니 다른 플러그인을 고쳐야 하는데 어딘지 찾지 못했다. 아마도 markdown 해석 플러그인 내부에 있을텐데 gem으로 설치된 것인지 내부에서는 보이지 않는 듯하다(사실 귀찮아서 자세히 찾지 않았다. 게다가 Ruby를 거의 모른다.)
 

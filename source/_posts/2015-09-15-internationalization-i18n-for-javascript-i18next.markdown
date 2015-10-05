@@ -117,7 +117,7 @@ i18next는 위에 설명한 i18n을 자바스크립트 상에서 사용할 수 �
 * **localStorageExpirationTime** : local storage에 저장된 데이터에 유효기간을 설정한다. 단위는 ms이며 기본값은 1주일이다.
 * **ns** : 사용할 Namespace를 정의한다. 필수는 아니며 필요시에만 사용하면 된다. Namespace의 구분은 ::로 한다.(예시 : "A::apple")
 * **resStore** : i18n에 사용될 데이터를 설정한다.
-* **resGetPath** : i18n에서 사용할 데이터를 서버에서 요청할 경우 경로를 구성하는 방법을 정의한다. ``'locales/__lng__/__ns__.json'`` 이런 형식을 쓸 수 있는데 ```__lng__```는 언어명으로 ```__ns__```는 Namespace로 대체된다.
+* **resGetPath** : i18n에서 사용할 데이터를 서버에서 요청할 경우 경로를 구성하는 방법을 정의한다. `'locales/__lng__/__ns__.json'` 이런 형식을 쓸 수 있는데 `__lng__`는 언어명으로 `__ns__`는 Namespace로 대체된다.
 
 그 외에도 다양한 옵션이 있을 뿐 아니라 여러가지 상황에 대입해서 사용할 수 있다. 위의 예시는 html에 data attribute를 사용하는 것을 예를 들었지만 js에서 직접적으로 데이터를 받아서 사용할 수도 있고, sprintf 등과 같이 데이터를 데입해서 내용을 생성하는 것도 가능하다.
 게다가 handlebars, angular, JQuery UI에서 template에 적용시킬 수도 있다.

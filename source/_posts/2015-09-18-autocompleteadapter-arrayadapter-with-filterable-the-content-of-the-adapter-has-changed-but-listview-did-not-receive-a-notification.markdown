@@ -5,7 +5,7 @@ date: 2015-09-18 09:48:32 +0900
 comments: true
 categories: android
 ---
-AppCompatAutoCompleteTextView를 사용하고자 할때 필요한 것이 데이터를 넘겨주는 Adapter이다. 단, 이 Adepter는 ```extends ListAdapter & Filterable``` 가 적용되어야 한다. 그래서 보통은 ```public class StringAutoCompleteAdapter extends ArrayAdapter<String> implements Filterable``` 형태의 구현을 많이 사용한다. 그리고 대부분의 경우에 AutoCompleteTextView를 사용하는 이유는 검색어 자동완성 등에 사용되고 이 데이터는 서버에서 데이터를 호출해서 적용하도록 한다.
+AppCompatAutoCompleteTextView를 사용하고자 할때 필요한 것이 데이터를 넘겨주는 Adapter이다. 단, 이 Adepter는 `extends ListAdapter & Filterable` 가 적용되어야 한다. 그래서 보통은 `public class StringAutoCompleteAdapter extends ArrayAdapter<String> implements Filterable` 형태의 구현을 많이 사용한다. 그리고 대부분의 경우에 AutoCompleteTextView를 사용하는 이유는 검색어 자동완성 등에 사용되고 이 데이터는 서버에서 데이터를 호출해서 적용하도록 한다.
 
 위에 설명한 내용대로 하나의 예시를 보면 아래와 같다(미리 설명하자면 아래의 예제는 잘못된 예제이다. 생각지 못한 오류를 비주기적으로 만나게 된다).
 
@@ -217,10 +217,10 @@ public class StringAutoCompleteAdapter extends ArrayAdapter<String> implements F
 }
 ```
 
-주요 변경 지점은 ```getFilter()```이다. 기존에 ```resultList = autocomplete(constraint.toString());``` 부분을 통해 미리 Adapter의 데이터를 변경하던 것을 publishResults로 옮긴 것이다. 그리고 검색된 결과가 없더라도 빈 ArrayList를 만들어 넣어준 것이다.
+주요 변경 지점은 `getFilter()`이다. 기존에 `resultList = autocomplete(constraint.toString());` 부분을 통해 미리 Adapter의 데이터를 변경하던 것을 publishResults로 옮긴 것이다. 그리고 검색된 결과가 없더라도 빈 ArrayList를 만들어 넣어준 것이다.
 코드 상으로는 큰 차이가 나지않고 굳이 이렇게 해야하나 싶지만 내부 동작 방식을 보면 이렇게 하지 않으면 앞서 설명한 것과 같이 예기치 못한 상황을 만날 수 있다.
 
 **첨언 :**
 
 * 안드로이드는 조금만 잘못써도 오류가 발생하는 이런 경우를 많이 보게 되는데 아위운 점은 정확한 사용법을 제시하는 메뉴얼을 찾기 어렵다는 것이다.
-* 코드 중간에 보면 ```// noinspection unchecked``` 부분이 있는데 크게 중요한 부분은 아니지만 이 부분을 제외하면 warning이 뜬다(안드로이드 스튜디오에서 노란 밑줄). 이 warning을 안드로이드 스튜디오에서 숨기는 역할을 하는 코드다.
+* 코드 중간에 보면 `// noinspection unchecked` 부분이 있는데 크게 중요한 부분은 아니지만 이 부분을 제외하면 warning이 뜬다(안드로이드 스튜디오에서 노란 밑줄). 이 warning을 안드로이드 스튜디오에서 숨기는 역할을 하는 코드다.

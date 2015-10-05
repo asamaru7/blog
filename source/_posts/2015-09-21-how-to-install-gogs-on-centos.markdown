@@ -62,7 +62,7 @@ $ passwd gogs
 
 ## 환경구성
 
-환경설정 파일은 ```/etc/gogs/conf/app.ini```에 있다. 하지만 최초 웹페이지 접속시 자동으로 설치 화면이 뜬다. 게다가 이 파일을 열어보면 상단에 절대로 수정하지 말라고 되어 있다. 따라서 그냥 웹에서 설정하자.
+환경설정 파일은 `/etc/gogs/conf/app.ini`에 있다. 하지만 최초 웹페이지 접속시 자동으로 설치 화면이 뜬다. 게다가 이 파일을 열어보면 상단에 절대로 수정하지 말라고 되어 있다. 따라서 그냥 웹에서 설정하자.
 
 본격적으로 세팅을 하기 전에 주의사항이 있다. gogs는 DB가 있어야 된다. 따라서 mysql 또는 postgresql이 미리 설치되어 있어야 한다. 이건 뭐 굳이 여기서 설명하지 않아도 설치방법이 다른 곳에 많으니 설치가 되어 있다고 가정하고 설명한다.
 
@@ -92,7 +92,7 @@ mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS gogs; use gogs; set global st
 
 http://userdomain:3000/
 
-필요한 사항을 설정한다. 대부분 보면 뭘 해야할지 알 수 있다. 오류가 나면 해당 안내에 따라 설정하면 된다. 추후 설정에 변경이 필요하면 ```custom/conf/app.ini```파일에 필요한 설정만 override 하면 된다(나의 경우는 ```/opt/gogs/custom/conf/app.ini``` 파일이다. 이 파일 위치를 찾느라 한참을 헤멨다.). http://gogs.io/docs/installation/configuration_and_run.html 를 참고
+필요한 사항을 설정한다. 대부분 보면 뭘 해야할지 알 수 있다. 오류가 나면 해당 안내에 따라 설정하면 된다. 추후 설정에 변경이 필요하면 `custom/conf/app.ini`파일에 필요한 설정만 override 하면 된다(나의 경우는 `/opt/gogs/custom/conf/app.ini` 파일이다. 이 파일 위치를 찾느라 한참을 헤멨다.). http://gogs.io/docs/installation/configuration_and_run.html 를 참고
 
 
 ### 도메인 연결
@@ -134,7 +134,7 @@ sudo service nginx restart
 
 ### 서버 시작시 자동시작
 
-우선 서버 시작시 자동 시작 되도록 설정하자(필요하다면). 나의 경우 ```setup```으로 확인해보니 자동으로 들어가 있지 않았다. 그래서 아래와 같이 시도했다.
+우선 서버 시작시 자동 시작 되도록 설정하자(필요하다면). 나의 경우 `setup`으로 확인해보니 자동으로 들어가 있지 않았다. 그래서 아래와 같이 시도했다.
 
 ```bash
 # 서버 부팅시 자동 시작
@@ -160,7 +160,7 @@ $ vi /etc/rc.d/rc.local
 [repository]
 ROOT = /home/gogs
 ```
-기본적으로 ROOT 부분은 ```ROOT = /home/gogs/gogs-repositories```로 되어 있지만 위 처럼 gogs-repositories 부분을 제거해 주는 것이 좋다. 나중에 레포지토리를 생성하게되면 clone 주소를 알려준다. 이때 http와 ssh 주소 두가지를 알려주는데 이때 ssh를 사용하게 되면 주소 부분이 맞지 않게된다. 예를들어 gogs@git.asamaru.net:root/test.git 이라는 주소로 생성된 경우 아래와 같이 clone을 시도할 것이다.
+기본적으로 ROOT 부분은 `ROOT = /home/gogs/gogs-repositories`로 되어 있지만 위 처럼 gogs-repositories 부분을 제거해 주는 것이 좋다. 나중에 레포지토리를 생성하게되면 clone 주소를 알려준다. 이때 http와 ssh 주소 두가지를 알려주는데 이때 ssh를 사용하게 되면 주소 부분이 맞지 않게된다. 예를들어 gogs@git.asamaru.net:root/test.git 이라는 주소로 생성된 경우 아래와 같이 clone을 시도할 것이다.
 
 ```bash
 git clone gogs@git.corez.kr:root/test.git

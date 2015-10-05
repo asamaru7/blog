@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-02T08:35:47+09:00</updated>
+  <updated>2015-10-05T10:02:06+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,50 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Gradle DSL method not found: 'packageNameSuffix()' 오류 해결]]></title>
+    <link href="http://blog.asamaru.net/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/"/>
+    <updated>2015-10-05T08:13:08+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix</id>
+    <content type="html"><![CDATA[<p>안드로이드에서 빌드시 packageName을 동적으로 변경하기 위해 packageNameSuffix를 사용하는 경우가 있다. 예를들어 배포된 앱과 개발중인 앱을 동시에 사용하기 위해 packageNameSuffix를 사용할 수 있다.</p>
+
+<p>아래의 예시를 보자.</p>
+
+<pre><code class="gradle">android {
+    buildTypes {
+        debug {
+            packageNameSuffix '.debug'
+            versionNameSuffix '-debug'
+        }
+    }
+}
+</code></pre>
+
+<p>debug 모드에서 빌드할 경우에는 packageName 뒤에 <code>.debug</code>를 붙이도록 설정한 것이다. 이렇게 함으로써 release와 debug가 packageName이 달라져서 두개의 앱으로 인식되므로 모두를 설치할 수 있다.
+이 방법을 모를때는 매번 앱을 지우고 새로 깔고&hellip; 귀찮은 작업을 반복하며 작업을 했었다.</p>
+
+<p>그런데 이렇게 사용하면 아래의 경우를 만날 수 있다.</p>
+
+<pre><code> Gradle sync failed: Gradle DSL method not found: 'packageNameSuffix()'
+            Consult IDE log for more details (Help | Show Log)
+</code></pre>
+
+<p>이유는 packageNameSuffix라는 속성이 applicationIdSuffix로 변경되었기 때문이다. 관련 메뉴얼은 <a href="http://tools.android.com/tech-docs/new-build-system/applicationid-vs-packagename">ApplicationId versus PackageName</a>에서 볼 수 있다.</p>
+
+<p>그래서 아래와 같이 수정하면 정상적으로 사용이 가능하다.</p>
+
+<pre><code class="gradle">android {
+    buildTypes {
+        debug {
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
+        }
+    }
+}
+</code></pre>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[ACRA : Please configure 'buildConfigClass' in your ACRA config 오류]]></title>
@@ -416,40 +460,6 @@ org.gradle.jvmargs=-Xms256m -Xmx1024m
 <blockquote><p>style를 사용한 theme 정의시 parent가 없다면 name에 .을 사용하지 말거나 공백으로라도 parent 속성을 사용하자.</p></blockquote>
 
 <p><code>Style Resource definition cycle</code> 오류를 만난다면 위의 글을 참고해서 해결에 도움이 되었으면 하는 바램이다. 나도 오늘 후배의 한마디가 아니었다면 아직도 헬게이트를 경험하고 있을지도 모른다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거]]></title>
-    <link href="http://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal/"/>
-    <updated>2015-09-25T13:47:37+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal</id>
-    <content type="html"><![CDATA[<p>지난 포스팅 <a href="/2015/08/28/android-getcolor-getdrawable-deprecated/">Android 6(API 23)의 getColor() deprecated 대응 + getDrawable() deprecated</a>에서 잠깐 언급했던 <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a>에 대해 이야기하고자 한다.</p>
-
-<p>우선 안드로이드에 안내하고 있는 원문은 아래와 같다.</p>
-
-<ul>
-<li>영문 : <a href="https://developer.android.com/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP Client Removal</a></li>
-<li>한글 : <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a></li>
-</ul>
-
-
-<p>한글 문서의 내용은 아래와 같다.</p>
-
-<blockquote><p>Apache HTTP 클라이언트에 대한 지원을 제거합니다. 앱이 이 클라이언트를 사용하고 Android 2.3(API 레벨 9) 이상을 대상으로 하는 경우, HttpURLConnection 클래스를 대신 사용하세요. 이는 투명한 압축과 응답 캐싱을 통해 네트워크 사용량을 줄이고 전력 소모를 최소화하기 때문에 API가 더 효율적입니다. Apache HTTP API를 계속 사용하려면 우선 다음과 같은 컴파일-시간 종속성을 build.gradle 파일에서 선언해야 합니다.
-<code>gradle
-android {
-    useLibrary 'org.apache.http.legacy'
-}
-</code></p></blockquote>
-
-<p>이 부분이 제거되면서 문제가 되는 부분은 위의 안내와 같이 gradle에 임시 코드를 넣음으로써 해결이 가능하다. 하지만 제거 과정이 여러가지 문제를 일으켰다. 사실 안드로이드에서는 해당 기능을 Deprecated하고 대체  기능의 사용을 권장하고 있었으나 이를 사용하는 오픈소스 라이브러리들이 미리 대응을 하지 않았던 것이 문제가 되었다. 나의 경우는 <a href="https://github.com/ACRA/acra">ACRA</a>와 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>가 해당 기능을 사용해서 구현되어 있어서 <code>org.apache.http.legacy</code>를 통해 급한 문제들은 해결했었다.</p>
-
-<p>현재 기준으로 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>는 1.4.9로 버전업 되면서 Http에 관련된 부분을 대체 라이브러리로 교체함으로써 문제가 해결되었고 <a href="https://github.com/ACRA/acra">ACRA</a>의 경우는 4.6.2로 버전 기준으로 처리가 되었다고 어디서 본것 같았는데 실제로는 빌드 과정에서 오류가 발생했다. 그래서 다시 알아보니 4.7.0 버전에서 HtttpUrlConnection를 사용함으로써 Android M (6.0)을 정식 지원한다고 안내되어 있다. 하지만 아직 RC2로 정식 버전업이 되지 않았다. 나의 경우는 조금만 더 기다리면 useLibrary &lsquo;org.apache.http.legacy'를 사용하지 않아도 될 것으로 예상된다.</p>
-
-<p>사실 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>도 현재 버전에서는 문제가 있다. 공식 사이트에서는 해당 현상에 대한 이야기는 없으나 나의 경우엔 proguard 적용시 완료 callback이 호출되지 않는 문제가 있었다. 관련해서는 <a href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/">Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결</a>에 별도로 포스팅한다.</p>
-
-<p>어쨌든 이 문제는 시간이 지나면서 오픈 소스들이 대응을 시작하면 대부분 해결될 것으로 생각된다.</p>
 ]]></content>
   </entry>
   

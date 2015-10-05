@@ -4,7 +4,7 @@
   <title><![CDATA[Category: swift | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/swift/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-05T13:08:35+09:00</updated>
+  <updated>2015-10-05T13:26:16+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -14,7 +14,69 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands 오류 수정]]></title>
+    <title type="html"><![CDATA[Swift 2 : 'lastPathComponent' is unavailable: Use lastPathComponent on NSURL instead. 오류 해결]]></title>
+    <link href="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/"/>
+    <updated>2015-10-05T13:14:55+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7</id>
+    <content type="html"><![CDATA[<p><a href="/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/">Swift 2 : Binary operator &lsquo;|&rsquo; cannot be applied to two &lsquo;UIViewAutoresizing&rsquo; operands 오류 해결</a>에 이어 Swift 2로 넘어가면서 만난 또 다른 오류.</p>
+
+<pre><code>'lastPathComponent' is unavailable: Use lastPathComponent on NSURL instead.
+</code></pre>
+
+<p>관련해서 찾아보니 <a href="https://forums.developer.apple.com/thread/13580">No more stringByAppendingPathComponent in Xcode 7 beta 5?</a>라는 글이 있었다. 내용을 보니 해당 함수가 없어져서 다른 방법으로 수정해야 한다는 것. 내용중 <a href="https://forums.developer.apple.com/people/tieferbegabt">tieferbegabt</a>라는 사람이 간단히 해결할 수 있는 코드를 올려 놓았다.</p>
+
+<pre><code class="swift">extension String {
+    var lastPathComponent: String {
+        get {
+            return (self as NSString).lastPathComponent
+        }
+    }
+    var pathExtension: String {
+        get {
+            return (self as NSString).pathExtension
+        }
+    }
+    var stringByDeletingLastPathComponent: String {
+        get {
+            return (self as NSString).stringByDeletingLastPathComponent
+        }
+    }
+    var stringByDeletingPathExtension: String {
+        get {
+            return (self as NSString).stringByDeletingPathExtension
+        }
+    }
+    var pathComponents: [String] {
+        get {
+            return (self as NSString).pathComponents
+        }
+    }
+    func stringByAppendingPathComponent(path: String) -&gt; String {
+        let nsSt = self as NSString
+        return nsSt.stringByAppendingPathComponent(path)
+    }
+
+    func stringByAppendingPathExtension(ext: String) -&gt; String? {
+        let nsSt = self as NSString
+        return nsSt.stringByAppendingPathExtension(ext)
+    }
+}
+</code></pre>
+
+<p>Objective-C의 category나 swift의 extension은 개인적으로 정말 좋은 기능이라고 생각한다. 하지만 위의 코드는 임시로 사용하고 가급적 위 코드의 내용을 참고해서 오류가 나는 부분을 직접 변경하는 것을 권장하고 싶다. 어짜피 나중에는 애플에서 권장하는대로 코딩을 해야할테니 정확한 방법을 익히도록 처리하는 것이 좋다는 얘기다.</p>
+
+<p>아래는 내가 사용한 코드의 일부를 예시로 남긴다.</p>
+
+<pre><code class="swift">// before
+let filename = file.lastPathComponent.stringByDeletingPathExtension
+// after
+let filename = ((file as NSString).lastPathComponent as NSString).stringByDeletingPathExtension
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Swift 2 : Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands 오류 해결]]></title>
     <link href="http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/"/>
     <updated>2015-10-05T12:44:59+09:00</updated>
     <id>http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands</id>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-08T12:03:06+09:00</updated>
+  <updated>2015-10-08T12:10:49+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,66 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[NIC I/F 번호(eth*)를 변경]]></title>
+    <link href="http://blog.asamaru.net/2015/10/08/change-centos-6-nic-i-slash-f-number-eth-star/"/>
+    <updated>2015-10-08T12:06:26+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/08/change-centos-6-nic-i-slash-f-number-eth-star</id>
+    <content type="html"><![CDATA[<p>NIC 교체 및 추가 시 MAC 정보와 H/W 정보가 변경되어 /etc/sysconfig/network-script/ifcfg-ethX 파일이 증가한다.
+이때 기존의 I/F 번호를 변경하려면 /etc/udev/rules.d/70-persistent-net.rules의 기존 정보 삭제 및 신규 I/F의 NAME을 변경하고 Rebooting 하면 된다.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[CentOS autofs]]></title>
+    <link href="http://blog.asamaru.net/2015/10/08/centos-autofs/"/>
+    <updated>2015-10-08T12:04:05+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/08/centos-autofs</id>
+    <content type="html"><![CDATA[<h2>설치</h2>
+
+<pre><code class="bash">yum install -y autofs
+</code></pre>
+
+<h2>설정</h2>
+
+<pre><code class="bash"># 서버 부팅시 자동 시작
+/sbin/chkconfig --add autofs
+/sbin/chkconfig --level 35 autofs on
+</code></pre>
+
+<h2>mount 설정</h2>
+
+<pre><code class="bash">vi /etc/auto.master
+
+/home/nfsusers   /etc/auto.users --timeout 60
+
+vi /etc/auto.users
+yyj -rw,vers=3,udp,nolock   192.168.11.99:/czdev/vagrant/work/web
+
+service autofs restart
+</code></pre>
+
+<h2>관리</h2>
+
+<pre><code class="bash"># 데몬 재시작
+service autofs restart
+
+# 상태 확인
+service autofs status
+
+# 설정 다시 일기
+service autofs reload
+</code></pre>
+
+<h2>Troubleshooting</h2>
+
+<pre><code class="bash"># 동작 로그 보기
+service autofs stop
+automount -f -v
+</code></pre>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[리눅스 명령어 모음(Centos 6)]]></title>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-06T20:45:25+09:00</updated>
+  <updated>2015-10-08T12:03:06+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,173 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[리눅스 명령어 모음(Centos 6)]]></title>
+    <link href="http://blog.asamaru.net/2015/10/08/useful-commands-for-linux/"/>
+    <updated>2015-10-08T11:44:32+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/08/useful-commands-for-linux</id>
+    <content type="html"><![CDATA[<p>아래의 내용은 개인적으로 간혹 사용이 필요한 내용을 기록해 두기 위한 것으로 잘못된 정보일 수 있으니 참고만 하기 바란다.</p>
+
+<h3>시스템 로그 삭제</h3>
+
+<pre><code class="bash">/etc/init.d/rsyslog restart
+</code></pre>
+
+<h3>sl 인증서 + apache 시작시 비밀번호 입력 제거</h3>
+
+<pre><code class="bash">openssl rsa -in key.pem -out key.nopw.pem
+</code></pre>
+
+<h3>ssh 접속자 강제 로그아웃</h3>
+
+<pre><code class="bash"># 602 : userid
+pkill -KILL -u 602
+</code></pre>
+
+<h3>bash script에서 실행경로 구하기</h3>
+
+<pre><code class="bash">cd ${0%/*} 2&gt;/dev/null
+echo $PWD/${0##*/}
+</code></pre>
+
+<h3>서버 네트워크 상태 확인</h3>
+
+<pre><code class="bash">netstat -an|grep ":80"|awk '/tcp/ {print $6}'|sort -nr| uniq -c
+</code></pre>
+
+<h3>아파치 동시접속자 수 확인</h3>
+
+<pre><code class="bash">netstat -anp | grep :80 | grep ESTAB | wc -l
+</code></pre>
+
+<h3>권한 파일 찾기 / 바꾸기</h3>
+
+<pre><code class="bash"># root 권한 파일 찾기
+find . -uid 0
+
+# chown 특정 사용자만 변경
+chown web.usergroup * -R --from=root.root
+chown --from=511 -R web account/
+</code></pre>
+
+<h3>포트 강제로 죽이기</h3>
+
+<pre><code class="bash">sudo fuser -k -n tcp 444
+</code></pre>
+
+<h3>실행 결과 숨기기(stdout, stderr)</h3>
+
+<pre><code class="bash">명력어 &gt; /dev/null 2&gt;&amp;1
+</code></pre>
+
+<h3>검색된 파일만 vi 열기</h3>
+
+<pre><code class="bash">vi -p $(find .|grep ModuleLink|grep -v '.svn'|grep -v CZFramework)
+</code></pre>
+
+<h3>내용 일괄변환</h3>
+
+<pre><code class="bash">find . -type f -name *.php -exec perl -pi -e 's|\\CZ\\CZFramework|\\CZF|g' {} \;
+</code></pre>
+
+<h3>ssh 비밀번호 없이 접속</h3>
+
+<h4>local</h4>
+
+<pre><code class="bash">ssh-keygen -t rsa
+# scp /root/.ssh/id_rsa.pub root@[ip]:/root/.ssh/authorized_keys
+ssh-copy-id -i ~/.ssh/id_rsa.pub admin@[ip]
+</code></pre>
+
+<h4>대상 서버(호스트)의 퍼미션</h4>
+
+<pre><code class="bash">750 /home/admin/
+700 /home/admin/.ssh/
+600 /home/admin/.ssh/authorized_keys
+</code></pre>
+
+<h3>배드블럭 검사</h3>
+
+<pre><code class="bash">badblocks -v /dev/sda1
+</code></pre>
+
+<h3>프로세스 실행경로 확인</h3>
+
+<pre><code class="bash"># 프로세스 정보
+ps ef
+ps aux
+
+# 프로세스 트리보기
+pstree -aph
+
+#프로세스 상세보기
+lsof -P
+</code></pre>
+
+<h3>아파치 :  모든 페이지 요청시 동일페이지 노출</h3>
+
+<pre><code class="apache">RewriteEngine On
+RewriteRule ^(.*)$ /target/index.html
+</code></pre>
+
+<h2>Mysql 사용자 관리</h2>
+
+<h4>패턴</h4>
+
+<pre><code class="mysql">grant all privileges on 디비명.테이블명 to 사용자@'접속지 주소' identified by '암호' (with grant option);
+</code></pre>
+
+<h4>권한 생성</h4>
+
+<pre><code class="mysql"># 원격지에서 root로 접속하는 경우
+grant all privileges on *.* to root identified by '암호' with grant option;
+
+# '사용자'가 '암호'으로 모든 컴퓨터에서 모든 디비와 테이블에 접속하도록 허용
+grant all privileges on *.* to 사용자 identified by '암호';
+
+# '사용자'가 '암호'으로 localhost 에서 db1 디비의 table1에 접속하도록 허용
+grant all privileges on root.db1 to 사용자@'localhost' identified by '암호';
+
+# '사용자'가 '암호'으로 111.222.333.444 에서 db1 디비의 모든 테이블에 접속하도록 허용
+grant all privileges on root.* to 사용자@'111.222.333.444' identified by '암호';
+
+# '사용자'가 '암호'으로 111.222.333.0/24 에서 모든 디비와 테이블에 접속하도록 허용
+grant all privileges on *.* to 사용자 @'111.222.333.%' identified by '암호';
+</code></pre>
+
+<h4>권한 제거</h4>
+
+<pre><code class="mysql">revoke all on 디비명.테이블명 from 사용자;
+</code></pre>
+
+<h4>권한 적용</h4>
+
+<pre><code class="mysql"># 모든 명령 후에 항상 아래 명령을 실행해야 실제로 적용된다.
+flush privileges;
+</code></pre>
+
+<h4>Connection 상태 확인하기</h4>
+
+<pre><code class="mysql">SHOW FULL PROCESSLIST;
+</code></pre>
+
+<h4>Connection 수 확인하기</h4>
+
+<pre><code class="mysql">SHOW STATUS LIKE 'Threads_connected';
+</code></pre>
+
+<h4>동작중인 Connection 수 확인하기</h4>
+
+<pre><code class="mysql">SHOW STATUS LIKE 'Threads_running';
+</code></pre>
+
+<h4>Connection 상태 확인하기</h4>
+
+<pre><code class="mysql">SHOW FULL PROCESSLIST;
+</code></pre>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[리눅스에서 swap 메모리 초기화]]></title>

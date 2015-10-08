@@ -138,6 +138,334 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-08T11:44:32+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.08</time>
+        
+           | <a href="/2015/10/08/useful-commands-for-linux/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/08/useful-commands-for-linux/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/08/useful-commands-for-linux/" itemprop="url">리눅스 명령어 모음(Centos 6)</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>아래의 내용은 개인적으로 간혹 사용이 필요한 내용을 기록해 두기 위한 것으로 잘못된 정보일 수 있으니 참고만 하기 바란다.</p>
+
+<h3>시스템 로그 삭제</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>/etc/init.d/rsyslog restart
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>sl 인증서 + apache 시작시 비밀번호 입력 제거</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>openssl rsa -in key.pem -out key.nopw.pem
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>ssh 접속자 강제 로그아웃</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 602 : userid</span>
+</span><span class='line'>pkill -KILL -u 602
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>bash script에서 실행경로 구하기</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> <span class="k">${</span><span class="nv">0</span><span class="p">%/*</span><span class="k">}</span> 2&gt;/dev/null
+</span><span class='line'><span class="nb">echo</span> <span class="nv">$PWD</span>/<span class="k">${</span><span class="nv">0</span><span class="p">##*/</span><span class="k">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>서버 네트워크 상태 확인</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>netstat -an<span class="p">|</span>grep <span class="s2">&quot;:80&quot;</span><span class="p">|</span>awk <span class="s1">&#39;/tcp/ {print $6}&#39;</span><span class="p">|</span>sort -nr<span class="p">|</span> uniq -c
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>아파치 동시접속자 수 확인</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>netstat -anp <span class="p">|</span> grep :80 <span class="p">|</span> grep ESTAB <span class="p">|</span> wc -l
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>권한 파일 찾기 / 바꾸기</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># root 권한 파일 찾기</span>
+</span><span class='line'>find . -uid 0
+</span><span class='line'>
+</span><span class='line'><span class="c"># chown 특정 사용자만 변경</span>
+</span><span class='line'>chown web.usergroup * -R --from<span class="o">=</span>root.root
+</span><span class='line'>chown --from<span class="o">=</span><span class="m">511</span> -R web account/
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>포트 강제로 죽이기</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo fuser -k -n tcp 444
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>실행 결과 숨기기(stdout, stderr)</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>명력어 &gt; /dev/null 2&gt;<span class="p">&amp;</span>1
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>검색된 파일만 vi 열기</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi -p <span class="k">$(</span>find .<span class="p">|</span>grep ModuleLink<span class="p">|</span>grep -v <span class="s1">&#39;.svn&#39;</span><span class="p">|</span>grep -v CZFramework<span class="k">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>내용 일괄변환</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>find . -type f -name *.php -exec perl -pi -e <span class="s1">&#39;s|\\CZ\\CZFramework|\\CZF|g&#39;</span> <span class="o">{}</span> <span class="se">\;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>ssh 비밀번호 없이 접속</h3>
+
+<h4>local</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>ssh-keygen -t rsa
+</span><span class='line'><span class="c"># scp /root/.ssh/id_rsa.pub root@[ip]:/root/.ssh/authorized_keys</span>
+</span><span class='line'>ssh-copy-id -i ~/.ssh/id_rsa.pub admin@<span class="o">[</span>ip<span class="o">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>대상 서버(호스트)의 퍼미션</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="m">750</span> /home/admin/
+</span><span class='line'><span class="m">700</span> /home/admin/.ssh/
+</span><span class='line'><span class="m">600</span> /home/admin/.ssh/authorized_keys
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>배드블럭 검사</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>badblocks -v /dev/sda1
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>프로세스 실행경로 확인</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 프로세스 정보</span>
+</span><span class='line'>ps ef
+</span><span class='line'>ps aux
+</span><span class='line'>
+</span><span class='line'><span class="c"># 프로세스 트리보기</span>
+</span><span class='line'>pstree -aph
+</span><span class='line'>
+</span><span class='line'><span class="c">#프로세스 상세보기</span>
+</span><span class='line'>lsof -P
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>아파치 :  모든 페이지 요청시 동일페이지 노출</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='apache'><span class='line'><span class="nb">RewriteEngine</span> <span class="k">On</span>
+</span><span class='line'><span class="nb">RewriteRule</span> ^(.*)$ <span class="sx">/target/index.html</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Mysql 사용자 관리</h2>
+
+<h4>패턴</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="err">디비명</span><span class="p">.</span><span class="err">테이블명</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;접속지 주소&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span> <span class="p">(</span><span class="k">with</span> <span class="k">grant</span> <span class="k">option</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>권한 생성</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="c1"># 원격지에서 root로 접속하는 경우</span>
+</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="n">root</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span> <span class="k">with</span> <span class="k">grant</span> <span class="k">option</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 모든 컴퓨터에서 모든 디비와 테이블에 접속하도록 허용</span>
+</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 localhost 에서 db1 디비의 table1에 접속하도록 허용</span>
+</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="n">root</span><span class="p">.</span><span class="n">db1</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;localhost&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 111.222.333.444 에서 db1 디비의 모든 테이블에 접속하도록 허용</span>
+</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="n">root</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;111.222.333.444&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 111.222.333.0/24 에서 모든 디비와 테이블에 접속하도록 허용</span>
+</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span> <span class="o">@</span><span class="s1">&#39;111.222.333.%&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>권한 제거</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">revoke</span> <span class="k">all</span> <span class="k">on</span> <span class="err">디비명</span><span class="p">.</span><span class="err">테이블명</span> <span class="k">from</span> <span class="err">사용자</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>권한 적용</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="c1"># 모든 명령 후에 항상 아래 명령을 실행해야 실제로 적용된다.</span>
+</span><span class='line'><span class="n">flush</span> <span class="n">privileges</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>Connection 상태 확인하기</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">FULL</span> <span class="n">PROCESSLIST</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>Connection 수 확인하기</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">STATUS</span> <span class="k">LIKE</span> <span class="s1">&#39;Threads_connected&#39;</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>동작중인 Connection 수 확인하기</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">STATUS</span> <span class="k">LIKE</span> <span class="s1">&#39;Threads_running&#39;</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>Connection 상태 확인하기</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">FULL</span> <span class="n">PROCESSLIST</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-08T11:41:12+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.08</time>
+        
+           | <a href="/2015/10/08/change-xcode-project-app-name/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/08/change-xcode-project-app-name/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/08/change-xcode-project-app-name/" itemprop="url">xcode 프로젝트 앱 이름 변경</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>앱 이름 변경</p>
+
+<ol>
+<li>xxx-Info.plist 선택</li>
+<li>Bundle display name 선택</li>
+<li>새로운 이름으로 변경</li>
+<li>끝</li>
+</ol>
+
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-06T11:49:03+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.06</time>
         
            | <a href="/2015/10/06/punycode/#disqus_thread" itemprop="discussionUrl"
@@ -245,7 +573,7 @@
 
 <p><img src="/img/2015-10-06-resolving-the-functionality-not-enabled-message-in-google-apps-2.png" alt="다른 이메일 주소를 추가하세요" /></p>
 
-<p>이 단계에서는 SMTP 서버 정보를 넣으면 되는데 추가하려는 이메일 주소가 Gmail 또는 Google Apps Gmail 인 경우라면 SMTP 서버에 &ldquo;smtp.gmail.com&rdquo;, 포트는 587을 선택하고 아이디와 비밀번호를 입력하면 된다. 단, 아이디(사용자 이름)은 <a href="&#x6d;&#97;&#105;&#x6c;&#116;&#x6f;&#58;&#x61;&#x62;&#99;&#64;&#103;&#x6d;&#97;&#x69;&#108;&#x2e;&#x63;&#x6f;&#109;">&#x61;&#x62;&#99;&#x40;&#103;&#109;&#x61;&#105;&#x6c;&#x2e;&#99;&#111;&#x6d;</a> 등과 같이 이메일 풀주소를 넣어야 한다. 조금더 상세한 정보는 <a href="https://www.digitalocean.com/community/tutorials/how-to-use-google-s-smtp-server">How To Use Google&rsquo;s SMTP Server</a>를 참고하자. 단, 여기서는 포트를 465로 안내하고 있지만 내 경우는 587을 사용해야 했다.</p>
+<p>이 단계에서는 SMTP 서버 정보를 넣으면 되는데 추가하려는 이메일 주소가 Gmail 또는 Google Apps Gmail 인 경우라면 SMTP 서버에 &ldquo;smtp.gmail.com&rdquo;, 포트는 587을 선택하고 아이디와 비밀번호를 입력하면 된다. 단, 아이디(사용자 이름)은 <a href="&#109;&#97;&#x69;&#108;&#x74;&#111;&#58;&#x61;&#98;&#x63;&#64;&#x67;&#109;&#x61;&#105;&#108;&#46;&#99;&#111;&#109;">&#97;&#98;&#x63;&#x40;&#103;&#x6d;&#x61;&#x69;&#x6c;&#46;&#99;&#x6f;&#109;</a> 등과 같이 이메일 풀주소를 넣어야 한다. 조금더 상세한 정보는 <a href="https://www.digitalocean.com/community/tutorials/how-to-use-google-s-smtp-server">How To Use Google&rsquo;s SMTP Server</a>를 참고하자. 단, 여기서는 포트를 465로 안내하고 있지만 내 경우는 587을 사용해야 했다.</p>
 
 <p>마지막 확인 코드 입력 화면이다. 정상적으로 정보가 확인된다면 입력한 이메일 주소로 확인 코드를 보내주는데 이 확인 코드를 아래의 화면에 입력하면 등록이 완료된다.</p>
 
@@ -1085,185 +1413,6 @@ By default, AndroidAnnotations try to find the R class by extracting application
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-02T08:31:46+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.02</time>
-        
-           | <a href="/2015/10/02/linux-how-to-clear-memory-swap/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/02/linux-how-to-clear-memory-swap/" itemprop="url">리눅스에서 swap 메모리 초기화</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>리눅스에서 swap 메모리를 초기화하는 것은 아주 간단하다.
-일시적 메모리 사용의 증가로 swap을 사용하게될 경우 메모리에 여유가 생겨도 swap 메모리는 자동으로 초기화되지 않는다. 이것을 수동으로 초기화하려면 아래의 명령을 입력하면 된다. 당연히 root 권한에서 실행해야 한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>swapoff -a <span class="o">&amp;&amp;</span> swapon -a
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>swapoff 처리에 시간이 조금 오래 걸릴 수 있는데 서버가 멈춘 것은 아니므로 걱정하지 않아도 된다. swap 메모리에서 필요한 부분을 물리 메모리로 옮기는 처리중인 것이다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-01T19:48:09+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.01</time>
-        
-           | <a href="/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/" itemprop="url">ACRA : Please configure 'buildConfigClass' in your ACRA config 오류</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p><a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a> 포스트에서 언급했던 것처럼 개발 중인 앱에서 Crash Report를 위해 <a href="https://github.com/ACRA/acra">ACRA</a>를 사용중이다. 아직 4.7.0으로 정식 버전업이 되지는 않았지만 4.7.0 RC1 버전이 maven에 올려져 있어서 적용해 보았다.
-사실은 미리 적용할 예정은 없었으나 <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>와 관련하여 Gradle을 2.4로 버전업 하면서 release 빌드 시에 다른 오류(setLatestEventInfo 함수가 제거됨)가 나타나서 어쩔 수 없이 버전업을 해야했다.</p>
-
-<p>그런데 버전업을하고 나서 Crash 테스트를 하는 도중 또 다른 오류를 만났다. 기존에도 오류가 나고 있었는지 버전업 후의 문제인지는 확실치는 않다. 안드로이드 작업은 끝없는 오류 해결의 연속인 듯하다. 오류는 아래와 같다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">E</span><span class="o">/</span><span class="nl">ACRA:</span> <span class="n">Not</span> <span class="n">adding</span> <span class="n">buildConfig</span> <span class="n">to</span> <span class="n">log</span><span class="o">.</span> <span class="n">Class</span> <span class="n">Not</span> <span class="n">found</span> <span class="o">:</span> <span class="n">net</span><span class="o">.</span><span class="na">yourdomain</span><span class="o">.</span><span class="na">BuildConfig</span><span class="o">.</span> <span class="n">Please</span> <span class="n">configure</span> <span class="err">&#39;</span><span class="n">buildConfigClass</span><span class="err">&#39;</span> <span class="n">in</span> <span class="n">your</span> <span class="n">ACRA</span> <span class="n">config</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>우선 ACRA를 초기화하는 코드를 살펴보자. 당연하지만 실제 적용코드가 아닌 부분적으로 정리된 코드다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ACRAConfiguration</span> <span class="n">config</span> <span class="o">=</span> <span class="n">ACRA</span><span class="o">.</span><span class="na">getNewDefaultConfig</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="na">setFormUri</span><span class="o">(</span><span class="s">&quot;http://dev.yourdomain.net/AppCrash&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="n">ACRA</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span> <span class="c1">// The following line triggers the initialization of ACRA</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>@ReportsCrashes 어노테이션을 사용하지 않고 동적으로 초기화시켜주는 코드다. 실제로 Crash를 발생시키면 위에서 보여준 오류가 난다. 사실 이 문제는 원인을 확인한 결과 Proguard가 적용되었을 때만 오류가 발생한다. 아래의 ACRA 소스 코드의 일부를 보자.</p>
-
-<p><strong><a href="https://github.com/ACRA/acra/blob/master/src/main/java/org/acra/collector/CrashReportDataFactory.java">CrashReportDataFactory.java</a></strong></p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">getBuildConfigClass</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">ClassNotFoundException</span> <span class="o">{</span>
-</span><span class='line'>    <span class="kd">final</span> <span class="n">Class</span> <span class="n">configuredBuildConfig</span> <span class="o">=</span> <span class="n">ACRA</span><span class="o">.</span><span class="na">getConfig</span><span class="o">().</span><span class="na">buildConfigClass</span><span class="o">();</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">((</span><span class="n">configuredBuildConfig</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">configuredBuildConfig</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">Object</span><span class="o">.</span><span class="na">class</span><span class="o">))</span> <span class="o">{</span>
-</span><span class='line'>        <span class="c1">// If set via annotations or programatically then it will have a real value,</span>
-</span><span class='line'>        <span class="c1">// otherwise it will be Object.class (annotation default) or null (explicit programmatic).</span>
-</span><span class='line'>        <span class="k">return</span> <span class="n">configuredBuildConfig</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">final</span> <span class="n">String</span> <span class="n">className</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getPackage</span><span class="o">().</span><span class="na">getName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;.BuildConfig&quot;</span><span class="o">;</span>
-</span><span class='line'>    <span class="k">try</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">return</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="n">className</span><span class="o">);</span>
-</span><span class='line'>    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ClassNotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">ACRA</span><span class="o">.</span><span class="na">log</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">LOG_TAG</span><span class="o">,</span> <span class="s">&quot;Not adding buildConfig to log. Class Not found : &quot;</span> <span class="o">+</span> <span class="n">className</span> <span class="o">+</span> <span class="s">&quot;. Please configure &#39;buildConfigClass&#39; in your ACRA config&quot;</span><span class="o">);</span>
-</span><span class='line'>        <span class="k">throw</span> <span class="n">e</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><code>final String className = context.getClass().getPackage().getName() + ".BuildConfig";</code> 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
-해결을 위한 아래의 코드를 보자.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ACRAConfiguration</span> <span class="n">config</span> <span class="o">=</span> <span class="n">ACRA</span><span class="o">.</span><span class="na">getNewDefaultConfig</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="na">setBuildConfigClass</span><span class="o">(</span><span class="n">BuildConfig</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="na">setFormUri</span><span class="o">(</span><span class="s">&quot;http://dev.yourdomain.net/AppCrash&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="n">ACRA</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span> <span class="c1">// The following line triggers the initialization of ACRA</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><code>config.setBuildConfigClass(BuildConfig.class);</code> 이 부분을 추가했다. ACRA 코드에서 보듯이 setBuildConfigClass로 직접 BuildConfig를 넘겨주면 패키지명으로 찾지 않는다. 따라서 Proguard가 적용되어도 문제가 없다.</p>
-
-<hr />
-
-<p>이 오류는 이것으로 해결이 가능하다. 하지만 나는 지금 다른 문제로 다시 고군분투 중이다.
-오류 발생시 HTTP/POST를 통해 오류 관련 정보를 전송하도록 사용중이었다. 그런데 앞서 이야기 한것과 같이 이번에 버전업이 되면서 HTTP 접속 관련 부분이 변경되었다. 여기에 문제가 있다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">...</span>
-</span><span class='line'><span class="n">urlConnection</span><span class="o">.</span><span class="na">setChunkedStreamingMode</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
-</span><span class='line'><span class="o">...</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>위 부분은 ACRA에서 HTTP 전송시 사용하는 HttpRequest.java 의 일부분이다. <code>setChunkedStreamingMode</code>에 대해서는 여기서 설명하기엔 너무 길고 간단히 요약하자면 chunked 상태로 데이터가 전송된다.
-그런데 이 상태로 전송되면 현재 내가 사용하고 있는 서버에서 POST 값이 모두 비어 있다. request의 body가 수신되지 못하는 것이다. 이 부분은 나의 환경인 php-fpm가 proxy로 연결되어 있는 것과 관련이 있는 것으로 보인다. 이 부분에 대해서는 여러가지로 시도해 보았으나 해결이 되지 않았고 일단은 몇개의 클래스를 재정의해서 문제를 막아 놓았다. 그리고 관련해서는 ACRA에 Issue로 등록해 두었다. 개선이 될런지는 미지수인데 안된다면 앞으로 사용상에 걸림돌이 될 것 같다. 이 부분에 관련된 해결책이 나온다면 다시 포스팅을 하도록 하겠다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1332,7 +1481,7 @@ By default, AndroidAnnotations try to find the R class by extracting application
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (23)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (3)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (4)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (1)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (3)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (23)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (3)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (2)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (3)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1341,15 +1490,15 @@ By default, AndroidAnnotations try to find the R class by extracting application
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/08/useful-commands-for-linux/">리눅스 명령어 모음(Centos 6)</a>
+    
+    <a class="list-group-item " href="/2015/10/08/change-xcode-project-app-name/">xcode 프로젝트 앱 이름 변경</a>
+    
     <a class="list-group-item " href="/2015/10/06/punycode/">퓨니코드(Punycode)</a>
     
     <a class="list-group-item " href="/2015/10/06/resolving-the-functionality-not-enabled-message-in-google-apps/">Google Apps Gmail에서 '다른 주소에서 메일 보내기' 사용시 'Functionality Not Enabled.' 오류 해결</a>
     
     <a class="list-group-item " href="/2015/10/05/swift-2-dot-1-try-catch/">Swift 2.1에서의 오류 처리(do try catch)</a>
-    
-    <a class="list-group-item " href="/2015/10/05/google-play-services-and-dex-method-limits/">Google Play services 와 DEX method limits 문제</a>
-    
-    <a class="list-group-item " href="/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/">Swift 2 : 'lastPathComponent' is unavailable: Use lastPathComponent on NSURL instead. 오류 해결</a>
     
   </div>
 </section>

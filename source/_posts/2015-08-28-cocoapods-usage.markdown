@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "CocoaPods Usage"
+title: "CocoaPods 사용법"
 date: 2015-08-28 06:34:30 +0900
 comments: true
 categories: ios
@@ -8,9 +8,10 @@ categories: ios
 설치
 ---
 
-	[sudo] gem install cocoapods
-	pod setup
-
+```bash
+[sudo] gem install cocoapods
+pod setup
+```
 
 사용법
 ----
@@ -21,24 +22,29 @@ categories: ios
 
 ### Podfile 설정
 
-	cd 프로젝트 폴더
-	vi Podfile
+```bash
+cd 프로젝트 폴더
+vi Podfile
+```
 
+아래의 내용입력.
 
-	platform :ios, '6.0'
-
+	platform :ios, '7.0'
 	pod 'HZWebViewController', '~> 0.0.2'
 
 ### Pod 설치
 
-	pod install
+```bash
+pod install
+```
 
 ### Pod 업데이트
 
-	pod update
+```bash
+pod update
+```
 
-
-실헹
+실행
 ---
 
 	프로젝트명.xcworkspace

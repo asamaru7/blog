@@ -11,7 +11,6 @@ categories: ["android"]
 
 ```java
 ViewPager viewPager = new ViewPager(this);
-viewPager.setId(Helper.generateViewId());
 ```
 
 그런데 이렇게 사용할 경우 아래와 같은 오류를 만나게 된다.

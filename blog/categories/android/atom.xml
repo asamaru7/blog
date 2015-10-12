@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-12T08:41:04+09:00</updated>
+  <updated>2015-10-12T16:50:41+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,65 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류]]></title>
+    <link href="http://blog.asamaru.net/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/"/>
+    <updated>2015-10-12T12:07:06+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions</id>
+    <content type="html"><![CDATA[<p>안드로이드 작업중 <code>java.lang.IllegalStateException: Recursive entry to executePendingTransactions</code> 오류를 만났다. 오류가 발생한 상황은 다음과 같다.</p>
+
+<p>작업중 Fragment에서 하위에 또 다른 Fragment를 추가할 일이 생겼다. 이 작업 중에 하위에 추가되는 Fragment에서 <code>executePendingTransactions()</code> 함수를 호출하니 위 오류가 발생했다. 이해를 위해 처리 과정 중 문제가 발생한 부분만 적는다.</p>
+
+<pre><code class="java">FragmentManager ft = getActivity().getSupportFragmentManager();
+ft.beginTransaction()
+        .add(R.id.fragmentContainer, (Fragment) fragment)
+        .commit();
+ft.executePendingTransactions();
+</code></pre>
+
+<p>FragmentManager를 얻기 위해 현재 Fragment의 Activity를 가져와 <code>getSupportFragmentManager()</code>를 사용했다. 이 부분이 문제가 생기는 이유다. 이런 경우는 아래와 같이 처리할 수 있다.</p>
+
+<pre><code class="java">FragmentManager ft = getChildFragmentManager();
+ft.beginTransaction()
+        .add(R.id.fragmentContainer, (Fragment) fragment)
+        .commit();
+ft.executePendingTransactions();
+</code></pre>
+
+<p><code>getChildFragmentManager()</code>를 사용해서 FragmentManager를 얻어서 처리하면 위 오류는 발생하지 않는다.</p>
+
+<p>이와 관련된 설명은 <a href="http://developer.android.com/intl/ru/about/versions/android-4.2.html#NestedFragments">Nested Fragments</a>를 보면 된다. 4.2에 변경된 내용으로 나와 있지만 support library를 사용한다면 하위 호환이 가능한 상황이라 문제되지 않는다.</p>
+
+<p>추가적으로 <a href="http://developer.android.com/intl/ko/reference/android/app/FragmentManager.html#executePendingTransactions(">public abstract boolean executePendingTransactions()</a>)에 대해서 궁금하다면 <a href="http://developer.android.com/intl/ko/guide/components/fragments.html#Transactions">프래그먼트 트랜잭션 수행</a>)를 참고하면 된다.</p>
+
+<blockquote><p>commit()을 호출해도 그 즉시 트랜잭션을 수행하지는 않습니다. 그보다는, 액티비티의 UI 스레드(&ldquo;주요&rdquo; 스레드)를 스레드가 할 수 있는 한 빨리 이 트랜잭션을 수행하도록 일정을 예약하는 것에 가깝습니다. 하지만 필요한 경우 UI 스레드로부터 executePendingTransactions()를 호출하면 commit()이 제출한 트랜잭션을 즉시 실행할 수 있습니다. 트랜잭션이 다른 스레드의 작업에 대한 종속성이 아니라면 굳이 이렇게 해야만 하는 것은 아닙니다.</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제]]></title>
+    <link href="http://blog.asamaru.net/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/"/>
+    <updated>2015-10-12T10:14:56+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top</id>
+    <content type="html"><![CDATA[<p><a href="http://androidannotations.org/">Androidannotations</a>를 사용하면 <code>@Extra</code>를 사용해서 인자를 받을 수 있다. 그런데 여기서 주의할 점이 있다. 인턴트 호출시 <code>Intent.FLAG_ACTIVITY_CLEAR_TOP</code> 또는 <code>Intent.FLAG_ACTIVITY_SINGLE_TOP</code>를 사용하게되면 인턴트가 이미 존재할 경우 <code>@Extra</code>가 동작하지 않는다. 이와 관련해서 <a href="https://github.com/excilys/androidannotations/issues/1578">Always call #onNewIntent(), even without @AfterExtras method(s)</a>에서도 이슈가 진행중이다. 앞서 이야기한 문제와 이 이슈는 정확하게 같은 내용은 아니지만 동일한 이유로 발생하며 유사한 내용이라고도 볼 수 있다.</p>
+
+<p>간단히 요약하자면 <code>@Extra</code>는 관련 처리를 <code>setIntent()</code>와 <code>onCraete()</code>에서 하는데 <code>Intent.FLAG_ACTIVITY_CLEAR_TOP</code> 또는 <code>Intent.FLAG_ACTIVITY_SINGLE_TOP</code>를 사용하게되면 인턴트가 존재할 경우 두 함수가 실행되지 않는다는 것이다(<code>onCraete()</code> 대신에 <code>onNewIntent(Intent intent)</code>가 호출이 되고 그 다음 onResume() 이 호출이 된다).</p>
+
+<p>현재까지는 <a href="http://androidannotations.org/">Androidannotations</a>에서 해당 문제를 해결하지 않았으므로 그에 따른 대응이 필요하다(Androidannotations을 사용하지 않는 상황이라면 <code>onResume</code>에서 extra 값을 받아오도록 하면 당연히 문제가 없다).</p>
+
+<p>현재로써는 특별한 방법이 없어 아래와 같이 <code>onNewIntent()</code>애서 직접 값을 받도록 처리했다.</p>
+
+<pre><code class="java">@Override
+protected void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+    moveOwnLocation = intent.getBooleanExtra("EXTRA_NAME", false);
+}
+</code></pre>
+
+<p>하지만 이렇게 한다면 <code>@Extra</code>를 사용하는 의미가 없고 <code>@AfterExtras</code>도 정상적으로 사용할 수 없으므로 패치를 기다렸다가 코드를 다시 처리 해야할 것 같다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Google Play services 와 DEX method limits 문제]]></title>
@@ -200,227 +259,6 @@ By default, AndroidAnnotations try to find the R class by extracting application
     }
 }
 </code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[ACRA : Please configure 'buildConfigClass' in your ACRA config 오류]]></title>
-    <link href="http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/"/>
-    <updated>2015-10-01T19:48:09+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config</id>
-    <content type="html"><![CDATA[<p><a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a> 포스트에서 언급했던 것처럼 개발 중인 앱에서 Crash Report를 위해 <a href="https://github.com/ACRA/acra">ACRA</a>를 사용중이다. 아직 4.7.0으로 정식 버전업이 되지는 않았지만 4.7.0 RC1 버전이 maven에 올려져 있어서 적용해 보았다.
-사실은 미리 적용할 예정은 없었으나 <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>와 관련하여 Gradle을 2.4로 버전업 하면서 release 빌드 시에 다른 오류(setLatestEventInfo 함수가 제거됨)가 나타나서 어쩔 수 없이 버전업을 해야했다.</p>
-
-<p>그런데 버전업을하고 나서 Crash 테스트를 하는 도중 또 다른 오류를 만났다. 기존에도 오류가 나고 있었는지 버전업 후의 문제인지는 확실치는 않다. 안드로이드 작업은 끝없는 오류 해결의 연속인 듯하다. 오류는 아래와 같다.</p>
-
-<pre><code class="java">E/ACRA: Not adding buildConfig to log. Class Not found : net.yourdomain.BuildConfig. Please configure 'buildConfigClass' in your ACRA config
-</code></pre>
-
-<p>우선 ACRA를 초기화하는 코드를 살펴보자. 당연하지만 실제 적용코드가 아닌 부분적으로 정리된 코드다.</p>
-
-<pre><code>ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
-config.setFormUri("http://dev.yourdomain.net/AppCrash");
-ACRA.init(this, config); // The following line triggers the initialization of ACRA
-</code></pre>
-
-<p>@ReportsCrashes 어노테이션을 사용하지 않고 동적으로 초기화시켜주는 코드다. 실제로 Crash를 발생시키면 위에서 보여준 오류가 난다. 사실 이 문제는 원인을 확인한 결과 Proguard가 적용되었을 때만 오류가 발생한다. 아래의 ACRA 소스 코드의 일부를 보자.</p>
-
-<p><strong><a href="https://github.com/ACRA/acra/blob/master/src/main/java/org/acra/collector/CrashReportDataFactory.java">CrashReportDataFactory.java</a></strong></p>
-
-<pre><code class="java">private Class&lt;?&gt; getBuildConfigClass() throws ClassNotFoundException {
-    final Class configuredBuildConfig = ACRA.getConfig().buildConfigClass();
-    if ((configuredBuildConfig != null) &amp;&amp; !configuredBuildConfig.equals(Object.class)) {
-        // If set via annotations or programatically then it will have a real value,
-        // otherwise it will be Object.class (annotation default) or null (explicit programmatic).
-        return configuredBuildConfig;
-    }
-
-    final String className = context.getClass().getPackage().getName() + ".BuildConfig";
-    try {
-        return Class.forName(className);
-    } catch (ClassNotFoundException e) {
-        ACRA.log.e(LOG_TAG, "Not adding buildConfig to log. Class Not found : " + className + ". Please configure 'buildConfigClass' in your ACRA config");
-        throw e;
-    }
-}
-</code></pre>
-
-<p><code>final String className = context.getClass().getPackage().getName() + ".BuildConfig";</code> 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
-해결을 위한 아래의 코드를 보자.</p>
-
-<pre><code class="java">ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
-config.setBuildConfigClass(BuildConfig.class);
-config.setFormUri("http://dev.yourdomain.net/AppCrash");
-ACRA.init(this, config); // The following line triggers the initialization of ACRA
-</code></pre>
-
-<p><code>config.setBuildConfigClass(BuildConfig.class);</code> 이 부분을 추가했다. ACRA 코드에서 보듯이 setBuildConfigClass로 직접 BuildConfig를 넘겨주면 패키지명으로 찾지 않는다. 따라서 Proguard가 적용되어도 문제가 없다.</p>
-
-<hr />
-
-<p>이 오류는 이것으로 해결이 가능하다. 하지만 나는 지금 다른 문제로 다시 고군분투 중이다.
-오류 발생시 HTTP/POST를 통해 오류 관련 정보를 전송하도록 사용중이었다. 그런데 앞서 이야기 한것과 같이 이번에 버전업이 되면서 HTTP 접속 관련 부분이 변경되었다. 여기에 문제가 있다.</p>
-
-<pre><code class="java">...
-urlConnection.setChunkedStreamingMode(0);
-...
-</code></pre>
-
-<p>위 부분은 ACRA에서 HTTP 전송시 사용하는 HttpRequest.java 의 일부분이다. <code>setChunkedStreamingMode</code>에 대해서는 여기서 설명하기엔 너무 길고 간단히 요약하자면 chunked 상태로 데이터가 전송된다.
-그런데 이 상태로 전송되면 현재 내가 사용하고 있는 서버에서 POST 값이 모두 비어 있다. request의 body가 수신되지 못하는 것이다. 이 부분은 나의 환경인 php-fpm가 proxy로 연결되어 있는 것과 관련이 있는 것으로 보인다. 이 부분에 대해서는 여러가지로 시도해 보았으나 해결이 되지 않았고 일단은 몇개의 클래스를 재정의해서 문제를 막아 놓았다. 그리고 관련해서는 ACRA에 Issue로 등록해 두었다. 개선이 될런지는 미지수인데 안된다면 앞으로 사용상에 걸림돌이 될 것 같다. 이 부분에 관련된 해결책이 나온다면 다시 포스팅을 하도록 하겠다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[안드로이드 Geocoder 사용시 Service not Available 오류]]></title>
-    <link href="http://blog.asamaru.net/2015/09/30/service-not-available-geocoder-android/"/>
-    <updated>2015-09-30T16:15:20+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/30/service-not-available-geocoder-android</id>
-    <content type="html"><![CDATA[<p>안드로이드에서 특정 지점의 좌표를 주소로 변환하는 것이 필요해서 Geocoder 사용했다. 대략적인 코드는 아래와 같다.</p>
-
-<pre><code class="java">static abstract public class GeoCoderTask extends AsyncTask&lt;LatLng, Void, Address[]&gt; {
-    @Override
-    protected Address[] doInBackground(LatLng... arg0) {
-        List&lt;Address&gt; res = new ArrayList&lt;&gt;();
-        if (arg0.length &gt; 0) {
-            try {
-                Geocoder geocoder = new Geocoder(Helper.getAppContext(), Locale.KOREA);
-                List&lt;android.location.Address&gt; addresses = geocoder.getFromLocation(arg0[0].latitude, arg0[0].longitude, 1);
-                if ((addresses != null) &amp;&amp; (addresses.size() &gt; 0)) {
-                    android.location.Address result = addresses.get(0);
-                    Address resultAddress = new Address();
-                    resultAddress.address = result.getAddressLine(0);
-                    resultAddress.lat = result.getLatitude();
-                    resultAddress.lng = result.getLongitude();
-                    resultAddress.premise = result.getPremises();
-                    resultAddress.administrative_area_level_1 = result.getAdminArea();
-                    resultAddress.sublocality_level_1 = result.getSubLocality();
-                    resultAddress.country = result.getCountryName();
-                    resultAddress.postal_code = result.getPostalCode();
-                    res.add(resultAddress);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        Address[] array = new Address[res.size()];
-        res.toArray(array);
-        return array;
-    }
-}
-</code></pre>
-
-<p>위 코드는 데이터를 다른 클래스로 넘겨서 반환하는 형태로 그대로 사용할 수는 없다. 그냥 이렇게 사용했다는 것을 보여주고자 넣은 코드니 참고만하기 바란다.</p>
-
-<p>어쨌든 중요한 것은 잘 동작하던 코드가 테스트 기기에서 Service not Available 오류가 난다는 것이다. 테스트 기기는 nexus s에 4.0.4로 오래된 기기다. 처음엔 OS 버전 문제로 생각했다. 그래서 일단 검색해 봤다. 결론은 아래의 링크를 보고 해결했다.</p>
-
-<p><a href="http://stackoverflow.com/a/13856839">Service not Available - Geocoder Android</a></p>
-
-<p>해결 방법은 <strong>기기 재부팅</strong>. 어의없다. 정말 안드로이드는 정이 안간다.</p>
-
-<p>사실 동일한 오류를 만났을 때 위의 방법으로 해결되지 않을 수 있다. 원인은 다양할 수 있으니&hellip; 그래서 조금 더 찾아보니 여러가지 이슈가 있는 것을 확인 했다. 해결되지 않는다면 구글에서 검색해 보면 여러가지 정보를 얻을 수 있다.</p>
-
-<p>이러한 정보 중에서 한가지는 Geocoder를 사용하지 않고 웹으로 호출해서 결과를 받는 것이다. 사실 나의 경우는 오류 때문이 아니라 api 사용량 때문에 사용하던 코드(API 키를 전달하지 않는 코드로 사용량에 제한을 받지 않는 것으로 보임)였는데 참고할 사람이 있을까하고 남겨본다. 그리고 한가지. 조금 전에 API key를 전달하지 않는다고 했는데 기존에는 이 방법으로 정상 동작했다. 그런데 최근 WIFI에서는 이상이 없는데 LTE 상태에서는 api 한계량 초과라는 메시지를 반환하고 있어서 사용하고 있지 않다. 이 부분은 이유를 정확히 확인해보지 못했다.</p>
-
-<pre><code class="java">static abstract public class WebGeoCoderTask extends AsyncTask&lt;LatLng, Void, Address[]&gt; {
-    @Override
-    final protected Address[] doInBackground(LatLng... arg0) {
-        List&lt;Address&gt; res = new ArrayList&lt;&gt;();
-        if (arg0.length &gt; 0) {
-            String address = String.format(Locale.getDefault(), "https://maps.googleapis.com/maps/api/geocode/json?latlng=%1$f,%2$f&amp;sensor=false&amp;language=" + Locale.getDefault(), arg0[0].latitude, arg0[0].longitude);
-            try {
-                URL url = new URL(address);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                InputStreamReader in = new InputStreamReader(conn.getInputStream());
-                StringBuilder jsonResults = new StringBuilder();
-
-                int read;
-                char[] buff = new char[1024];
-                while ((read = in.read(buff)) != -1) {
-                    jsonResults.append(buff, 0, read);
-                }
-                String json = jsonResults.toString();
-                JSONObject jsonObject = new JSONObject(json);
-                AFLog.d(json);
-
-                if ("OK".equalsIgnoreCase(jsonObject.getString("status"))) {
-                    JSONArray results = jsonObject.getJSONArray("results");
-                    if (results.length() &gt; 0) {
-                        for (int i = 0, iCnt = results.length(); i &lt; iCnt; i++) {
-                            try {
-                                JSONObject result = results.getJSONObject(i);
-
-                                Address resultAddress = new Address();
-                                resultAddress.address = result.getString("formatted_address");
-                                resultAddress.placeId = result.optString("place_id");
-                                JSONObject geometry = result.optJSONObject("geometry");
-                                if (geometry != null) {
-                                    geometry = geometry.optJSONObject("location");
-                                    if (geometry != null) {
-                                        resultAddress.lat = geometry.getDouble("lat");
-                                        resultAddress.lng = geometry.getDouble("lng");
-                                    }
-                                }
-
-                                JSONArray components = result.getJSONArray("address_components");
-                                for (int a = 0; a &lt; components.length(); a++) {
-                                    JSONObject component = components.getJSONObject(a);
-                                    JSONArray types = component.getJSONArray("types");
-                                    for (int j = 0; j &lt; types.length(); j++) {
-                                        String type = types.getString(j);
-                                        switch (type) {
-                                            case "premise":
-                                                resultAddress.premise = component.optString("long_name");
-                                                break;
-                                            case "administrative_area_level_1":
-                                                resultAddress.administrative_area_level_1 = component.optString("long_name");
-                                                break;
-                                            case "sublocality_level_1":
-                                                resultAddress.sublocality_level_1 = component.optString("long_name");
-                                                break;
-                                            case "sublocality_level_2":
-                                                resultAddress.sublocality_level_2 = component.optString("long_name");
-                                                break;
-                                            case "sublocality_level_3":
-                                                resultAddress.sublocality_level_3 = component.optString("long_name");
-                                                break;
-                                            case "sublocality_level_4":
-                                                resultAddress.sublocality_level_4 = component.optString("long_name");
-                                                break;
-                                            case "country":
-                                                resultAddress.country = component.optString("long_name");
-                                                break;
-                                            case "postal_code":
-                                                resultAddress.postal_code = component.optString("long_name");
-                                                break;
-                                            case "political":
-                                            case "sublocality":
-                                                break;
-                                            default:
-//                                                  AFLog.d("Not catched : " + type);
-                                                break;
-                                        }
-                                    }
-                                }
-                                res.add(resultAddress);
-                            } catch (JSONException e) {
-                                AFLog.e(e);
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                AFLog.e(e);
-            }
-        }
-        Address[] array = new Address[res.size()];
-        res.toArray(array);
-        return array;
-    }
-}
-</code></pre>
-
-<p>이 코드도 마찬가지로 참고만 하기 바란다. 내부적으로 사용중인 클래스들이 있어서 그대로 넣으면 동작하지 않는다. 하지만 코드를 보면 반환 클래스에 관련된 부분이므로 어디를 수정해야 할지 바로 알 수 있을 것으로 보인다.</p>
 ]]></content>
   </entry>
   

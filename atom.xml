@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-12T08:41:04+09:00</updated>
+  <updated>2015-10-12T16:50:41+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,83 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류]]></title>
+    <link href="http://blog.asamaru.net/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/"/>
+    <updated>2015-10-12T12:07:06+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions</id>
+    <content type="html"><![CDATA[<p>안드로이드 작업중 <code>java.lang.IllegalStateException: Recursive entry to executePendingTransactions</code> 오류를 만났다. 오류가 발생한 상황은 다음과 같다.</p>
+
+<p>작업중 Fragment에서 하위에 또 다른 Fragment를 추가할 일이 생겼다. 이 작업 중에 하위에 추가되는 Fragment에서 <code>executePendingTransactions()</code> 함수를 호출하니 위 오류가 발생했다. 이해를 위해 처리 과정 중 문제가 발생한 부분만 적는다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getActivity</span><span class="o">().</span><span class="na">getSupportFragmentManager</span><span class="o">();</span>
+</span><span class='line'><span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
+</span><span class='line'>        <span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">.</span><span class="na">commit</span><span class="o">();</span>
+</span><span class='line'><span class="n">ft</span><span class="o">.</span><span class="na">executePendingTransactions</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>FragmentManager를 얻기 위해 현재 Fragment의 Activity를 가져와 <code>getSupportFragmentManager()</code>를 사용했다. 이 부분이 문제가 생기는 이유다. 이런 경우는 아래와 같이 처리할 수 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
+</span><span class='line'><span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
+</span><span class='line'>        <span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">.</span><span class="na">commit</span><span class="o">();</span>
+</span><span class='line'><span class="n">ft</span><span class="o">.</span><span class="na">executePendingTransactions</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>getChildFragmentManager()</code>를 사용해서 FragmentManager를 얻어서 처리하면 위 오류는 발생하지 않는다.</p>
+
+<p>이와 관련된 설명은 <a href="http://developer.android.com/intl/ru/about/versions/android-4.2.html#NestedFragments">Nested Fragments</a>를 보면 된다. 4.2에 변경된 내용으로 나와 있지만 support library를 사용한다면 하위 호환이 가능한 상황이라 문제되지 않는다.</p>
+
+<p>추가적으로 <a href="http://developer.android.com/intl/ko/reference/android/app/FragmentManager.html#executePendingTransactions(">public abstract boolean executePendingTransactions()</a>)에 대해서 궁금하다면 <a href="http://developer.android.com/intl/ko/guide/components/fragments.html#Transactions">프래그먼트 트랜잭션 수행</a>)를 참고하면 된다.</p>
+
+<blockquote><p>commit()을 호출해도 그 즉시 트랜잭션을 수행하지는 않습니다. 그보다는, 액티비티의 UI 스레드(&ldquo;주요&rdquo; 스레드)를 스레드가 할 수 있는 한 빨리 이 트랜잭션을 수행하도록 일정을 예약하는 것에 가깝습니다. 하지만 필요한 경우 UI 스레드로부터 executePendingTransactions()를 호출하면 commit()이 제출한 트랜잭션을 즉시 실행할 수 있습니다. 트랜잭션이 다른 스레드의 작업에 대한 종속성이 아니라면 굳이 이렇게 해야만 하는 것은 아닙니다.</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제]]></title>
+    <link href="http://blog.asamaru.net/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/"/>
+    <updated>2015-10-12T10:14:56+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top</id>
+    <content type="html"><![CDATA[<p><a href="http://androidannotations.org/">Androidannotations</a>를 사용하면 <code>@Extra</code>를 사용해서 인자를 받을 수 있다. 그런데 여기서 주의할 점이 있다. 인턴트 호출시 <code>Intent.FLAG_ACTIVITY_CLEAR_TOP</code> 또는 <code>Intent.FLAG_ACTIVITY_SINGLE_TOP</code>를 사용하게되면 인턴트가 이미 존재할 경우 <code>@Extra</code>가 동작하지 않는다. 이와 관련해서 <a href="https://github.com/excilys/androidannotations/issues/1578">Always call #onNewIntent(), even without @AfterExtras method(s)</a>에서도 이슈가 진행중이다. 앞서 이야기한 문제와 이 이슈는 정확하게 같은 내용은 아니지만 동일한 이유로 발생하며 유사한 내용이라고도 볼 수 있다.</p>
+
+<p>간단히 요약하자면 <code>@Extra</code>는 관련 처리를 <code>setIntent()</code>와 <code>onCraete()</code>에서 하는데 <code>Intent.FLAG_ACTIVITY_CLEAR_TOP</code> 또는 <code>Intent.FLAG_ACTIVITY_SINGLE_TOP</code>를 사용하게되면 인턴트가 존재할 경우 두 함수가 실행되지 않는다는 것이다(<code>onCraete()</code> 대신에 <code>onNewIntent(Intent intent)</code>가 호출이 되고 그 다음 onResume() 이 호출이 된다).</p>
+
+<p>현재까지는 <a href="http://androidannotations.org/">Androidannotations</a>에서 해당 문제를 해결하지 않았으므로 그에 따른 대응이 필요하다(Androidannotations을 사용하지 않는 상황이라면 <code>onResume</code>에서 extra 값을 받아오도록 하면 당연히 문제가 없다).</p>
+
+<p>현재로써는 특별한 방법이 없어 아래와 같이 <code>onNewIntent()</code>애서 직접 값을 받도록 처리했다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onNewIntent</span><span class="o">(</span><span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>  <span class="kd">super</span><span class="o">.</span><span class="na">onNewIntent</span><span class="o">(</span><span class="n">intent</span><span class="o">);</span>
+</span><span class='line'>  <span class="n">moveOwnLocation</span> <span class="o">=</span> <span class="n">intent</span><span class="o">.</span><span class="na">getBooleanExtra</span><span class="o">(</span><span class="s">&quot;EXTRA_NAME&quot;</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>하지만 이렇게 한다면 <code>@Extra</code>를 사용하는 의미가 없고 <code>@AfterExtras</code>도 정상적으로 사용할 수 없으므로 패치를 기다렸다가 코드를 다시 처리 해야할 것 같다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다]]></title>
@@ -454,7 +531,7 @@
 
 <p><img src="http://blog.asamaru.net/img/2015-10-06-resolving-the-functionality-not-enabled-message-in-google-apps-2.png" alt="다른 이메일 주소를 추가하세요" /></p>
 
-<p>이 단계에서는 SMTP 서버 정보를 넣으면 되는데 추가하려는 이메일 주소가 Gmail 또는 Google Apps Gmail 인 경우라면 SMTP 서버에 &ldquo;smtp.gmail.com&rdquo;, 포트는 587을 선택하고 아이디와 비밀번호를 입력하면 된다. 단, 아이디(사용자 이름)은 <a href="&#109;&#x61;&#105;&#108;&#x74;&#111;&#x3a;&#x61;&#98;&#99;&#x40;&#x67;&#x6d;&#x61;&#x69;&#x6c;&#46;&#x63;&#x6f;&#109;">&#x61;&#x62;&#x63;&#x40;&#103;&#x6d;&#97;&#105;&#108;&#x2e;&#x63;&#111;&#109;</a> 등과 같이 이메일 풀주소를 넣어야 한다. 조금더 상세한 정보는 <a href="https://www.digitalocean.com/community/tutorials/how-to-use-google-s-smtp-server">How To Use Google&rsquo;s SMTP Server</a>를 참고하자. 단, 여기서는 포트를 465로 안내하고 있지만 내 경우는 587을 사용해야 했다.</p>
+<p>이 단계에서는 SMTP 서버 정보를 넣으면 되는데 추가하려는 이메일 주소가 Gmail 또는 Google Apps Gmail 인 경우라면 SMTP 서버에 &ldquo;smtp.gmail.com&rdquo;, 포트는 587을 선택하고 아이디와 비밀번호를 입력하면 된다. 단, 아이디(사용자 이름)은 <a href="&#109;&#x61;&#x69;&#x6c;&#x74;&#111;&#58;&#97;&#98;&#x63;&#x40;&#x67;&#109;&#x61;&#105;&#108;&#x2e;&#x63;&#x6f;&#109;">&#97;&#x62;&#x63;&#64;&#x67;&#109;&#x61;&#105;&#108;&#46;&#x63;&#x6f;&#109;</a> 등과 같이 이메일 풀주소를 넣어야 한다. 조금더 상세한 정보는 <a href="https://www.digitalocean.com/community/tutorials/how-to-use-google-s-smtp-server">How To Use Google&rsquo;s SMTP Server</a>를 참고하자. 단, 여기서는 포트를 465로 안내하고 있지만 내 경우는 587을 사용해야 했다.</p>
 
 <p>마지막 확인 코드 입력 화면이다. 정상적으로 정보가 확인된다면 입력한 이메일 주소로 확인 코드를 보내주는데 이 확인 코드를 아래의 화면에 입력하면 등록이 완료된다.</p>
 
@@ -1667,156 +1744,6 @@ Android Studio> Preferences> Gradle 의 Offline work에 체크.</p>
 <h3>다중 모듈 빌드</h3>
 
 <p>다중 모뮬을 사용하는 경우에 속도 향상 방법이 안내되어 있으니 필요한 경우에 원본글에 가서 참조 바란다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[안드로이드 테마 정의시 parent를 지정하지 않을 경우 Error: Style Resource definition cycle 발생]]></title>
-    <link href="http://blog.asamaru.net/2015/09/25/if-android-theme-parent-doesnt-set-attribute/"/>
-    <updated>2015-09-25T14:18:08+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/25/if-android-theme-parent-doesnt-set-attribute</id>
-    <content type="html"><![CDATA[<p>이번 포스팅은 정확하지 않은 정보일 확률이 높다. 하지만 비슷한 경우를 만나게되면 임시 해결 방법으론 도움이 될 것 같아 글을 남겨 본다.
-이번에 작업하면서 발생한 문제를 해결하는 과정에서 이것저것 해보면서 알게된 부분을 정리해보려고 한다. 일단 문제를 만난 상황부터 이야기하자면 이렇다.</p>
-
-<p>작업 중에 DialogTheme를 정의해서 사용할 일이 있었다. 그래서 다음과 같이 정의해서 사용중이었다. Theme가 무엇인지에 대해서는 <a href="http://developer.android.com/intl/ko/guide/topics/ui/themes.html">http://developer.android.com/intl/ko/guide/topics/ui/themes.html</a> 를 참고하자.</p>
-
-<p><strong> values/styles.xml </strong></p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowNoTitle&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowFullscreen&quot;</span><span class="nt">&gt;</span>false<span class="nt">&lt;/item&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowBackground&quot;</span><span class="nt">&gt;</span>@android:color/transparent<span class="nt">&lt;/item&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:colorBackgroundCacheHint&quot;</span><span class="nt">&gt;</span>@null<span class="nt">&lt;/item&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowIsTranslucent&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
-</span><span class='line'><span class="nt">&lt;/style&gt;</span>
-</span><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">/&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>굳이 <code>af_DialogTheme.Base</code>를 정의하고 다시 <code>af_DialogTheme</code>에서 이를 상속받아 처리하는 것에는 이유가 있다. Theme에서 사용하는 속성들 또는 상황이 API 버전에 따라 다르기 때문이다. 예를 들어 내가 버전별로 다르게 사용한 style은 아래와 같다.</p>
-
-<p><strong> values-v19/styles.xml </strong></p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowTranslucentStatus&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
-</span><span class='line'><span class="nt">&lt;/style&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><strong> values-v21/styles.xml </strong></p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:statusBarColor&quot;</span><span class="nt">&gt;</span>@android:color/transparent<span class="nt">&lt;/item&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowTranslucentStatus&quot;</span><span class="nt">&gt;</span>false<span class="nt">&lt;/item&gt;</span>
-</span><span class='line'><span class="nt">&lt;/style&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>위 처럼 일부 속성만 replace하려면 공통 부분을 부모 스타일로 정의하고 받아서 쓰도록 해야한다. 같은 테마 이름을 사용하게되면 대체 xml 문서(values-v19/styles.xml, values-v21/styles.xml)에서 정의된 속성을 반영하는게 아니라 통째로 덮어써서 공통 부분은 정의가 안된 것과 동일하게 처리된다. 이렇게 통째로 덮어쓰지 않고 부분만 변경되게 하기 위해 parent 속성을 사용하는 것이다.</p>
-
-<p>여기까지가 문제가 되는 부분에 대한 설명이다. 위의 내용을 보고 문제가 될 수 있는 부분을 찾을 수 있겠는가? 이유를 안다면 아래의 내용을 볼 필요가 없다. 나는 몰랐기 때문에 당혹스러웠다.</p>
-
-<p>이 상태로 빌드해서 테스트하면 아무 이상도 없고 예상대로 동작한다. 그런데 release를 위해 빌드를 하는 순간 아래의 에러를 만나게 된다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='XML'><span class='line'>Error:(11) Error: Style Resource definition cycle: AppThemeDialog =&gt; af_DialogTheme =&gt; af_DialogTheme.Base =&gt; af_DialogTheme [ResourceCycle]
-</span><span class='line'>    <span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;AppThemeDialog&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme&quot;</span><span class="nt">/&gt;</span>
-</span><span class='line'>                                 ~~~~~~~~~~~~~~~~~~~~~~~
-</span><span class='line'>   Explanation for issues of type &quot;ResourceCycle&quot;:
-</span><span class='line'>   There should be no cycles in resource definitions as this can lead to
-</span><span class='line'>   runtime exceptions.
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>당황스럽다. 분명 테스트시에는 한번도 본 적 없는 오류다. 내용을 보자. <code>ResourceCycle</code>에 관련된 문제로 보인다. 맨 위의 문장과 함께 보면 Resource의 순환참조라는 이야기로 보인다. 하지만 위의 코드들을 보면 알겠지만 순환참조라고 할만한 내용은 없다. 난 절대로 오류 메시지처럼 참조 시키지 않았다.</p>
-
-<p>처음엔 이유를 몰라 어떻게 해야 할지 몰랐다. <code>af_DialogTheme.Base =&gt; af_DialogTheme</code>라고 나오는데 그렇게 지정하지 않았는데 왜 알아서 참조를 한다고 난리일까? 고민을 하던 중 옆에 있던 후배가 하는 말이 &ldquo;저기 이름에 있는 . 때문에 그런것 아니냐?"라는 것이다. 난 말도 안된다고 했다. 어떻게 그렇게 해석 될 수 있느냐? 게다가 .Base라는 구문은 안드로이드 내부 테마들이 정의될 때 사용하던 네이밍 규칙을 따라 한 것인데 그럴리가 없다는 것이 내 생각이었다. 하지만 <strong>결함의 발견은 절대 그럴리가 없다는 부분부터 시작해야 한다.</strong></p>
-
-<p>결론은 후배의 말이 맞았다. name을 <code>af_DialogTheme.Base</code>에서 <code>af_DialogTheme_Base</code>로 변경하자 오류는 사라졌다. 아&hellip; 어의없다.
-보다 확실히 하기 위해 아래와 같이 name을 둔 채로 parent를 추가했다. 당연히 상속받을 것은 없으므로 공백으로&hellip;</p>
-
-<p><strong> values/styles.xml </strong></p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span> <span class="na">parent=</span><span class="s">&quot;&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowNoTitle&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>이렇게 처리해도 오류는 사라졌다. 그럼 이제 경험에 의한 결론을 내려보자(서두에 이야기한 것 처럼 그냥 내가 추측하는 것이니 틀릴 확률이 높다는 것을 감안하고 보자).</p>
-
-<blockquote><p>style 정의시 name에 .을 사용하고 parent가 지정되지 않았다면 . 앞부분의 name을 parent로 정의한 것으로 보고 상속을 시도한다.</p></blockquote>
-
-<p>결론적으로 내 의도는 .Base가 붙은 녀석이 부모가 되는 것을 원하고 네이밍한 것이 반대로 자식이 되어 순환참조를 발생시키게 한 것이다.</p>
-
-<p>그런데 상황을 보자면 위에 정리한 내용이 맞다고 보아진다. 그런데 이상하다. 왜 release 모드에서만 오류가 나는가? 그래서 오류 부분을 조금 더 자세히 보니 <code>:app:lintVitalRelease</code> 영역에서 오류가 난다. 그렇다. <a href="https://ko.wikipedia.org/wiki/Lint">lint</a> 오류다. 오류가 의심되는 코드를 검증하는 과정에서 오류를 발생시킨 것이다.</p>
-
-<p>여기서 최종적인 나의 생각(추측)을 정리하겠다.</p>
-
-<blockquote><p>예전(구버전 안드로이드)에는 위의 설명대로 .을 기준으로한 theme(style) 상속의 개념이 사용되었기 때문에 lint에 추가되어 있었다. 그런데 시간이 지나면서 이 기능은 제거되고 parent라는 속성이 추가되었으나 lint에서는 검증 코드가 제외되지 않았다.</p></blockquote>
-
-<p>이렇게 생각하는 이유는 실제로 lint 영역에서만 오류가 나지 동작시에는 아무런 문제가 없다.</p>
-
-<h3>그래서 어떻게 하면 되나?</h3>
-
-<blockquote><p>style를 사용한 theme 정의시 parent가 없다면 name에 .을 사용하지 말거나 공백으로라도 parent 속성을 사용하자.</p></blockquote>
-
-<p><code>Style Resource definition cycle</code> 오류를 만난다면 위의 글을 참고해서 해결에 도움이 되었으면 하는 바램이다. 나도 오늘 후배의 한마디가 아니었다면 아직도 헬게이트를 경험하고 있을지도 모른다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거]]></title>
-    <link href="http://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal/"/>
-    <updated>2015-09-25T13:47:37+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal</id>
-    <content type="html"><![CDATA[<p>지난 포스팅 <a href="http://blog.asamaru.net/2015/08/28/android-getcolor-getdrawable-deprecated/">Android 6(API 23)의 getColor() deprecated 대응 + getDrawable() deprecated</a>에서 잠깐 언급했던 <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a>에 대해 이야기하고자 한다.</p>
-
-<p>우선 안드로이드에 안내하고 있는 원문은 아래와 같다.</p>
-
-<ul>
-<li>영문 : <a href="https://developer.android.com/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP Client Removal</a></li>
-<li>한글 : <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a></li>
-</ul>
-
-
-<p>한글 문서의 내용은 아래와 같다.</p>
-
-<blockquote><p>Apache HTTP 클라이언트에 대한 지원을 제거합니다. 앱이 이 클라이언트를 사용하고 Android 2.3(API 레벨 9) 이상을 대상으로 하는 경우, HttpURLConnection 클래스를 대신 사용하세요. 이는 투명한 압축과 응답 캐싱을 통해 네트워크 사용량을 줄이고 전력 소모를 최소화하기 때문에 API가 더 효율적입니다. Apache HTTP API를 계속 사용하려면 우선 다음과 같은 컴파일-시간 종속성을 build.gradle 파일에서 선언해야 합니다.
-<code>gradle
-android {
-    useLibrary 'org.apache.http.legacy'
-}
-</code></p></blockquote>
-
-<p>이 부분이 제거되면서 문제가 되는 부분은 위의 안내와 같이 gradle에 임시 코드를 넣음으로써 해결이 가능하다. 하지만 제거 과정이 여러가지 문제를 일으켰다. 사실 안드로이드에서는 해당 기능을 Deprecated하고 대체  기능의 사용을 권장하고 있었으나 이를 사용하는 오픈소스 라이브러리들이 미리 대응을 하지 않았던 것이 문제가 되었다. 나의 경우는 <a href="https://github.com/ACRA/acra">ACRA</a>와 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>가 해당 기능을 사용해서 구현되어 있어서 <code>org.apache.http.legacy</code>를 통해 급한 문제들은 해결했었다.</p>
-
-<p>현재 기준으로 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>는 1.4.9로 버전업 되면서 Http에 관련된 부분을 대체 라이브러리로 교체함으로써 문제가 해결되었고 <a href="https://github.com/ACRA/acra">ACRA</a>의 경우는 4.6.2로 버전 기준으로 처리가 되었다고 어디서 본것 같았는데 실제로는 빌드 과정에서 오류가 발생했다. 그래서 다시 알아보니 4.7.0 버전에서 HtttpUrlConnection를 사용함으로써 Android M (6.0)을 정식 지원한다고 안내되어 있다. 하지만 아직 RC2로 정식 버전업이 되지 않았다. 나의 경우는 조금만 더 기다리면 useLibrary &lsquo;org.apache.http.legacy'를 사용하지 않아도 될 것으로 예상된다.</p>
-
-<p>사실 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>도 현재 버전에서는 문제가 있다. 공식 사이트에서는 해당 현상에 대한 이야기는 없으나 나의 경우엔 proguard 적용시 완료 callback이 호출되지 않는 문제가 있었다. 관련해서는 <a href="http://blog.asamaru.net/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/">Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결</a>에 별도로 포스팅한다.</p>
-
-<p>어쨌든 이 문제는 시간이 지나면서 오픈 소스들이 대응을 시작하면 대부분 해결될 것으로 생각된다.</p>
 ]]></content>
   </entry>
   

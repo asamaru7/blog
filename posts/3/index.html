@@ -138,6 +138,167 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-29T09:26:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.29</time>
+        
+           | <a href="/2015/09/29/android-gradle-builds-speed-up/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/29/android-gradle-builds-speed-up/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/29/android-gradle-builds-speed-up/" itemprop="url">Android Gradle 빌드 속도 높이기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 개발을 하면서 여러가지 불만이 있지만 그중에 가장 맘에 들지않는 것 중 하나가 빌드 속도이다. 프로젝트의 규모에 따라 다르겠지만 xcode와의 빌드 시간을 비교하면 전체 빌드의 시간은 비슷한 것 같으나 수시로 하게되는 빌드는 안드로이드 스튜디오가 훨씬 느리게 느껴진다. 안드로이드 개발시 빌드에 사용되는 Gradle은 많은 유연성을 제공하지만 빌드에 많은 프로세스 비용이 든다는 것이 단점이다. 그래서 빌드 속도를 높일 수 있는 방법을 찾아서 적용해 보았다.</p>
+
+<p>그리고 빌드 시간에 크게 영향을 주는 것 중에는 proguard와 multidex가 포함된다. proguard는 코드 최적화/난독화 등을 위한 처리이며 multidex는 65K이상의 메소드를 사용할 경우에 대한 대응책으로 사용되며 자세한 내용은 <a href="https://developer.android.com/intl/ko/tools/building/multidex.html">Building Apps with Over 65K Methods</a>에서 참고하면 된다. 메소드 수가 어떻게하면 65K를 넘나 싶을 수 있지만 금방 넘어선다. 라이브러리를 막 추가하다보면 금방 문제를 만나게 된다(proguard 등을 통해 메소드 수를 줄일 수 있다). 이 글에서도 나와있는 것이지만 빌드 속도 문제를 떠나서도 최대한 multidex를 사용하는 상황을 만들지 않는 것이 좋다. 그리고 나는 proguard를 항상 켜둔 상태도 개발을 하는 편이다. 프로젝트 막판에 proguard를 적용하게되면 proguard로 인한 여러가지 문제를 만날 수 있기 때문에 충돌을 미리 발견하기 위해서다. 하지만 이렇게하다보면 빌드 속도가 너무 떨어진다. 그래서 켰다가 껐다가 하긴하는데 너무 귀찮다.</p>
+
+<p>그럼 본격적으로 설정을 시작해보자.</p>
+
+<h2>1. gradle.properties 파일을 변경</h2>
+
+<p>프로젝트 Root에 있는 gradle.properties을 편집한다. 기존에 파일이 없다면 추가한다. 여기에는 gradle 빌드 할 때 인수를 설정할 수 있다.
+한가지 더 알려주자면 프로젝트별로 설정하는 것외에도 모든 프로젝트에 설정을 추가할 수도 있다. 해당 파일의 경로는 OSX 기준으로 <code>~/.gradle/gradle.properties</code> 이다. 윈도우나 리눅스도 비슷한 경로에 있을 것으로 생각된다.</p>
+
+<p><strong>gradle.properties</strong></p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='ini'><span class='line'><span class="c1"># Project-wide Gradle settings.</span>
+</span><span class='line'><span class="c1"># IDE (eg Android Studio) users :</span>
+</span><span class='line'><span class="c1"># Settings specified in this file will override any Gradle settings</span>
+</span><span class='line'><span class="c1"># configured through the IDE.</span>
+</span><span class='line'><span class="c1"># For more details on how to configure your build environment visit</span>
+</span><span class='line'><span class="c1"># http : // www.gradle.org/docs/current/userguide/build_environment.html</span>
+</span><span class='line'><span class="c1"># The Gradle daemon aims to improve the startup and execution time of Gradle.</span>
+</span><span class='line'><span class="c1"># When set to true the Gradle daemon is to run the build.</span>
+</span><span class='line'><span class="c1"># TODO : disable daemon on CI, Since Builds should BE clean and Reliable on servers</span>
+</span><span class='line'><span class="na">org.gradle.daemon</span> <span class="o">=</span> <span class="s">true</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># Specifies the JVM arguments used for the daemon process.</span>
+</span><span class='line'><span class="c1"># The setting is particularly useful for tweaking memory settings.</span>
+</span><span class='line'><span class="c1"># Default value : -Xmx10248m -XX : MaxPermSize = 256M</span>
+</span><span class='line'><span class="na">org.gradle.jvmargs</span> <span class="o">=</span> <span class="s">-Xmx2048m -XX : MaxPermSize = 512m -XX + HeapDumpOnOutOfMemoryError -Dfile.encoding = UTF-8</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># When configured, Gradle will run in incubating parallel mode.</span>
+</span><span class='line'><span class="c1"># This option should only be used with decoupled projects. More details, visit</span>
+</span><span class='line'><span class="c1"># http://www.gradle.org/docs/current/userguide/multi_project_builds.html#sec : decoupled_projects</span>
+</span><span class='line'><span class="na">org.gradle.parallel</span> <span class="o">=</span> <span class="s">true</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># Enables new incubating mode that makes Gradle selective when configuring projects.</span>
+</span><span class='line'><span class="c1"># Only relevant projects are configured which results in faster builds for large multi-projects.</span>
+</span><span class='line'><span class="c1"># http://www.gradle.org/docs/current/userguide/multi_project_builds.html #sec : configuration_on_demand</span>
+</span><span class='line'><span class="na">org.gradle.configureondemand</span> <span class="o">=</span> <span class="s">true</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>위 설정에 대한 간략한 설명은 아래와 같다.</p>
+
+<ul>
+<li><strong>org.gradle.daemon</strong> : 데몬 프로세스를 사용할지 여부 설정한다. true 설정시 gradle을 daemon 모드로 실행하여 빌드시 gradle을 다시 실행하는 시간을 줄여준다.</li>
+<li><strong>org.gradle.jvmargs</strong> : 실행시 JVM 인수로 메모리를 설정을 늘려 메모리 부족으로 인한 속도저하를 막는 것이 목적이다. 따라서 적절한 양의 메모리를 할당해 주면 된다.</li>
+<li><strong>org.gradle.parallel</strong> : gradle 병렬 빌드 모드를 설정한다. 여러 프로젝트를 빌드 할 때 효과가 있다.</li>
+<li><strong>org.gradle.configureondemand</strong> : 관련 프로젝트가 있다면 필요한 부분만 빌드 설정한다.</li>
+</ul>
+
+
+<p>크게 성능이 향상되는 것 같지는 않지만 조금의 성능 향상은 있는 것 같다. 사실 다음에 소개할 gradle 버전 업이 훨씬 체감 성능 향상에 도움을 준다.</p>
+
+<h2>2. Android Studio 1.3 / Gradle 2.4 이상 사용</h2>
+
+<p>Android Studio 1.3 / Gradle 2.4 이상으로 버전업되면서 대폭 성능 향상이 있었다. 실제로 나의 경우엔 상당한 속도 향상이 있었다. 그래도 proguard를 적용하게되면 느리긴 마찬가지긴 하다.
+구글의 설명을 보려면 <a href="https://www.youtube.com/watch?t=502&amp;v=f7ihSQ44WO0">Google I/O 2015 - What&rsquo;s New in Android Development Tools</a>을 참고하면 된다. 단, 주의할 것은 Android Studio 1.3 이상을 사용한다고 Gradle 2.4 이상을 무조건 사용하는 것은 아니라는 것이다. 신규 프로젝트가 아니어서 그런지 나의 프로젝트에서는 2.2.1을 그대로 사용하고 있었다(File > Project Structure > Project > Gradle version에서 2.4로 변경함으로써 적용할 수 있다).</p>
+
+<h2>3. gradle를 오프라인 모드로 변경</h2>
+
+<p>다른 사람들은 이 방법이 아주 효과적이었다고 하는데 나의 경우는 크게 차이가 나지 않았다(proguard로 인한 속도 저하라서 이 방법에 큰 도움이 되지 않았던 것 같다). 어쨌든 이 설정을 적용하면 gradle에서 매번 최신 버전을 확인하러가는 것을 생략 해 준다. 단, 신규 dependency를 추가하거나 변경하는 경우는 이 설정을 해제해야 한다. 약간은 귀찮을 수 있지만 dependency 변경은 크게 자주 발생하는 경우는 아니므로 문제되지 않을 것으로 생각된다.</p>
+
+<p><img src="/img/2015-09-29-android-gradle-builds-speed-up-1.png" alt="Offline work" />
+Android Studio> Preferences> Gradle 의 Offline work에 체크.</p>
+
+<h2>4. <a href="http://kevinpelgrims.com/blog/2015/06/11/speeding-up-your-gradle-builds/">Speeding up Gradle builds</a></h2>
+
+<p><a href="http://kevinpelgrims.com/blog/2015/06/11/speeding-up-your-gradle-builds/">Speeding up Gradle builds</a>에서는 몇가지 방법을 더 안내하고 있다. 간략하게 요약하면 아래와 같다(위의 설명들과 유사한 부분도 많다). 상세한 설명은 위 링크를 참조하기 바란다.</p>
+
+<h3>Maven Central vs. JCenter</h3>
+
+<p>mavenCentral() 대신 jcenter()를 사용해라.</p>
+
+<h3>Get the latest version of Gradle</h3>
+
+<p>최신 버전의 Gradle을 사용하라.</p>
+
+<h3>Gradle properties</h3>
+
+<p>아래의 Gradle properties를 적용하라(위의 설명이 더 상세하다).</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ini'><span class='line'><span class="na">org.gradle.parallel</span><span class="o">=</span><span class="s">true</span>
+</span><span class='line'><span class="na">org.gradle.daemon</span><span class="o">=</span><span class="s">true</span>
+</span><span class='line'><span class="na">org.gradle.jvmargs</span><span class="o">=</span><span class="s">-Xms256m -Xmx1024m</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>How to use Gradle properties</h3>
+
+<p>Gradle properties를 프로젝트별로 설정하기보다 전역으로 설정하라.</p>
+
+<h3>다중 모듈 빌드</h3>
+
+<p>다중 모뮬을 사용하는 경우에 속도 향상 방법이 안내되어 있으니 필요한 경우에 원본글에 가서 참조 바란다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-25T14:18:08+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.25</time>
         
            | <a href="/2015/09/25/if-android-theme-parent-doesnt-set-attribute/#disqus_thread" itemprop="discussionUrl"
@@ -1268,216 +1429,6 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-20T08:23:23+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.20</time>
-        
-           | <a href="/2015/09/20/css-units/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/20/css-units/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/20/css-units/" itemprop="url">CSS Units - px, pt, em, % 등</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>w3schools의 <a href="http://www.w3schools.com/cssref/css_units.asp">CSS Units</a>에는 다음과 같이 CSS에서 사용하는 단위에 대해 안내되어 있다.</p>
-
-<blockquote><p>CSS는 단위(길이)를 표현하기 위한 여러가지 단위가 있다. width, margin, padding, font-size, border-width 등과 같은 많은 CSS 속성에서 사용한다. 단위는 10px, 2em과 같이 숫자 뒤에 공백없이 붙여서 사용하며 0인 경우는 생략할 수 있다. 단위는 음의 수를 가질 수 있으며 상대/절대 단위로 구분할 수 있다.</p></blockquote>
-
-<h2>Browser Support</h2>
-
-<table>
-<thead>
-<tr>
-<th> Unit </th>
-<th> Chrome </th>
-<th> IE </th>
-<th> Firefox </th>
-<th> Safari </th>
-<th> Opera </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>em, ex, %, px, cm, mm, in, pt, pc </td>
-<td> 1.0 </td>
-<td> 3.0 </td>
-<td> 1.0 </td>
-<td> 1.0 </td>
-<td> 3.5 </td>
-</tr>
-<tr>
-<td>ch </td>
-<td>27.0 </td>
-<td> 9.0 </td>
-<td> 1.0 </td>
-<td> 7.0 </td>
-<td> 20.0 </td>
-</tr>
-<tr>
-<td>rem </td>
-<td> 4.0 </td>
-<td> 9.0 </td>
-<td> 3.6 </td>
-<td> 4.1 </td>
-<td> 11.6 </td>
-</tr>
-<tr>
-<td>vh, vw </td>
-<td> 20.0 </td>
-<td> 9.0 </td>
-<td> 19.0 </td>
-<td> 6.0 </td>
-<td> 20.0 </td>
-</tr>
-<tr>
-<td>vmin </td>
-<td> 20.0 </td>
-<td> 9.0* </td>
-<td> 19.0 </td>
-<td> 6.0 </td>
-<td> 20.0 </td>
-</tr>
-<tr>
-<td>vmax </td>
-<td> 26.0 </td>
-<td> Not supported </td>
-<td> 19.0 </td>
-<td> Not supported </td>
-<td> 20.0 </td>
-</tr>
-</tbody>
-</table>
-
-
-<blockquote><p>Note: 인터넷 익스플로러 9에서는 vmin을 비표준 이름인 vm으로 지원한다.</p></blockquote>
-
-<h2>상대 단위</h2>
-
-<p>상대 단위는 다른 단위 속성에 대한 상대적 길이를 지정한다. 상대 단위를 잘 사용하면 다양한 디바이스에 최적화된 보기를 제공할 수 있기 때문에 권장되는 단위이다. 하지만 일반적으로 고정된 사이즈 내에서 디자인하는 것에 익숙한 경우에는 사용이 다소 까다롭다(상대적 단위를 쓸 때 가장 중요한 것은 어느 것에 대한 상대적 사이즈인지를 생각해야 하기 때문이다. 단순해 보이지만 작업을 하다보면 조금 복잡한 상황이 생기기도 한다).</p>
-
-<table>
-<thead>
-<tr>
-<th> Unit </th>
-<th> Description </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> em </td>
-<td> 해당 Element의 font-size에 대한 비율(2em은 font-size의 2배 사이즈) </td>
-</tr>
-<tr>
-<td> ex </td>
-<td> 현재 글꼴의 x(소문자) 높이에 대한 비율 </td>
-</tr>
-<tr>
-<td> ch </td>
-<td> &ldquo;0"의 width에 대한 비율 </td>
-</tr>
-<tr>
-<td> rem </td>
-<td> Root Element(html)의 font-size에 대한 비율 </td>
-</tr>
-<tr>
-<td> vw </td>
-<td> Viewport width의 1%에 대한 비율 </td>
-</tr>
-<tr>
-<td> vh </td>
-<td> Viewport height의 1%에 대한 비율 </td>
-</tr>
-<tr>
-<td> vmin </td>
-<td> Viewport smaller dimension의 1%에 대한 비율 </td>
-</tr>
-<tr>
-<td> vmax </td>
-<td> Viewport larger dimension의 1%에 대한 비율 </td>
-</tr>
-<tr>
-<td> % </td>
-<td> &nbsp; </td>
-</tr>
-</tbody>
-</table>
-
-
-<blockquote><p>Tip: em과 rem 단위는 확장 레이아웃을 만는데 아주 실용적(효과적)이다.</p></blockquote>
-
-<h2>절대 단위</h2>
-
-<p>절대 단위는 고정되어 있으며 지정된 단위로 정확히 표현된다. &ldquo;웹 화면의 크기는 아주 다양하기 때문에 화면에서는 사용하지 않는 것이 좋다. 그러나 프린트 레이아웃과 같이 출력 화면을 알고 있는 경우에는 사용될 수 있다."라고는 하지만 일반적인 경우엔 상대 단위보다 더 많이 사용하게 된다.</p>
-
-<table>
-<thead>
-<tr>
-<th> Unit </th>
-<th> Description </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> cm </td>
-<td> 센티미터 </td>
-</tr>
-<tr>
-<td> mm </td>
-<td> 밀리미터 </td>
-</tr>
-<tr>
-<td> in </td>
-<td> 인치 (1in = 96px = 2.54cm) </td>
-</tr>
-<tr>
-<td> px * </td>
-<td> 픽셀 (1px = 1/96th of 1in) </td>
-</tr>
-<tr>
-<td> pt </td>
-<td> 포인트 (1pt = 1/72 of 1in) </td>
-</tr>
-<tr>
-<td> pc </td>
-<td> 피카 (1pc = 12 pt) </td>
-</tr>
-</tbody>
-</table>
-
-
-<blockquote><p>Pixels(px)는 보여지는 기기에 따라 상대적이다. 예를들어 low-dpi 기기에서는 1px은 화면의 1 device pixel(dot)이다. 프린터 또는 고행상도 기기에서는 1px이 화면의 여러 pixel과 동일하다.</p></blockquote>
-
-<h2>사용 제안</h2>
-
-<p>위에서 절대 단위를 더 많이 사용한다는 언급을 했던 것과 마찬가지로 대부분의 경우에 고정 단위를 많이 사용한다. 하지만 최근의 트랜드를 감안하면 상대 단위를 적극적으로 사용할 필요가 있다. 최근 유행하는 용어들인 멀티 디바이스, 적응형 웹, 반응형 웹, 미디어 쿼리 등에 상대 단위가 더 잘 부합된다. 사실 정확히 이야기하자면 선정된 환경(예측되는 한경)만 감안한다면 절대 단위만으로 원하는 결과를 대부분 얻을 수 있다. 하지만 지금처럼 다양한 환경(미리 환경을 예측할 수 없을 만큼)에 최선의 결과를 얻고 싶다면 기존 설계의 습관을 버리고 상대 단위를 기반으로한 디자인 설계를 적극 도입하자.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1527,6 +1478,7 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
   <ul class="list-group">
   	<li class="list-group-item"><a href="http://sprite.asamaru.net/" target="_blank">Sprite CSS/Image</a></li>
   	<li class="list-group-item"><a href="http://loan.asamaru.net/" target="_blank">대출계산기</a></li>
+  	<li class="list-group-item"><a href="http://bookmarklet.asamaru.net/" target="_blank">북마크릿</a></li>
   </ul>
 </section>
 <section class="panel panel-default">
@@ -1546,7 +1498,7 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (25)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (3)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (25)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1555,6 +1507,8 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/12/bookmarklet/">북마클릿(bookmarklet) 생성기</a>
+    
     <a class="list-group-item " href="/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/">java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류</a>
     
     <a class="list-group-item " href="/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/">안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제</a>
@@ -1562,8 +1516,6 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
     <a class="list-group-item " href="/2015/10/12/gitlab-ce-to-gitlab-dot-com/">자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다</a>
     
     <a class="list-group-item " href="/2015/10/08/change-centos-6-nic-i-slash-f-number-eth-star/">NIC I/F 번호(eth*)를 변경</a>
-    
-    <a class="list-group-item " href="/2015/10/08/centos-autofs/">CentOS autofs</a>
     
   </div>
 </section>

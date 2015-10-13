@@ -152,11 +152,11 @@
 
 <div class="entry-content clearfix" itemprop="articleBody description"><p>기존에는 SCM(source code management)으로 SVN을 주로 사용했다. 하지만 git를 사용하기 시작하면서 부터 git를 주로 사용하긴 했는데 주로 github를 통해서만 사용했다. 그런데 이번에 회사 프로젝트에서 필요한 부분이 있어 자체 호스팅을 하기 위해 기존에 봐뒀던 <a href="https://about.gitlab.com/">gitlab</a>을 쓰려다가 <a href="http://gogs.io/">gogs</a>를 알게 되면서 이걸 설치했다. gogs를 고른 이유는 간단하기 때문이다(<a href="https://blog.deimos.fr/2014/08/19/github-vs-gitlab-vs-stash-vs-gogs/">GitHub vs GitLab vs Stash vs Gogs</a>를 참고). 사실 아직 제대로 사용해보지 않아서 맞는지는 모르겠지만 gitlab은 ruby 기반이고 난 ruby 환경을 별로 좋아하지 않는다(내가 몰라서 그렇겠지만 이상하게 ruby 기반 프로젝트들은 설치/관리가 어려워서).</p>
 
-<h2>git 설치</h2>
+<h2 id="git-설치">git 설치</h2>
 
 <p><a href="https://www.digitalocean.com/community/tutorials/how-to-install-git-on-centos-7">How To Install Git on CentOS 7</a>를 참고하자. 다른 곳을 참조해도 당연히 무방하다. 난 사실 예전에 yum으로 git가 설치되어 있던 상황으로 이 단계는 건너뛰었다(게다가 나의 centos는 6이다).</p>
 
-<h2>gogs 설치</h2>
+<h2 id="gogs-설치">gogs 설치</h2>
 
 <p>기본적으로 설치방법은 <a href="http://gogs.io/docs/installation">gogs Installation</a>에 잘 설명되어 있다. 하지만 centos가 없다. 조금 더 자세히 보면 대신 <a href="http://gogs.io/docs/installation/install_from_packages.html">Install from packages</a>가 있다. 이곳의 설명/링크를 따라 <a href="https://packager.io/gh/pkgr/gogs">packager.io</a>에 가면 설치 방법을 안내받을 수 있다.</p>
 
@@ -176,7 +176,6 @@
 </span><span class='line'>sudo yum install gogs
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>그냥 시키는대로 따라하면 설치는 간단히 완료된다. 단, gogs는 계정을 추가하는 부분이 있어 passwd, shadow 파일에 lock이 걸려있으면 아래와 같은 오류가 나며 제대로 설치가 되지 않는다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -184,7 +183,6 @@
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>Error in PREIN scriptlet in rpm package gogs-0.6.9-1442807350.69b1d65.centos6.x86_64
 </span><span class='line'>useradd: /etc/passwd을<span class="o">(</span>를<span class="o">)</span> 열 수 없습니다
 </span></code></pre></td></tr></table></div></figure>
-
 
 <p>일단 풀어주고 설치하자.</p>
 
@@ -194,7 +192,6 @@
 </span><span class='line'><span class="nv">$ </span>chattr -i /etc/shadow
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>설치가 완료되면 다시 원상복구.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -202,7 +199,6 @@
 </pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>chattr +i /etc/passwd
 </span><span class='line'><span class="nv">$ </span>chattr +i /etc/shadow
 </span></code></pre></td></tr></table></div></figure>
-
 
 <p>설치가 정상적으로 되었다면 아래의 파일이 존재할 것이다.`</p>
 
@@ -212,48 +208,40 @@
 </span><span class='line'>la /home/gogs
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>그리고 나중에 ssh를 통한 clone을 사용할 예정이라면 설치 과정에서 추가된 gogs 계정의 비밀번호를 지정해 두어야 한다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>passwd gogs
 </span></code></pre></td></tr></table></div></figure>
 
-
-<h2>환경구성</h2>
+<h2 id="환경구성">환경구성</h2>
 
 <p>환경설정 파일은 <code>/etc/gogs/conf/app.ini</code>에 있다. 하지만 최초 웹페이지 접속시 자동으로 설치 화면이 뜬다. 게다가 이 파일을 열어보면 상단에 절대로 수정하지 말라고 되어 있다. 따라서 그냥 웹에서 설정하자.</p>
 
 <p>본격적으로 세팅을 하기 전에 주의사항이 있다. gogs는 DB가 있어야 된다. 따라서 mysql 또는 postgresql이 미리 설치되어 있어야 한다. 이건 뭐 굳이 여기서 설명하지 않아도 설치방법이 다른 곳에 많으니 설치가 되어 있다고 가정하고 설명한다.</p>
 
-<h3>DB 설정</h3>
+<h3 id="db-설정">DB 설정</h3>
 
 <p>우선 DB를 세팅한다.</p>
 
-<p>root 계정을 설정하는데 필요없다면 하지 않아도 된다. 기존에 DB가 이미 설치되어 있다면 당연히 이 부분이 처리가 되어 있을테니 하지 말자.</p>
-
+<p>root 계정을 설정하는데 필요없다면 하지 않아도 된다. 기존에 DB가 이미 설치되어 있다면 당연히 이 부분이 처리가 되어 있을테니 하지 말자.
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>mysqladmin -u root password <span class="s2">&quot;${MYSQL_PASSWORD}&quot;</span>
 </span><span class='line'>mysqladmin -u root --password<span class="o">=</span><span class="s2">&quot;${MYSQL_PASSWORD}&quot;</span> password <span class="s2">&quot;${MYSQL_PASSWORD}&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></td></tr></table></div></figure></p>
 
-
-<p>하지만 DB는 만들어 줘야 한다.</p>
-
+<p>하지만 DB는 만들어 줘야 한다.
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>mysql -u root -p<span class="k">${</span><span class="nv">MYSQL_PASSWORD</span><span class="k">}</span> -e <span class="s2">&quot;CREATE DATABASE IF NOT EXISTS ${APP_NAME}; use ${APP_NAME}; set global storage_engine=INNODB;&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></td></tr></table></div></figure></p>
 
-
-<p><strong>예시</strong></p>
-
+<p><strong>예시</strong>
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>mysql -u root -p -e <span class="s2">&quot;CREATE DATABASE IF NOT EXISTS gogs; use gogs; set global storage_engine=INNODB;&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></td></tr></table></div></figure></p>
 
-
-<h3>WEB UI를 이용한 설정</h3>
+<h3 id="web-ui를-이용한-설정">WEB UI를 이용한 설정</h3>
 
 <p>그럼 본격적으로 설정을 시작하자.</p>
 
@@ -261,12 +249,11 @@
 
 <p>필요한 사항을 설정한다. 대부분 보면 뭘 해야할지 알 수 있다. 오류가 나면 해당 안내에 따라 설정하면 된다. 추후 설정에 변경이 필요하면 <code>custom/conf/app.ini</code>파일에 필요한 설정만 override 하면 된다(나의 경우는 <code>/opt/gogs/custom/conf/app.ini</code> 파일이다. 이 파일 위치를 찾느라 한참을 헤멨다.). <a href="http://gogs.io/docs/installation/configuration_and_run.html">http://gogs.io/docs/installation/configuration_and_run.html</a> 를 참고</p>
 
-<h3>도메인 연결</h3>
+<h3 id="도메인-연결">도메인 연결</h3>
 
 <p>이제는 도메인 연결을 할 차례이다.</p>
 
-<p><strong>httpd 2 기준</strong></p>
-
+<p><strong>httpd 2 기준</strong>
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
@@ -280,7 +267,7 @@
 <span class='line-number'>11</span>
 <span class='line-number'>12</span>
 <span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='apache'><span class='line'><span class="nt">&lt;VirtualHost</span> <span class="s">*:80</span><span class="nt">&gt;</span>
+</pre></td><td class='code'><pre><code class='apacheconf'><span class='line'><span class="nt">&lt;VirtualHost</span> <span class="s">*:80</span><span class="nt">&gt;</span>
 </span><span class='line'>  <span class="nb">ServerName</span> your.domain.com
 </span><span class='line'>
 </span><span class='line'>  <span class="nt">&lt;IfModule</span> <span class="s">!mod_proxy.c</span><span class="nt">&gt;</span>
@@ -290,16 +277,14 @@
 </span><span class='line'>    <span class="nb">LoadModule</span> proxy_http_module modules/mod_proxy_http.so
 </span><span class='line'>  <span class="nt">&lt;/IfModule&gt;</span>
 </span><span class='line'>
-</span><span class='line'>  <span class="nb">ProxyPass</span> / http://localhost:3000/
-</span><span class='line'>  <span class="nb">ProxyPassReverse</span> / http://localhost:3000/
+</span><span class='line'>  <span class="nb">ProxyPass</span> / <a href="http://localhost:3000/">http://localhost:3000/</a>
+</span><span class='line'>  <span class="nb">ProxyPassReverse</span> / <a href="http://localhost:3000/">http://localhost:3000/</a>
 </span><span class='line'><span class="nt">&lt;/VirtualHost&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
+</span></code></pre></td></tr></table></div></figure></p>
 
 <p>나의 경우는 apache를 사용중이라 위와 같이 설정하면 되나 nginx를 사용하는 경우라면 아래를 참고하자(packager.io에 안내된 내용이다.).</p>
 
-<p><strong>nginx</strong></p>
-
+<p><strong>nginx</strong>
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
@@ -315,15 +300,14 @@
 </span><span class='line'><span class="s">  listen          80;</span>
 </span><span class='line'><span class="s">  server_name     ${HOSTNAME};</span>
 </span><span class='line'><span class="s">  location / {</span>
-</span><span class='line'><span class="s">    proxy_pass      http://localhost:6000;</span>
+</span><span class='line'><span class="s">    proxy_pass      <a href="http://localhost:6000">http://localhost:6000</a>;</span>
 </span><span class='line'><span class="s">  }</span>
 </span><span class='line'><span class="s">}</span>
 </span><span class='line'><span class="s">EOF</span>
 </span><span class='line'>sudo service nginx restart
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></td></tr></table></div></figure></p>
 
-
-<h3>서버 시작시 자동시작</h3>
+<h3 id="서버-시작시-자동시작">서버 시작시 자동시작</h3>
 
 <p>우선 서버 시작시 자동 시작 되도록 설정하자(필요하다면). 나의 경우 <code>setup</code>으로 확인해보니 자동으로 들어가 있지 않았다. 그래서 아래와 같이 시도했다.</p>
 
@@ -337,8 +321,7 @@
 </span><span class='line'>/sbin/chkconfig --list
 </span></code></pre></td></tr></table></div></figure>
 
-
-<p>첫줄부터 안된다. &ldquo;gogs 서비스는 chkconfig 를 지원하지 않습니다"라고 오류를 내보낸다. 말그대로 gogs는 chkconfig를 지원하지 않는다. 해서 아래와 같이 서버 시작시 스크립트를 실행하도록 넣어 버렸다.</p>
+<p>첫줄부터 안된다. &quot;gogs 서비스는 chkconfig 를 지원하지 않습니다&quot;라고 오류를 내보낸다. 말그대로 gogs는 chkconfig를 지원하지 않는다. 해서 아래와 같이 서버 시작시 스크립트를 실행하도록 넣어 버렸다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -350,29 +333,23 @@
 </span><span class='line'>/etc/init.d/gogs start
 </span></code></pre></td></tr></table></div></figure>
 
-
-<h3>설정시 유의 사항</h3>
+<h3 id="설정시-유의-사항">설정시 유의 사항</h3>
 
 <p>설치는 위의 과정들을 통해 완료되었다. 하지만 제대로 써보려면 설정을 환경에 맞게 몇가지 조정하는 것이 좋다.</p>
 
 <ul>
-<li>ROOT 설정</li>
-</ul>
-
-
+<li>ROOT 설정
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>repository<span class="o">]</span>
 </span><span class='line'><span class="nv">ROOT</span> <span class="o">=</span> /home/gogs
 </span></code></pre></td></tr></table></div></figure>
-
-
-<p>기본적으로 ROOT 부분은 <code>ROOT = /home/gogs/gogs-repositories</code>로 되어 있지만 위 처럼 gogs-repositories 부분을 제거해 주는 것이 좋다. 나중에 레포지토리를 생성하게되면 clone 주소를 알려준다. 이때 http와 ssh 주소 두가지를 알려주는데 이때 ssh를 사용하게 되면 주소 부분이 맞지 않게된다. 예를들어 gogs@git.asamaru.net:root/test.git 이라는 주소로 생성된 경우 아래와 같이 clone을 시도할 것이다.</p>
+기본적으로 ROOT 부분은 <code>ROOT = /home/gogs/gogs-repositories</code>로 되어 있지만 위 처럼 gogs-repositories 부분을 제거해 주는 것이 좋다. 나중에 레포지토리를 생성하게되면 clone 주소를 알려준다. 이때 http와 ssh 주소 두가지를 알려주는데 이때 ssh를 사용하게 되면 주소 부분이 맞지 않게된다. 예를들어 <a href="mailto:gogs@git.asamaru.net">gogs@git.asamaru.net</a>:root/test.git 이라는 주소로 생성된 경우 아래와 같이 clone을 시도할 것이다.</li>
+</ul>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>git clone gogs@git.corez.kr:root/test.git
 </span></code></pre></td></tr></table></div></figure>
-
 
 <p>하지만 아래와 같은 오류를 내며 정상적으로 clone이 되지 않는다.</p>
 
@@ -388,21 +365,18 @@
 </span><span class='line'>and the repository exists.
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>다시 아래와 같이 해보면 정상적으로 clone 된다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>git clone gogs@git.corez.kr:gogs-repositories/root/test.git
 </span></code></pre></td></tr></table></div></figure>
 
-
-<p>ssh 주소를 사용하는 경우는 계정도 gogs를 사용하며 경로도 gogs의 home에서부터의 경로를 찾기 때문에 &ldquo;gogs-repositories/"를 추가해 줘야하는 것이다. 이 주소를 일일이 넣는 것이 귀찮으므로 위에 설명한 것처럼 ROOT 경로를 변경해 버리는 것이 편하다. ssh 에서 home 경로를 바꿀 수도 있겠지만 이 방법이 더 나을 것으로 본다.
+<p>ssh 주소를 사용하는 경우는 계정도 gogs를 사용하며 경로도 gogs의 home에서부터의 경로를 찾기 때문에 &quot;gogs-repositories/&quot;를 추가해 줘야하는 것이다. 이 주소를 일일이 넣는 것이 귀찮으므로 위에 설명한 것처럼 ROOT 경로를 변경해 버리는 것이 편하다. ssh 에서 home 경로를 바꿀 수도 있겠지만 이 방법이 더 나을 것으로 본다.
 ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예시처럼(gogs에서 안내되는 주소) clone을 받을 수 있다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>git clone gogs@git.corez.kr:root/test.git
 </span></code></pre></td></tr></table></div></figure>
-
 </div>
 
 
@@ -529,7 +503,7 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (25)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (26)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -538,6 +512,8 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/13/remove-line-break-in-tablayout/">안드로이드 TabLayout 사용시 Tab Text가 두줄로 나오는 문제 해결</a>
+    
     <a class="list-group-item " href="/2015/10/12/bookmarklet/">북마클릿(bookmarklet) 생성기</a>
     
     <a class="list-group-item " href="/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/">java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류</a>
@@ -545,8 +521,6 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
     <a class="list-group-item " href="/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/">안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제</a>
     
     <a class="list-group-item " href="/2015/10/12/gitlab-ce-to-gitlab-dot-com/">자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다</a>
-    
-    <a class="list-group-item " href="/2015/10/08/change-centos-6-nic-i-slash-f-number-eth-star/">NIC I/F 번호(eth*)를 변경</a>
     
   </div>
 </section>

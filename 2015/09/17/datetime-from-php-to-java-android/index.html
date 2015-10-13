@@ -152,7 +152,9 @@
 
 <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 앱을 개발하게되면 많은 경우에 서버와의 데이터 연결이 필요하다. 대부분의 데이터 타입은 이 과정에서 큰 문제를 일으키지 않는다(데이터 타입만 명확히 한다면). 하지만 DateTime은 조금 까다로울 수 있다. 프로그램에서 시간은 TimeZone을 가지고 있기 때문에 이 부분을 명확히 하지 않으면 의도치 않은 시간으로 표시된다. 게다가 형식이 맞지 않는다면 제대로 전달되지 않을 수도 있다.</p>
 
-<blockquote><p>네이버 D2에 있는 <a href="http://d2.naver.com/helloworld/645609">Java의 날짜와 시간 API</a>를 보면 Java에서의 Date 처리가 불편하다는 얘기가 있다.</p></blockquote>
+<blockquote>
+<p>네이버 D2에 있는 <a href="http://d2.naver.com/helloworld/645609">Java의 날짜와 시간 API</a>를 보면 Java에서의 Date 처리가 불편하다는 얘기가 있다.</p>
+</blockquote>
 
 <p>이번 작업에서는 서버는 PHP를 사용하고 있는 상황이었고 클라이언트는 <a href="http://androidannotations.org/">AndroidAnnotations</a>의 <a href="https://github.com/excilys/androidannotations/wiki/Rest-API#rest">Rest-API</a>를 사용했다. 수신 데이터의 파싱은 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>를 사용하는 상황이다. 이 글의 주제에서 벗어나므로 <a href="http://androidannotations.org/">AndroidAnnotations</a>나 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>에 대한 부분은 설명하지 않겠다.</p>
 
@@ -174,24 +176,21 @@
 </span><span class='line'><span class="nv">$date</span> <span class="o">=</span> <span class="p">(</span><span class="k">new</span> <span class="nx">\DateTime</span><span class="p">(</span><span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">setTimeZone</span><span class="p">(</span><span class="k">new</span> <span class="nx">\DateTimeZone</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">format</span><span class="p">(</span><span class="s1">&#39;Y-m-d\TH:i:s\Z&#39;</span><span class="p">);</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
-<p>위의 코드를 보면 PHP에서 전송할 때 넘겨줄 데이터의 예시를 타입별로 제시했다. 앞서 강조했던대로 안드로이드 클라이언트에서 GsonHttpMessageConverter를 이용해 Date 타입으로 바로 받으려면 마지막에 있는 &ldquo;Date 타입으로 전송&rdquo; 방식을 사용하면 된다.</p>
+<p>위의 코드를 보면 PHP에서 전송할 때 넘겨줄 데이터의 예시를 타입별로 제시했다. 앞서 강조했던대로 안드로이드 클라이언트에서 GsonHttpMessageConverter를 이용해 Date 타입으로 바로 받으려면 마지막에 있는 &quot;Date 타입으로 전송&quot; 방식을 사용하면 된다.</p>
 
 <p>해당 부분을 보면 두가지 처리를 해주고 있다. 첫번째로 TimeZone을 설정한 것이고, 두번째로 Date Format을 지정한 것이다. 사실 이 부분들을 잘 몰라서 삽질을 조금 했었다. 처음엔 Date Format을 어떻게 전달해야할지 몰라 해맸다. 제대로 수신을 하지 못했던 것이다. Format을 맞추고 나니 이젠 보낸 시간과 받은 시간이 달랐다. 이 부분은 TimeZone의 문제이므로 TimeZone을 지정해서 해결했다. TimeZone에 사용한 UTC는 <a href="https://ko.wikipedia.org/wiki/%ED%98%91%EC%A0%95_%EC%84%B8%EA%B3%84%EC%8B%9C">협정 세계시</a>라는 뜻이다. 이것과 세트로 format에서 끝에 \Z를 붙여 데이터가 <a href="https://ko.wikipedia.org/wiki/ISO_8601">ISO 8601</a>에 따라 UTC를 따르고 있음을 표시한 것이다.</p>
 
 <p>결론적으로 위의 형식을 사용하면 GSON으로 바로 받아도 정확한 시간을 사용할 수 있다.</p>
 
-<p>사실 위의 경우는 GsonHttpMessageConverter를 사용한다는 상황을 가정한 것으로 이것을 사용하지 않고 직접 데이터를 받아 GSON을 통해 파싱한다면 아래의 방법을 쓸 수도 있다. Format을 보면 알겠지만 UTC Date여야 한다(정확한 시간 처리를 위해). &ldquo;yyyy-MM-dd HH:mm:ss"이 Format을 쓸 수도 있으나 TimeZone 명시되지 않으므로 시간이 다르게 보일 수 있다.</p>
+<p>사실 위의 경우는 GsonHttpMessageConverter를 사용한다는 상황을 가정한 것으로 이것을 사용하지 않고 직접 데이터를 받아 GSON을 통해 파싱한다면 아래의 방법을 쓸 수도 있다. Format을 보면 알겠지만 UTC Date여야 한다(정확한 시간 처리를 위해). &quot;yyyy-MM-dd HH:mm:ss&quot;이 Format을 쓸 수도 있으나 TimeZone 명시되지 않으므로 시간이 다르게 보일 수 있다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Gson</span> <span class="n">gson</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">GsonBuilder</span><span class="o">().</span><span class="na">setDateFormat</span><span class="o">(</span><span class="s">&quot;yyyy-MM-dd&#39;T&#39;HH:mm:ssZ&quot;</span><span class="o">).</span><span class="na">create</span><span class="o">();</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>아래는 추가적으로 다른 타입으로 수신했을 때 안드로이드 클라이언트에서 Date 타입으로 변환하고자 할때 사용할 수 있는 참고 코드들이다.</p>
 
-<p><strong> string 타입으로 수신시 </strong></p>
-
+<p>** string 타입으로 수신시 **
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
@@ -206,10 +205,9 @@
 </span><span class='line'><span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ParseException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
 </span><span class='line'>    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
 </span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></td></tr></table></div></figure></p>
 
-
-<p><strong> timestamp(int) 타입으로 수신시 </strong></p>
+<p>** timestamp(int) 타입으로 수신시 **</p>
 
 <p>PHP에서의 TimeStamp는 초단위(s)지만 Java에서는 밀리초(ms) 단위이므로 1000을 곱해서 넣어 주어야 한다.
 그리고 Java에서는 Date가 Deprecated되어 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>를 더 권장한다고 한다. <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Date.html">정확하게는 완전히 Deprecated된 것은 아니고 일부 생성자가 그렇다는 것</a>이지만 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>가 더 다양한 기능을 제공하므로 더 권장된다는 것이다. 자세한 이유는 검색해보면 많이 나온다.</p>
@@ -233,9 +231,6 @@
 </span><span class='line'><span class="c1">// Date 사용</span>
 </span><span class='line'><span class="n">Date</span> <span class="n">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Date</span><span class="o">(</span><span class="n">timestamp</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">);</span>
 </span></code></pre></td></tr></table></div></figure>
-
-
-
 </div>
 
 
@@ -362,7 +357,7 @@
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (25)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (26)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -371,6 +366,8 @@
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/13/remove-line-break-in-tablayout/">안드로이드 TabLayout 사용시 Tab Text가 두줄로 나오는 문제 해결</a>
+    
     <a class="list-group-item " href="/2015/10/12/bookmarklet/">북마클릿(bookmarklet) 생성기</a>
     
     <a class="list-group-item " href="/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/">java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류</a>
@@ -378,8 +375,6 @@
     <a class="list-group-item " href="/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/">안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제</a>
     
     <a class="list-group-item " href="/2015/10/12/gitlab-ce-to-gitlab-dot-com/">자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다</a>
-    
-    <a class="list-group-item " href="/2015/10/08/change-centos-6-nic-i-slash-f-number-eth-star/">NIC I/F 번호(eth*)를 변경</a>
     
   </div>
 </section>

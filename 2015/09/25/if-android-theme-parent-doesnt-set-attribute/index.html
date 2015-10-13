@@ -155,7 +155,7 @@
 
 <p>작업 중에 DialogTheme를 정의해서 사용할 일이 있었다. 그래서 다음과 같이 정의해서 사용중이었다. Theme가 무엇인지에 대해서는 <a href="http://developer.android.com/intl/ko/guide/topics/ui/themes.html">http://developer.android.com/intl/ko/guide/topics/ui/themes.html</a> 를 참고하자.</p>
 
-<p><strong> values/styles.xml </strong></p>
+<p>** values/styles.xml **</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -175,22 +175,18 @@
 </span><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">/&gt;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>굳이 <code>af_DialogTheme.Base</code>를 정의하고 다시 <code>af_DialogTheme</code>에서 이를 상속받아 처리하는 것에는 이유가 있다. Theme에서 사용하는 속성들 또는 상황이 API 버전에 따라 다르기 때문이다. 예를 들어 내가 버전별로 다르게 사용한 style은 아래와 같다.</p>
 
-<p><strong> values-v19/styles.xml </strong></p>
-
+<p>** values-v19/styles.xml **
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 </pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">&gt;</span>
 </span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowTranslucentStatus&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
 </span><span class='line'><span class="nt">&lt;/style&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></td></tr></table></div></figure></p>
 
-
-<p><strong> values-v21/styles.xml </strong></p>
-
+<p>** values-v21/styles.xml **
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
@@ -199,8 +195,7 @@
 </span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:statusBarColor&quot;</span><span class="nt">&gt;</span>@android:color/transparent<span class="nt">&lt;/item&gt;</span>
 </span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowTranslucentStatus&quot;</span><span class="nt">&gt;</span>false<span class="nt">&lt;/item&gt;</span>
 </span><span class='line'><span class="nt">&lt;/style&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
+</span></code></pre></td></tr></table></div></figure></p>
 
 <p>위 처럼 일부 속성만 replace하려면 공통 부분을 부모 스타일로 정의하고 받아서 쓰도록 해야한다. 같은 테마 이름을 사용하게되면 대체 xml 문서(values-v19/styles.xml, values-v21/styles.xml)에서 정의된 속성을 반영하는게 아니라 통째로 덮어써서 공통 부분은 정의가 안된 것과 동일하게 처리된다. 이렇게 통째로 덮어쓰지 않고 부분만 변경되게 하기 위해 parent 속성을 사용하는 것이다.</p>
 
@@ -222,26 +217,25 @@
 </span><span class='line'>   runtime exceptions.
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>당황스럽다. 분명 테스트시에는 한번도 본 적 없는 오류다. 내용을 보자. <code>ResourceCycle</code>에 관련된 문제로 보인다. 맨 위의 문장과 함께 보면 Resource의 순환참조라는 이야기로 보인다. 하지만 위의 코드들을 보면 알겠지만 순환참조라고 할만한 내용은 없다. 난 절대로 오류 메시지처럼 참조 시키지 않았다.</p>
 
-<p>처음엔 이유를 몰라 어떻게 해야 할지 몰랐다. <code>af_DialogTheme.Base =&gt; af_DialogTheme</code>라고 나오는데 그렇게 지정하지 않았는데 왜 알아서 참조를 한다고 난리일까? 고민을 하던 중 옆에 있던 후배가 하는 말이 &ldquo;저기 이름에 있는 . 때문에 그런것 아니냐?"라는 것이다. 난 말도 안된다고 했다. 어떻게 그렇게 해석 될 수 있느냐? 게다가 .Base라는 구문은 안드로이드 내부 테마들이 정의될 때 사용하던 네이밍 규칙을 따라 한 것인데 그럴리가 없다는 것이 내 생각이었다. 하지만 <strong>결함의 발견은 절대 그럴리가 없다는 부분부터 시작해야 한다.</strong></p>
+<p>처음엔 이유를 몰라 어떻게 해야 할지 몰랐다. <code>af_DialogTheme.Base =&gt; af_DialogTheme</code>라고 나오는데 그렇게 지정하지 않았는데 왜 알아서 참조를 한다고 난리일까? 고민을 하던 중 옆에 있던 후배가 하는 말이 &quot;저기 이름에 있는 . 때문에 그런것 아니냐?&quot;라는 것이다. 난 말도 안된다고 했다. 어떻게 그렇게 해석 될 수 있느냐? 게다가 .Base라는 구문은 안드로이드 내부 테마들이 정의될 때 사용하던 네이밍 규칙을 따라 한 것인데 그럴리가 없다는 것이 내 생각이었다. 하지만 <strong>결함의 발견은 절대 그럴리가 없다는 부분부터 시작해야 한다.</strong></p>
 
-<p>결론은 후배의 말이 맞았다. name을 <code>af_DialogTheme.Base</code>에서 <code>af_DialogTheme_Base</code>로 변경하자 오류는 사라졌다. 아&hellip; 어의없다.
-보다 확실히 하기 위해 아래와 같이 name을 둔 채로 parent를 추가했다. 당연히 상속받을 것은 없으므로 공백으로&hellip;</p>
+<p>결론은 후배의 말이 맞았다. name을 <code>af_DialogTheme.Base</code>에서 <code>af_DialogTheme_Base</code>로 변경하자 오류는 사라졌다. 아... 어의없다.
+보다 확실히 하기 위해 아래와 같이 name을 둔 채로 parent를 추가했다. 당연히 상속받을 것은 없으므로 공백으로...</p>
 
-<p><strong> values/styles.xml </strong></p>
-
+<p>** values/styles.xml **
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 </pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span> <span class="na">parent=</span><span class="s">&quot;&quot;</span><span class="nt">&gt;</span>
 </span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowNoTitle&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
+</span></code></pre></td></tr></table></div></figure></p>
 
 <p>이렇게 처리해도 오류는 사라졌다. 그럼 이제 경험에 의한 결론을 내려보자(서두에 이야기한 것 처럼 그냥 내가 추측하는 것이니 틀릴 확률이 높다는 것을 감안하고 보자).</p>
 
-<blockquote><p>style 정의시 name에 .을 사용하고 parent가 지정되지 않았다면 . 앞부분의 name을 parent로 정의한 것으로 보고 상속을 시도한다.</p></blockquote>
+<blockquote>
+<p>style 정의시 name에 .을 사용하고 parent가 지정되지 않았다면 . 앞부분의 name을 parent로 정의한 것으로 보고 상속을 시도한다.</p>
+</blockquote>
 
 <p>결론적으로 내 의도는 .Base가 붙은 녀석이 부모가 되는 것을 원하고 네이밍한 것이 반대로 자식이 되어 순환참조를 발생시키게 한 것이다.</p>
 
@@ -249,13 +243,17 @@
 
 <p>여기서 최종적인 나의 생각(추측)을 정리하겠다.</p>
 
-<blockquote><p>예전(구버전 안드로이드)에는 위의 설명대로 .을 기준으로한 theme(style) 상속의 개념이 사용되었기 때문에 lint에 추가되어 있었다. 그런데 시간이 지나면서 이 기능은 제거되고 parent라는 속성이 추가되었으나 lint에서는 검증 코드가 제외되지 않았다.</p></blockquote>
+<blockquote>
+<p>예전(구버전 안드로이드)에는 위의 설명대로 .을 기준으로한 theme(style) 상속의 개념이 사용되었기 때문에 lint에 추가되어 있었다. 그런데 시간이 지나면서 이 기능은 제거되고 parent라는 속성이 추가되었으나 lint에서는 검증 코드가 제외되지 않았다.</p>
+</blockquote>
 
 <p>이렇게 생각하는 이유는 실제로 lint 영역에서만 오류가 나지 동작시에는 아무런 문제가 없다.</p>
 
-<h3>그래서 어떻게 하면 되나?</h3>
+<h3 id="그래서-어떻게-하면-되나">그래서 어떻게 하면 되나?</h3>
 
-<blockquote><p>style를 사용한 theme 정의시 parent가 없다면 name에 .을 사용하지 말거나 공백으로라도 parent 속성을 사용하자.</p></blockquote>
+<blockquote>
+<p>style를 사용한 theme 정의시 parent가 없다면 name에 .을 사용하지 말거나 공백으로라도 parent 속성을 사용하자.</p>
+</blockquote>
 
 <p><code>Style Resource definition cycle</code> 오류를 만난다면 위의 글을 참고해서 해결에 도움이 되었으면 하는 바램이다. 나도 오늘 후배의 한마디가 아니었다면 아직도 헬게이트를 경험하고 있을지도 모른다.</p>
 </div>
@@ -384,7 +382,7 @@
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (25)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (26)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -393,6 +391,8 @@
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/13/remove-line-break-in-tablayout/">안드로이드 TabLayout 사용시 Tab Text가 두줄로 나오는 문제 해결</a>
+    
     <a class="list-group-item " href="/2015/10/12/bookmarklet/">북마클릿(bookmarklet) 생성기</a>
     
     <a class="list-group-item " href="/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/">java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류</a>
@@ -400,8 +400,6 @@
     <a class="list-group-item " href="/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/">안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제</a>
     
     <a class="list-group-item " href="/2015/10/12/gitlab-ce-to-gitlab-dot-com/">자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다</a>
-    
-    <a class="list-group-item " href="/2015/10/08/change-centos-6-nic-i-slash-f-number-eth-star/">NIC I/F 번호(eth*)를 변경</a>
     
   </div>
 </section>

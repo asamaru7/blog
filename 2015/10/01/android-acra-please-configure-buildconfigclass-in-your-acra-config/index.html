@@ -159,7 +159,6 @@
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">E</span><span class="o">/</span><span class="nl">ACRA:</span> <span class="n">Not</span> <span class="n">adding</span> <span class="n">buildConfig</span> <span class="n">to</span> <span class="n">log</span><span class="o">.</span> <span class="n">Class</span> <span class="n">Not</span> <span class="n">found</span> <span class="o">:</span> <span class="n">net</span><span class="o">.</span><span class="na">yourdomain</span><span class="o">.</span><span class="na">BuildConfig</span><span class="o">.</span> <span class="n">Please</span> <span class="n">configure</span> <span class="err">&#39;</span><span class="n">buildConfigClass</span><span class="err">&#39;</span> <span class="n">in</span> <span class="n">your</span> <span class="n">ACRA</span> <span class="n">config</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>우선 ACRA를 초기화하는 코드를 살펴보자. 당연하지만 실제 적용코드가 아닌 부분적으로 정리된 코드다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -169,7 +168,6 @@
 </span><span class='line'><span class="n">config</span><span class="o">.</span><span class="na">setFormUri</span><span class="o">(</span><span class="s">&quot;http://dev.yourdomain.net/AppCrash&quot;</span><span class="o">);</span>
 </span><span class='line'><span class="n">ACRA</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span> <span class="c1">// The following line triggers the initialization of ACRA</span>
 </span></code></pre></td></tr></table></div></figure>
-
 
 <p>@ReportsCrashes 어노테이션을 사용하지 않고 동적으로 초기화시켜주는 코드다. 실제로 Crash를 발생시키면 위에서 보여준 오류가 난다. 사실 이 문제는 원인을 확인한 결과 Proguard가 적용되었을 때만 오류가 발생한다. 아래의 ACRA 소스 코드의 일부를 보자.</p>
 
@@ -209,8 +207,7 @@
 </span><span class='line'><span class="o">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
-<p><code>final String className = context.getClass().getPackage().getName() + ".BuildConfig";</code> 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
+<p><code>final String className = context.getClass().getPackage().getName() + &quot;.BuildConfig&quot;;</code> 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
 해결을 위한 아래의 코드를 보자.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -223,10 +220,9 @@
 </span><span class='line'><span class="n">ACRA</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span> <span class="c1">// The following line triggers the initialization of ACRA</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p><code>config.setBuildConfigClass(BuildConfig.class);</code> 이 부분을 추가했다. ACRA 코드에서 보듯이 setBuildConfigClass로 직접 BuildConfig를 넘겨주면 패키지명으로 찾지 않는다. 따라서 Proguard가 적용되어도 문제가 없다.</p>
 
-<hr />
+<hr>
 
 <p>이 오류는 이것으로 해결이 가능하다. 하지만 나는 지금 다른 문제로 다시 고군분투 중이다.
 오류 발생시 HTTP/POST를 통해 오류 관련 정보를 전송하도록 사용중이었다. 그런데 앞서 이야기 한것과 같이 이번에 버전업이 되면서 HTTP 접속 관련 부분이 변경되었다. 여기에 문제가 있다.</p>
@@ -238,7 +234,6 @@
 </span><span class='line'><span class="n">urlConnection</span><span class="o">.</span><span class="na">setChunkedStreamingMode</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
 </span><span class='line'><span class="o">...</span>
 </span></code></pre></td></tr></table></div></figure>
-
 
 <p>위 부분은 ACRA에서 HTTP 전송시 사용하는 HttpRequest.java 의 일부분이다. <code>setChunkedStreamingMode</code>에 대해서는 여기서 설명하기엔 너무 길고 간단히 요약하자면 chunked 상태로 데이터가 전송된다.
 그런데 이 상태로 전송되면 현재 내가 사용하고 있는 서버에서 POST 값이 모두 비어 있다. request의 body가 수신되지 못하는 것이다. 이 부분은 나의 환경인 php-fpm가 proxy로 연결되어 있는 것과 관련이 있는 것으로 보인다. 이 부분에 대해서는 여러가지로 시도해 보았으나 해결이 되지 않았고 일단은 몇개의 클래스를 재정의해서 문제를 막아 놓았다. 그리고 관련해서는 ACRA에 Issue로 등록해 두었다. 개선이 될런지는 미지수인데 안된다면 앞으로 사용상에 걸림돌이 될 것 같다. 이 부분에 관련된 해결책이 나온다면 다시 포스팅을 하도록 하겠다.</p>
@@ -368,7 +363,7 @@
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (25)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (26)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -377,6 +372,8 @@
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/13/remove-line-break-in-tablayout/">안드로이드 TabLayout 사용시 Tab Text가 두줄로 나오는 문제 해결</a>
+    
     <a class="list-group-item " href="/2015/10/12/bookmarklet/">북마클릿(bookmarklet) 생성기</a>
     
     <a class="list-group-item " href="/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/">java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류</a>
@@ -384,8 +381,6 @@
     <a class="list-group-item " href="/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/">안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제</a>
     
     <a class="list-group-item " href="/2015/10/12/gitlab-ce-to-gitlab-dot-com/">자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다</a>
-    
-    <a class="list-group-item " href="/2015/10/08/change-centos-6-nic-i-slash-f-number-eth-star/">NIC I/F 번호(eth*)를 변경</a>
     
   </div>
 </section>

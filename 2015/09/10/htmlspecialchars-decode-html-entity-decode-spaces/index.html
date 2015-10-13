@@ -156,13 +156,12 @@ htmlspecialchars_decode는 <code>&amp;nbsp;</code>를 공백으로 다시 되돌
 <p>다시 htmlspecialchars로 돌아가서 메뉴얼을 보면 아래와 같이 변환된다고 설명되어 있다.</p>
 
 <ul>
-<li>&lsquo;&amp;&rsquo;(앰퍼샌드)는 &lsquo;<code>&amp;amp;</code>'가 됩니다</li>
-<li>&lsquo;&ldquo;&rsquo;(겹따옴표)는 ENT_NOQUOTES를 설정하지 않았을 때 &lsquo;<code>&amp;quot;</code>'가 됩니다.</li>
-<li>&lsquo;&rsquo;&lsquo;(홑따옴표)는 ENT_QUOTES가 설정되었을 때만 &rsquo;<code>&amp;#039;</code>&lsquo;가 됩니다.</li>
-<li>&lsquo;&lt;&rsquo;(미만)은 &lsquo;<code>&amp;lt;</code>'가 됩니다.</li>
-<li>&lsquo;>&rsquo;(이상)은 &lsquo;<code>&amp;gt;</code>'가 됩니다.</li>
+<li>&#39;&amp;&#39;(앰퍼샌드)는 &#39;<code>&amp;amp;</code>&#39;가 됩니다</li>
+<li>&#39;&quot;&#39;(겹따옴표)는 ENT_NOQUOTES를 설정하지 않았을 때 &#39;<code>&amp;quot;</code>&#39;가 됩니다.</li>
+<li>&#39;&#39;&#39;(홑따옴표)는 ENT_QUOTES가 설정되었을 때만 &#39;<code>&amp;#039;</code>&#39;가 됩니다.</li>
+<li>&#39;&lt;&#39;(미만)은 &#39;<code>&amp;lt;</code>&#39;가 됩니다.</li>
+<li>&#39;&gt;&#39;(이상)은 &#39;<code>&amp;gt;</code>&#39;가 됩니다.</li>
 </ul>
-
 
 <p>보다시피 엄밀히 말하자면 htmlspecialchars는 공백을 변환시키지 않는다. 따라서 대응되는 함수인 htmlspecialchars_decode는 <code>&amp;nbsp;</code> 공백 문자열을 되돌리지도 않는다.</p>
 
@@ -171,22 +170,28 @@ htmlspecialchars_decode는 <code>&amp;nbsp;</code>를 공백으로 다시 되돌
 
 <p>그럼 htmlentities 함수는 무엇인가? 메뉴얼에 따르면 다음과 같다.</p>
 
-<blockquote><p>htmlentities()는 HTML 문자 엔티티에 존재하는 모든 문자를 엔티티로 변환하는 점을 제외하면, htmlspecialchars()와 완전히 동일합니다.</p></blockquote>
+<blockquote>
+<p>htmlentities()는 HTML 문자 엔티티에 존재하는 모든 문자를 엔티티로 변환하는 점을 제외하면, htmlspecialchars()와 완전히 동일합니다.</p>
+</blockquote>
 
 <p>중요한 부분은 모든 문자를 변환한다는 점이다. 이 부분이 htmlspecialchars와의 차이라고 한다.</p>
 
 <p>정리하자면</p>
 
-<blockquote><p>htmlspecialchars와 htmlentities는 유사하나 htmlentities가 더 많은 문자를 변환한다.
-htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode가 더 많은 문자를 되돌린다.</p></blockquote>
+<blockquote>
+<p>htmlspecialchars와 htmlentities는 유사하나 htmlentities가 더 많은 문자를 변환한다.
+htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode가 더 많은 문자를 되돌린다.</p>
+</blockquote>
 
 <p>따라서 결론은 <code>&amp;nbsp;</code>와 같은 문자열까지 모두 decode 하려면 html_entity_decode를 사용하면 된다.</p>
 
-<h2>주의</h2>
+<h2 id="주의">주의</h2>
 
 <p>자.. 이렇게 해피앤딩이 되면 좋겠지만 몇가지 주의 사항이 있다. html_entity_decode 메뉴얼을 보면 다음과 같은 설명이 있다.</p>
 
-<blockquote><p>You might wonder why trim(html_entity_decode(&lsquo;&nbsp;&rsquo;)); doesn&rsquo;t reduce the string to an empty string, that&rsquo;s because the &lsquo;&nbsp;&rsquo; entity is not ASCII code 32 (which is stripped by trim()) but ASCII code 160 (0xa0) in the default ISO 8859-1 encoding.</p></blockquote>
+<blockquote>
+<p>You might wonder why trim(html_entity_decode(&#39;&nbsp;&#39;)); doesn&#39;t reduce the string to an empty string, that&#39;s because the &#39;&nbsp;&#39; entity is not ASCII code 32 (which is stripped by trim()) but ASCII code 160 (0xa0) in the default ISO 8859-1 encoding.</p>
+</blockquote>
 
 <p>그렇다. html_entity_decode를 사용해서 <code>&amp;nbsp;</code>를 변환하면 공백이 일반적인 공백과는 다른 공백이다. 이게 왜 문제가 되느냐? 아래의 예시를 보자.</p>
 
@@ -198,8 +203,7 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
 </span><span class='line'><span class="k">echo</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;ok&#39;</span> <span class="o">:</span> <span class="s1">&#39;oops&#39;</span><span class="p">;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
-<p>쉽게 생각하면 &lsquo;ok'가 나올것 같지만 위에 설명했던 것과 같이 'oops'가 나온다. 그럼 어떻게 해결을 해야할까?</p>
+<p>쉽게 생각하면 &#39;ok&#39;가 나올것 같지만 위에 설명했던 것과 같이 &#39;oops&#39;가 나온다. 그럼 어떻게 해결을 해야할까?</p>
 
 <p>메뉴얼에서 ASCII code 160 (0xa0)로 변경된다고 하니 이것을 참고해서 조금 고쳐보자.</p>
 
@@ -211,9 +215,8 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
 </span><span class='line'><span class="k">echo</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;ok&#39;</span> <span class="o">:</span> <span class="s1">&#39;oops&#39;</span><span class="p">;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>이제 해결이 되었을까? 아니다. 결과는 oops이다.(사실 default_charset에 따라 ok가 나올 수도 있다.) 이유는 위에 메뉴얼에 있다.
-&lsquo;default ISO 8859-1&rsquo; 인코딩일 때 0xa0로 변환된다고 되어 있다. 사실 나의 환경은 &lsquo;UTF-8'이다. 대부분 그럴 것이라고 생각한다. 일단 맞는지 확인해 보자. 아래와 같이 default_charset을 ISO-8859-1에 맞추고 실행해보자.</p>
+&#39;default ISO 8859-1&#39; 인코딩일 때 0xa0로 변환된다고 되어 있다. 사실 나의 환경은 &#39;UTF-8&#39;이다. 대부분 그럴 것이라고 생각한다. 일단 맞는지 확인해 보자. 아래와 같이 default_charset을 ISO-8859-1에 맞추고 실행해보자.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -223,8 +226,7 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
 </span><span class='line'><span class="k">echo</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;ok&#39;</span> <span class="o">:</span> <span class="s1">&#39;oops&#39;</span><span class="p">;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
-<p>결과는 메뉴얼대로 &lsquo;ok&rsquo; 이다. 그럼 &lsquo;UTF-8'에서는 어떻게 하나? 아래의 코드를 보자.</p>
+<p>결과는 메뉴얼대로 &#39;ok&#39; 이다. 그럼 &#39;UTF-8&#39;에서는 어떻게 하나? 아래의 코드를 보자.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -234,10 +236,9 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
 </span><span class='line'><span class="k">echo</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;ok&#39;</span> <span class="o">:</span> <span class="s1">&#39;oops&#39;</span><span class="p">;</span>
 </span></code></pre></td></tr></table></div></figure>
 
+<p>드디어 &#39;ok&#39;가 나온다. 중요한 차이는 &quot;\xc2\xa0&quot; 이다. UTF-8에서는 &quot;\xc2\xa0&quot;는 <a href="http://www.utf8-chartable.de/unicode-utf8-table.pl?start=128&amp;number=128&amp;utf8=string-literal&amp;unicodeinhtml=hex">UTF-8 encoding table and Unicode characters</a>에서 확인해보면 UTF-8에서의 &quot;NO-BREAK SPACE&quot;라고 되어 있다.</p>
 
-<p>드디어 &lsquo;ok'가 나온다. 중요한 차이는 &ldquo;\xc2\xa0&rdquo; 이다. UTF-8에서는 &ldquo;\xc2\xa0"는 <a href="http://www.utf8-chartable.de/unicode-utf8-table.pl?start=128&amp;number=128&amp;utf8=string-literal&amp;unicodeinhtml=hex">UTF-8 encoding table and Unicode characters</a>에서 확인해보면 UTF-8에서의 "NO-BREAK SPACE"라고 되어 있다.</p>
-
-<p>참 별것 아닌것 같은 함수가 잘모르고 사용하다보면 예상치 못한 문제들을 일으킨다. 사실 <code>&amp;nbsp;</code>만 처리하면 된다면 더 간단하게 <code>str_replace('&amp;nbsp;', ' ', $str)</code>로 해결해도 된다. 하지만 프로그램에선 항상 어떤 값이 들어올지 모르는 것이니 보다 명확하게 처리하는 것이 낫지 않을까?</p>
+<p>참 별것 아닌것 같은 함수가 잘모르고 사용하다보면 예상치 못한 문제들을 일으킨다. 사실 <code>&amp;nbsp;</code>만 처리하면 된다면 더 간단하게 <code>str_replace(&#39;&amp;nbsp;&#39;, &#39; &#39;, $str)</code>로 해결해도 된다. 하지만 프로그램에선 항상 어떤 값이 들어올지 모르는 것이니 보다 명확하게 처리하는 것이 낫지 않을까?</p>
 </div>
 
 
@@ -364,7 +365,7 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (25)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (26)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -373,6 +374,8 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/13/remove-line-break-in-tablayout/">안드로이드 TabLayout 사용시 Tab Text가 두줄로 나오는 문제 해결</a>
+    
     <a class="list-group-item " href="/2015/10/12/bookmarklet/">북마클릿(bookmarklet) 생성기</a>
     
     <a class="list-group-item " href="/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/">java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류</a>
@@ -380,8 +383,6 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
     <a class="list-group-item " href="/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/">안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제</a>
     
     <a class="list-group-item " href="/2015/10/12/gitlab-ce-to-gitlab-dot-com/">자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다</a>
-    
-    <a class="list-group-item " href="/2015/10/08/change-centos-6-nic-i-slash-f-number-eth-star/">NIC I/F 번호(eth*)를 변경</a>
     
   </div>
 </section>

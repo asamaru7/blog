@@ -138,6 +138,88 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-21T11:20:00+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.21</time>
+        
+           | <a href="/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/" itemprop="url">안드로이드 ViewPager.setOnPageChangeListener() Deprecated 대응</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p><a href="https://developer.android.com/intl/ko/tools/support-library/index.html">Android Support Library 22.2.0</a> 이후부터 ViewPager.setOnPageChangeListener() 함수가 Deprecated 되었다. 안드로이드는 무슨 Deprecated가 이렇게 빈번한지... 하지만 이번 변경은 옳은 결정이라고 생각한다. 그냥 Deprecated된 것이 아니라 대체할 수 있는 함수가 함께 추가되었다(더 유연한).</p>
+
+<p>** <a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#setOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.setOnPageChangeListener() - Deprecated</a> **
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setOnPageChangeListener</span> <span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">OnPageChangeListener</span> <span class="n">listener</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<blockquote>
+<p>ViewPager의 페이지가 변경(선택된 페이지의 변경 : UI의 변경이 아닌)되거나 스크롤이 이동될 때 불려지는 listener를 지정한다.</p>
+</blockquote>
+
+<p>기존 setOnPageChangeListener의 문제점은 listener를 하나만 사용할 수 있다는 것이다. 그래서 이번에 Deprecated되면서 여러개의 listener를 사용할 수 있도록 변경되었다.</p>
+
+<p>대체 방법으로 아래의 함수들이 추가되었다.</p>
+
+<p>** <a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#addOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.addOnPageChangeListener()</a>**
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">addOnPageChangeListener</span> <span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">OnPageChangeListener</span> <span class="n">listener</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<blockquote>
+<p>OnPageChangeListener를 추가한다.</p>
+</blockquote>
+
+<p>** <a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#clearOnPageChangeListeners%28%29">ViewPager.clearOnPageChangeListeners()</a> **
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">clearOnPageChangeListeners</span> <span class="o">()</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<blockquote>
+<p>등록된 OnPageChangeListener를 모두 제거한다.</p>
+</blockquote>
+
+<p>** <a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#removeOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.removeOnPageChangeListener()</a>**
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">removeOnPageChangeListener</span> <span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">OnPageChangeListener</span> <span class="n">listener</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<blockquote>
+<p>지정된 OnPageChangeListener를 제거한다.</p>
+</blockquote>
+
+<p>사용법은 설명하지 않아도 바로 이해할 수 있을 생각된다. setOnPageChangeListener와 addOnPageChangeListener의 인자가 동일하므로 함수명만 바꾸면 그대로 동작한다. 단, 기존 것은 setOnPageChangeListener는 removeOnPageChangeListener와 addOnPageChangeListener 동작을 합친 것처럼 동작했으니 동일한 역할이 필요하다면 removeOnPageChangeListener와 addOnPageChangeListener를 함께 사용해야 한다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-20T08:23:23+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.20</time>
         
            | <a href="/2015/09/20/css-units/#disqus_thread" itemprop="discussionUrl"
@@ -153,173 +235,169 @@
 
   <div class="entry-content clearfix" itemprop="articleBody description"><p>w3schools의 <a href="http://www.w3schools.com/cssref/css_units.asp">CSS Units</a>에는 다음과 같이 CSS에서 사용하는 단위에 대해 안내되어 있다.</p>
 
-<blockquote><p>CSS는 단위(길이)를 표현하기 위한 여러가지 단위가 있다. width, margin, padding, font-size, border-width 등과 같은 많은 CSS 속성에서 사용한다. 단위는 10px, 2em과 같이 숫자 뒤에 공백없이 붙여서 사용하며 0인 경우는 생략할 수 있다. 단위는 음의 수를 가질 수 있으며 상대/절대 단위로 구분할 수 있다.</p></blockquote>
+<blockquote>
+<p>CSS는 단위(길이)를 표현하기 위한 여러가지 단위가 있다. width, margin, padding, font-size, border-width 등과 같은 많은 CSS 속성에서 사용한다. 단위는 10px, 2em과 같이 숫자 뒤에 공백없이 붙여서 사용하며 0인 경우는 생략할 수 있다. 단위는 음의 수를 가질 수 있으며 상대/절대 단위로 구분할 수 있다.</p>
+</blockquote>
 
-<h2>Browser Support</h2>
+<h2 id="browser-support">Browser Support</h2>
 
-<table>
-<thead>
+<table><thead>
 <tr>
-<th> Unit </th>
-<th> Chrome </th>
-<th> IE </th>
-<th> Firefox </th>
-<th> Safari </th>
-<th> Opera </th>
+<th>Unit</th>
+<th>Chrome</th>
+<th>IE</th>
+<th>Firefox</th>
+<th>Safari</th>
+<th>Opera</th>
 </tr>
-</thead>
-<tbody>
+</thead><tbody>
 <tr>
-<td>em, ex, %, px, cm, mm, in, pt, pc </td>
-<td> 1.0 </td>
-<td> 3.0 </td>
-<td> 1.0 </td>
-<td> 1.0 </td>
-<td> 3.5 </td>
+<td>em, ex, %, px, cm, mm, in, pt, pc</td>
+<td>1.0</td>
+<td>3.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>3.5</td>
 </tr>
 <tr>
-<td>ch </td>
-<td>27.0 </td>
-<td> 9.0 </td>
-<td> 1.0 </td>
-<td> 7.0 </td>
-<td> 20.0 </td>
+<td>ch</td>
+<td>27.0</td>
+<td>9.0</td>
+<td>1.0</td>
+<td>7.0</td>
+<td>20.0</td>
 </tr>
 <tr>
-<td>rem </td>
-<td> 4.0 </td>
-<td> 9.0 </td>
-<td> 3.6 </td>
-<td> 4.1 </td>
-<td> 11.6 </td>
+<td>rem</td>
+<td>4.0</td>
+<td>9.0</td>
+<td>3.6</td>
+<td>4.1</td>
+<td>11.6</td>
 </tr>
 <tr>
-<td>vh, vw </td>
-<td> 20.0 </td>
-<td> 9.0 </td>
-<td> 19.0 </td>
-<td> 6.0 </td>
-<td> 20.0 </td>
+<td>vh, vw</td>
+<td>20.0</td>
+<td>9.0</td>
+<td>19.0</td>
+<td>6.0</td>
+<td>20.0</td>
 </tr>
 <tr>
-<td>vmin </td>
-<td> 20.0 </td>
-<td> 9.0* </td>
-<td> 19.0 </td>
-<td> 6.0 </td>
-<td> 20.0 </td>
+<td>vmin</td>
+<td>20.0</td>
+<td>9.0*</td>
+<td>19.0</td>
+<td>6.0</td>
+<td>20.0</td>
 </tr>
 <tr>
-<td>vmax </td>
-<td> 26.0 </td>
-<td> Not supported </td>
-<td> 19.0 </td>
-<td> Not supported </td>
-<td> 20.0 </td>
+<td>vmax</td>
+<td>26.0</td>
+<td>Not supported</td>
+<td>19.0</td>
+<td>Not supported</td>
+<td>20.0</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 
+<blockquote>
+<p>Note: 인터넷 익스플로러 9에서는 vmin을 비표준 이름인 vm으로 지원한다.</p>
+</blockquote>
 
-<blockquote><p>Note: 인터넷 익스플로러 9에서는 vmin을 비표준 이름인 vm으로 지원한다.</p></blockquote>
-
-<h2>상대 단위</h2>
+<h2 id="상대-단위">상대 단위</h2>
 
 <p>상대 단위는 다른 단위 속성에 대한 상대적 길이를 지정한다. 상대 단위를 잘 사용하면 다양한 디바이스에 최적화된 보기를 제공할 수 있기 때문에 권장되는 단위이다. 하지만 일반적으로 고정된 사이즈 내에서 디자인하는 것에 익숙한 경우에는 사용이 다소 까다롭다(상대적 단위를 쓸 때 가장 중요한 것은 어느 것에 대한 상대적 사이즈인지를 생각해야 하기 때문이다. 단순해 보이지만 작업을 하다보면 조금 복잡한 상황이 생기기도 한다).</p>
 
-<table>
-<thead>
+<table><thead>
 <tr>
-<th> Unit </th>
-<th> Description </th>
+<th>Unit</th>
+<th>Description</th>
 </tr>
-</thead>
-<tbody>
+</thead><tbody>
 <tr>
-<td> em </td>
-<td> 해당 Element의 font-size에 대한 비율(2em은 font-size의 2배 사이즈) </td>
+<td>em</td>
+<td>해당 Element의 font-size에 대한 비율(2em은 font-size의 2배 사이즈)</td>
 </tr>
 <tr>
-<td> ex </td>
-<td> 현재 글꼴의 x(소문자) 높이에 대한 비율 </td>
+<td>ex</td>
+<td>현재 글꼴의 x(소문자) 높이에 대한 비율</td>
 </tr>
 <tr>
-<td> ch </td>
-<td> &ldquo;0"의 width에 대한 비율 </td>
+<td>ch</td>
+<td>&quot;0&quot;의 width에 대한 비율</td>
 </tr>
 <tr>
-<td> rem </td>
-<td> Root Element(html)의 font-size에 대한 비율 </td>
+<td>rem</td>
+<td>Root Element(html)의 font-size에 대한 비율</td>
 </tr>
 <tr>
-<td> vw </td>
-<td> Viewport width의 1%에 대한 비율 </td>
+<td>vw</td>
+<td>Viewport width의 1%에 대한 비율</td>
 </tr>
 <tr>
-<td> vh </td>
-<td> Viewport height의 1%에 대한 비율 </td>
+<td>vh</td>
+<td>Viewport height의 1%에 대한 비율</td>
 </tr>
 <tr>
-<td> vmin </td>
-<td> Viewport smaller dimension의 1%에 대한 비율 </td>
+<td>vmin</td>
+<td>Viewport smaller dimension의 1%에 대한 비율</td>
 </tr>
 <tr>
-<td> vmax </td>
-<td> Viewport larger dimension의 1%에 대한 비율 </td>
+<td>vmax</td>
+<td>Viewport larger dimension의 1%에 대한 비율</td>
 </tr>
 <tr>
-<td> % </td>
-<td> &nbsp; </td>
+<td>%</td>
+<td>&nbsp;</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 
+<blockquote>
+<p>Tip: em과 rem 단위는 확장 레이아웃을 만는데 아주 실용적(효과적)이다.</p>
+</blockquote>
 
-<blockquote><p>Tip: em과 rem 단위는 확장 레이아웃을 만는데 아주 실용적(효과적)이다.</p></blockquote>
+<h2 id="절대-단위">절대 단위</h2>
 
-<h2>절대 단위</h2>
+<p>절대 단위는 고정되어 있으며 지정된 단위로 정확히 표현된다. &quot;웹 화면의 크기는 아주 다양하기 때문에 화면에서는 사용하지 않는 것이 좋다. 그러나 프린트 레이아웃과 같이 출력 화면을 알고 있는 경우에는 사용될 수 있다.&quot;라고는 하지만 일반적인 경우엔 상대 단위보다 더 많이 사용하게 된다.</p>
 
-<p>절대 단위는 고정되어 있으며 지정된 단위로 정확히 표현된다. &ldquo;웹 화면의 크기는 아주 다양하기 때문에 화면에서는 사용하지 않는 것이 좋다. 그러나 프린트 레이아웃과 같이 출력 화면을 알고 있는 경우에는 사용될 수 있다."라고는 하지만 일반적인 경우엔 상대 단위보다 더 많이 사용하게 된다.</p>
-
-<table>
-<thead>
+<table><thead>
 <tr>
-<th> Unit </th>
-<th> Description </th>
+<th>Unit</th>
+<th>Description</th>
 </tr>
-</thead>
-<tbody>
+</thead><tbody>
 <tr>
-<td> cm </td>
-<td> 센티미터 </td>
-</tr>
-<tr>
-<td> mm </td>
-<td> 밀리미터 </td>
+<td>cm</td>
+<td>센티미터</td>
 </tr>
 <tr>
-<td> in </td>
-<td> 인치 (1in = 96px = 2.54cm) </td>
+<td>mm</td>
+<td>밀리미터</td>
 </tr>
 <tr>
-<td> px * </td>
-<td> 픽셀 (1px = 1/96th of 1in) </td>
+<td>in</td>
+<td>인치 (1in = 96px = 2.54cm)</td>
 </tr>
 <tr>
-<td> pt </td>
-<td> 포인트 (1pt = 1/72 of 1in) </td>
+<td>px *</td>
+<td>픽셀 (1px = 1/96th of 1in)</td>
 </tr>
 <tr>
-<td> pc </td>
-<td> 피카 (1pc = 12 pt) </td>
+<td>pt</td>
+<td>포인트 (1pt = 1/72 of 1in)</td>
 </tr>
-</tbody>
-</table>
+<tr>
+<td>pc</td>
+<td>피카 (1pc = 12 pt)</td>
+</tr>
+</tbody></table>
 
+<blockquote>
+<p>Pixels(px)는 보여지는 기기에 따라 상대적이다. 예를들어 low-dpi 기기에서는 1px은 화면의 1 device pixel(dot)이다. 프린터 또는 고행상도 기기에서는 1px이 화면의 여러 pixel과 동일하다.</p>
+</blockquote>
 
-<blockquote><p>Pixels(px)는 보여지는 기기에 따라 상대적이다. 예를들어 low-dpi 기기에서는 1px은 화면의 1 device pixel(dot)이다. 프린터 또는 고행상도 기기에서는 1px이 화면의 여러 pixel과 동일하다.</p></blockquote>
-
-<h2>사용 제안</h2>
+<h2 id="사용-제안">사용 제안</h2>
 
 <p>위에서 절대 단위를 더 많이 사용한다는 언급을 했던 것과 마찬가지로 대부분의 경우에 고정 단위를 많이 사용한다. 하지만 최근의 트랜드를 감안하면 상대 단위를 적극적으로 사용할 필요가 있다. 최근 유행하는 용어들인 멀티 디바이스, 적응형 웹, 반응형 웹, 미디어 쿼리 등에 상대 단위가 더 잘 부합된다. 사실 정확히 이야기하자면 선정된 환경(예측되는 한경)만 감안한다면 절대 단위만으로 원하는 결과를 대부분 얻을 수 있다. 하지만 지금처럼 다양한 환경(미리 환경을 예측할 수 없을 만큼)에 최선의 결과를 얻고 싶다면 기존 설계의 습관을 버리고 상대 단위를 기반으로한 디자인 설계를 적극 도입하자.</p>
 </div>
@@ -365,7 +443,7 @@
 
 <p>우선 호환성 보기란 무엇인가?</p>
 
-<p>마이크로소프트의 윈도우 사이트에 보면 &ldquo;<a href="http://windows.microsoft.com/ko-kr/windows/websites-display-incorrectly-internet-explorer-8#1TC=windows-7">왜 Internet Explorer 8에서 일부 웹 사이트가 올바르게 표시되지 않습니까?</a>"라는 글이 있다. 사실 이 글에서도 명확하게 설명하진 않지만 "이전 버전의 Internet Explorer(인터넷 익스플로러)용 웹 사이트는 현재 버전에서 올바르게 표시되지 않을 수도 있습니다. 하지만 호환성 보기를 사용하여 Internet Explorer(인터넷 익스플로러)에서 웹 사이트가 표시되는 방식을 개선할 수 있습니다."라고 되어 있다.</p>
+<p>마이크로소프트의 윈도우 사이트에 보면 &quot;<a href="http://windows.microsoft.com/ko-kr/windows/websites-display-incorrectly-internet-explorer-8#1TC=windows-7">왜 Internet Explorer 8에서 일부 웹 사이트가 올바르게 표시되지 않습니까?</a>&quot;라는 글이 있다. 사실 이 글에서도 명확하게 설명하진 않지만 &quot;이전 버전의 Internet Explorer(인터넷 익스플로러)용 웹 사이트는 현재 버전에서 올바르게 표시되지 않을 수도 있습니다. 하지만 호환성 보기를 사용하여 Internet Explorer(인터넷 익스플로러)에서 웹 사이트가 표시되는 방식을 개선할 수 있습니다.&quot;라고 되어 있다.</p>
 
 <p><strong>MS 관련글</strong>
 * <a href="http://windows.microsoft.com/ko-kr/internet-explorer/use-compatibility-view#ie=ie-11">호환성 보기를 사용하여 사이트 표시 문제 해결하기</a>
@@ -375,13 +453,13 @@
 
 <p>하지만 나는 이 호환성 보기라는 것이 더 큰 문제들을 만들었다고 생각한다. 어짜피 새로운 웹 표준으로 전향되어야 하는 상황에 알아서 맞춰주는 기능을 제공하니 서비스들이 변화에 적응하는 것이 더 늦어진 것이다. 변화할 시간을 준다는 목적이었을지 모르나 제대로된 웹으로 전환되는데 걸림돌이 되는 상황이다. 특히 이 호환성 모드가 8에서만 제공되는 것이 아니라 그 이후 9, 10, 11에서 조차도 제공한다는 것이다. 게다가 호환성 보기를 사용자가 판단하여 도저히 볼 수 없는 사이트를 골라서 적용하게 해야 하는데 인터넷 익스플로러가 자체적인 판단을 해서 호환성 모드로 보여주는 경우가 많다. 여기서 심각한 문제가 발생한다. 정작 웹표준을 준수하여 만들어진 페이지가 호환성 보기로 렌더링되어 깨지는 경우가 생기는 것이다(참고 - 랜더링 모드 선택 순서도 : <a href="https://hsivonen.fi/doctype/ie-mode.pdf">https://hsivonen.fi/doctype/ie-mode.pdf</a>).</p>
 
-<p>나는 주변 지인들과이 대화에서 MS를 인터넷 발전의 &ldquo;악의 축"이라고 자주 얘기하곤 한다. 그 이유를 나열하자면 한도 끝도 없을 것 같고&hellip; 웹 분야에 일을 하시는 분들이라면 대부분의 경우 무엇 때문에 그런 생각을 가지게 되었는지 공감할 것이라고 생각한다.</p>
+<p>나는 주변 지인들과이 대화에서 MS를 인터넷 발전의 &quot;악의 축&quot;이라고 자주 얘기하곤 한다. 그 이유를 나열하자면 한도 끝도 없을 것 같고... 웹 분야에 일을 하시는 분들이라면 대부분의 경우 무엇 때문에 그런 생각을 가지게 되었는지 공감할 것이라고 생각한다.</p>
 
 <p>어쨌든 다시 본론으로 돌아가서 이 호환성 보기는 현재 시점(HTML5를 채용하는 신규 웹 프로젝트)에서는 사용할 일이 없는 기능이다. 하지만 앞서 얘기한 것처럼 익스플로러가 제작된 페이지를 호환성 보기로 보여줘 버리는 문제를 해결하지 않으면 불편한 상황을 만나게 될 수 있으니 미리 대비해야 한다.</p>
 
 <p>인터넷 익스플로러가 호환성 보기가 아닌 지정된 모드로 랜더링되게 하는 방법을 하나씩 알아보자.</p>
 
-<h2>X-UA-Compatible Meta 선언을 사용하여 브라우저의 호환성 모드를 조정</h2>
+<h2 id="x-ua-compatible-meta-선언을-사용하여-브라우저의-호환성-모드를-조정">X-UA-Compatible Meta 선언을 사용하여 브라우저의 호환성 모드를 조정</h2>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -393,12 +471,10 @@
 </span><span class='line'>    <span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">&quot;X-UA-Compatible&quot;</span> <span class="na">content=</span><span class="s">&quot;IE=edge,chrome=1&quot;</span><span class="nt">&gt;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
 <ul>
 <li>IE=edge : 최신모드로 지정된 DOCTYPE에 상관없이 IE8 이상 버전에서 항상 최신 표준 모드로 렌더링</li>
 <li>chrome=1 : 크롬이 설치되어있다면 IE에서도 크롬 렌더링을 사용</li>
 </ul>
-
 
 <p>당연히 위에 예시처럼 <code>IE=edge,chrome=1</code>을 사용하는 것이 권장된다. 하지만 그외에도 아래와 같은 설정도 있다.</p>
 
@@ -410,10 +486,9 @@
 <li>IE=EmulateIE8 : IE8 에뮬레이션 모드로 지정된 DOCTYPE에 따라 IE8 표준모드나 관용모드로 렌더링</li>
 </ul>
 
-
 <p>X-UA-Compatible는 HTML5에서 비표준 속성으로 validation에서 경고가 나올 수 있다.</p>
 
-<h2>서버에서 응답 헤더에 X-UA-Compatible를 함께 전송</h2>
+<h2 id="서버에서-응답-헤더에-x-ua-compatible를-함께-전송">서버에서 응답 헤더에 X-UA-Compatible를 함께 전송</h2>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -440,7 +515,7 @@
 <span class='line-number'>23</span>
 <span class='line-number'>24</span>
 <span class='line-number'>25</span>
-</pre></td><td class='code'><pre><code class='apache'><span class='line'><span class="c"># ------------------------------------------------------------------------------</span>
+</pre></td><td class='code'><pre><code class='apacheconf'><span class='line'><span class="c"># ------------------------------------------------------------------------------</span>
 </span><span class='line'><span class="c"># | Better website experience                                                  |</span>
 </span><span class='line'><span class="c"># ------------------------------------------------------------------------------</span>
 </span><span class='line'><span class="c"># Force IE to render pages in the highest available mode in the various</span>
@@ -467,9 +542,6 @@
 </span><span class='line'><span class="nt">&lt;/IfModule&gt;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
-
-
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
@@ -479,9 +551,6 @@
 </span><span class='line'>  <span class="kn">add_header</span> <span class="s">X-UA-Compatible</span> <span class="s">&quot;IE=Edge,chrome=1&quot;</span><span class="p">;</span>
 </span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
-
-
-
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -503,12 +572,11 @@
 </span><span class='line'><span class="nt">&lt;/configuration&gt;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
-<h2>크롬 프레임</h2>
+<h2 id="크롬-프레임">크롬 프레임</h2>
 
 <p><a href="https://tools.google.com/dlpage/chromeframe?hl=ko&amp;prefersystemlevel=true">크롬 프레임</a>이라는 ActiveX를 설치해서 익스플로러에서 크롬처럼 랜더링하는 것도 가능했지만 크롬 프레임의 개발 종료로 이제 더 이상 추천하지 않는다.</p>
 
-<h2>추가적 문제</h2>
+<h2 id="추가적-문제">추가적 문제</h2>
 
 <p>자.. 그럼 이로써 모든 문제가 해결된 것인가? 항상 그렇듯 프로그래머에게는 쉽게 해피엔딩이 찾아오지 않는다. 사실 위의 X-UA-Compatible는 브라우저에게 주는 권고사항일뿐 강제사항이 아니다.</p>
 
@@ -523,8 +591,7 @@
 <li><strong>가끔 Tweek된 버전의 윈도에 이 옵션이 기본으로 활성화 된 경우</strong> : 사실 제일 곤란한 건 이런 경우이다.</li>
 </ul>
 
-
-<h3>호환성 보기 모드에서 사용자에게 호환성 보기 해제를 안내하기</h3>
+<h3 id="호환성-보기-모드에서-사용자에게-호환성-보기-해제를-안내하기">호환성 보기 모드에서 사용자에게 호환성 보기 해제를 안내하기</h3>
 
 <p>우선 사용자가 호환성 보기 모드를 사용하는지를 판별해야 적절한 가이드를 제시할 수 있다. <a href="http://blog.grotesq.com/post/380">IE에서 호환성 보기를 체크한 사용자 판별하기</a>에 소개된 아래의 예시를 보자.</p>
 
@@ -548,12 +615,13 @@
 </span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>판별 원리는 아래과 같다고도 소개되어 있다.</p>
 
-<blockquote><p>MS의 렌더링 엔진은 Trident 입니다. IE7에서 처음 도입되었습니다. 하지만 userAgent에 Trident가 명시되기 시작한건 IE8 부터죠.
+<blockquote>
+<p>MS의 렌더링 엔진은 Trident 입니다. IE7에서 처음 도입되었습니다. 하지만 userAgent에 Trident가 명시되기 시작한건 IE8 부터죠.
 순정 IE7은 “MSIE 7″ 문자열은 포함하지만 “Trident”는 포함하지 않습니다.
-IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 MSIE 7로 표시가 되기 때문에, 두 가지 문자열을 다 포함하게 되죠.</p></blockquote>
+IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 MSIE 7로 표시가 되기 때문에, 두 가지 문자열을 다 포함하게 되죠.</p>
+</blockquote>
 
 <p>이렇게 판별이 완료되면 사용자에게 호환성 보기에서는 정상적 사용이 되지 않는다는 것을 안내하면 되겠다.</p>
 </div>
@@ -599,7 +667,7 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 현재 테스트로 몇가지 언어를 선택 가능하도록 하고 사용중인데 문제가 생겼다. 기존에는 기능을 달아 놓고 번역이 되는 것만 확인하고는 자세히 보지 않아서 몰랐는데 오늘 확인하니 소스 코드까지 부분적으로 번역이 되는 것이 아닌가. 사실 이 블로그의 주된 내용이 프로그래밍 관련이라 코드 블록이 아주 많다.
 그래서 방법을 구글 번역 메뉴얼에서 보니 다음과 같은 방법이 나와있었다.</p>
 
-<h2>부분적으로 번역 제외하기</h2>
+<h2 id="부분적으로-번역-제외하기">부분적으로 번역 제외하기</h2>
 
 <p>해당 영역을 둘러싸고 있는 Tag에 notranslate Class를 준다.</p>
 
@@ -607,8 +675,7 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 </pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">&quot;notranslate&quot;</span><span class="nt">&gt;</span>번역하지 말아야 할 영역<span class="nt">&lt;/span&gt;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
-<h2>문서 전체를 번역 제외하기</h2>
+<h2 id="문서-전체를-번역-제외하기">문서 전체를 번역 제외하기</h2>
 
 <p>Html의 head 영역에 아래의 Meta 정보를 추가한다.</p>
 
@@ -616,10 +683,9 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 </pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">&quot;google&quot;</span> <span class="na">content=</span><span class="s">&quot;notranslate&quot;</span><span class="nt">&gt;</span>
 </span></code></pre></td></tr></table></div></figure>
 
+<h2 id="옥토프레스에-적용하기">옥토프레스에 적용하기</h2>
 
-<h2>옥토프레스에 적용하기</h2>
-
-<p>문제는 옥토프레스의 결과 HTML은 직접 만드는 것이 아니라는 것이다. 여러가지 방법이 있을 수 있으나 나는 code block만 검색에서 제외되면 되므로 그냥 관련 플러그인을 수정해 버렸다. <code>backtick_code_block.rb</code> 파일에서 <code>&lt;figure class='code'&gt;</code> 부분을 찾아서 <code>&lt;figure class='code notranslate'&gt;</code>로 바꿔 버렸다.</p>
+<p>문제는 옥토프레스의 결과 HTML은 직접 만드는 것이 아니라는 것이다. 여러가지 방법이 있을 수 있으나 나는 code block만 검색에서 제외되면 되므로 그냥 관련 플러그인을 수정해 버렸다. <code>backtick_code_block.rb</code> 파일에서 <code>&lt;figure class=&#39;code&#39;&gt;</code> 부분을 찾아서 <code>&lt;figure class=&#39;code notranslate&#39;&gt;</code>로 바꿔 버렸다.</p>
 
 <p>이것으로 모든 것이 해결된 것은 아니다. 문장 내에서 사용된 코드 블록은 backtick_code_block 플러그인에서 처리하지 않으니 다른 플러그인을 고쳐야 하는데 어딘지 찾지 못했다. 아마도 markdown 해석 플러그인 내부에 있을텐데 gem으로 설치된 것인지 내부에서는 보이지 않는 듯하다(사실 귀찮아서 자세히 찾지 않았다. 게다가 Ruby를 거의 모른다.)</p>
 
@@ -853,21 +919,18 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 </span><span class='line'><span class="o">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>위의 예제를 보면 얼핏봐서는 문제가 없어 보인다. 실제로 동작도 잘된다. 하지만 아주 낮은 빈도로 Exception이 발생해 앱이 죽는다. 이 문제로 인하여 원인을 찾지못해 고생하는 경우가 많다. 내가 작업하면서 발생했던 오류는 다음과 같다.</p>
 
 <ul>
 <li>The content of the adapter has changed but ListView did not receive a notification.</li>
-<li>java.lang.NullPointerException: Attempt to invoke virtual method &lsquo;java.lang.String java.lang.Object.toString()&rsquo; on a null object reference</li>
+<li> java.lang.NullPointerException: Attempt to invoke virtual method &#39;java.lang.String java.lang.Object.toString()&#39; on a null object reference</li>
 </ul>
-
 
 <p>내부적 동작 코드들을 보면 이 외에도 View의 구성이나 기타 코딩에 따라 다른 오류가 날 수도 있을 것 같다. 하지만 원인은 대부분 아래의 부분 때문이다(정확하게는 저 부분에서 오류가 나는 것이 아니라 저 부분이 들어간 위치 때문에 다른 부분에서 오류가 난다).</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">resultList</span> <span class="o">=</span> <span class="n">autocomplete</span><span class="o">(</span><span class="n">constraint</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
 </span></code></pre></td></tr></table></div></figure>
-
 
 <p>이유를 설명하자면 Filter의 performFiltering() 함수는 백그라운드 쓰레드에서 동작하도록 되어 있다. 그런데 이 함수 안에서 Adapter의 데이터를 변경하는 코드가 들어있기 때문에 Adapter가 데이터의 변경을 확인하는 시점과 notify 되는 시점이 엉킬 경우 오류를 내게 된다. 따라서 타이밍에 따라서 오류가 발생하기도 안하기도 하는 것이다(나의 경우는 키워드를 입력하거나 지우는 등의 변경이 빠르게 반복될 때 데이터의 변경이 빈번히 반복되면서 오류가 나타났다). 실제로 오류를 재현하기가 어려울 정도로 잘 안나오는 경우도 있었다.</p>
 
@@ -1065,7 +1128,6 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 </span><span class='line'><span class="o">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>주요 변경 지점은 <code>getFilter()</code>이다. 기존에 <code>resultList = autocomplete(constraint.toString());</code> 부분을 통해 미리 Adapter의 데이터를 변경하던 것을 publishResults로 옮긴 것이다. 그리고 검색된 결과가 없더라도 빈 ArrayList를 만들어 넣어준 것이다.
 코드 상으로는 큰 차이가 나지않고 굳이 이렇게 해야하나 싶지만 내부 동작 방식을 보면 이렇게 하지 않으면 앞서 설명한 것과 같이 예기치 못한 상황을 만날 수 있다.</p>
 
@@ -1075,7 +1137,6 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 <li>안드로이드는 조금만 잘못써도 오류가 발생하는 이런 경우를 많이 보게 되는데 아위운 점은 정확한 사용법을 제시하는 메뉴얼을 찾기 어렵다는 것이다.</li>
 <li>코드 중간에 보면 <code>// noinspection unchecked</code> 부분이 있는데 크게 중요한 부분은 아니지만 이 부분을 제외하면 warning이 뜬다(안드로이드 스튜디오에서 노란 밑줄). 이 warning을 안드로이드 스튜디오에서 숨기는 역할을 하는 코드다.</li>
 </ul>
-
 </div>
   
   
@@ -1117,7 +1178,9 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 
   <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 앱을 개발하게되면 많은 경우에 서버와의 데이터 연결이 필요하다. 대부분의 데이터 타입은 이 과정에서 큰 문제를 일으키지 않는다(데이터 타입만 명확히 한다면). 하지만 DateTime은 조금 까다로울 수 있다. 프로그램에서 시간은 TimeZone을 가지고 있기 때문에 이 부분을 명확히 하지 않으면 의도치 않은 시간으로 표시된다. 게다가 형식이 맞지 않는다면 제대로 전달되지 않을 수도 있다.</p>
 
-<blockquote><p>네이버 D2에 있는 <a href="http://d2.naver.com/helloworld/645609">Java의 날짜와 시간 API</a>를 보면 Java에서의 Date 처리가 불편하다는 얘기가 있다.</p></blockquote>
+<blockquote>
+<p>네이버 D2에 있는 <a href="http://d2.naver.com/helloworld/645609">Java의 날짜와 시간 API</a>를 보면 Java에서의 Date 처리가 불편하다는 얘기가 있다.</p>
+</blockquote>
 
 <p>이번 작업에서는 서버는 PHP를 사용하고 있는 상황이었고 클라이언트는 <a href="http://androidannotations.org/">AndroidAnnotations</a>의 <a href="https://github.com/excilys/androidannotations/wiki/Rest-API#rest">Rest-API</a>를 사용했다. 수신 데이터의 파싱은 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>를 사용하는 상황이다. 이 글의 주제에서 벗어나므로 <a href="http://androidannotations.org/">AndroidAnnotations</a>나 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>에 대한 부분은 설명하지 않겠다.</p>
 
@@ -1139,24 +1202,21 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 </span><span class='line'><span class="nv">$date</span> <span class="o">=</span> <span class="p">(</span><span class="k">new</span> <span class="nx">\DateTime</span><span class="p">(</span><span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">setTimeZone</span><span class="p">(</span><span class="k">new</span> <span class="nx">\DateTimeZone</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">format</span><span class="p">(</span><span class="s1">&#39;Y-m-d\TH:i:s\Z&#39;</span><span class="p">);</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
-<p>위의 코드를 보면 PHP에서 전송할 때 넘겨줄 데이터의 예시를 타입별로 제시했다. 앞서 강조했던대로 안드로이드 클라이언트에서 GsonHttpMessageConverter를 이용해 Date 타입으로 바로 받으려면 마지막에 있는 &ldquo;Date 타입으로 전송&rdquo; 방식을 사용하면 된다.</p>
+<p>위의 코드를 보면 PHP에서 전송할 때 넘겨줄 데이터의 예시를 타입별로 제시했다. 앞서 강조했던대로 안드로이드 클라이언트에서 GsonHttpMessageConverter를 이용해 Date 타입으로 바로 받으려면 마지막에 있는 &quot;Date 타입으로 전송&quot; 방식을 사용하면 된다.</p>
 
 <p>해당 부분을 보면 두가지 처리를 해주고 있다. 첫번째로 TimeZone을 설정한 것이고, 두번째로 Date Format을 지정한 것이다. 사실 이 부분들을 잘 몰라서 삽질을 조금 했었다. 처음엔 Date Format을 어떻게 전달해야할지 몰라 해맸다. 제대로 수신을 하지 못했던 것이다. Format을 맞추고 나니 이젠 보낸 시간과 받은 시간이 달랐다. 이 부분은 TimeZone의 문제이므로 TimeZone을 지정해서 해결했다. TimeZone에 사용한 UTC는 <a href="https://ko.wikipedia.org/wiki/%ED%98%91%EC%A0%95_%EC%84%B8%EA%B3%84%EC%8B%9C">협정 세계시</a>라는 뜻이다. 이것과 세트로 format에서 끝에 \Z를 붙여 데이터가 <a href="https://ko.wikipedia.org/wiki/ISO_8601">ISO 8601</a>에 따라 UTC를 따르고 있음을 표시한 것이다.</p>
 
 <p>결론적으로 위의 형식을 사용하면 GSON으로 바로 받아도 정확한 시간을 사용할 수 있다.</p>
 
-<p>사실 위의 경우는 GsonHttpMessageConverter를 사용한다는 상황을 가정한 것으로 이것을 사용하지 않고 직접 데이터를 받아 GSON을 통해 파싱한다면 아래의 방법을 쓸 수도 있다. Format을 보면 알겠지만 UTC Date여야 한다(정확한 시간 처리를 위해). &ldquo;yyyy-MM-dd HH:mm:ss"이 Format을 쓸 수도 있으나 TimeZone 명시되지 않으므로 시간이 다르게 보일 수 있다.</p>
+<p>사실 위의 경우는 GsonHttpMessageConverter를 사용한다는 상황을 가정한 것으로 이것을 사용하지 않고 직접 데이터를 받아 GSON을 통해 파싱한다면 아래의 방법을 쓸 수도 있다. Format을 보면 알겠지만 UTC Date여야 한다(정확한 시간 처리를 위해). &quot;yyyy-MM-dd HH:mm:ss&quot;이 Format을 쓸 수도 있으나 TimeZone 명시되지 않으므로 시간이 다르게 보일 수 있다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Gson</span> <span class="n">gson</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">GsonBuilder</span><span class="o">().</span><span class="na">setDateFormat</span><span class="o">(</span><span class="s">&quot;yyyy-MM-dd&#39;T&#39;HH:mm:ssZ&quot;</span><span class="o">).</span><span class="na">create</span><span class="o">();</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>아래는 추가적으로 다른 타입으로 수신했을 때 안드로이드 클라이언트에서 Date 타입으로 변환하고자 할때 사용할 수 있는 참고 코드들이다.</p>
 
-<p><strong> string 타입으로 수신시 </strong></p>
-
+<p>** string 타입으로 수신시 **
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
@@ -1171,10 +1231,9 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 </span><span class='line'><span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ParseException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
 </span><span class='line'>    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
 </span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></td></tr></table></div></figure></p>
 
-
-<p><strong> timestamp(int) 타입으로 수신시 </strong></p>
+<p>** timestamp(int) 타입으로 수신시 **</p>
 
 <p>PHP에서의 TimeStamp는 초단위(s)지만 Java에서는 밀리초(ms) 단위이므로 1000을 곱해서 넣어 주어야 한다.
 그리고 Java에서는 Date가 Deprecated되어 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>를 더 권장한다고 한다. <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Date.html">정확하게는 완전히 Deprecated된 것은 아니고 일부 생성자가 그렇다는 것</a>이지만 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>가 더 다양한 기능을 제공하므로 더 권장된다는 것이다. 자세한 이유는 검색해보면 많이 나온다.</p>
@@ -1198,9 +1257,6 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 </span><span class='line'><span class="c1">// Date 사용</span>
 </span><span class='line'><span class="n">Date</span> <span class="n">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Date</span><span class="o">(</span><span class="n">timestamp</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">);</span>
 </span></code></pre></td></tr></table></div></figure>
-
-
-
 </div>
   
   
@@ -1243,50 +1299,55 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
   <div class="entry-content clearfix" itemprop="articleBody description"><p>이 글의 제목이 참 길고 어렵다. 나름대로 정하긴 했지만 어떻게 해야 내용을 설명할 수 있을지 잘 모르겠기에 그냥 필요한 상황을 차례로 적어보려 한다.</p>
 
 <ol>
-<li><p>안드로이드에서 구글맵을 사용하면서 현재 맵에서 보여지는 영역의 좌표를 얻고 싶을 때가 있다.
+<li><p>안드로이드에서 구글맵을 사용하면서 현재 맵에서 보여지는 영역의 좌표를 얻고 싶을 때가 있다. 
 중심 좌표와 확대 비율은 center와 zoom을 통해 쉽게 구할 수 있다. 하지만 필요한 것은 보여지는 영역을 모두 포함하는 좌표들이다.
-이 좌표들은 대부분 보여지는 화면 내부에 해당하는 데이터를 query 하기 위해서 사용될 것이다. 다른 경우도 당연히 있을 수 있고&hellip;</p></li>
+이 좌표들은 대부분 보여지는 화면 내부에 해당하는 데이터를 query 하기 위해서 사용될 것이다. 다른 경우도 당연히 있을 수 있고...</p></li>
 <li><p>위의 목적대로 좌표를 가져오긴 했는데 일부 영역을 제외하고 싶을 때가 있다. 예를들어 지도 상단에 버튼들이 나열되어 있다고 가정할 때 이 영역은 query에서 제외하고 싶을 때가 해당된다. 이 문제는 간단하지가 않은게 버튼들이 차지하는 공간이야 pixel로 얼마든지 계산 가능하지만 이 pixel 사이즈를 좌표에 반영해야 원하는 값을 얻을 수 있기 때문이다.</p></li>
 </ol>
-
 
 <p>위의 상황들의 목적은 결국 하나다. 구글 지도에서 원하는 영역의 평면 좌표를 얻고 싶다는 것이다.</p>
 
 <p>우선 해결 방법을 설명하기 전에 필요한 함수에 대한 설명부터 보자. 이 처리를 하기 위해 가장 중요한 요소는 Projection 이다.</p>
 
-<h2><a href="https://developers.google.com/android/reference/com/google/android/gms/maps/Projection.html">Google APIs for Android - Projection</a></h2>
+<h2 id="google-apis-for-android-projection"><a href="https://developers.google.com/android/reference/com/google/android/gms/maps/Projection.html">Google APIs for Android - Projection</a></h2>
 
 <p>위 링크를 참고하면 자세한 설명이 나와있지만 간단하게 필요한 것들에 대해서 정리하자면 다음과 같다.</p>
 
-<h3>Projection</h3>
+<h3 id="projection">Projection</h3>
 
-<blockquote><p>Projection은 화면상의 위치와 위경도 좌표(LatLng) 간의 변환하는데 사용된다. 그리고 화면의 위치는 항상 맵 화면의 좌상단(top left)을 기준으로 한다.</p></blockquote>
+<blockquote>
+<p>Projection은 화면상의 위치와 위경도 좌표(LatLng) 간의 변환하는데 사용된다. 그리고 화면의 위치는 항상 맵 화면의 좌상단(top left)을 기준으로 한다.</p>
+</blockquote>
 
-<h3>getVisibleRegion()</h3>
+<h3 id="getvisibleregion">getVisibleRegion()</h3>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">VisibleRegion</span> <span class="nf">getVisibleRegion</span> <span class="o">()</span>
 </span></code></pre></td></tr></table></div></figure>
 
+<blockquote>
+<p>화면상의 좌표와 위경도 좌표 간의 변환을 위한 Projection을 가져온다.</p>
+</blockquote>
 
-<blockquote><p>화면상의 좌표와 위경도 좌표 간의 변환을 위한 Projection을 가져온다.</p></blockquote>
-
-<h3>toScreenLocation (LatLng location)</h3>
+<h3 id="toscreenlocation-latlng-location">toScreenLocation (LatLng location)</h3>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">Point</span> <span class="nf">toScreenLocation</span> <span class="o">(</span><span class="n">LatLng</span> <span class="n">location</span><span class="o">)</span>
 </span></code></pre></td></tr></table></div></figure>
 
+<blockquote>
+<p>인자로 넘겨준 위경도 좌표가 화면 상에서 어디에 위치하는지를 Point 객체로 반환해 준다. 반환되는 단위는 화면 상의 Pixel(화소가 아닌)이다.</p>
+</blockquote>
 
-<blockquote><p>인자로 넘겨준 위경도 좌표가 화면 상에서 어디에 위치하는지를 Point 객체로 반환해 준다. 반환되는 단위는 화면 상의 Pixel(화소가 아닌)이다.</p></blockquote>
-
-<h3>fromScreenLocation (Point point)</h3>
+<h3 id="fromscreenlocation-point-point">fromScreenLocation (Point point)</h3>
 
 <p>public LatLng fromScreenLocation (Point point)</p>
 
-<blockquote><p>인자로 넘겨준 화면 상의 좌표에 해당하는 위경도를 LatLng 객체로 반환해 준다.</p></blockquote>
+<blockquote>
+<p>인자로 넘겨준 화면 상의 좌표에 해당하는 위경도를 LatLng 객체로 반환해 준다.</p>
+</blockquote>
 
-<h2>구현</h2>
+<h2 id="구현">구현</h2>
 
 <p>위와 같이 기본적인 함수들에 대해서 알아보았고 이제는 실제 사용 사례를 살펴보자.</p>
 
@@ -1319,7 +1380,6 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 </span><span class='line'>  <span class="k">return</span> <span class="n">builder</span><span class="o">.</span><span class="na">build</span><span class="o">();</span>
 </span><span class='line'><span class="o">}</span>
 </span></code></pre></td></tr></table></div></figure>
-
 
 <p>설명하자면 다음과 같다.</p>
 
@@ -1405,7 +1465,6 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
 </span><span class='line'><span class="p">)</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>왜 이런 정렬 결과가 나올까? 어떻게보면 당연할 결과이다. 프로그램에서는 숫자든 문자든 문자열 내부에서는 숫자 코드로 처리된다. 그러므로 맨 첫자리 문자부터 비교를 시작하여 차례로 정렬하므로 1로 시작하는 문자열이 처음으로 들어온다. 100A, 10C 두 문자열을 비교하자면 셋째자리에서 0과 C가 비교되어 0을 가진 100A가 먼저 들어가게 된다.</p>
 
 <p>그럼 인간이 생각하는 것처럼 정렬되게 하려면 어떻게 할까? 복잡하게 생각하자면 한도 끝도 없이 복잡할 수 있지만 간단하게 생각하자면 비교되어야 할 문자의 위치를 맞추어주면 원하는 결과를 얻을 수 있다.</p>
@@ -1415,7 +1474,6 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SELECT</span> <span class="o">*</span><span class="p">,</span> <span class="nf">LPAD</span><span class="p">(</span><span class="n">strField</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">as</span> <span class="n">strFieldOrder</span> <span class="k">FROM</span> <span class="n">table1</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">strFieldOrder</span><span class="p">;</span>
 </span></code></pre></td></tr></table></div></figure>
-
 
 <p>여기서 주의할 것은 7이라는 부분을 데이터의 길이가 모두 포함될 수 있는 적절한 값으로 지정해야 한다는 것이다.</p>
 </div>
@@ -1465,14 +1523,12 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
 </pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">TABLE1</span> <span class="k">WHERE</span> <span class="n">FloatField</span> <span class="o">=</span> <span class="mi">10</span><span class="p">.</span><span class="mi">1</span><span class="p">;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>그런데 분명 동일한 값이 있음에도 불구하고 검색된 결과가 없었다. 처음엔 어의가 없었다. 당연히 동일한 값이 있는데 왜 검색이 되지 않을까?
-그래서 구글에서 검색을 해보니 float 필드는 &ldquo;="을 이용한 동일값 검사를 할 수 없었다. 아래는 float 필드의 동일값 검사를 하는 예시다.</p>
+그래서 구글에서 검색을 해보니 float 필드는 &quot;=&quot;을 이용한 동일값 검사를 할 수 없었다. 아래는 float 필드의 동일값 검사를 하는 예시다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">TABLE1</span> <span class="k">WHERE</span> <span class="nf">ABS</span><span class="p">(</span><span class="n">FloatField</span> <span class="o">-</span> <span class="mi">10</span><span class="p">.</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span><span class="p">;</span>
 </span></code></pre></td></tr></table></div></figure>
-
 
 <p>아.. 이런 웬 해괴망측한 방법이란 말인가? 사실 여러글에서 보면 문자열로 Casting(변환)해서 검사하는 방법 등도 있었다.</p>
 
@@ -1522,11 +1578,11 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
   </header>
 
 
-  <div class="entry-content clearfix" itemprop="articleBody description"><h2>국제화(internationalization : i18n)의 의미</h2>
+  <div class="entry-content clearfix" itemprop="articleBody description"><h2 id="국제화-internationalization-i18n-의-의미">국제화(internationalization : i18n)의 의미</h2>
 
 <p>국제화는 <a href="http://www.terms.co.kr/internationalization.htm">텀즈</a>의 정의에 따르면 아래와 같다.</p>
 
-<p>국제화는 때로 줄여서 그저 &ldquo;I18N"이라고도 표기하는데, 그 의미는 이 용어의 영어 표기에서 첫 글자인 "I"자와 마지막 글자인 "N"의 사이에 18글자가 들어가 있다는 의미이다. 국제화는 제품이나 서비스를 특정지역의 언어나 문화에 맞추는, 즉 현지화라고 불리는 과정을 쉽게 할 수 있도록 계획하거나 이행하는 과정을 말한다. 국제화는 때로 번역 및 현지화 능력부여 작업이라고도 불리는데, 여기에는 다음과 같은 것들이 포함된다.</p>
+<p>국제화는 때로 줄여서 그저 &quot;I18N&quot;이라고도 표기하는데, 그 의미는 이 용어의 영어 표기에서 첫 글자인 &quot;I&quot;자와 마지막 글자인 &quot;N&quot;의 사이에 18글자가 들어가 있다는 의미이다. 국제화는 제품이나 서비스를 특정지역의 언어나 문화에 맞추는, 즉 현지화라고 불리는 과정을 쉽게 할 수 있도록 계획하거나 이행하는 과정을 말한다. 국제화는 때로 번역 및 현지화 능력부여 작업이라고도 불리는데, 여기에는 다음과 같은 것들이 포함된다.</p>
 
 <ul>
 <li>하드웨어 레이블이나, 도움말 페이지, 그리고 온라인 메뉴 등 사용자 인터페이스를 설계할 때, 더 많은 수의 글자가 들어갈 때를 대비하여 여유를 둔다.</li>
@@ -1536,10 +1592,9 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
 <li>소프트웨어의 경우에는, 메시지들이 영어와 같은 단일 바이트 문자 코드에서, 한글과 같은 다중 바이트 문자 코드로 변환될 수 있도록 데이터 공간을 확보한다.</li>
 </ul>
 
+<p>위키피디아에는 <a href="https://ko.wikipedia.org/wiki/%EA%B5%AD%EC%A0%9C%ED%99%94%EC%99%80_%EC%A7%80%EC%97%AD%ED%99%94">&quot;국제화와 지역화&quot;</a>라는 주제로 설명되어 있기도 하다.</p>
 
-<p>위키피디아에는 <a href="https://ko.wikipedia.org/wiki/%EA%B5%AD%EC%A0%9C%ED%99%94%EC%99%80_%EC%A7%80%EC%97%AD%ED%99%94">&ldquo;국제화와 지역화&rdquo;</a>라는 주제로 설명되어 있기도 하다.</p>
-
-<h2>i18next</h2>
+<h2 id="i18next">i18next</h2>
 
 <ul>
 <li>공식 사이트 : <a href="http://i18next.com/">http://i18next.com/</a></li>
@@ -1548,12 +1603,11 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
 <li>i18next-node : <a href="https://github.com/i18next/i18next-node">https://github.com/i18next/i18next-node</a></li>
 </ul>
 
-
 <p>i18next는 위에 설명한 i18n을 자바스크립트 상에서 사용할 수 있도록 제작된 라이브러리다. 아주 다양한 형태로의 사용을 지원하는데 사용해본 결과 메뉴얼이 조금 부실(?)하다. 확인해보면 메뉴얼의 양이 적은 건 아니다. 하지만 워낙 다양하게 지원하다 보니 개별적인 설명이 부족한 감이 든다.</p>
 
 <p>이번에 다국어용 one page 앱을 제작하면서 영어와 한국어를 지원하기 위해 사용하게되었는데 조금 해멨다. 사실 아직도 자유자재로 사용하지는 못하겠다. 하지만 아주 다양한 형태를 지원하므로 필요한 형태를 메뉴얼을 참고하여 사용한다면 유용하게 사용할 수 있을 것으로 생각한다.</p>
 
-<h3>사용예시</h3>
+<h3 id="사용예시">사용예시</h3>
 
 <p>아래는 내가 작업한 일부를 간단하게 요약한 것이다.</p>
 
@@ -1699,7 +1753,6 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
 </span><span class='line'><span class="nt">&lt;/html&gt;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-
 <p>위의 예시는 jquery와 함께 사용하는 예시이지만 jquery에 대한 의존성을 가진 것은 아니다. <a href="http://cdnjs.com/libraries/i18next">CDN</a> 목록에서 보여지는 것과 같이 amd, commonjs, 기본 등 여러가지 환경에서 사용 가능하다.</p>
 
 <p>여러번 얘기하게되지만 사용방법이 너무 다양하다. 그래서 위의 예시를 기준으로 몇가지 옵션만 설명하겠다. 보다 다양한 사용법은 제작 사이트의 <a href="http://i18next.com/pages/doc_init.html">메뉴얼</a>과 <a href="http://i18next.com/pages/sample.html">샘플</a>을 참고하자.</p>
@@ -1709,139 +1762,13 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
 <li><strong>debug</strong> : true로 설정시 내부적인 처리에 관련되 log를 확인할 수 있다.</li>
 <li><strong>useLocalStorage</strong> : true로 설정시 local storage에 내용을 저장하여 향후 재사용할 수 있도록 한다. 이 예시에서는 resStore를 사용해서 언어 설정을 했기 때문에 의미가 없지만 서버에서 언어 정보를 받아와서 사용하는 경우에는 성능에 이점을 얻을 수 있다.</li>
 <li><strong>localStorageExpirationTime</strong> : local storage에 저장된 데이터에 유효기간을 설정한다. 단위는 ms이며 기본값은 1주일이다.</li>
-<li><strong>ns</strong> : 사용할 Namespace를 정의한다. 필수는 아니며 필요시에만 사용하면 된다. Namespace의 구분은 ::로 한다.(예시 : &ldquo;A::apple&rdquo;)</li>
+<li><strong>ns</strong> : 사용할 Namespace를 정의한다. 필수는 아니며 필요시에만 사용하면 된다. Namespace의 구분은 ::로 한다.(예시 : &quot;A::apple&quot;)</li>
 <li><strong>resStore</strong> : i18n에 사용될 데이터를 설정한다.</li>
-<li><strong>resGetPath</strong> : i18n에서 사용할 데이터를 서버에서 요청할 경우 경로를 구성하는 방법을 정의한다. <code>'locales/__lng__/__ns__.json'</code> 이런 형식을 쓸 수 있는데 <code>__lng__</code>는 언어명으로 <code>__ns__</code>는 Namespace로 대체된다.</li>
+<li><strong>resGetPath</strong> : i18n에서 사용할 데이터를 서버에서 요청할 경우 경로를 구성하는 방법을 정의한다. <code>&#39;locales/__lng__/__ns__.json&#39;</code> 이런 형식을 쓸 수 있는데 <code>__lng__</code>는 언어명으로 <code>__ns__</code>는 Namespace로 대체된다.</li>
 </ul>
-
 
 <p>그 외에도 다양한 옵션이 있을 뿐 아니라 여러가지 상황에 대입해서 사용할 수 있다. 위의 예시는 html에 data attribute를 사용하는 것을 예를 들었지만 js에서 직접적으로 데이터를 받아서 사용할 수도 있고, sprintf 등과 같이 데이터를 데입해서 내용을 생성하는 것도 가능하다.
 게다가 handlebars, angular, JQuery UI에서 template에 적용시킬 수도 있다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-14T21:19:33+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.14</time>
-        
-           | <a href="/2015/09/14/soundex-slash-metaphone-key-in-php/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/14/soundex-slash-metaphone-key-in-php/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/14/soundex-slash-metaphone-key-in-php/" itemprop="url">PHP에서 soundex / metaphone key 구하기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>앞선 포스팅에서 <a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">levenshtein()</a> 함수, <a href="/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text">similar_text()</a>에 대해 알아보았다.
-이런 문자열 비교 함수는 아니지만 문자열의 soundex key를 구하여 발음이 유사한 단어들을 찾을 수 있도록 도와주는 soundex() 함수와 이보다 더 정확한 결과를 반환한다고 하는 metaphone() 함수에 대해서 알아보자.</p>
-
-<h2>soundex란?</h2>
-
-<blockquote><p>Soundex란 발음이 유사한 서로다른 철자의 단어를 그룹화하여 철자 입력 오류를 보정하기 위한 색인시스템으로 초기에는 주로 사람이름을 검색하기 위한 용도로 사용되었으나 인터넷 검색이 활성화되면서 다양한 분야에서 응용되고 있다. 대표적인 Soundex Appliation은 “US Bureau of the Censu s”의 것이며, AT&amp;T의 Standard soundex algorithm도 있다.
-(츨처 : <a href="http://www.nicklib.com/nlp/2297">http://www.nicklib.com/nlp/2297</a>)</p></blockquote>
-
-<h2><a href="http://php.net/manual/en/function.soundex.php">soundex()</a> 함수</h2>
-
-<p><a href="http://php.net/manual/en/function.soundex.php">php 메뉴얼의 설명</a>에 따르면 soundex() 함수는 발음이 유사한 단어들이 같은 soundex 키를 생성하므로, 발음은 알고 있지만 스펠은 모르는 단어를 데이터베이스에서 쉽게 찾을 수 있다. soundex 함수는 문자로 시작하는 4문자 문자열을 반환한다.</p>
-
-<p>이 soundex 함수는 &ldquo;The Art Of Computer Programming, vol. 3: Sorting And Searching&rdquo;, Addison-Wesley (1973), 391-392쪽에서 Donald Knuth가 기술한 것이다.</p>
-
-<h3>기본 사용법</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nx">string</span> <span class="nb">soundex</span> <span class="p">(</span> <span class="nx">string</span> <span class="nv">$str</span> <span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>함수 인자</h3>
-
-<h4>str</h4>
-
-<p>입력 문자열</p>
-
-<h3>반환값</h3>
-
-<p>soundex 키를 문자열로 반환한다.</p>
-
-<h3>예시</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
-</span><span class='line'><span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Euler&quot;</span><span class="p">)</span>       <span class="o">==</span> <span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Ellery&quot;</span><span class="p">);</span>    <span class="c1">// E460</span>
-</span><span class='line'><span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Gauss&quot;</span><span class="p">)</span>       <span class="o">==</span> <span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Ghosh&quot;</span><span class="p">);</span>     <span class="c1">// G200</span>
-</span><span class='line'><span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Hilbert&quot;</span><span class="p">)</span>     <span class="o">==</span> <span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Heilbronn&quot;</span><span class="p">);</span> <span class="c1">// H416</span>
-</span><span class='line'><span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Knuth&quot;</span><span class="p">)</span>       <span class="o">==</span> <span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Kant&quot;</span><span class="p">);</span>      <span class="c1">// K530</span>
-</span><span class='line'><span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Lloyd&quot;</span><span class="p">)</span>       <span class="o">==</span> <span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Ladd&quot;</span><span class="p">);</span>      <span class="c1">// L300</span>
-</span><span class='line'><span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Lukasiewicz&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Lissajous&quot;</span><span class="p">);</span> <span class="c1">// L222</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2><a href="http://php.net/manual/en/function.metaphone.php">metaphone()</a> 함수</h2>
-
-<p><a href="http://php.net/manual/en/function.metaphone.php">php 메뉴얼의 설명</a>에 따르면 metaphone() 함수는 soundex()처럼 유사한 발음의 단어에 대해 동일한 키를 생성다. 이 함수는 영어 발음의 기본 법칙을 사용하는 soundex()보다 훨씬 정확하다. 메타폰 생성 키는 가변 길이를 가진다.</p>
-
-<p>metaphone은 Lawrence Philips <lphilips at verity dot com>가 개발하였였고 이는 [&ldquo;Practical Algorithms for Programmers&rdquo;, Binstock &amp; Rex, Addison Wesley, 1995]에 수록되어 있다.</p>
-
-<h3>기본 사용법</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nx">string</span> <span class="nb">metaphone</span> <span class="p">(</span> <span class="nx">string</span> <span class="nv">$str</span> <span class="p">[,</span> <span class="nx">int</span> <span class="nv">$phonemes</span> <span class="p">]</span> <span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>함수 인자</h3>
-
-<h4>str</h4>
-
-<p>입력 문자열.</p>
-
-<h4>phonemes</h4>
-
-<p>이 매개 변수는 음소 문자로 반환된 metaphone key의 길이를 제한한다. 0이 디폴트 값으로 제한하지 않음을 의미한다.</p>
-
-<h3>반환값</h3>
-
-<p>메타폰 키를 문자열로 반환한다.</p>
-
-<h2>응용 아이디어</h2>
-
-<p>알파벳 문자열의 유사도를 개선하는데에 응용할 수도 있을 것 같다. 문자열을 soundex나 metaphone key로 변환하여 문자열 유사도를 비교하면 조금 더 개선된 유사도를 구할 수 있을 것 같다. 정확히는 다른 의미가 되지만 발음이 유사한 문장을 유사 문장으로 인정하는 효과를 얻을 수 있을 것이다.</p>
-
-<p>사실 중요한 문제는 soundex나 metaphone 뿐만 아니라 Double Metaphone, Caverphone 같은 알고리즘은 알파벳 문자에 대한 음성 특징을 추출하는 것으로 한글에는 사용할 수 없다. 하지만 한글을 초/중/종성으로 분리하고 발음 기호로 변환하는 부분을 추가 처리하면 한글에도 응용할 수 있을 것으로 보인다.</p>
-
-<p>게대가 한글을 영어 발음으로 변환하는 오픈소스들도 찾아보니 있다.(<a href="https://metacpan.org/pod/Lingua::KO::Munja">https://metacpan.org/pod/Lingua::KO::Munja</a>)</p>
-
-<p>추후에 기회가 된다면 직접 구현 해봐야겠다.</p>
 </div>
   
   
@@ -1918,7 +1845,7 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (25)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (26)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1927,6 +1854,8 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/13/remove-line-break-in-tablayout/">안드로이드 TabLayout 사용시 Tab Text가 두줄로 나오는 문제 해결</a>
+    
     <a class="list-group-item " href="/2015/10/12/bookmarklet/">북마클릿(bookmarklet) 생성기</a>
     
     <a class="list-group-item " href="/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/">java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류</a>
@@ -1934,8 +1863,6 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
     <a class="list-group-item " href="/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/">안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제</a>
     
     <a class="list-group-item " href="/2015/10/12/gitlab-ce-to-gitlab-dot-com/">자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다</a>
-    
-    <a class="list-group-item " href="/2015/10/08/change-centos-6-nic-i-slash-f-number-eth-star/">NIC I/F 번호(eth*)를 변경</a>
     
   </div>
 </section>

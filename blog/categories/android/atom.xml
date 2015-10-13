@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-13T15:04:56+09:00</updated>
+  <updated>2015-10-13T17:09:52+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,67 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류 해결]]></title>
+    <link href="http://blog.asamaru.net/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/"/>
+    <updated>2015-10-13T16:53:54+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate</id>
+    <content type="html"><![CDATA[<p>안드로이드 Fragment 작업 중에 <code>java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</code> 오류가 발생했다. 상황은 이렇다. Fragment를 가진 Activity에서 새로운 Activity를 띄우고 해당 Activity에서 <code>setResult</code>를 통해 값을 반환했다. 새로운 Activity를 열었던 Activity에서는 <code>protected void onActivityResult(int requestCode, int resultCode, Intent intent)</code>를 통해 값을 전달 받아 새로운 Fragment를 불렀다. 그런데 위 오류가 난다. 아래는 작성했던 코드의 일부를 예시를 위해 수정한 것이다(실행가능한 코드가 아니다).</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Override</span>
+<span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
+        <span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">commit</span><span class="o">();</span>
+    <span class="o">}</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>관련된 정보를 찾아보니 아래와 같은 문서들이 보였다.</p>
+
+<ul>
+<li><a href="http://binsolb.tistory.com/entry/javalangIllegalStateException-Can-not-perform-this-action-after-onSaveInstanceState">java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</a></li>
+<li><a href="http://www.kmshack.kr/2013/08/fragment-%ED%8C%8C%ED%97%A4%EC%B9%98%EA%B8%B0-3-fragmentmanager-fragmenttransaction%EC%97%90-%EB%8C%80%ED%95%B4%EC%84%9C/">Fragment 파헤치기 – 3. FragmentManager, FragmentTransaction에 대해서</a></li>
+</ul>
+
+<p><strong>간단히 요약하자면 <code>commit()</code> 대신 <code>commitAllowingStateLoss()</code>을 사용하면 된다.</strong> 원인에 대해서는 위의 글들을 참고하면 상세히 설명되어 있다. 그래서 고쳐진 코드는 다음과 같다.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Override</span>
+<span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
+        <span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">commitAllowingStateLoss</span><span class="o">();</span>
+    <span class="o">}</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>안드로이드는 이런 문제들에 대해서 알아서 좀 대응할 수 없는건가? 아쉽다.
+그런데 함수 이름에도 나와 있는 것 처럼 <code>commitAllowingStateLoss()</code>를 사용하면 상태값을 잃을 수 있다. <code>commitAllowingStateLoss()</code>를 사용하지 않고 해결하는 방법은 없을까? 생각해보면 실행되는 시점의 문제이므로 시점을 조금 지연하는 방법을 쓸 수도 있다.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Override</span>
+<span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Handler</span> <span class="n">handler_</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Handler</span><span class="o">(</span><span class="n">Looper</span><span class="o">.</span><span class="na">getMainLooper</span><span class="o">());</span>
+        <span class="n">handler_</span><span class="o">.</span><span class="na">postDelayed</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+                <span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
+                <span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
+                        <span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
+                        <span class="o">.</span><span class="na">commitAllowingStateLoss</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">},</span> <span class="mi">0</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>위 코드를 보면 Handler의 <code>postDelayed()</code> 함수를 사용해서 처리시점을 지연시켰다(사실 시간은 0이므로 작업을 잠시 뒤로 미룬것이다). 이렇게 해도 위 오류는 발생하지 않는다.</p>
+
+<p>어떤 방법이 맞는지에 대해서는 아직은 정확히 모르겠다. 선택은 자유다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[안드로이드 TabLayout 사용시 Tab Text가 두줄로 나오는 문제 해결]]></title>
@@ -245,35 +306,6 @@ compile &#39;com.google.android.gms:play-services-base:6.5.87&#39;
 
 <p>어쨌든 java라는 언어의 특성상 method의 수가 많을 수 밖에 없는데 65K limit은 최초의 설계부터 잘못된 것이 아닌가? 하는 생각이다.</p>
 ]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Gradle applicationIdSuffix 사용시 AndroidAnnotations 설정]]></title>
-    <link href="http://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/"/>
-    <updated>2015-10-05T10:05:11+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations</id>
-    <content type="html"><![CDATA[<p><a href="/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/">Gradle DSL method not found: &#39;packageNameSuffix()&#39; 오류 해결</a>에서 오류 해결 방법을 안내하면서 언급했던 applicationIdSuffix를 사용시 유의사항이 있다. <strong>applicationId가 debug 모드에서 변경됨에 따라 관련된 부분에서 문제가 일어날 수 있다는 것이다.</strong></p>
-
-<p>나의 경우는 AndroidAnnotations을 함께 사용하는 부분에서 오류를 만났다. AndroidAnnotations에서 applicationId를 기준으로 resource에 접근해서 자동 생성된 class들을 찾지 못하는 문제이다.</p>
-
-<p>이런 경우에 대비해서 AndroidAnnotations에는 resourcePackageName라는 속성을 제공한다.</p>
-
-<p><a href="https://github.com/excilys/androidannotations/wiki/CustomizeAnnotationProcessing">CustomizeAnnotationProcessing</a>에 보면 아래와 같이 안내되어 있다.</p>
-
-<blockquote>
-<p><strong>resourcePackageName</strong></p>
-
-<p>Type: string
-By default, AndroidAnnotations try to find the R class by extracting application package from AndroidManifest.xml file. But in some cases you may want to specify a custom package to look for the R class. This is why we added resourcePackageName option.</p>
-</blockquote>
-
-<p>결론은 아래처럼 resourcePackageName에 기존 packageName을 넣어줌으로써 해결이 가능하다.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">apt {
-    arguments {
-        resourcePackageName &quot;net.yourdomain&quot;
-    }
-}
-</code></pre></div>]]></content>
   </entry>
   
 </feed>

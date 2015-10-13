@@ -138,6 +138,78 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-08T22:27:15+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.08</time>
+        
+           | <a href="/2015/09/08/cleaner-view-casting-with-generics/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/08/cleaner-view-casting-with-generics/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/08/cleaner-view-casting-with-generics/" itemprop="url">안드로이드에서 findViewById 사용시 Generics을 이용해 Type Casting 없애기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 작업을 하다보면 findViewById를 아주 빈번하게 사용하게 된다. 이 작업이 생각보다 귀찮다보니 <a href="%22http://jakewharton.github.io/butterknife/%22">butterknife</a>나 <a href="%22http://androidannotations.org/%22">androidannotations</a> 같은 라이브러리를 사용하게 된다.(당연히 그 함수를 사용이 귀찮다는 이유만은 아니지만)</p>
+
+<p>아래의 방법은 저런 라이브러리를 사용할 때만큼 여러가지 일을 할 수는 없지만 findViewById를 사용함에 가장 귀찮은 작업인 View Type Casting을 하지 않아도 된다.</p>
+
+<p>우린 일반적으로 아래와 같은 방식으로 함수를 사용한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">textview</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이를 개선하기 위해 아래의 함수 하나를 추가한다. 어디든 상관 없이 사용하고자 하는 클래스의 내부에 넣는다. 사실 사용시마다 이 함수를 추가하는 작업이 더 귀찮을 수 있다. 그래서 난 기본 Activity와 Fragment 안에 넣어두고 사용한다. (난 여러가지 이유로 작업시 base activity, fragment를 만들어 두고 실제 작업시 상속받아 사용한다. 이렇게하면 이번 경우와 같이 유틸성 함수를 함께 쓰기도 좋고 제어하기도 좋기 때문이다.)</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@SuppressWarnings</span><span class="o">(</span><span class="s">&quot;unchecked&quot;</span><span class="o">)</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">final</span> <span class="o">&lt;</span><span class="n">E</span> <span class="kd">extends</span> <span class="n">View</span><span class="o">&gt;</span> <span class="n">E</span> <span class="nf">findView</span> <span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="o">(</span><span class="n">E</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>그리고 아래와 같이 사용할 수 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="n">findView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">textview</span><span class="o">);</span>
+</span><span class='line'><span class="n">Button</span> <span class="n">button</span> <span class="o">=</span> <span class="n">findView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">button</span><span class="o">);</span>
+</span><span class='line'><span class="n">ImageView</span> <span class="n">image</span> <span class="o">=</span> <span class="n">findView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">imageview</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>사실 별차이 아니다. 하지만 작업 해본 사람은 안다. Type Casting을 일일이 넣는게 얼마나 귀찮은지.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-07T20:43:33+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.07</time>
         
            | <a href="/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi/#disqus_thread" itemprop="discussionUrl"
@@ -1126,117 +1198,6 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-08-28T20:45:21+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.08.28</time>
-        
-           | <a href="/2015/08/28/octopress-category-list-plugin-install/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/08/28/octopress-category-list-plugin-install/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/08/28/octopress-category-list-plugin-install/" itemprop="url">옥토프레스 category list 플러그인 설치</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>이번엔 옥토프레스에 category list 플러그인을 추가해 보았다.</p>
-
-<p>사실 현재 시점에서 쓰고 있는 테마를 선택한 이유가 우측에 나오는 카테고리 목록이었다. 그런데 막상 테마를 설치한 후에도 카테고리 목록이 보이지 않았다. 처음엔 설정이 누락되어서 그렇다고 생각했고 시간이 없어서 그냥 두다가 오늘에서야 추가를 하고자 확인해 봤다.</p>
-
-<p>현재 시점에 사용하고 있는 테마는 <a href="%22https://github.com/kAworu/octostrap3%22">octostrap3</a>다. 해당 소스를 뒤져서 aside에 추가하는 부분은 찾았으나 테마엔 그 파일이 없었다. 그럼 이사람은 없는 파일을 어떻게 불러서 쓴단 말인가?</p>
-
-<p>알아보니 별도 플러그인을 추가해야만 했다.
-<a href="https://github.com/ctdk/octopress-category-list">https://github.com/ctdk/octopress-category-list</a>
-현재 내가 적용한 플러그인이다. 최근 업데이트가 시점이 오래되어 조금 미심쩍지만 대안이 없다.</p>
-
-<p>일단 설명이 된대로 소스를 받아서 안내하는 경로에 집어 넣었다.
-그리고 octostrap3에서 사용하던것 처럼 <em>config.xml 파일에 추가 했다.일단 사이드 영역에 &quot;custom/asides/category</em>list.html&quot;를 추가.</p>
-
-<blockquote>
-<p>default_asides: [asides/recent_posts.html, custom/asides/category_list.html, asides/github.html, asides/delicious.html, asides/pinboard.html, asides/googleplus.html]</p>
-</blockquote>
-
-<p>그리고는 정상적으로 적용이 되는지 확인.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake generate
-</span><span class='line'><span class="c">## Generating Site with Jekyll</span>
-</span><span class='line'>Configuration file: /Volumes/Data/DropBox/blog/_config.yml
-</span><span class='line'>            Source: <span class="nb">source</span>
-</span><span class='line'><span class="nb">       </span>Destination: public/blog
-</span><span class='line'>      Generating...
-</span><span class='line'>  Liquid Exception: undefined method <span class="sb">`</span>+<span class="s1">&#39; for nil:NilClass in _layouts/page.html</span>
-</span><span class='line'><span class="s1">jekyll 2.5.3 | Error:  undefined method `+&#39;</span> <span class="k">for</span> nil:NilClass
-</span></code></pre></td></tr></table></div></figure>
-
-<p>하지만 오류.. 이런.. 불친절하게 어디가 문제인지 명확히 알려주지 않는다. 무작정 소스를 봤다. ruby를 아예 모르는 관계로 봐도 모르겠다. 하지만 nil 오류라고 하니 값이 없는 것이 문제라는 생각에 의심되는 부분들을 보다가 발견한 부분..</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
-</span><span class='line'>  <span class="n">lists</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span class='line'>  <span class="n">max</span><span class="p">,</span> <span class="n">min</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
-</span><span class='line'>  <span class="n">config</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">registers</span><span class="o">[</span><span class="ss">:site</span><span class="o">].</span><span class="n">config</span>
-</span><span class='line'>  <span class="n">category_dir</span> <span class="o">=</span> <span class="n">config</span><span class="o">[</span><span class="s1">&#39;root&#39;</span><span class="o">]</span> <span class="o">+</span> <span class="n">config</span><span class="o">[</span><span class="s1">&#39;category_dir&#39;</span><span class="o">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span>
-</span><span class='line'>  <span class="n">categories</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">registers</span><span class="o">[</span><span class="ss">:site</span><span class="o">].</span><span class="n">categories</span>
-</span><span class='line'>  <span class="n">categories</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">sort_by</span><span class="p">{</span> <span class="o">|</span><span class="n">str</span><span class="o">|</span> <span class="n">str</span><span class="o">.</span><span class="n">downcase</span> <span class="p">}</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">category</span><span class="o">|</span>
-</span><span class='line'>    <span class="n">count</span> <span class="o">=</span> <span class="n">categories</span><span class="o">[</span><span class="n">category</span><span class="o">].</span><span class="n">count</span>
-</span><span class='line'>    <span class="n">lists</span><span class="o">[</span><span class="n">category</span><span class="o">]</span> <span class="o">=</span> <span class="n">count</span>
-</span><span class='line'>    <span class="n">max</span> <span class="o">=</span> <span class="n">count</span> <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="n">max</span>
-</span><span class='line'>  <span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>여기서 config[&#39;root&#39;] 이 부분이 문제 였다. 내 _config.xml 파일에서는 &quot;root:&quot; 부분을 비워두었다. 하위 폴더를 사용하지 않기 때문에. 여기에 값이 없어서 오류. 그래서 &quot;root: /&quot;로 수정.</p>
-
-<p>다시 시도.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake generate
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이젠 된다. 카테고리 목록도 잘 나온다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1306,7 +1267,7 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (26)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (27)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1315,6 +1276,8 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/">java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류 해결</a>
+    
     <a class="list-group-item " href="/2015/10/13/octopress-github-flavored-markdown-redcarpet/">Octopress에서 GitHub Flavored Markdown 사용하기(redcarpet)</a>
     
     <a class="list-group-item " href="/2015/10/13/remove-line-break-in-tablayout/">안드로이드 TabLayout 사용시 Tab Text가 두줄로 나오는 문제 해결</a>
@@ -1322,8 +1285,6 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
     <a class="list-group-item " href="/2015/10/12/bookmarklet/">북마클릿(bookmarklet) 생성기</a>
     
     <a class="list-group-item " href="/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/">java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류</a>
-    
-    <a class="list-group-item " href="/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/">안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제</a>
     
   </div>
 </section>

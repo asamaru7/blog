@@ -12,7 +12,9 @@ group :development do
   gem 'compass', '~> 1.0.1'
   gem 'sass-globbing', '~> 1.0.0'
   gem 'rb-fsevent', '~> 0.9'
-  gem 'stringex', '~> 1.4.0'
+  gem 'stringex', '~> 2.5.2'
+  gem 'redcarpet', '~> 3.3.2'
+  gem 'albino', '~> 1.3.3'
 end
 
 gem 'sinatra', '~> 1.4.2'

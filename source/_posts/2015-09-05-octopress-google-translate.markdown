@@ -46,7 +46,7 @@ vi _config.yml
 
 _config.yml 파일을 열어 아래처럼 default_asides 항목에 생성한 파일을 넣어준다.(원하는 순서에)
 
-```yml
+```yaml
 default_asides: [custom/asides/google_translate.html, ...]
 ```
 

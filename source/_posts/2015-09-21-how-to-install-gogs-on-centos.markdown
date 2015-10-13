@@ -100,7 +100,7 @@ http://userdomain:3000/
 이제는 도메인 연결을 할 차례이다.
 
 **httpd 2 기준**
-```apache
+```apacheconf
 <VirtualHost *:80>
   ServerName your.domain.com
 

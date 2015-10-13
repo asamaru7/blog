@@ -65,7 +65,7 @@ sudo gitlab-ctl stop
 
 아래는 아파치를 사용하는 상황에서의 설정 방법이다. 내용중 LimitRequestBody를 잊지말고 해주는 것이 좋다. 아니면 push에서 오류를 만날 수 있다.
 
-```apache
+```apacheconf
 <VirtualHost *:80>
   ServerName your.domain
   ServerSignature Off

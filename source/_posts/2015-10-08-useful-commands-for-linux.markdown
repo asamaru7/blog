@@ -106,7 +106,7 @@ lsof -P
 ```
 
 ### 아파치 :  모든 페이지 요청시 동일페이지 노출
-```apache
+```apacheconf
 RewriteEngine On
 RewriteRule ^(.*)$ /target/index.html
 ```

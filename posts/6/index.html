@@ -138,6 +138,118 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-07T20:43:33+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.07</time>
+        
+           | <a href="/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi/" itemprop="url">안드로이드 스튜디오에서 WIFI로 Run/Install/Debug 하기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>이제 안드로이드 개발을 시작한지 6개월 가량 된 것 같다. 나이 주 개발 영역은 웹이다. 프론드/백엔드, 서버 등등 웹에 관련된 일을 주로하며 예전엔 아이폰 개발도 일부 했었다. 하지만 회사 업무로 인해 안드로이드를 시작하게 되었고 6개월이나 했음에도 아직 초보를 벗어나지 못한 것 같다. 불필요한 사설이 길었지만 6개월간 왜 불편함을 그냥 당연하게 생각하고 작업을 했는지 안타깝다.</p>
+
+<p>어제는 불현듯 책생 위에 널브러져 케이블들을 보며 이걸 없앨 수 없나? 라는 생각이 들었다. 내 책상 위에는 아이폰이 3개, 안드로이드 폰이 2개, 충전선 등이 있다. 굳이 다 필요하진 않지만...
+그래서 찾아봤다. 안드로이드 빌드 후 실행을 케이블 없이 할 수 있는가? 결과는 있다. 아 왜 진작 찾아보지 않았던가? 사실은 선 정리보다 더 중요한 문제가 있었다. 안드로이드 연결 케이블이 불안정한 것이다. adb에 붙었다 떨어졌다 하는 현상이 사용하는 케이블에 따라 상태가 천차만별이었다. 정말 안드로이드는 맘에 안든다.</p>
+
+<p>이제 정말 각설하고 본론을...</p>
+
+<p>일단 이 방법에서의 최대 단점은 최초 연결시에는 USB 케이블이 필요하다는 것이다. 그리고 같은 망으로 연결되어야 한다는 점.</p>
+
+<h3 id="1-일단-기존처럼-usb로-안드로이드폰을-연결한다">1. 일단 기존처럼 USB로 안드로이드폰을 연결한다.</h3>
+
+<h3 id="2-shell을-열어-기기가-연결된-것을-확인한다-사실-이-단계는-확인단계로-그냥-건너뛰어도-된다">2. Shell을 열어 기기가 연결된 것을 확인한다. (사실 이 단계는 확인단계로 그냥 건너뛰어도 된다.)</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>adb devices -l
+</span><span class='line'>
+</span><span class='line'>List of devices attached
+</span><span class='line'>6a1d4134               device usb:4245815296X product:hltelgt model:SM_N900L device:hltelgt
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="3-연결된-기기의-ip를-확인한다-adb-shell-실행-후-shell이-뜨면-netcfg-입력-exit로-종료">3. 연결된 기기의 IP를 확인한다. adb shell 실행 후 shell이 뜨면 netcfg 입력. exit로 종료.</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>adb shell
+</span><span class='line'>
+</span><span class='line'>shell@hltelgt:/ <span class="nv">$ </span>netcfg
+</span><span class='line'>
+</span><span class='line'>rev_rmnet1 DOWN                                   0.0.0.0/0   0x00001002 2e:80:5c:86:19:5f
+</span><span class='line'>...
+</span><span class='line'>sit0     DOWN                                   0.0.0.0/0   0x00000080 00:00:00:00:00:00
+</span><span class='line'>p2p0     UP                                     0.0.0.0/0   0x00001003 ca:14:79:ea:48:5f
+</span><span class='line'>lo       UP                                   127.0.0.1/8   0x00000049 00:00:00:00:00:00
+</span><span class='line'>wlan0    UP                             192.168.219.101/24  0x00001043 c8:14:79:ea:48:5f
+</span><span class='line'>
+</span><span class='line'>shell@hltelgt:/ <span class="nv">$ </span><span class="nb">exit</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="4-adb를-통해-포트-5555-원하는-포트-로-변경한다">4. adb를 통해 포트 5555(원하는 포트)로 변경한다.</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>adb tcpip 5555
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="5-기기-ip를-통해서-연결">5. 기기 IP를 통해서 연결</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>adb connect &lt;DEVICE_IP_ADDRESS&gt;:5555
+</span></code></pre></td></tr></table></div></figure>
+
+<p>끝이다. 이제는 USB에서 기기를 분리해도 된다.
+이제부터는 안드로이드 스튜디오에서 빌드를 하고 실행하려고 하면 원격으로 연결된 기기가 뜬다.</p>
+
+<p>아직 많이 써보진 않았지만 아무래도 직접 USB로 연결한 것 보다는 조금 느린 것 같긴하다. 하지만 계속 션으로 연결하지 않아도 된다는 것으로 만족.</p>
+
+<p>마지막으로 리모트 연결을 다시 USB 연결로 바꾸는 방법</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>adb -s &lt;DEVICE_IP_ADDRESS&gt;:5555 usb
+</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-05T06:47:14+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.05</time>
         
            | <a href="/2015/09/05/octopress-google-translate/#disqus_thread" itemprop="discussionUrl"
@@ -1125,93 +1237,6 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-08-28T06:34:30+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.08.28</time>
-        
-           | <a href="/2015/08/28/cocoapods-usage/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/08/28/cocoapods-usage/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/08/28/cocoapods-usage/" itemprop="url">CocoaPods 사용법</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><h2 id="설치">설치</h2>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>sudo<span class="o">]</span> gem install cocoapods
-</span><span class='line'>pod setup
-</span></code></pre></td></tr></table></div></figure>
-
-<h2 id="사용법">사용법</h2>
-
-<h3 id="패키지-검색">패키지 검색</h3>
-
-<blockquote>
-<p><a href="http://cocoapods.org/">http://cocoapods.org/</a></p>
-</blockquote>
-
-<h3 id="podfile-설정">Podfile 설정</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> 프로젝트 폴더
-</span><span class='line'>vi Podfile
-</span></code></pre></td></tr></table></div></figure>
-
-<p>아래의 내용입력.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">platform :ios, &#39;7.0&#39;
-pod &#39;HZWebViewController&#39;, &#39;~&gt; 0.0.2&#39;
-</code></pre></div>
-<h3 id="pod-설치">Pod 설치</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>pod install
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="pod-업데이트">Pod 업데이트</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>pod update
-</span></code></pre></td></tr></table></div></figure>
-
-<h2 id="실행">실행</h2>
-<div class="highlight"><pre><code class="language-text" data-lang="text">프로젝트명.xcworkspace
-</code></pre></div>
-<p>프로젝트명.xcodeproj가 아닌 프로젝트명.xcworkspace로 프로젝트를 열어야 정상적으로 빌드 및 실행이 된다.</p>
-
-<blockquote>
-<p>참고 : <a href="http://www.shako.net/blog/archives/224">http://www.shako.net/blog/archives/224</a></p>
-</blockquote>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1281,7 +1306,7 @@ pod &#39;HZWebViewController&#39;, &#39;~&gt; 0.0.2&#39;
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (26)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (5)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (26)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (4)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1290,6 +1315,8 @@ pod &#39;HZWebViewController&#39;, &#39;~&gt; 0.0.2&#39;
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/13/octopress-github-flavored-markdown-redcarpet/">Octopress에서 GitHub Flavored Markdown 사용하기(redcarpet)</a>
+    
     <a class="list-group-item " href="/2015/10/13/remove-line-break-in-tablayout/">안드로이드 TabLayout 사용시 Tab Text가 두줄로 나오는 문제 해결</a>
     
     <a class="list-group-item " href="/2015/10/12/bookmarklet/">북마클릿(bookmarklet) 생성기</a>
@@ -1297,8 +1324,6 @@ pod &#39;HZWebViewController&#39;, &#39;~&gt; 0.0.2&#39;
     <a class="list-group-item " href="/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/">java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류</a>
     
     <a class="list-group-item " href="/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/">안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제</a>
-    
-    <a class="list-group-item " href="/2015/10/12/gitlab-ce-to-gitlab-dot-com/">자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다</a>
     
   </div>
 </section>

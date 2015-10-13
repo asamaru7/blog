@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-13T14:33:51+09:00</updated>
+  <updated>2015-10-13T15:04:56+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,168 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Octopress에서 GitHub Flavored Markdown 사용하기(redcarpet)]]></title>
+    <link href="http://blog.asamaru.net/2015/10/13/octopress-github-flavored-markdown-redcarpet/"/>
+    <updated>2015-10-13T14:38:25+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/13/octopress-github-flavored-markdown-redcarpet</id>
+    <content type="html"><![CDATA[<p>옥토프레스에서는 markdown 해석기로 <a href="https://github.com/davidfstr/rdiscount">rdiscount</a>를 기본으로 사용하고 있다. 현재 사용해보니 rdiscount에서도 GitHub Flavored Markdown를 지원하는 것으로 보이는데 예전엔 제대로 지원이 안되고 있었는지 <a href="https://github.com/vmg/redcarpet">redcarpet</a>으로 바꾸서 사용하는 사람들이 많았다. 그래서 나도 바꿔 봤다.</p>
+
+<p>변경을 위해 참고한 글은 다음과 같다.</p>
+
+<ul>
+<li><a href="http://blog.tdksk.com/2013/05/06/use-gfm-in-octopress.html">Octopress で GitHub Flavored Markdown (GFM) を使う</a></li>
+<li><a href="http://yangsu.github.io/blog/2012/10/11/using-octopress-with-github-flavored-markdown-redcarpet/">Using Octopress With Github Flavored Markdown (RedCarpet)</a></li>
+</ul>
+
+<p>그런데 위 글들이 작성된 시점이 조금 오래되어서 그런지 그대로 따라해서는 정상적으로 적용이 되지 않았다. 그래서 몇가지를 수정해서 적용을 완료했다.</p>
+
+<h2 id="redcarpet-설치">redcarpet 설치</h2>
+
+<p>Gemfile에 아래의 내용을 추가 한다.</p>
+
+<figure class='code notranslate'><figcaption><span>Gemfile</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">gem</span> <span class="s1">&#39;redcarpet&#39;</span><span class="p">,</span> <span class="s1">&#39;~&gt; 3.3.2&#39;</span>
+</span><span class='line'><span class="n">gem</span> <span class="s1">&#39;albino&#39;</span><span class="p">,</span> <span class="s1">&#39;~&gt; 1.3.3&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>sudo<span class="o">]</span> bundle install
+</span></code></pre></td></tr></table></div></figure>
+
+<h2 id="redcarpet-플러그인-설치">redcarpet 플러그인 설치</h2>
+
+<p>plugins/redcarpet2_markdown.rb 파일을 추가한다. 원본은 <a href="https://github.com/nono/Jekyll-plugins%EC%97%90">https://github.com/nono/Jekyll-plugins에</a> 가면 볼 수 있다. 거의 그대로인데 약간 수정을 했다.</p>
+
+<figure class='code notranslate'><figcaption><span>plugins/redcarpet2_markdown.rb</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">require</span> <span class="s1">&#39;fileutils&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;digest/md5&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;redcarpet&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;albino&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># PYGMENTS_CACHE_DIR = File.expand_path(&#39;../../_cache&#39;, __FILE__)</span>
+</span><span class='line'><span class="no">FileUtils</span><span class="o">.</span><span class="n">mkdir_p</span><span class="p">(</span><span class="no">PYGMENTS_CACHE_DIR</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">Redcarpet2Markdown</span> <span class="o">&lt;</span> <span class="no">Redcarpet</span><span class="o">::</span><span class="no">Render</span><span class="o">::</span><span class="no">HTML</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">block_code</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">lang</span> <span class="o">=</span> <span class="n">lang</span> <span class="o">||</span> <span class="s2">&quot;text&quot;</span>
+</span><span class='line'>    <span class="n">path</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">PYGMENTS_CACHE_DIR</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">lang</span><span class="si">}</span><span class="s2">-</span><span class="si">#{</span><span class="no">Digest</span><span class="o">::</span><span class="no">MD5</span><span class="o">.</span><span class="n">hexdigest</span> <span class="n">code</span><span class="si">}</span><span class="s2">.html&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">cache</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">colorized</span> <span class="o">=</span> <span class="no">Albino</span><span class="o">.</span><span class="n">colorize</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lang</span><span class="o">.</span><span class="n">downcase</span><span class="p">)</span>
+</span><span class='line'>      <span class="n">add_code_tags</span><span class="p">(</span><span class="n">colorized</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">add_code_tags</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">code</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sr">/&lt;pre&gt;/</span><span class="p">,</span> <span class="s2">&quot;&lt;pre&gt;&lt;code class=</span><span class="se">\&quot;</span><span class="si">#{</span><span class="n">lang</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&gt;&quot;</span><span class="p">)</span><span class="o">.</span>
+</span><span class='line'>         <span class="nb">sub</span><span class="p">(</span><span class="sr">/&lt;\/pre&gt;/</span><span class="p">,</span> <span class="s2">&quot;&lt;/code&gt;&lt;/pre&gt;&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">cache</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="no">File</span><span class="o">.</span><span class="n">exist?</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span class='line'>      <span class="no">File</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'>      <span class="n">content</span> <span class="o">=</span> <span class="k">yield</span>
+</span><span class='line'>      <span class="no">File</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">f</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">content</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'>      <span class="n">content</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">Jekyll</span><span class="o">::</span><span class="no">MarkdownConverter</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">extensions</span>
+</span><span class='line'>    <span class="no">Hash</span><span class="o">[</span> <span class="o">*</span><span class="vi">@config</span><span class="o">[</span><span class="s1">&#39;redcarpet&#39;</span><span class="o">][</span><span class="s1">&#39;extensions&#39;</span><span class="o">].</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">e</span><span class="o">|</span> <span class="o">[</span><span class="n">e</span><span class="o">.</span><span class="n">to_sym</span><span class="p">,</span> <span class="kp">true</span><span class="o">]</span> <span class="p">}</span><span class="o">.</span><span class="n">flatten</span> <span class="o">]</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">markdown</span>
+</span><span class='line'>    <span class="vi">@markdown</span> <span class="o">||=</span> <span class="no">Redcarpet</span><span class="o">::</span><span class="no">Markdown</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">Redcarpet2Markdown</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">extensions</span><span class="p">),</span> <span class="n">extensions</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="k">super</span> <span class="k">unless</span> <span class="vi">@config</span><span class="o">[</span><span class="s1">&#39;markdown&#39;</span><span class="o">]</span> <span class="o">==</span> <span class="s1">&#39;redcarpet&#39;</span>
+</span><span class='line'>    <span class="n">markdown</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h2 id="config-설정">config 설정</h2>
+
+<p>_config.yml 파일을 열어서 rdiscount 부분을 아래와 같이 수정한다.</p>
+
+<figure class='code notranslate'><figcaption><span>_config.yml</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="c1">#markdown: rdiscount</span>
+</span><span class='line'><span class="l-Scalar-Plain">markdown</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">redcarpet</span>
+</span><span class='line'><span class="l-Scalar-Plain">redcarpet</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">extensions</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;no_intra_emphasis&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;fenced_code_blocks&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;autolink&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;tables&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;with_toc_data&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;strikethrough&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;superscript&quot;</span><span class="p-Indicator">]</span>
+</span><span class='line'><span class="c1">#rdiscount:</span>
+</span><span class='line'><span class="c1">#  extensions:</span>
+</span><span class='line'><span class="c1">#    - autolink</span>
+</span><span class='line'><span class="c1">#    - footnotes</span>
+</span><span class='line'><span class="c1">#    - smart</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>참고 사이트들 설명을 보면 extensions에 hard_wrap을 추가하라고 되어 있는데 나의 경우는 이 옵션을 추가하면 Pygments에서 오류가 났다.</p>
+
+<p>이것으로 설치는 끝이다. generate를 해보면 페이지가 잘 생성된다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[안드로이드 TabLayout 사용시 Tab Text가 두줄로 나오는 문제 해결]]></title>
@@ -1351,50 +1513,6 @@ By default, AndroidAnnotations try to find the R class by extracting application
 
 <p>위 부분은 ACRA에서 HTTP 전송시 사용하는 HttpRequest.java 의 일부분이다. <code>setChunkedStreamingMode</code>에 대해서는 여기서 설명하기엔 너무 길고 간단히 요약하자면 chunked 상태로 데이터가 전송된다.
 그런데 이 상태로 전송되면 현재 내가 사용하고 있는 서버에서 POST 값이 모두 비어 있다. request의 body가 수신되지 못하는 것이다. 이 부분은 나의 환경인 php-fpm가 proxy로 연결되어 있는 것과 관련이 있는 것으로 보인다. 이 부분에 대해서는 여러가지로 시도해 보았으나 해결이 되지 않았고 일단은 몇개의 클래스를 재정의해서 문제를 막아 놓았다. 그리고 관련해서는 ACRA에 Issue로 등록해 두었다. 개선이 될런지는 미지수인데 안된다면 앞으로 사용상에 걸림돌이 될 것 같다. 이 부분에 관련된 해결책이 나온다면 다시 포스팅을 하도록 하겠다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[필요해서 만든 대출 이자 계산기]]></title>
-    <link href="http://blog.asamaru.net/2015/09/30/loan-calculator/"/>
-    <updated>2015-09-30T21:17:45+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/30/loan-calculator</id>
-    <content type="html"><![CDATA[<p>올해 집을 이사하면서 돈이 부족해서 대출을 받게 되었다.
-대출을 받기 전에 예산을 잡는 과정에서 대출 비용에 따른 월 부담 비용을 알아보기 위해 대출 계산기를 찾아다녔었다. 그런데 딱히 편한게 없었다. 어짜피 계산값이야 다를 수 없는 것이므로 계산이 불편하지는 않았으나 계산했던 결과를 저장해 둘 수가 없어서 매번 다시 계산해야하는 불편함이 있었다. 하루에도 몇번씩 얼마를 빌려야할지가 변하는 상황에서 월 비용을 모두 기억할 수는 없었기 때문에 자주 다시 계산하게 되었던 것이다. 그래서 직접 안드로이드 앱을 만들어 버렸다. 아래의 링크를 통해 마켓으로 갈 수 있다.</p>
-
-<h3 id="안드로이드-대출-계산기-앱"><a href="https://play.google.com/store/apps/details?id=net.asamaru.calc">안드로이드 대출 계산기 앱</a></h3>
-
-<p>그리고 앱을 만들면서 하이브리드앱 형태로 만들었었기 때문에 조금만 수정해서 웹 버전도 만들었다. 단, 아직 계산 결과 저장 기능은 넣이 않았다. 그게 제일 중요한 목적이긴 했는데 아직 완성하지 못했다. 시간이 되는대로 기능을 넣을 예정이다. 웹 버전은 아래의 링크를 통해 볼 수 있다.</p>
-
-<h3 id="대출-이자-계산기"><a href="http://loan.asamaru.net/">대출 이자 계산기</a></h3>
-
-<p>내가 필요해서 만든 것이지만 혹시라도 필요한 사람들이 있을까해서 공개해 본다. 앞으로의 버전업은 크게 기대하기 어렵지만 앱/웹 버전 모두 소스를 공개해 두었기 때문에 계산 로직 등이 필요한 사람들은 도움이 될지도 모르겠다.</p>
-
-<hr>
-
-<p>위의 프로그램들과는 크게 상관없지만 대출의 종류를 간단히 소개하고자 한다.</p>
-
-<h4 id="원리금균등분할상환">원리금균등분할상환</h4>
-
-<blockquote>
-<p>일반적으로 사용되는 상황방식으로 매기간 원금과 이자의 합계가 균등한 저당이다. 초기에는 원리금 중 이자가 차지하는 부분이 많으나 후기에는 원금상환 비중이 커지면 대출만기 일자에 대출원금은 완전히 상환된다.</p>
-</blockquote>
-
-<h4 id="원금균등분할상환">원금균등분할상환</h4>
-
-<blockquote>
-<p>대출원금을 융자기간으로 나눈 할부 상환금에 월별잔고에 대한 이자를 합산하여 납부하는 방식이다. 원금액은 동일하나 이자지불액은 원금을 갚아나가면서 조금씩 줄어듦에 따라 매 기간 적어지게 된다. 따라서 원금균등상환방식은 초기에는 월부금이 많이 지급되고 후기에는 점차 줄어들기 때문에 대출자 입장에서는 차입자에게 원금균등분할상환방식으로 대출해 주는 것이 원금회수 측면에서 보다 안전하다.</p>
-</blockquote>
-
-<h4 id="원금만기일시상환-만기상환저당">원금만기일시상환(만기상환저당)</h4>
-
-<blockquote>
-<p>원금은 만기에 상환하고 대출기간 중에는 이자만 지불하는 저당대출을 말한다. 이 방식을 인터리스트 온리 모기지(interest only mortgage)라고도 한다.</p>
-</blockquote>
-
-<p>내가 알기론 원금균등상환이 돈을 빌리는 입장에서 제일 유리한 것으로 알고 있으나 대부분의 대출 상품은 원리금균등상환이다.</p>
-
-<p><strong>예전엔 빚테크라는 말도 있듯이 대출을 잘 활용하는 것이 좋았지만 요즘같은 시국엔 빚없이 사는게 제일인 것 같다.</strong> 아무쪼록 내가 만든 프로그램들이 대출을 효율적으로 받는데 도움이 되었으면 한다.</p>
 ]]></content>
   </entry>
   

@@ -206,7 +206,18 @@
 </span></code></pre></td></tr></table></div></figure>
 
 <p>안드로이드는 이런 문제들에 대해서 알아서 좀 대응할 수 없는건가? 아쉽다.
-그런데 함수 이름에도 나와 있는 것 처럼 <code>commitAllowingStateLoss()</code>를 사용하면 상태값을 잃을 수 있다. <code>commitAllowingStateLoss()</code>를 사용하지 않고 해결하는 방법은 없을까? 생각해보면 실행되는 시점의 문제이므로 시점을 조금 지연하는 방법을 쓸 수도 있다.</p>
+그런데 함수 이름에도 나와 있는 것 처럼 <code>commitAllowingStateLoss()</code>를 사용하면 상태값을 잃을 수 있다.</p>
+
+<p><a href="http://developer.android.com/intl/ko/reference/android/app/FragmentTransaction.html#commitAllowingStateLoss%28%29">FragmentTransaction 메뉴얼</a>에 아래와 같이 나와있다.</p>
+
+<blockquote>
+<p>public abstract int commitAllowingStateLoss ()</p>
+
+<p>Added in API level 11
+Like commit() but allows the commit to be executed after an activity&#39;s state is saved. This is dangerous because the commit can be lost if the activity needs to later be restored from its state, so this should only be used for cases where it is okay for the UI state to change unexpectedly on the user.</p>
+</blockquote>
+
+<p><code>commitAllowingStateLoss()</code>를 사용하지 않고 해결하는 방법은 없을까? 생각해보면 실행되는 시점의 문제이므로 시점을 조금 지연하는 방법을 쓸 수도 있다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -244,7 +255,7 @@
 
 <p>위 코드를 보면 Handler의 <code>postDelayed()</code> 함수를 사용해서 처리시점을 지연시켰다(사실 시간은 0이므로 작업을 잠시 뒤로 미룬것이다). 이렇게 해도 위 오류는 발생하지 않는다.</p>
 
-<p>어떤 방법이 맞는지에 대해서는 아직은 정확히 모르겠다. 선택은 자유다.</p>
+<p>어떤 방법이 맞는지에 대해서는 아직은 정확히 모르겠다(이렇게하면 상태를 잃어버리는 것과 무관해 지는지 명확하지 않다는 뜻이다). 선택은 자유다.</p>
 </div>
 
 

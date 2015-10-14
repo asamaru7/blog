@@ -4,7 +4,7 @@
   <title><![CDATA[Category: vagrant | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/vagrant/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-14T14:58:11+09:00</updated>
+  <updated>2015-10-14T16:28:55+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -110,8 +110,16 @@ $ sudo ls -al
 <span class="nv">$ </span>curl -k https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub &gt; .ssh/authorized_keys
 <span class="nv">$ </span>chmod <span class="m">0700</span> .ssh
 <span class="nv">$ </span>chmod <span class="m">0600</span> .ssh/authorized_keys
+<span class="c"># .ssh/authorized_keys 내용 확인</span>
+<span class="nv">$ </span>cat .ssh/authorized_keys
 </code></pre></div>
-<p>ssh 설정을 조정한다.</p>
+<p>여기서 주의할 것이 있다. authorized_keys 파일이 빈 파일로 저장되는 경우가 있다. 정확한 원인은 확인하지 못했지만 이번에 작업하다보니 이런 경우가 생겼다. 현재로써는 curl의 문제로 보이지만 확실하진 않다. 이 경우엔 일단 파일을 받아야 하니 아래와 같이 wget을 사용해서 받자.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>sudo yum install wget -y
+<span class="nv">$ </span>wget --no-check-certificate https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -O .ssh/authorized_keys
+<span class="c"># .ssh/authorized_keys 내용 확인</span>
+<span class="nv">$ </span>cat .ssh/authorized_keys
+</code></pre></div>
+<p>이제는 ssh 설정을 조정한다.</p>
 <div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>sudo vi /etc/ssh/sshd_config
     <span class="c"># 아래의 내용을 확인해서 맞춰준다.</span>
 Port 22
@@ -133,9 +141,27 @@ sudo rm -f /EMPTY
 <p>이제 박스를 만든다. &quot;vagrant-centos7-x86_64&quot;는 위에서 확인한 VirtualBox 이름을 넣으면 되고 &quot;centos7-x86_64.box&quot;는 생성할 박스의 이름을 넣으면 된다.</p>
 <div class="highlight"><pre><code class="language-bash" data-lang="bash">vagrant package --output centos7-x86_64.box --base vagrant-centos7-x86_64
 </code></pre></div>
-<p>혹시 퍼미션 오류가 난다면 아래처럼 sudo를 사용하면 된다.</p>
+<p>혹시 퍼미션 오류가 난다면 아래처럼 sudo를 사용하면 된다. 사실 일반적인 경우라면 당연히 퍼미션 오류가 나지 않는다. 그런데 나의 경우엔 1024 이하의 포트를 포트 포워딩하기 위해 vagrant와 VirtualBox를 root 권한에서 사용하고 있다(OSX에서는 1024 포트를 포트 포워딩하기 위해서는 root 권한이 필요하다). 이런 경우라면 vagrant 명령에서 권한 오류가 날 수 있다.</p>
 <div class="highlight"><pre><code class="language-bash" data-lang="bash">sudo vagrant package --output centos7-x86_64.box --base vagrant-centos7-x86_64
-</code></pre></div>]]></content>
+</code></pre></div>
+<h3 id="vagrantfile-만들기">Vagrantfile 만들기</h3>
+
+<p>아래의 명령을 실행하면 Vagrantfile가 만들어 진다. 아래는 두가지 방법을 설명하고 있다. 첫번째는 local에 box을 추가해서 init하는 것이고 두번째는 현재 폴더의 box 파일을 사용해서 init하는 것이다. 어떤 방법을 써도 Vagrantfile는 만들어지니 편한 방법을 사용하면 된다. 하지만 로컬에 등록해두고 계속 사용할 것이 아니라면 두번째 방법을 사용하면 된다. 첫번째 방법으로 하면 보통 &quot;~/.vagrant.d/boxes&quot;에 파일이 추가된다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>vagrant box add centos7 centos7-x86_64.box
+<span class="nv">$ </span>vagrant init centos7
+</code></pre></div>
+<p>또는</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>vagrant init centos7-x86_64.box
+<span class="c"># or</span>
+<span class="nv">$ </span>vagrant init
+</code></pre></div>
+<p>여기서 만들어진 파일은 가장 기본 설정만 되어 있으므로 자신에게 맞는 설정을 해주어야 한다. 이 부분은 또 내용이 길기 때문에 다음에 포스팅 하도록 하겠다.</p>
+
+<h3 id="실행해보기">실행해보기</h3>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>vagrant up
+</code></pre></div>
+<p>앞선 과정에서 문제가 없었다면 정상적으로 vagrant가 실행된다. 당연히 최소 실행시에는 box를 다운받는 과정이 있어 실행이 좀 오래 걸린다.</p>
+]]></content>
   </entry>
   
 </feed>

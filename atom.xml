@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-14T16:41:44+09:00</updated>
+  <updated>2015-10-15T08:10:02+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -62,7 +62,7 @@
 
 <p><img src="http://blog.asamaru.net/img/2015-10-14-creating-a-vagrant-base-box-8.png" alt="creating-a-vagrant-base-box-8"></p>
 
-<p>여기서는 필요한 설정을 해주면 되는데 나의 경우엔 플로피디스크, USB, Audio를 사용하지 않도록 하고 네트워크는 &quot;NAT&quot;를 선택했다. &quot;브릿지 어뎁터&quot;를 사용하면 내 컴퓨터의 IP를 함께 사용하지 않고 새로운 IP를 설정할 수 있는데 특수한 경우가 아니라면 일단 NAT를 사용하도록 설정한다. 그리고 NAT를 사용하게되면 가상의 사설 IP가 할당되므로 나중에 SSH 접속을하기 위해서는 포트 포워징 설정이 필요하다. 아래의 이미지를 참고해서 2222포트를 22포트로 포워딩 되도록 설정한다.</p>
+<p>여기서는 필요한 설정을 해주면 되는데 나의 경우엔 플로피디스크, USB, Audio를 사용하지 않도록 하고 네트워크는 &quot;NAT&quot;를 선택했다. &quot;브릿지 어뎁터&quot;를 사용하면 내 컴퓨터의 IP를 함께 사용하지 않고 새로운 IP를 설정할 수 있는데 특수한 경우가 아니라면 일단 NAT를 사용하도록 설정한다. 그리고 NAT를 사용하게되면 가상의 사설 IP가 할당되므로 나중에 SSH 접속을하기 위해서는 포트 포워딩 설정이 필요하다. 아래의 이미지를 참고해서 2222포트를 22포트로 포워딩 되도록 설정한다.</p>
 
 <p><img src="http://blog.asamaru.net/img/2015-10-14-creating-a-vagrant-base-box-9.png" alt="creating-a-vagrant-base-box-9"></p>
 
@@ -83,12 +83,30 @@
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>su
 </span><span class='line'><span class="nv">$ </span>mount -r /dev/cdrom /media/
 </span><span class='line'><span class="nv">$ </span>ll /media/
 </span><span class='line'><span class="nv">$ </span>yum install -y bzip2 kernel-devel make gcc perl
 </span><span class='line'><span class="nv">$ </span>/media/VBoxLinuxAdditions.run --nox11
 </span><span class='line'><span class="nv">$ </span>yum clean all
+</span><span class='line'>
+</span><span class='line'><span class="nv">$ </span>usermod -u <span class="m">471</span> vboxadd
+</span><span class='line'><span class="nv">$ </span>groupmod -g <span class="m">471</span> vboxsf
+</span><span class='line'><span class="c">#lsmod | grep vboxsf</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">$ </span><span class="nb">export </span><span class="nv">MAKE</span><span class="o">=</span><span class="s1">&#39;/usr/bin/gmake -i&#39;</span>
+</span><span class='line'><span class="nv">$ </span>/etc/init.d/vboxadd setup
+</span><span class='line'><span class="nv">$ </span><span class="nb">unset </span>MAKE
+</span><span class='line'>
 </span><span class='line'><span class="nv">$ </span>reboot
 </span></code></pre></td></tr></table></div></figure>
 
@@ -100,10 +118,12 @@
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
+<span class='line-number'>5</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>/usr/sbin/groupadd -g <span class="m">470</span> vagrant
 </span><span class='line'><span class="nv">$ </span>/usr/sbin/useradd -g vagrant -u <span class="m">470</span> vagrant
 </span><span class='line'><span class="nv">$ </span>passwd vagrant
 </span><span class='line'>  <span class="c"># vagrant 를 암호로 입력</span>
+</span><span class='line'><span class="nv">$ </span>chown vagrant.vagrant /home/vagrant/
 </span></code></pre></td></tr></table></div></figure>
 
 <p>vagrant 계정에서 root 명량을 수행할 수 있도록 sudo에 추가해 준다.</p>
@@ -171,7 +191,7 @@
 </span><span class='line'>AuthorizedKeysFile      .ssh/authorized_keys
 </span></code></pre></td></tr></table></div></figure>
 
-<p>디스크 용량을 줄인다.</p>
+<p>디스크를 정리해서 용량을 줄인다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>

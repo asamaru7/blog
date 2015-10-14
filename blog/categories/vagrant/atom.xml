@@ -4,7 +4,7 @@
   <title><![CDATA[Category: vagrant | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/vagrant/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-14T16:41:44+09:00</updated>
+  <updated>2015-10-15T08:10:02+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -62,7 +62,7 @@
 
 <p><img src="/img/2015-10-14-creating-a-vagrant-base-box-8.png" alt="creating-a-vagrant-base-box-8"></p>
 
-<p>여기서는 필요한 설정을 해주면 되는데 나의 경우엔 플로피디스크, USB, Audio를 사용하지 않도록 하고 네트워크는 &quot;NAT&quot;를 선택했다. &quot;브릿지 어뎁터&quot;를 사용하면 내 컴퓨터의 IP를 함께 사용하지 않고 새로운 IP를 설정할 수 있는데 특수한 경우가 아니라면 일단 NAT를 사용하도록 설정한다. 그리고 NAT를 사용하게되면 가상의 사설 IP가 할당되므로 나중에 SSH 접속을하기 위해서는 포트 포워징 설정이 필요하다. 아래의 이미지를 참고해서 2222포트를 22포트로 포워딩 되도록 설정한다.</p>
+<p>여기서는 필요한 설정을 해주면 되는데 나의 경우엔 플로피디스크, USB, Audio를 사용하지 않도록 하고 네트워크는 &quot;NAT&quot;를 선택했다. &quot;브릿지 어뎁터&quot;를 사용하면 내 컴퓨터의 IP를 함께 사용하지 않고 새로운 IP를 설정할 수 있는데 특수한 경우가 아니라면 일단 NAT를 사용하도록 설정한다. 그리고 NAT를 사용하게되면 가상의 사설 IP가 할당되므로 나중에 SSH 접속을하기 위해서는 포트 포워딩 설정이 필요하다. 아래의 이미지를 참고해서 2222포트를 22포트로 포워딩 되도록 설정한다.</p>
 
 <p><img src="/img/2015-10-14-creating-a-vagrant-base-box-9.png" alt="creating-a-vagrant-base-box-9"></p>
 
@@ -81,6 +81,15 @@
 <span class="nv">$ </span>yum install -y bzip2 kernel-devel make gcc perl
 <span class="nv">$ </span>/media/VBoxLinuxAdditions.run --nox11
 <span class="nv">$ </span>yum clean all
+
+<span class="nv">$ </span>usermod -u <span class="m">471</span> vboxadd
+<span class="nv">$ </span>groupmod -g <span class="m">471</span> vboxsf
+<span class="c">#lsmod | grep vboxsf</span>
+
+<span class="nv">$ </span><span class="nb">export </span><span class="nv">MAKE</span><span class="o">=</span><span class="s1">&#39;/usr/bin/gmake -i&#39;</span>
+<span class="nv">$ </span>/etc/init.d/vboxadd setup
+<span class="nv">$ </span><span class="nb">unset </span>MAKE
+
 <span class="nv">$ </span>reboot
 </code></pre></div>
 <h3 id="vagrant-관련-설정">Vagrant 관련 설정</h3>
@@ -90,6 +99,7 @@
 <span class="nv">$ </span>/usr/sbin/useradd -g vagrant -u <span class="m">470</span> vagrant
 <span class="nv">$ </span>passwd vagrant
     <span class="c"># vagrant 를 암호로 입력</span>
+<span class="nv">$ </span>chown vagrant.vagrant /home/vagrant/
 </code></pre></div>
 <p>vagrant 계정에서 root 명량을 수행할 수 있도록 sudo에 추가해 준다.</p>
 <div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>visudo
@@ -126,7 +136,7 @@ Port 22
 PubkeyAuthentication yes
 AuthorizedKeysFile      .ssh/authorized_keys
 </code></pre></div>
-<p>디스크 용량을 줄인다.</p>
+<p>디스크를 정리해서 용량을 줄인다.</p>
 <div class="highlight"><pre><code class="language-bash" data-lang="bash">sudo dd <span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>/EMPTY <span class="nv">bs</span><span class="o">=</span>1M
 sudo rm -f /EMPTY
 </code></pre></div>

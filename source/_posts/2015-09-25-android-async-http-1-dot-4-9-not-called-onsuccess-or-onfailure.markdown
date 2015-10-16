@@ -37,3 +37,13 @@ categories: android
 ```
 
 대충 소스를 보니 HttpGet는 이번에 Apache HTTP 클라이언트가 제거되면서 이를 대체하기 위한 라이브러리를 교체하면서 추가된 클래스로 보인다. 그런데 소스를 봐도 이게 왜 proguard에 영향을 받는지 잘 모르겠지만 위의 코드를 넣음으로써 해결이 되는 것은 확인했다. 더 자세히 코드를 추적해 간다면 원인을 찾을 수 있을지도 모르지만 굳이 거기까지 내가할 필요는 없다고 보고 github에 이슈를 등록하려고 한다. 해당 개발자들이 다음버전에 문제를 해결해 주기를 바라며...
+
+## UPDATE - 2015-10-15
+
+오늘 사용자에게서 오류가 보고 되었다. 문제는 파일업로드가 되지 않는다는 것인데 문제의 원인은 위 글의 내용과 동일하다. 정확히는 안드로이드 버전 문제도 포함된다. 하위 버전의 안드로이드에서는 위의 설정만으로는 해결이 되지 않았던 것이다. 결론은 아래의 내용을 proguard에 대체해서 넣어야 한다는 것. 상황적으로 봤을 때 내가 사용한 범위를 벗어나면 proguard와 충돌하는 부분이 더 있을 수 있을 것 같다(하지만 지금 내가 다 찾기엔 무리이므로 android-async-http 개발자분들에게 넘긴다).
+
+```
+-keep class cz.msebera.android.httpclient.HttpResponse { *; }
+-keep class com.loopj.android.http.HttpGet { *; }
+-keep class com.loopj.android.http.HttpDelete { *; }
+```

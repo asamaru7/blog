@@ -138,6 +138,91 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-03T18:48:08+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.03</time>
+        
+           | <a href="/2015/09/03/android-http-ping/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/03/android-http-ping/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/03/android-http-ping/" itemprop="url">안드로이드에서 android.os.NetworkOnMainThreadException을 발생시키지 않고 HTTP Ping 보내기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>오늘은 작업을 하던 중간에 서버로 ping을 보내야 하는 작업이 생겼다. 정확하게는 서버에 간단한 값을 전송해서 로그로 쌓기 위한 작업이다.
+우선 안드로이드는 main thread에서 network 작업을 할 수 없도록 되어있다. 억지로 하려고하면 android.os.NetworkOnMainThreadException이 발생한다.</p>
+
+<p>간단히 생각해서 handler를 사용하는 방법도 있으나 메인 handler를 사용하면 마찬가지다.
+그래서 가장 간단한 방법은 AsyncTask를 사용하는 것이다.</p>
+
+<p>아래는 url을 인자로 받아 http로 접속한 후 response가 200이 나왔는지를 반환한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">static</span> <span class="kd">class</span> <span class="nc">HttpPingAsyncTask</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Boolean</span><span class="o">&gt;</span> <span class="o">{</span>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">protected</span> <span class="n">Boolean</span> <span class="nf">doInBackground</span><span class="o">(</span><span class="n">String</span><span class="o">...</span> <span class="n">urls</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">try</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">HttpURLConnection</span><span class="o">.</span><span class="na">setFollowRedirects</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span><span class='line'>            <span class="n">HttpURLConnection</span> <span class="n">con</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="k">new</span> <span class="nf">URL</span><span class="o">(</span><span class="n">urls</span><span class="o">[</span><span class="mi">0</span><span class="o">]).</span><span class="na">openConnection</span><span class="o">();</span>
+</span><span class='line'>            <span class="n">con</span><span class="o">.</span><span class="na">setRequestMethod</span><span class="o">(</span><span class="s">&quot;HEAD&quot;</span><span class="o">);</span>
+</span><span class='line'>            <span class="k">return</span> <span class="o">(</span><span class="n">con</span><span class="o">.</span><span class="na">getResponseCode</span><span class="o">()</span> <span class="o">==</span> <span class="n">HttpURLConnection</span><span class="o">.</span><span class="na">HTTP_OK</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>사용법은 다음과 같다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">(</span><span class="k">new</span> <span class="nf">HttpPingAsyncTask</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">url</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이는 가장 간단한 형태로 구현된 코드로 할 수 있는 일이 url을 호출하고 응답을 확인하는 것 밖에 없다. 하지만 조금만 응용하면 여러가지로 활용할 수 있다.
+url에 GET 인자로 전달하고자 하는 값을 넘기고 서버에서는 해당 값을 로그로 남기거나 필요한 처리를 한다. 그리고 정상처리가 되었다면 200을 반환하고 실패하면 500을 반환함으로써 처리 결과를 알 수 있다. 이러한 형태를 이용하면 간단한 구현으로 여러가지 일을 할 수 있다.</p>
+
+<p>또한 위의 코드에 필요한 기능을 조금씩 덧붙이면 보다 다양한 일을 할 수 있는 코드를 만들수도 있을 것이다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-02T21:49:21+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.02</time>
         
            | <a href="/2015/09/02/decoding-byte-escaped-strings-in-php/#disqus_thread" itemprop="discussionUrl"
@@ -1222,273 +1307,6 @@ pod &#39;HZWebViewController&#39;, &#39;~&gt; 0.0.2&#39;
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-08-19T23:29:26+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.08.19</time>
-        
-           | <a href="/2015/08/19/octopress-install/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/08/19/octopress-install/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/08/19/octopress-install/" itemprop="url">Octopress 설치</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><h1 id="octopress-설치">Octopress 설치</h1>
-
-<p><a href="http://octopress.org/">Octopress</a>는 <a href="http://jekyllrb.com/">Jekyll</a>을 위해 디자인된 프레임워크다.
-Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블로그 사이트를 생성할 수 있다.
-하지만 해커들을 위한 블로깅 프레임워크이라고도 불리는 Jekyll은 사용이 그리 간단하지만은 않다.
-자세한 내용은 검색하면 많이 찾을 수 있으니 그만 넘어가자.</p>
-
-<h2 id="기본-설치">기본 설치</h2>
-
-<p>Octopress에 안내된 설치방법은 아래의 사이트를 참고하자.
-<a href="http://octopress.org/docs/setup/">http://octopress.org/docs/setup/</a></p>
-
-<p>하지만 위의 설명대로 잘 되지 않는다면 아래의 내용을 참고해 볼수도 있다. 나의 경우엔 설치가 그리 쉽지만은 않았다.</p>
-
-<p>우선 설치 환경은 osx 10.10 기준이다.</p>
-
-<p>이미 git, brew 등은 설치가 되어있었기 때문에 rvm으로 ruby 1.9.3을 설치하려고 했으나 아래와 같은 오류를 만났다.</p>
-
-<h3 id="오류-requirements_osx_brew_libs_install-gcc49-openssl">오류 : requirements_osx_brew_libs_install gcc49 openssl</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo rvm install 1.9.3
-</span><span class='line'>Searching <span class="k">for</span> binary rubies, this might take some time.
-</span><span class='line'>No binary rubies available <span class="k">for</span>: osx/10.10/x86_64/ruby-1.9.3-p551.
-</span><span class='line'>Continuing with compilation. Please <span class="nb">read</span> <span class="s1">&#39;rvm help mount&#39;</span> to get more information on binary rubies.
-</span><span class='line'>Checking requirements <span class="k">for</span> osx.
-</span><span class='line'>Installing requirements <span class="k">for</span> osx.
-</span><span class='line'>Updating system.....
-</span><span class='line'>Installing required packages: gcc49, openssl....
-</span><span class='line'>Error running <span class="s1">&#39;requirements_osx_brew_libs_install gcc49 openssl&#39;</span>,
-</span><span class='line'>showing last <span class="m">15</span> lines of /Users/yyj/.rvm/log/1439982916_ruby-1.9.3-p551/package_install_gcc49_openssl.log
-</span><span class='line'>++ <span class="k">case</span> <span class="s2">&quot;$1&quot;</span> in
-</span><span class='line'>++ <span class="o">[[</span> -t <span class="m">1</span> <span class="o">]]</span>
-</span><span class='line'>++ <span class="k">return</span> 1
-</span><span class='line'>++ <span class="nb">printf</span> %b <span class="s1">&#39;There were package installation errors, make sure to read the log.</span>
-</span><span class='line'>
-</span><span class='line'><span class="s1">Try `brew tap --repair` and make sure `brew doctor` looks reasonable.</span>
-</span><span class='line'>
-</span><span class='line'><span class="s1">Check Homebrew requirements https://github.com/Homebrew/homebrew/wiki/Installation\n&#39;</span>
-</span><span class='line'>There were package installation errors, make sure to <span class="nb">read </span>the log.
-</span><span class='line'>
-</span><span class='line'>Try <span class="sb">`</span>brew tap --repair<span class="sb">`</span> and make sure <span class="sb">`</span>brew doctor<span class="sb">`</span> looks reasonable.
-</span><span class='line'>
-</span><span class='line'>Check Homebrew requirements https://github.com/Homebrew/homebrew/wiki/Installation
-</span><span class='line'>++ <span class="k">case</span> <span class="s2">&quot;$_system_version&quot;</span> in
-</span><span class='line'>++ <span class="k">return</span> 1
-</span><span class='line'>Requirements installation failed with status: 1.
-</span></code></pre></td></tr></table></div></figure>
-
-<p>우선 안내에 나온대로 <code>brew tap --repair</code>와 <code>brew doctor</code>를 실행해서 안내하는대로 처리를 완료했음에도 문제는 해결이 되지 않았다.
-그래서 다음과 같이 rvm에서 필요로하는 lib을 먼저 설치했다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rvm get head --autolibs<span class="o">=</span>3
-</span><span class='line'><span class="nv">$ </span>rvm requirements
-</span></code></pre></td></tr></table></div></figure>
-
-<p>재시도 ...</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo rvm install 1.9.3
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이번엔 오류가 나지않고 ruby를 다운로드 시작... 그러나 엄청나게 느림... 중간에 끊어짐... 이런...
-오랜 기다림 끝에 이제 ruby 1.9.3 설치 완료.
-이제 ruby 1.9.3을 사용하도록 하고...</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rvm use 1.9.3
-</span><span class='line'><span class="nv">$ </span>rvm rubygems latest
-</span></code></pre></td></tr></table></div></figure>
-
-<p>그다음은 공식 사이트 설명대로... 단, Octopress를 clone 받은 경로로 가서...</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>gem install bundler
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이번엔 그냥 넘아가나 했더니 아래와 같은 오류...</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>ERROR:  Could not find a valid gem <span class="s1">&#39;bundler&#39;</span> <span class="o">(</span>&gt;<span class="o">=</span> 0<span class="o">)</span>, here is why:
-</span><span class='line'>          Unable to download data from https://rubygems.org/ - server did not <span class="k">return</span> a valid file <span class="o">(</span>https://rubygems.org/latest_specs.4.8.gz<span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이번에도 아래와 같이 하고...</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rvm use 1.9.3
-</span><span class='line'>Using /Users/yyj/.rvm/gems/ruby-1.9.3-p551
-</span><span class='line'><span class="nv">$ </span>rvm rubygems latest
-</span></code></pre></td></tr></table></div></figure>
-
-<p>재시도...</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>gem install bundler
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이번엔 퍼미션 에러...</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo gem install bundler
-</span></code></pre></td></tr></table></div></figure>
-
-<p>드디어 설치.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rbenv rehash <span class="c"># 이건 필요시에만 한다고하니 명령이 없다는 오류가 나면 무시</span>
-</span><span class='line'><span class="nv">$ </span>bundle install
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이번에도 <code>bundle install</code>에서 퍼미션 에러...</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo bundle install
-</span></code></pre></td></tr></table></div></figure>
-
-<p>아.. 드디어 기본 설치 완료</p>
-
-<h2 id="테마설치">테마설치</h2>
-
-<p>기본 테마 설치</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake install
-</span></code></pre></td></tr></table></div></figure>
-
-<p>다른 테마를 원한다면 <a href="https://github.com/imathis/octopress/wiki/3rd-Party-Octopress-Themes">https://github.com/imathis/octopress/wiki/3rd-Party-Octopress-Themes</a> 에 가서 고르면 된다.</p>
-
-<p>설치는 다음과 같이</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>git clone https://github.com/~~~.git .themes/테마이름
-</span><span class='line'><span class="nv">$ </span>rake install<span class="o">[</span><span class="s1">&#39;테마이름&#39;</span><span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>octostrap3 테마 적용 예시.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>% git clone https://github.com/kAworu/octostrap3.git .themes/octostrap3
-</span><span class='line'>% rake install<span class="o">[</span><span class="s2">&quot;octostrap3&quot;</span><span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h2 id="설정">설정</h2>
-
-<p>아래와 같이 명령을 실행하고 생성해둔 github 프로젝트 주소를 넣으면 설치는 완료된다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake setup_github_pages
-</span><span class='line'>Enter the <span class="nb">read</span>/write url <span class="k">for</span> your repository
-</span><span class='line'><span class="o">(</span>For example, <span class="s1">&#39;git@github.com:your_username/your_username.github.io.git)</span>
-</span><span class='line'><span class="s1">           or &#39;</span>https://github.com/your_username/your_username.github.io<span class="err">&#39;</span><span class="o">)</span>
-</span><span class='line'>Repository url: https://github.com/~~~/~~~.git
-</span></code></pre></td></tr></table></div></figure>
-
-<h2 id="배포">배포</h2>
-
-<p>아직 작성한 글이 아무것도 없지만 일단 deploy 해본다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rake generate
-</span><span class='line'><span class="nv">$ </span>rake deploy
-</span></code></pre></td></tr></table></div></figure>
-
-<p>deploy를 하고나면 기본적으로 생성해 주는 아주 간단한 index.html 파일이 push되어 있는 것을 볼 수 있다.</p>
-
-<p>이제 페이지가 정상적으로 뜨는지만 확인하면 기본 설치는 모두 완료.</p>
-
-<h2 id="repository-연결">repository 연결</h2>
-
-<p>블로그는 gh-pages branch로 연결되어 있으니 원소스를 master로 연결하여 백업의 역할을 할 수 있도록 설정해보자.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>git remote add origin https://github.com/~~~/~~~.git
-</span><span class='line'><span class="nv">$ </span>git config branch.master.remote origin
-</span><span class='line'>
-</span><span class='line'><span class="nv">$ </span>git push
-</span></code></pre></td></tr></table></div></figure>
-
-<h2 id="독립-도메인-연결">독립 도메인 연결</h2>
-
-<p>이왕이면 내 도메인도 연결해보자. 아래의 명령은 CNAME 파일을 통해 도메인 연결을 github에 알려주는 것으로 이후 deploy가 될 때 이 파일이 함께 배포되면 적용된다. 단, 도메인을 변경했으므로 이에 맞춰 _config.yml 파일도 함께 수정해야 한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s1">&#39;blog.asamaru.net&#39;</span> &gt;&gt; <span class="nb">source</span>/CNAME
-</span></code></pre></td></tr></table></div></figure>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1558,7 +1376,7 @@ Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블�
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (28)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (6)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (29)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (6)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1567,6 +1385,8 @@ Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블�
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/16/android-verticalcenterspan/">안드로이드 세로 중앙정렬 Span(VerticalCenterSpan)</a>
+    
     <a class="list-group-item " href="/2015/10/16/android-spannablestring-concat/">안드로이드 SpannableString 합치기</a>
     
     <a class="list-group-item " href="/2015/10/14/creating-a-vagrant-base-box/">Vagrant BASE Box 만들기(CentOS 7)</a>
@@ -1574,8 +1394,6 @@ Jekyll은 Github pages를 이용한 정적 블로깅 엔진으로 무료로 블�
     <a class="list-group-item " href="/2015/10/14/centos-7-minimal-install/">CentOS 7 minimal 설치</a>
     
     <a class="list-group-item " href="/2015/10/14/centos-7-install-partitioning/">Centos 7 설치시 파티셔닝</a>
-    
-    <a class="list-group-item " href="/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/">java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류 해결</a>
     
   </div>
 </section>

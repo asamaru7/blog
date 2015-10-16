@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-15T09:07:48+09:00</updated>
+  <updated>2015-10-16T13:30:45+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,37 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[안드로이드 SpannableString 합치기]]></title>
+    <link href="http://blog.asamaru.net/2015/10/16/android-spannablestring-concat/"/>
+    <updated>2015-10-16T13:16:51+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/16/android-spannablestring-concat</id>
+    <content type="html"><![CDATA[<p>안드로이드에서 TextView, EditText 등에서 문자를 출력할 때 스타일을 지정하기 위해서 <a href="http://developer.android.com/intl/ko/reference/android/text/SpannableString.html">SpannableString</a>을 사용한다. 다른 방법으로는 <a href="http://developer.android.com/intl/ko/reference/android/text/Html.html#fromHtml%28java.lang.String%29">Html.fromHtml</a>을 사용하는 방법도 있으나 결국 내부에서는 SpannableString로 처리된다.</p>
+
+<p>그런데 작업을 하다보면 각각의 SpannableString을 합쳐야할 때가 있다. 이런 경우에 사용할 수 있는 것이 <a href="http://developer.android.com/intl/ko/reference/android/text/TextUtils.html#concat%28java.lang.CharSequence...%29">TextUtils.concat</a> 이다. 아래의 예시를 보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">SpannableString</span> <span class="n">styledText1</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SpannableString</span><span class="o">(</span><span class="s">&quot;Text String1&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">styledText1</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">AbsoluteSizeSpan</span><span class="o">(</span><span class="mi">12</span><span class="o">,</span> <span class="kc">true</span><span class="o">),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">SpannableString</span> <span class="n">styledText2</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SpannableString</span><span class="o">(</span><span class="s">&quot;Text String2&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">styledText2</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">AbsoluteSizeSpan</span><span class="o">(</span><span class="mi">20</span><span class="o">,</span> <span class="kc">true</span><span class="o">),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">CharSequence</span> <span class="n">concatString</span> <span class="o">=</span> <span class="n">TextUtils</span><span class="o">.</span><span class="na">concat</span><span class="o">(</span><span class="n">styledText1</span><span class="o">,</span> <span class="s">&quot; &quot;</span><span class="o">,</span> <span class="n">styledText2</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>소스를 보면 알겠지만 주의할 점은 반환값이 <a href="http://developer.android.com/intl/ko/reference/java/lang/CharSequence.html">CharSequence</a>라는 것이다.</p>
+
+<p>그리고 SpannableString을 이미 사용한다면 대부분 아는 내용일 수 있지만 처음 사용하는 사람이라면 SpannableString에서 가능한 것들이 무엇이 있는지 궁금할 수 있다(Class가 다양하다). 이 경우엔 <a href="http://flavienlaurent.com/blog/2014/01/31/spans/">Spans, a Powerful Concept.</a>를 참고하면 도움이 될 것이다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Vagrant BASE Box 만들기(CentOS 7)]]></title>
@@ -1840,56 +1871,6 @@ assertion 안에서의 호출로 랩핑된다. 따라서 만일 실제로 에러
 </span><span class='line'><span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">file</span><span class="p">.</span><span class="n">lastPathComponent</span><span class="p">.</span><span class="n">stringByDeletingPathExtension</span>
 </span><span class='line'><span class="c1">// after</span>
 </span><span class='line'><span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="p">((</span><span class="n">file</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">lastPathComponent</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingPathExtension</span>
-</span></code></pre></td></tr></table></div></figure>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Swift 2 : Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands 오류 해결]]></title>
-    <link href="http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/"/>
-    <updated>2015-10-05T12:44:59+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands</id>
-    <content type="html"><![CDATA[<p>이번에 iOS 작업중 Swift 2로 변경을 하면서 아래와 같은 오류를 만났다.</p>
-
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands</span></code></pre></td></tr></table></div></figure>
-
-<p>사실 이 부분말고도 여러가지 오류가 나왔지만 기본적으로 swift 버전업을 도와주는 헬프 기능 등을 통해 어느 정도는 쉽게 고칠 수 있었다.</p>
-
-<p>어쨌든 이 오류는 아래의 코드를 보면 해결 방법을 바로 알 수 있다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">let</span> <span class="n">view</span> <span class="o">=</span> <span class="bp">UIView</span><span class="p">(</span><span class="nl">frame</span><span class="p">:</span> <span class="bp">CGRect</span><span class="p">(</span><span class="nl">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nl">y</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nl">width</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="nl">height</span><span class="p">:</span> <span class="mi">100</span><span class="p">))</span>
-</span><span class='line'><span class="n">addSubview</span><span class="p">(</span><span class="n">view</span><span class="p">)</span>
-</span><span class='line'><span class="c1">// Swift 2.0 미만</span>
-</span><span class='line'><span class="n">view</span><span class="p">.</span><span class="n">autoresizingMask</span> <span class="o">=</span> <span class="n">UIViewAutoresizing</span><span class="p">.</span><span class="n">FlexibleWidth</span> <span class="o">|</span> <span class="n">UIViewAutoresizing</span><span class="p">.</span><span class="n">FlexibleHeight</span>
-</span><span class='line'><span class="c1">// Swift 2.0 이상</span>
-</span><span class='line'><span class="n">view</span><span class="p">.</span><span class="n">autoresizingMask</span> <span class="o">=</span> <span class="p">[.</span><span class="n">FlexibleWidth</span><span class="p">,</span> <span class="p">.</span><span class="n">FlexibleHeight</span><span class="p">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이와 유사하게 UIUserNotificationType의 경우도 아래와 같이 수정이 필요하다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="c1">// Swift 2.0 미만</span>
-</span><span class='line'><span class="k">let</span> <span class="n">settings</span> <span class="o">=</span> <span class="n">UIUserNotificationSettings</span><span class="p">(</span><span class="nl">forTypes</span><span class="p">:</span> <span class="n">UIUserNotificationType</span><span class="p">.</span><span class="n">Alert</span> <span class="o">|</span> <span class="n">UIUserNotificationType</span><span class="p">.</span><span class="n">Badge</span><span class="p">,</span> <span class="nl">categories</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-</span><span class='line'><span class="c1">// Swift 2.0 이상</span>
-</span><span class='line'><span class="k">let</span> <span class="n">settings</span> <span class="o">=</span> <span class="n">UIUserNotificationSettings</span><span class="p">(</span><span class="nl">forTypes</span><span class="p">:</span> <span class="p">[.</span><span class="n">Alert</span><span class="p">,</span> <span class="p">.</span><span class="n">Badge</span><span class="p">],</span> <span class="nl">categories</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-</span><span class='line'><span class="bp">UIApplication</span><span class="p">.</span><span class="n">sharedApplication</span><span class="p">().</span><span class="n">registerUserNotificationSettings</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
-</span><span class='line'><span class="k">if</span> <span class="n">settings</span><span class="p">.</span><span class="n">types</span><span class="p">.</span><span class="n">contains</span><span class="p">(.</span><span class="n">Badge</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>    <span class="c1">// whatever</span>
-</span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 ]]></content>
   </entry>

@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제 - 이 세상에 하나는 남기고 가자</title>
+  <title>안드로이드 SpannableString 합치기 - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/10/16/android-spannablestring-concat/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/">
-  <meta property="og:title" content="안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent. &hellip; - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/10/16/android-spannablestring-concat/">
+  <meta property="og:title" content="안드로이드 SpannableString 합치기 - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -134,7 +134,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-12T10:14:56+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.12</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-16T13:16:51+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.16</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -143,34 +143,36 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제
+        안드로이드 SpannableString 합치기
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p><a href="http://androidannotations.org/">Androidannotations</a>를 사용하면 <code>@Extra</code>를 사용해서 인자를 받을 수 있다. 그런데 여기서 주의할 점이 있다. 인턴트 호출시 <code>Intent.FLAG_ACTIVITY_CLEAR_TOP</code> 또는 <code>Intent.FLAG_ACTIVITY_SINGLE_TOP</code>를 사용하게되면 인턴트가 이미 존재할 경우 <code>@Extra</code>가 동작하지 않는다. 이와 관련해서 <a href="https://github.com/excilys/androidannotations/issues/1578">Always call #onNewIntent(), even without @AfterExtras method(s)</a>에서도 이슈가 진행중이다. 앞서 이야기한 문제와 이 이슈는 정확하게 같은 내용은 아니지만 동일한 이유로 발생하며 유사한 내용이라고도 볼 수 있다.</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드에서 TextView, EditText 등에서 문자를 출력할 때 스타일을 지정하기 위해서 <a href="http://developer.android.com/intl/ko/reference/android/text/SpannableString.html">SpannableString</a>을 사용한다. 다른 방법으로는 <a href="http://developer.android.com/intl/ko/reference/android/text/Html.html#fromHtml%28java.lang.String%29">Html.fromHtml</a>을 사용하는 방법도 있으나 결국 내부에서는 SpannableString로 처리된다.</p>
 
-<p>간단히 요약하자면 <code>@Extra</code>는 관련 처리를 <code>setIntent()</code>와 <code>onCraete()</code>에서 하는데 <code>Intent.FLAG_ACTIVITY_CLEAR_TOP</code> 또는 <code>Intent.FLAG_ACTIVITY_SINGLE_TOP</code>를 사용하게되면 인턴트가 존재할 경우 두 함수가 실행되지 않는다는 것이다(<code>onCraete()</code> 대신에 <code>onNewIntent(Intent intent)</code>가 호출이 되고 그 다음 onResume() 이 호출이 된다).</p>
-
-<p>현재까지는 <a href="http://androidannotations.org/">Androidannotations</a>에서 해당 문제를 해결하지 않았으므로 그에 따른 대응이 필요하다(Androidannotations을 사용하지 않는 상황이라면 <code>onResume</code>에서 extra 값을 받아오도록 하면 당연히 문제가 없다).</p>
-
-<p>현재로써는 특별한 방법이 없어 아래와 같이 <code>onNewIntent()</code>애서 직접 값을 받도록 처리했다.</p>
+<p>그런데 작업을 하다보면 각각의 SpannableString을 합쳐야할 때가 있다. 이런 경우에 사용할 수 있는 것이 <a href="http://developer.android.com/intl/ko/reference/android/text/TextUtils.html#concat%28java.lang.CharSequence...%29">TextUtils.concat</a> 이다. 아래의 예시를 보자.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
-</span><span class='line'><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onNewIntent</span><span class="o">(</span><span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>  <span class="kd">super</span><span class="o">.</span><span class="na">onNewIntent</span><span class="o">(</span><span class="n">intent</span><span class="o">);</span>
-</span><span class='line'>  <span class="n">moveOwnLocation</span> <span class="o">=</span> <span class="n">intent</span><span class="o">.</span><span class="na">getBooleanExtra</span><span class="o">(</span><span class="s">&quot;EXTRA_NAME&quot;</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">SpannableString</span> <span class="n">styledText1</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SpannableString</span><span class="o">(</span><span class="s">&quot;Text String1&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">styledText1</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">AbsoluteSizeSpan</span><span class="o">(</span><span class="mi">12</span><span class="o">,</span> <span class="kc">true</span><span class="o">),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">SpannableString</span> <span class="n">styledText2</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SpannableString</span><span class="o">(</span><span class="s">&quot;Text String2&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">styledText2</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">AbsoluteSizeSpan</span><span class="o">(</span><span class="mi">20</span><span class="o">,</span> <span class="kc">true</span><span class="o">),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">CharSequence</span> <span class="n">concatString</span> <span class="o">=</span> <span class="n">TextUtils</span><span class="o">.</span><span class="na">concat</span><span class="o">(</span><span class="n">styledText1</span><span class="o">,</span> <span class="s">&quot; &quot;</span><span class="o">,</span> <span class="n">styledText2</span><span class="o">);</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>하지만 이렇게 한다면 <code>@Extra</code>를 사용하는 의미가 없고 <code>@AfterExtras</code>도 정상적으로 사용할 수 없으므로 패치를 기다렸다가 코드를 다시 처리 해야할 것 같다.</p>
+<p>소스를 보면 알겠지만 주의할 점은 반환값이 <a href="http://developer.android.com/intl/ko/reference/java/lang/CharSequence.html">CharSequence</a>라는 것이다.</p>
+
+<p>그리고 SpannableString을 이미 사용한다면 대부분 아는 내용일 수 있지만 처음 사용하는 사람이라면 SpannableString에서 가능한 것들이 무엇이 있는지 궁금할 수 있다(Class가 다양하다). 이 경우엔 <a href="http://flavienlaurent.com/blog/2014/01/31/spans/">Spans, a Powerful Concept.</a>를 참고하면 도움이 될 것이다.</p>
 </div>
 
 
@@ -194,7 +196,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-12T10:14:56+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.12</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-16T13:16:51+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.16</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
@@ -209,7 +211,7 @@
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/" data-via="" data-counturl="http://blog.asamaru.net/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/10/16/android-spannablestring-concat/" data-via="" data-counturl="http://blog.asamaru.net/2015/10/16/android-spannablestring-concat/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -223,10 +225,8 @@
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/10/12/gitlab-ce-to-gitlab-dot-com/" title="Previous Post: 자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다">&laquo; 자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다</a></li>
+            <li class="previous"><a href="/2015/10/14/creating-a-vagrant-base-box/" title="Previous Post: Vagrant BASE Box 만들기(CentOS 7)">&laquo; Vagrant BASE Box 만들기(CentOS 7)</a></li>
             
-            
-            <li class="next"><a href="/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/" title="Next Post: java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류">java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류 &raquo;</a></li>
             
           </ul>
         
@@ -306,7 +306,7 @@
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/10/16/android-spannablestring-concat/">안드로이드 SpannableString 합치기</a>
+    <a class="list-group-item active" href="/2015/10/16/android-spannablestring-concat/">안드로이드 SpannableString 합치기</a>
     
     <a class="list-group-item " href="/2015/10/14/creating-a-vagrant-base-box/">Vagrant BASE Box 만들기(CentOS 7)</a>
     
@@ -350,8 +350,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/';
-        var disqus_url = 'http://blog.asamaru.net/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/10/16/android-spannablestring-concat/';
+        var disqus_url = 'http://blog.asamaru.net/2015/10/16/android-spannablestring-concat/';
         var disqus_script = 'embed.js';
       
     (function () {

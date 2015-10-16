@@ -184,6 +184,17 @@
 </pre></td><td class='code'><pre><code class=''><span class='line'>-keep class com.loopj.android.http.HttpGet { *; }</span></code></pre></td></tr></table></div></figure>
 
 <p>대충 소스를 보니 HttpGet는 이번에 Apache HTTP 클라이언트가 제거되면서 이를 대체하기 위한 라이브러리를 교체하면서 추가된 클래스로 보인다. 그런데 소스를 봐도 이게 왜 proguard에 영향을 받는지 잘 모르겠지만 위의 코드를 넣음으로써 해결이 되는 것은 확인했다. 더 자세히 코드를 추적해 간다면 원인을 찾을 수 있을지도 모르지만 굳이 거기까지 내가할 필요는 없다고 보고 github에 이슈를 등록하려고 한다. 해당 개발자들이 다음버전에 문제를 해결해 주기를 바라며...</p>
+
+<h2 id="update-2015-10-15">UPDATE - 2015-10-15</h2>
+
+<p>오늘 사용자에게서 오류가 보고 되었다. 문제는 파일업로드가 되지 않는다는 것인데 문제의 원인은 위 글의 내용과 동일하다. 정확히는 안드로이드 버전 문제도 포함된다. 하위 버전의 안드로이드에서는 위의 설정만으로는 해결이 되지 않았던 것이다. 결론은 아래의 내용을 proguard에 대체해서 넣어야 한다는 것. 상황적으로 봤을 때 내가 사용한 범위를 벗어나면 proguard와 충돌하는 부분이 더 있을 수 있을 것 같다(하지만 지금 내가 다 찾기엔 무리이므로 android-async-http 개발자분들에게 넘긴다).</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>-keep class cz.msebera.android.httpclient.HttpResponse { *; }
+</span><span class='line'>-keep class com.loopj.android.http.HttpGet { *; }
+</span><span class='line'>-keep class com.loopj.android.http.HttpDelete { *; }</span></code></pre></td></tr></table></div></figure>
 </div>
 
 
@@ -310,7 +321,7 @@
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (27)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (6)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (28)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (6)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -319,6 +330,8 @@
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/16/android-spannablestring-concat/">안드로이드 SpannableString 합치기</a>
+    
     <a class="list-group-item " href="/2015/10/14/creating-a-vagrant-base-box/">Vagrant BASE Box 만들기(CentOS 7)</a>
     
     <a class="list-group-item " href="/2015/10/14/centos-7-minimal-install/">CentOS 7 minimal 설치</a>
@@ -326,8 +339,6 @@
     <a class="list-group-item " href="/2015/10/14/centos-7-install-partitioning/">Centos 7 설치시 파티셔닝</a>
     
     <a class="list-group-item " href="/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/">java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류 해결</a>
-    
-    <a class="list-group-item " href="/2015/10/13/octopress-github-flavored-markdown-redcarpet/">Octopress에서 GitHub Flavored Markdown 사용하기(redcarpet)</a>
     
   </div>
 </section>

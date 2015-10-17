@@ -138,6 +138,151 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-25T14:18:08+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.25</time>
+        
+           | <a href="/2015/09/25/if-android-theme-parent-doesnt-set-attribute/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/25/if-android-theme-parent-doesnt-set-attribute/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/25/if-android-theme-parent-doesnt-set-attribute/" itemprop="url">안드로이드 테마 정의시 parent를 지정하지 않을 경우 Error: Style Resource definition cycle 발생</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>이번 포스팅은 정확하지 않은 정보일 확률이 높다. 하지만 비슷한 경우를 만나게되면 임시 해결 방법으론 도움이 될 것 같아 글을 남겨 본다.
+이번에 작업하면서 발생한 문제를 해결하는 과정에서 이것저것 해보면서 알게된 부분을 정리해보려고 한다. 일단 문제를 만난 상황부터 이야기하자면 이렇다.</p>
+
+<p>작업 중에 DialogTheme를 정의해서 사용할 일이 있었다. 그래서 다음과 같이 정의해서 사용중이었다. Theme가 무엇인지에 대해서는 <a href="http://developer.android.com/intl/ko/guide/topics/ui/themes.html">http://developer.android.com/intl/ko/guide/topics/ui/themes.html</a> 를 참고하자.</p>
+
+<p>** values/styles.xml **</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowNoTitle&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowFullscreen&quot;</span><span class="nt">&gt;</span>false<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowBackground&quot;</span><span class="nt">&gt;</span>@android:color/transparent<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:colorBackgroundCacheHint&quot;</span><span class="nt">&gt;</span>@null<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowIsTranslucent&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'><span class="nt">&lt;/style&gt;</span>
+</span><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">/&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>굳이 <code>af_DialogTheme.Base</code>를 정의하고 다시 <code>af_DialogTheme</code>에서 이를 상속받아 처리하는 것에는 이유가 있다. Theme에서 사용하는 속성들 또는 상황이 API 버전에 따라 다르기 때문이다. 예를 들어 내가 버전별로 다르게 사용한 style은 아래와 같다.</p>
+
+<p>** values-v19/styles.xml **
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowTranslucentStatus&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'><span class="nt">&lt;/style&gt;</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>** values-v21/styles.xml **
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:statusBarColor&quot;</span><span class="nt">&gt;</span>@android:color/transparent<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowTranslucentStatus&quot;</span><span class="nt">&gt;</span>false<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'><span class="nt">&lt;/style&gt;</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>위 처럼 일부 속성만 replace하려면 공통 부분을 부모 스타일로 정의하고 받아서 쓰도록 해야한다. 같은 테마 이름을 사용하게되면 대체 xml 문서(values-v19/styles.xml, values-v21/styles.xml)에서 정의된 속성을 반영하는게 아니라 통째로 덮어써서 공통 부분은 정의가 안된 것과 동일하게 처리된다. 이렇게 통째로 덮어쓰지 않고 부분만 변경되게 하기 위해 parent 속성을 사용하는 것이다.</p>
+
+<p>여기까지가 문제가 되는 부분에 대한 설명이다. 위의 내용을 보고 문제가 될 수 있는 부분을 찾을 수 있겠는가? 이유를 안다면 아래의 내용을 볼 필요가 없다. 나는 몰랐기 때문에 당혹스러웠다.</p>
+
+<p>이 상태로 빌드해서 테스트하면 아무 이상도 없고 예상대로 동작한다. 그런데 release를 위해 빌드를 하는 순간 아래의 에러를 만나게 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='XML'><span class='line'>Error:(11) Error: Style Resource definition cycle: AppThemeDialog =&gt; af_DialogTheme =&gt; af_DialogTheme.Base =&gt; af_DialogTheme [ResourceCycle]
+</span><span class='line'>    <span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;AppThemeDialog&quot;</span> <span class="na">parent=</span><span class="s">&quot;af_DialogTheme&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>                                 ~~~~~~~~~~~~~~~~~~~~~~~
+</span><span class='line'>   Explanation for issues of type &quot;ResourceCycle&quot;:
+</span><span class='line'>   There should be no cycles in resource definitions as this can lead to
+</span><span class='line'>   runtime exceptions.
+</span></code></pre></td></tr></table></div></figure>
+
+<p>당황스럽다. 분명 테스트시에는 한번도 본 적 없는 오류다. 내용을 보자. <code>ResourceCycle</code>에 관련된 문제로 보인다. 맨 위의 문장과 함께 보면 Resource의 순환참조라는 이야기로 보인다. 하지만 위의 코드들을 보면 알겠지만 순환참조라고 할만한 내용은 없다. 난 절대로 오류 메시지처럼 참조 시키지 않았다.</p>
+
+<p>처음엔 이유를 몰라 어떻게 해야 할지 몰랐다. <code>af_DialogTheme.Base =&gt; af_DialogTheme</code>라고 나오는데 그렇게 지정하지 않았는데 왜 알아서 참조를 한다고 난리일까? 고민을 하던 중 옆에 있던 후배가 하는 말이 &quot;저기 이름에 있는 . 때문에 그런것 아니냐?&quot;라는 것이다. 난 말도 안된다고 했다. 어떻게 그렇게 해석 될 수 있느냐? 게다가 .Base라는 구문은 안드로이드 내부 테마들이 정의될 때 사용하던 네이밍 규칙을 따라 한 것인데 그럴리가 없다는 것이 내 생각이었다. 하지만 <strong>결함의 발견은 절대 그럴리가 없다는 부분부터 시작해야 한다.</strong></p>
+
+<p>결론은 후배의 말이 맞았다. name을 <code>af_DialogTheme.Base</code>에서 <code>af_DialogTheme_Base</code>로 변경하자 오류는 사라졌다. 아... 어의없다.
+보다 확실히 하기 위해 아래와 같이 name을 둔 채로 parent를 추가했다. 당연히 상속받을 것은 없으므로 공백으로...</p>
+
+<p>** values/styles.xml **
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='XML'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;af_DialogTheme.Base&quot;</span> <span class="na">parent=</span><span class="s">&quot;&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:windowNoTitle&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>이렇게 처리해도 오류는 사라졌다. 그럼 이제 경험에 의한 결론을 내려보자(서두에 이야기한 것 처럼 그냥 내가 추측하는 것이니 틀릴 확률이 높다는 것을 감안하고 보자).</p>
+
+<blockquote>
+<p>style 정의시 name에 .을 사용하고 parent가 지정되지 않았다면 . 앞부분의 name을 parent로 정의한 것으로 보고 상속을 시도한다.</p>
+</blockquote>
+
+<p>결론적으로 내 의도는 .Base가 붙은 녀석이 부모가 되는 것을 원하고 네이밍한 것이 반대로 자식이 되어 순환참조를 발생시키게 한 것이다.</p>
+
+<p>그런데 상황을 보자면 위에 정리한 내용이 맞다고 보아진다. 그런데 이상하다. 왜 release 모드에서만 오류가 나는가? 그래서 오류 부분을 조금 더 자세히 보니 <code>:app:lintVitalRelease</code> 영역에서 오류가 난다. 그렇다. <a href="https://ko.wikipedia.org/wiki/Lint">lint</a> 오류다. 오류가 의심되는 코드를 검증하는 과정에서 오류를 발생시킨 것이다.</p>
+
+<p>여기서 최종적인 나의 생각(추측)을 정리하겠다.</p>
+
+<blockquote>
+<p>예전(구버전 안드로이드)에는 위의 설명대로 .을 기준으로한 theme(style) 상속의 개념이 사용되었기 때문에 lint에 추가되어 있었다. 그런데 시간이 지나면서 이 기능은 제거되고 parent라는 속성이 추가되었으나 lint에서는 검증 코드가 제외되지 않았다.</p>
+</blockquote>
+
+<p>이렇게 생각하는 이유는 실제로 lint 영역에서만 오류가 나지 동작시에는 아무런 문제가 없다.</p>
+
+<h3 id="그래서-어떻게-하면-되나">그래서 어떻게 하면 되나?</h3>
+
+<blockquote>
+<p>style를 사용한 theme 정의시 parent가 없다면 name에 .을 사용하지 말거나 공백으로라도 parent 속성을 사용하자.</p>
+</blockquote>
+
+<p><code>Style Resource definition cycle</code> 오류를 만난다면 위의 글을 참고해서 해결에 도움이 되었으면 하는 바램이다. 나도 오늘 후배의 한마디가 아니었다면 아직도 헬게이트를 경험하고 있을지도 모른다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-25T13:47:37+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.25</time>
         
            | <a href="/2015/09/25/android-6-apache-http-client-removal/#disqus_thread" itemprop="discussionUrl"
@@ -1287,230 +1432,6 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-19T09:32:18+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.19</time>
-        
-           | <a href="/2015/09/19/x-ua-compatible-ie-equals-edge-compatibility-view/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/19/x-ua-compatible-ie-equals-edge-compatibility-view/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/19/x-ua-compatible-ie-equals-edge-compatibility-view/" itemprop="url">익스플로러 호환성 보기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>현재는 많이 줄었다고는 해도 아직도 인터넷 익스플로러의 사용자가 많은 편이다. 최근 11버전을 새로 출시하면서 예전 보다는 많이 좋아졌다는 평가들이 많다. 하지만 아직도 나에겐 좋지않은 인상이 더 많이 남은 것 같다. 본격적으로 일로써 브라우저를 접할 때에는 인터넷 익스폴로러가 5.5에서 6으로 막 넘어가던 시기였다. 그 시절만 하더라도 익스플로러에 대항할 브라우저는 없었다. 그 당시에도 파이어폭스, 오페라가 있었지만 점유율은 높지 않았다. 그 상태로 오랜 시간이 흘러 익스플로러7이 나오고 다시 8이 나왔다. 이 시점에 등장한 것이 호환성 보기라는 기능이다(사실 정확한 시점은 기억나지 않지만 8이 나오는 시점이었던 것 같다).</p>
-
-<p>우선 호환성 보기란 무엇인가?</p>
-
-<p>마이크로소프트의 윈도우 사이트에 보면 &quot;<a href="http://windows.microsoft.com/ko-kr/windows/websites-display-incorrectly-internet-explorer-8#1TC=windows-7">왜 Internet Explorer 8에서 일부 웹 사이트가 올바르게 표시되지 않습니까?</a>&quot;라는 글이 있다. 사실 이 글에서도 명확하게 설명하진 않지만 &quot;이전 버전의 Internet Explorer(인터넷 익스플로러)용 웹 사이트는 현재 버전에서 올바르게 표시되지 않을 수도 있습니다. 하지만 호환성 보기를 사용하여 Internet Explorer(인터넷 익스플로러)에서 웹 사이트가 표시되는 방식을 개선할 수 있습니다.&quot;라고 되어 있다.</p>
-
-<p><strong>MS 관련글</strong>
-* <a href="http://windows.microsoft.com/ko-kr/internet-explorer/use-compatibility-view#ie=ie-11">호환성 보기를 사용하여 사이트 표시 문제 해결하기</a>
-* <a href="https://support.microsoft.com/ko-kr/kb/2536204">Internet Explorer 9에서 호환성 보기 방법</a></p>
-
-<p>그렇다 새로운 인터넷 익스플로러에서 이전 버전의 익스플로러에 맞추어진 사이트가 정상적이지 보이지 않는 문제를 해결하기 위해 추가된 기능이다. 그럼 왜 정상적으로 보이지 않는 것일까? 인터넷 익스플로러는 웹 표준을 제대로 준수하지 않았기 때문에 버전이 올라가면서 호환성에 문제가 많이 발생한 것이다. 워낙에 점유율이 높은 상황이 이었으니 급진적 변화는 대란이 일어날 것이라는 생각에 호환성 보기를 추가했으리라 본다.</p>
-
-<p>하지만 나는 이 호환성 보기라는 것이 더 큰 문제들을 만들었다고 생각한다. 어짜피 새로운 웹 표준으로 전향되어야 하는 상황에 알아서 맞춰주는 기능을 제공하니 서비스들이 변화에 적응하는 것이 더 늦어진 것이다. 변화할 시간을 준다는 목적이었을지 모르나 제대로된 웹으로 전환되는데 걸림돌이 되는 상황이다. 특히 이 호환성 모드가 8에서만 제공되는 것이 아니라 그 이후 9, 10, 11에서 조차도 제공한다는 것이다. 게다가 호환성 보기를 사용자가 판단하여 도저히 볼 수 없는 사이트를 골라서 적용하게 해야 하는데 인터넷 익스플로러가 자체적인 판단을 해서 호환성 모드로 보여주는 경우가 많다. 여기서 심각한 문제가 발생한다. 정작 웹표준을 준수하여 만들어진 페이지가 호환성 보기로 렌더링되어 깨지는 경우가 생기는 것이다(참고 - 랜더링 모드 선택 순서도 : <a href="https://hsivonen.fi/doctype/ie-mode.pdf">https://hsivonen.fi/doctype/ie-mode.pdf</a>).</p>
-
-<p>나는 주변 지인들과이 대화에서 MS를 인터넷 발전의 &quot;악의 축&quot;이라고 자주 얘기하곤 한다. 그 이유를 나열하자면 한도 끝도 없을 것 같고... 웹 분야에 일을 하시는 분들이라면 대부분의 경우 무엇 때문에 그런 생각을 가지게 되었는지 공감할 것이라고 생각한다.</p>
-
-<p>어쨌든 다시 본론으로 돌아가서 이 호환성 보기는 현재 시점(HTML5를 채용하는 신규 웹 프로젝트)에서는 사용할 일이 없는 기능이다. 하지만 앞서 얘기한 것처럼 익스플로러가 제작된 페이지를 호환성 보기로 보여줘 버리는 문제를 해결하지 않으면 불편한 상황을 만나게 될 수 있으니 미리 대비해야 한다.</p>
-
-<p>인터넷 익스플로러가 호환성 보기가 아닌 지정된 모드로 랜더링되게 하는 방법을 하나씩 알아보자.</p>
-
-<h2 id="x-ua-compatible-meta-선언을-사용하여-브라우저의-호환성-모드를-조정">X-UA-Compatible Meta 선언을 사용하여 브라우저의 호환성 모드를 조정</h2>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="cp">&lt;!DOCTYPE html&gt;</span>
-</span><span class='line'><span class="nt">&lt;html&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;head&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">&quot;X-UA-Compatible&quot;</span> <span class="na">content=</span><span class="s">&quot;IE=edge,chrome=1&quot;</span><span class="nt">&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<ul>
-<li>IE=edge : 최신모드로 지정된 DOCTYPE에 상관없이 IE8 이상 버전에서 항상 최신 표준 모드로 렌더링</li>
-<li>chrome=1 : 크롬이 설치되어있다면 IE에서도 크롬 렌더링을 사용</li>
-</ul>
-
-<p>당연히 위에 예시처럼 <code>IE=edge,chrome=1</code>을 사용하는 것이 권장된다. 하지만 그외에도 아래와 같은 설정도 있다.</p>
-
-<ul>
-<li>IE=5 : 관용모드(quirks mode)로 지정된 DOCTYPE에 상관없이 IE5 렌더링 방식이 사용됩니다.</li>
-<li>IE=7 : IE7 표준모드로 지정된 DOCTYPE에 상관없이 IE7 표준 모드 렌더링 방식이 사용</li>
-<li>IE=EmulateIE7 : IE7 에뮬레이션 모드로 지정된 DOCTYPE에 따라 IE7 표준모드나 관용모드로 렌더링</li>
-<li>IE=8 : IE8 표준모드로 지정된 DOCTYPE에 상관없이 IE8 표준모드로 렌더링</li>
-<li>IE=EmulateIE8 : IE8 에뮬레이션 모드로 지정된 DOCTYPE에 따라 IE8 표준모드나 관용모드로 렌더링</li>
-</ul>
-
-<p>X-UA-Compatible는 HTML5에서 비표준 속성으로 validation에서 경고가 나올 수 있다.</p>
-
-<h2 id="서버에서-응답-헤더에-x-ua-compatible를-함께-전송">서버에서 응답 헤더에 X-UA-Compatible를 함께 전송</h2>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-</pre></td><td class='code'><pre><code class='apacheconf'><span class='line'><span class="c"># ------------------------------------------------------------------------------</span>
-</span><span class='line'><span class="c"># | Better website experience                                                  |</span>
-</span><span class='line'><span class="c"># ------------------------------------------------------------------------------</span>
-</span><span class='line'><span class="c"># Force IE to render pages in the highest available mode in the various</span>
-</span><span class='line'><span class="c"># cases when it may not: http://hsivonen.iki.fi/doctype/ie-mode.pdf.</span>
-</span><span class='line'><span class="nt">&lt;IfModule</span> <span class="s">mod_headers.c</span><span class="nt">&gt;</span>
-</span><span class='line'>    <span class="nb">Header</span> set X-UA-Compatible <span class="s2">&quot;IE=edge&quot;</span>
-</span><span class='line'>    <span class="c"># `mod_headers` can&#39;t match based on the content-type, however, we only</span>
-</span><span class='line'>    <span class="c"># want to send this header for HTML pages and not for the other resources</span>
-</span><span class='line'>    <span class="nt">&lt;FilesMatch</span> <span class="s">&quot;\.(appcache|crx|css|cur|eot|gif|htc|ico|jpe?g|js|m4a|m4v|manifest|mp4|oex|oga|ogg|ogv|opus|otf|pdf|png|safariextz|svgz?|ttf|vcf|webapp|webm|webp|woff|xml|xpi)$&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>    <span class="nb">Header</span> unset X-UA-Compatible
-</span><span class='line'>    <span class="nt">&lt;/FilesMatch&gt;</span>
-</span><span class='line'><span class="nt">&lt;/IfModule&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c"># 또는</span>
-</span><span class='line'>
-</span><span class='line'><span class="nt">&lt;IfModule</span> <span class="s">mod_setenvif.c</span><span class="nt">&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;IfModule</span> <span class="s">mod_headers.c</span><span class="nt">&gt;</span>
-</span><span class='line'>    <span class="nb">BrowserMatch</span> MSIE ie
-</span><span class='line'>    <span class="nb">Header</span> set X-UA-Compatible <span class="s2">&quot;IE=Edge,chrome=1&quot;</span> env=ie
-</span><span class='line'>  <span class="nt">&lt;/IfModule&gt;</span>
-</span><span class='line'><span class="nt">&lt;/IfModule&gt;</span>
-</span><span class='line'><span class="nt">&lt;IfModule</span> <span class="s">mod_headers.c</span><span class="nt">&gt;</span>
-</span><span class='line'>  <span class="nb">Header</span> append Vary <span class="k">User</span>-Agent
-</span><span class='line'><span class="nt">&lt;/IfModule&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='nginx'><span class='line'><span class="k">server</span> <span class="p">{</span>
-</span><span class='line'>  <span class="c1">#...</span>
-</span><span class='line'>  <span class="kn">add_header</span> <span class="s">X-UA-Compatible</span> <span class="s">&quot;IE=Edge,chrome=1&quot;</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;configuration&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;system.webServer&gt;</span>
-</span><span class='line'>     <span class="nt">&lt;httpProtocol&gt;</span>
-</span><span class='line'>        <span class="nt">&lt;customHeaders&gt;</span>
-</span><span class='line'>           <span class="nt">&lt;add</span> <span class="na">name=</span><span class="s">&quot;X-UA-Compatible&quot;</span> <span class="na">value=</span><span class="s">&quot;IE=edge,chrome=1&quot;</span> <span class="nt">/&gt;</span>
-</span><span class='line'>        <span class="nt">&lt;/customHeaders&gt;</span>
-</span><span class='line'>     <span class="nt">&lt;/httpProtocol&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;/system.webServer&gt;</span>
-</span><span class='line'><span class="nt">&lt;/configuration&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h2 id="크롬-프레임">크롬 프레임</h2>
-
-<p><a href="https://tools.google.com/dlpage/chromeframe?hl=ko&amp;prefersystemlevel=true">크롬 프레임</a>이라는 ActiveX를 설치해서 익스플로러에서 크롬처럼 랜더링하는 것도 가능했지만 크롬 프레임의 개발 종료로 이제 더 이상 추천하지 않는다.</p>
-
-<h2 id="추가적-문제">추가적 문제</h2>
-
-<p>자.. 그럼 이로써 모든 문제가 해결된 것인가? 항상 그렇듯 프로그래머에게는 쉽게 해피엔딩이 찾아오지 않는다. 사실 위의 X-UA-Compatible는 브라우저에게 주는 권고사항일뿐 강제사항이 아니다.</p>
-
-<p><a href="http://blog.grotesq.com/post/380">IE에서 호환성 보기를 체크한 사용자 판별하기</a>에 소개된 내용을 기준으로 보조적 해결 방법을 제시한다.</p>
-
-<p>아래의 경우들을 보자.</p>
-
-<ul>
-<li><strong>XP에서 IE8을 사용하는 경우</strong> : 호환성 보기 버튼이 항상 표시되므로 사용자들이 언제든 호환성 보기로 변경이 가능하다.</li>
-<li><strong>Windows 7에서 IE8, 9를 사용하는 경우</strong> : 위와 같은 이유지만 이 경우는 윈도우 업데이트를 사용하지 않거나 일부러 업데이트를 막은 경우라고 볼 수 있다.</li>
-<li><strong>모든 사이트를 호환성으로 보도록 설정한 경우</strong> : 이 옵션은 기본적으로 활성화 되지 않으므로 사용자가 스스로 이 옵션을 켰을 가능성이 높다. 개발자가 테스트 환경 구축을 위해서 이러는 경우도 있다.</li>
-<li><strong>가끔 Tweek된 버전의 윈도에 이 옵션이 기본으로 활성화 된 경우</strong> : 사실 제일 곤란한 건 이런 경우이다.</li>
-</ul>
-
-<h3 id="호환성-보기-모드에서-사용자에게-호환성-보기-해제를-안내하기">호환성 보기 모드에서 사용자에게 호환성 보기 해제를 안내하기</h3>
-
-<p>우선 사용자가 호환성 보기 모드를 사용하는지를 판별해야 적절한 가이드를 제시할 수 있다. <a href="http://blog.grotesq.com/post/380">IE에서 호환성 보기를 체크한 사용자 판별하기</a>에 소개된 아래의 예시를 보자.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="k">if</span><span class="p">(</span> <span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgent</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span> <span class="s2">&quot;MSIE 7&quot;</span> <span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgent</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span> <span class="s2">&quot;Trident&quot;</span> <span class="p">)</span> <span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>    <span class="c1">// 호환성 보기 활성화</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// or</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">if</span><span class="p">(</span> <span class="sr">/MSIE 7.*Trident/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span> <span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgent</span> <span class="p">)</span> <span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>    <span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByTagName</span><span class="p">(</span> <span class="s2">&quot;html&quot;</span> <span class="p">)[</span> <span class="mi">0</span> <span class="p">].</span><span class="nx">className</span> <span class="o">+=</span> <span class="s2">&quot; ie-compatible&quot;</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>판별 원리는 아래과 같다고도 소개되어 있다.</p>
-
-<blockquote>
-<p>MS의 렌더링 엔진은 Trident 입니다. IE7에서 처음 도입되었습니다. 하지만 userAgent에 Trident가 명시되기 시작한건 IE8 부터죠.
-순정 IE7은 “MSIE 7″ 문자열은 포함하지만 “Trident”는 포함하지 않습니다.
-IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 MSIE 7로 표시가 되기 때문에, 두 가지 문자열을 다 포함하게 되죠.</p>
-</blockquote>
-
-<p>이렇게 판별이 완료되면 사용자에게 호환성 보기에서는 정상적 사용이 되지 않는다는 것을 안내하면 되겠다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1580,7 +1501,7 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (29)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (6)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (29)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1589,6 +1510,8 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/16/centos-7-firewalld/">CentOS 7 firewalld vs iptables</a>
+    
     <a class="list-group-item " href="/2015/10/16/android-verticalcenterspan/">안드로이드 세로 중앙정렬 Span(VerticalCenterSpan)</a>
     
     <a class="list-group-item " href="/2015/10/16/android-spannablestring-concat/">안드로이드 SpannableString 합치기</a>
@@ -1596,8 +1519,6 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
     <a class="list-group-item " href="/2015/10/14/creating-a-vagrant-base-box/">Vagrant BASE Box 만들기(CentOS 7)</a>
     
     <a class="list-group-item " href="/2015/10/14/centos-7-minimal-install/">CentOS 7 minimal 설치</a>
-    
-    <a class="list-group-item " href="/2015/10/14/centos-7-install-partitioning/">Centos 7 설치시 파티셔닝</a>
     
   </div>
 </section>

@@ -138,6 +138,84 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-12T12:07:06+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.12</time>
+        
+           | <a href="/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/" itemprop="url">java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 작업중 <code>java.lang.IllegalStateException: Recursive entry to executePendingTransactions</code> 오류를 만났다. 오류가 발생한 상황은 다음과 같다.</p>
+
+<p>작업중 Fragment에서 하위에 또 다른 Fragment를 추가할 일이 생겼다. 이 작업 중에 하위에 추가되는 Fragment에서 <code>executePendingTransactions()</code> 함수를 호출하니 위 오류가 발생했다. 이해를 위해 처리 과정 중 문제가 발생한 부분만 적는다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getActivity</span><span class="o">().</span><span class="na">getSupportFragmentManager</span><span class="o">();</span>
+</span><span class='line'><span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
+</span><span class='line'>        <span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">.</span><span class="na">commit</span><span class="o">();</span>
+</span><span class='line'><span class="n">ft</span><span class="o">.</span><span class="na">executePendingTransactions</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>FragmentManager를 얻기 위해 현재 Fragment의 Activity를 가져와 <code>getSupportFragmentManager()</code>를 사용했다. 이 부분이 문제가 생기는 이유다. 이런 경우는 아래와 같이 처리할 수 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
+</span><span class='line'><span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
+</span><span class='line'>        <span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">.</span><span class="na">commit</span><span class="o">();</span>
+</span><span class='line'><span class="n">ft</span><span class="o">.</span><span class="na">executePendingTransactions</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><code>getChildFragmentManager()</code>를 사용해서 FragmentManager를 얻어서 처리하면 위 오류는 발생하지 않는다.</p>
+
+<p>이와 관련된 설명은 <a href="http://developer.android.com/intl/ru/about/versions/android-4.2.html#NestedFragments">Nested Fragments</a>를 보면 된다. 4.2에 변경된 내용으로 나와 있지만 support library를 사용한다면 하위 호환이 가능한 상황이라 문제되지 않는다.</p>
+
+<p>추가적으로 <a href="http://developer.android.com/intl/ko/reference/android/app/FragmentManager.html#executePendingTransactions%28%29">public abstract boolean executePendingTransactions()</a>에 대해서 궁금하다면 <a href="http://developer.android.com/intl/ko/guide/components/fragments.html#Transactions">프래그먼트 트랜잭션 수행</a>)를 참고하면 된다.</p>
+
+<blockquote>
+<p>commit()을 호출해도 그 즉시 트랜잭션을 수행하지는 않습니다. 그보다는, 액티비티의 UI 스레드(&quot;주요&quot; 스레드)를 스레드가 할 수 있는 한 빨리 이 트랜잭션을 수행하도록 일정을 예약하는 것에 가깝습니다. 하지만 필요한 경우 UI 스레드로부터 executePendingTransactions()를 호출하면 commit()이 제출한 트랜잭션을 즉시 실행할 수 있습니다. 트랜잭션이 다른 스레드의 작업에 대한 종속성이 아니라면 굳이 이렇게 해야만 하는 것은 아닙니다.</p>
+</blockquote>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-12T10:14:56+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.12</time>
         
            | <a href="/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/#disqus_thread" itemprop="discussionUrl"
@@ -1098,155 +1176,6 @@ assertion 안에서의 호출로 랩핑된다. 따라서 만일 실제로 에러
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T20:49:03+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
-        
-           | <a href="/2015/10/05/google-play-services-and-dex-method-limits/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/05/google-play-services-and-dex-method-limits/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/05/google-play-services-and-dex-method-limits/" itemprop="url">Google Play services 와 DEX method limits 문제</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p><a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>에서 잠시 언급했던 multidex와 <a href="https://developers.google.com/android/guides/overview">Google Play services</a>와의 관계에 대해서 잠시 이야기 하고자 한다. 그 당시에도 설명했던 것과 같이 multidex를 사용해야 하는 상황은 가급적 피하는 것이 좋다. 하지만 오래된 버전의 Google Play services를 사용하면 65K이상의 method를 사용하게될 확률이 높다. 이 라이브러리에서 사용하고 있는 method의 수가 상당하기 때문에 proguard를 통해 사용하지 않는 함수를 제거하지 않는 이상 65K개를 넘어설 확률이 높은 것이다(대부분 여러가지 라이브러리를 사용해서 앱을 개발하므로). 문제는 proguard를 적용하게되면 빌드 시간이 증가하기 때문에 작업시 불편하다. <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>에서 언급 했던 내용들을 적용한다면 상당한 속도 향상을 가져올 수 있지만 그래도 1초라도 시간을 줄이는 것이 좋지 않은가? 하루에 한번만 빌드할 것도 아닌데.</p>
-
-<p>이와 관련해서는 <a href="http://android-developers.blogspot.kr/2014/12/google-play-services-and-dex-method.html">Google Play services and DEX method limits</a>라는 글에 잘 설명하고 있다.</p>
-
-<p>Google Play services의 버전을 6.5(2015.10.05. 기준 8.1이 최신) 이상 사용한다면 아래와 같이 필요한 부분만 적용함으로써 이 문제를 어느 정도 해결할 수 있다(6.5 미만에서는 무조건 통째로 불러서 사용할 수 밖에 없다).</p>
-
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>// 기존
-</span><span class='line'>compile 'com.google.android.gms:play-services:6.5.87'
-</span><span class='line'>
-</span><span class='line'>// 6.5 이후
-</span><span class='line'>compile 'com.google.android.gms:play-services-maps:6.5.87'
-</span><span class='line'>compile 'com.google.android.gms:play-services-base:6.5.87'</span></code></pre></td></tr></table></div></figure>
-
-<p><a href="https://developers.google.com/android/guides/setup">Setting Up Google Play Services</a> 문서를 참고하면 사용할 수 있는 전체 목록을 확인할 수 있다. 아래는 현재 기준 목록이다.</p>
-
-<table><thead>
-<tr>
-<th>Google Play services API</th>
-<th>Description in build.gradle</th>
-</tr>
-</thead><tbody>
-<tr>
-<td>Google+</td>
-<td>com.google.android.gms:play-services-plus:8.1.0</td>
-</tr>
-<tr>
-<td>Google Account Login</td>
-<td>com.google.android.gms:play-services-identity:8.1.0</td>
-</tr>
-<tr>
-<td>Google Actions, Base Client Library</td>
-<td>com.google.android.gms:play-services-base:8.1.0</td>
-</tr>
-<tr>
-<td>Google App Indexing</td>
-<td>com.google.android.gms:play-services-appindexing:8.1.0</td>
-</tr>
-<tr>
-<td>Google App Invites</td>
-<td>com.google.android.gms:play-services-appinvite:8.1.0</td>
-</tr>
-<tr>
-<td>Google Analytics</td>
-<td>com.google.android.gms:play-services-analytics:8.1.0</td>
-</tr>
-<tr>
-<td>Google Cast</td>
-<td>com.google.android.gms:play-services-cast:8.1.0</td>
-</tr>
-<tr>
-<td>Google Cloud Messaging</td>
-<td>com.google.android.gms:play-services-gcm:8.1.0</td>
-</tr>
-<tr>
-<td>Google Drive</td>
-<td>com.google.android.gms:play-services-drive:8.1.0</td>
-</tr>
-<tr>
-<td>Google Fit</td>
-<td>com.google.android.gms:play-services-fitness:8.1.0</td>
-</tr>
-<tr>
-<td>Google Location, Activity Recognition, and Places</td>
-<td>com.google.android.gms:play-services-location:8.1.0</td>
-</tr>
-<tr>
-<td>Google Maps</td>
-<td>com.google.android.gms:play-services-maps:8.1.0</td>
-</tr>
-<tr>
-<td>Google Mobile Ads</td>
-<td>com.google.android.gms:play-services-ads:8.1.0</td>
-</tr>
-<tr>
-<td>Mobile Vision</td>
-<td>com.google.android.gms:play-services-vision:8.1.0</td>
-</tr>
-<tr>
-<td>Google Nearby</td>
-<td>com.google.android.gms:play-services-nearby:8.1.0</td>
-</tr>
-<tr>
-<td>Google Panorama Viewer</td>
-<td>com.google.android.gms:play-services-panorama:8.1.0</td>
-</tr>
-<tr>
-<td>Google Play Game services</td>
-<td>com.google.android.gms:play-services-games:8.1.0</td>
-</tr>
-<tr>
-<td>SafetyNet</td>
-<td>c m.google.android.gms:play-services-safetynet:8.1.0</td>
-</tr>
-<tr>
-<td>Google Wallet</td>
-<td>com.google.android.gms:play-services-wallet:8.1.0</td>
-</tr>
-<tr>
-<td>Android Wear</td>
-<td>com.google.android.gms:play-services-wearable:8.1.0</td>
-</tr>
-</tbody></table>
-
-<p>어쨌든 java라는 언어의 특성상 method의 수가 많을 수 밖에 없는데 65K limit은 최초의 설계부터 잘못된 것이 아닌가? 하는 생각이다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1316,7 +1245,7 @@ assertion 안에서의 호출로 랩핑된다. 따라서 만일 실제로 에러
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (29)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (6)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (29)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (5)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (1)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1325,6 +1254,8 @@ assertion 안에서의 호출로 랩핑된다. 따라서 만일 실제로 에러
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/16/centos-7-firewalld/">CentOS 7 firewalld vs iptables</a>
+    
     <a class="list-group-item " href="/2015/10/16/android-verticalcenterspan/">안드로이드 세로 중앙정렬 Span(VerticalCenterSpan)</a>
     
     <a class="list-group-item " href="/2015/10/16/android-spannablestring-concat/">안드로이드 SpannableString 합치기</a>
@@ -1332,8 +1263,6 @@ assertion 안에서의 호출로 랩핑된다. 따라서 만일 실제로 에러
     <a class="list-group-item " href="/2015/10/14/creating-a-vagrant-base-box/">Vagrant BASE Box 만들기(CentOS 7)</a>
     
     <a class="list-group-item " href="/2015/10/14/centos-7-minimal-install/">CentOS 7 minimal 설치</a>
-    
-    <a class="list-group-item " href="/2015/10/14/centos-7-install-partitioning/">Centos 7 설치시 파티셔닝</a>
     
   </div>
 </section>

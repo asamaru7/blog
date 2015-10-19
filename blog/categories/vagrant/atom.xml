@@ -4,7 +4,7 @@
   <title><![CDATA[Category: vagrant | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/vagrant/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-19T09:45:32+09:00</updated>
+  <updated>2015-10-19T14:21:23+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,85 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용]]></title>
+    <link href="http://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/"/>
+    <updated>2015-10-19T12:24:24+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac</id>
+    <content type="html"><![CDATA[<p>Vagrant는 포트 포워딩을 지원한다. VAGRANT DOCS의 <a href="https://docs.vagrantup.com/v2/networking/forwarded_ports.html">FORWARDED PORTS</a> 문서를 보면 설명되어 있다.</p>
+
+<p>간단하게 살펴보자면 아래와 같이 설정할 수 있다.</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="s2">&quot;forwarded_port&quot;</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8080</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>위 설정의 의미는 host(PC)에 8080 포트로 접근하면 guest(VM)의 80 포트로 포워딩 한다는 뜻이다. 따라서 host에서 <code>localhost:8080</code>로 접속하면 guest의 웹 서버에 접근할 수 있다.</p>
+
+<p>사용할 수 있는 옵션은 아래와 같이 설명되어 있다.</p>
+
+<ul>
+<li>guest (int) - The port on the guest that you want to be exposed on the host. This can be any port.</li>
+<li>guest_ip (string) - The guest IP to bind the forwarded port to. If this is not set, the port will go to the every interface. By default, this is empty.</li>
+<li>host (int) - The port on the host that you want to use to access the port on the guest. This must be greater than port 1024 unless Vagrant is running as root (which is not recommended).</li>
+<li>host_ip (string) - The IP on the host you want to bind the forwarded port to. If not specified, it will be bound to every IP. By default, this is empty.</li>
+<li>protocol (string) - Either &quot;udp&quot; or &quot;tcp&quot;. This specifies the protocol that will be allowed through the forwarded port. By default this is &quot;tcp&quot;.</li>
+</ul>
+
+<p>크게 어려운 부분은 없기 때문에 더욱 자세한 설명은 필요없을 듯 하다.</p>
+
+<p>그런데 여기서 한가지 상황을 생각해보자. <code>localhost:8080</code>로 접속하기는 싫고 <code>localhost</code>로 접속하고 싶다면 어떻게 해야 하나? 위의 설명대로라면 아래와 같이 설정하면 된다.</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="s2">&quot;forwarded_port&quot;</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">80</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>그런데 위와 같이 설정하면 vagrant 실행시 오류를 만나게 된다. 이와 관련된 정보는 virtualbox 메뉴얼 <a href="https://www.virtualbox.org/manual/ch06.html#nat-limitations">6.3.3. NAT limitations</a>에서 찾을 수 있다.</p>
+
+<blockquote>
+<p>Forwarding host ports &lt; 1024 impossible:
+On Unix-based hosts (e.g. Linux, Solaris, Mac OS X) it is not possible to bind to ports below 1024 from applications that are not run by root. As a result, if you try to configure such a port forwarding, the VM will refuse to start. ipfw deprecated as of mavericks</p>
+</blockquote>
+
+<p>간단히 말하자면 <strong>Unix 계열에서는 1024 이하 포트에 대한 포워딩을 하려면 root 권한이 있어야 한다는 것</strong>.
+그렇다면 해결 방법은 나왔다. 간단하게 vagrant 자체를 root 권한으로 실행하면 된다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>sudo vagrant up
+</code></pre></div>
+<p>그런데 이렇게하면 vagrant나 virtualbox가 별개로 실행된다(로그인된 계정이 아닌 root계정에서 실행하게 된다). 따라서 virtualbox를 실행해보아도 해당 VM을 볼 수 없을 것이다. 일단 어디에 있는지 보려면 아래의 명령으로 virtualbox를 실행해보자.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">$ sudo VirtualBox
+</code></pre></div>
+<p>VirtualBox가 따로 실행되면서 추가된 VM도 볼 수 있다.</p>
+
+<p>다른 방법을 찾을 수 없어 기존에 나는 얼마전까지 이렇게 사용해 왔다. 그런데 최근에 다시 vagrant를 설정할 일이 생겨 작업을 하면서 다시 찾아봤더니 그 사이에 해결 방법이 나와 있었다. 게다가 더욱 세련된(?) 방법으로.</p>
+
+<ul>
+<li><a href="http://salvatore.garbesi.com/vagrant-port-forwarding-on-mac/">Vagrant Port Forwarding On Mac</a></li>
+<li><a href="https://www.danpurdy.co.uk/web-development/osx-yosemite-port-forwarding-for-vagrant/">OSX Yosemite Port Forwarding for Vagrant</a></li>
+<li><a href="http://www.dmuth.org/node/1404/web-development-port-80-and-443-vagrant">Web Development on Port 80 and 443 in Vagrant</a></li>
+</ul>
+
+<p>여러개의 글을 링크했지만 모두 비슷한 방법이다. 그러나 마지막 글의 경우는 확인이 필요하다. 마지막 글에서 사용하는 ipfw는 요세미티에서 deprecated 되었다는 이야기가 있다. 나머지 두개중 개인적으로 가장 마음에 드는 방법을 간단히 요약하자면 아래와 같다.</p>
+
+<p>우선 vagrant-triggers 플러그인을 설치한다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>vagrant plugin install vagrant-triggers
+</code></pre></div>
+<p>Vagrantfile에 아래의 내용을 추가한다. 당연히 원하는 포트가 다르다면 조정해서 추가하면 된다.</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8080</span>
+<span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">443</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8443</span>
+
+<span class="n">config</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">after</span> <span class="o">[</span><span class="ss">:provision</span><span class="p">,</span> <span class="ss">:up</span><span class="p">,</span> <span class="ss">:reload</span><span class="o">]</span> <span class="k">do</span>
+      <span class="nb">system</span><span class="p">(</span><span class="s1">&#39;echo &quot;</span>
+<span class="s1">rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 80 -&gt; 127.0.0.1 port 8080</span>
+<span class="s1">rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 443 -&gt; 127.0.0.1 port 8443</span>
+<span class="s1">&quot; | sudo pfctl -f - &gt; /dev/null 2&gt;&amp;1; echo &quot;==&gt; Fowarding Ports: 80 -&gt; 8080, 443 -&gt; 8443&quot;&#39;</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="n">config</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">after</span> <span class="o">[</span><span class="ss">:halt</span><span class="p">,</span> <span class="ss">:destroy</span><span class="o">]</span> <span class="k">do</span>
+    <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;sudo pfctl -f /etc/pf.conf &gt; /dev/null 2&gt;&amp;1; echo &#39;==&gt; Removing Port Forwarding&#39;&quot;</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>이제부터는 80포트와 443 포트가 guest로 포워딩 된다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Vagrant BASE Box 만들기(CentOS 7)]]></title>

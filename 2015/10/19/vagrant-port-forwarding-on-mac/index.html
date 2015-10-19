@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Swift 2 : 'lastPathComponent' is unavailable: Use lastPathComponent on NSURL instead. 오류 해결 - 이 세상에 하나는 남기고 가자</title>
+  <title>Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용 - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/">
-  <meta property="og:title" content="Swift 2 : 'lastPathComponent' is unavailable: Use lastPathComponent &hellip; - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/">
+  <meta property="og:title" content="Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용 - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -134,7 +134,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T13:14:55+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-19T12:24:24+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.19</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -143,19 +143,88 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        Swift 2 : 'lastPathComponent' is unavailable: Use lastPathComponent on NSURL instead. 오류 해결
+        Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p><a href="/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/">Swift 2 : Binary operator &#39;|&#39; cannot be applied to two &#39;UIViewAutoresizing&#39; operands 오류 해결</a>에 이어 Swift 2로 넘어가면서 만난 또 다른 오류.</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>Vagrant는 포트 포워딩을 지원한다. VAGRANT DOCS의 <a href="https://docs.vagrantup.com/v2/networking/forwarded_ports.html">FORWARDED PORTS</a> 문서를 보면 설명되어 있다.</p>
 
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>'lastPathComponent' is unavailable: Use lastPathComponent on NSURL instead.</span></code></pre></td></tr></table></div></figure>
+<p>간단하게 살펴보자면 아래와 같이 설정할 수 있다.</p>
 
-<p>관련해서 찾아보니 <a href="https://forums.developer.apple.com/thread/13580">No more stringByAppendingPathComponent in Xcode 7 beta 5?</a>라는 글이 있었다. 내용을 보니 해당 함수가 없어져서 다른 방법으로 수정해야 한다는 것. 내용중 <a href="https://forums.developer.apple.com/people/tieferbegabt">tieferbegabt</a>라는 사람이 간단히 해결할 수 있는 코드를 올려 놓았다.</p>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="s2">&quot;forwarded_port&quot;</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8080</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>위 설정의 의미는 host(PC)에 8080 포트로 접근하면 guest(VM)의 80 포트로 포워딩 한다는 뜻이다. 따라서 host에서 <code>localhost:8080</code>로 접속하면 guest의 웹 서버에 접근할 수 있다.</p>
+
+<p>사용할 수 있는 옵션은 아래와 같이 설명되어 있다.</p>
+
+<ul>
+<li>guest (int) - The port on the guest that you want to be exposed on the host. This can be any port.</li>
+<li>guest_ip (string) - The guest IP to bind the forwarded port to. If this is not set, the port will go to the every interface. By default, this is empty.</li>
+<li>host (int) - The port on the host that you want to use to access the port on the guest. This must be greater than port 1024 unless Vagrant is running as root (which is not recommended).</li>
+<li>host_ip (string) - The IP on the host you want to bind the forwarded port to. If not specified, it will be bound to every IP. By default, this is empty.</li>
+<li>protocol (string) - Either &quot;udp&quot; or &quot;tcp&quot;. This specifies the protocol that will be allowed through the forwarded port. By default this is &quot;tcp&quot;.</li>
+</ul>
+
+<p>크게 어려운 부분은 없기 때문에 더욱 자세한 설명은 필요없을 듯 하다.</p>
+
+<p>그런데 여기서 한가지 상황을 생각해보자. <code>localhost:8080</code>로 접속하기는 싫고 <code>localhost</code>로 접속하고 싶다면 어떻게 해야 하나? 위의 설명대로라면 아래와 같이 설정하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="s2">&quot;forwarded_port&quot;</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">80</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>그런데 위와 같이 설정하면 vagrant 실행시 오류를 만나게 된다. 이와 관련된 정보는 virtualbox 메뉴얼 <a href="https://www.virtualbox.org/manual/ch06.html#nat-limitations">6.3.3. NAT limitations</a>에서 찾을 수 있다.</p>
+
+<blockquote>
+<p>Forwarding host ports &lt; 1024 impossible:
+On Unix-based hosts (e.g. Linux, Solaris, Mac OS X) it is not possible to bind to ports below 1024 from applications that are not run by root. As a result, if you try to configure such a port forwarding, the VM will refuse to start. ipfw deprecated as of mavericks</p>
+</blockquote>
+
+<p>간단히 말하자면 <strong>Unix 계열에서는 1024 이하 포트에 대한 포워딩을 하려면 root 권한이 있어야 한다는 것</strong>.
+그렇다면 해결 방법은 나왔다. 간단하게 vagrant 자체를 root 권한으로 실행하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo vagrant up
+</span></code></pre></td></tr></table></div></figure>
+
+<p>그런데 이렇게하면 vagrant나 virtualbox가 별개로 실행된다(로그인된 계정이 아닌 root계정에서 실행하게 된다). 따라서 virtualbox를 실행해보아도 해당 VM을 볼 수 없을 것이다. 일단 어디에 있는지 보려면 아래의 명령으로 virtualbox를 실행해보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo VirtualBox
+</span></code></pre></td></tr></table></div></figure>
+
+<p>VirtualBox가 따로 실행되면서 추가된 VM도 볼 수 있다.</p>
+
+<p>다른 방법을 찾을 수 없어 기존에 나는 얼마전까지 이렇게 사용해 왔다. 그런데 최근에 다시 vagrant를 설정할 일이 생겨 작업을 하면서 다시 찾아봤더니 그 사이에 해결 방법이 나와 있었다. 게다가 더욱 세련된(?) 방법으로.</p>
+
+<ul>
+<li><a href="http://salvatore.garbesi.com/vagrant-port-forwarding-on-mac/">Vagrant Port Forwarding On Mac</a></li>
+<li><a href="https://www.danpurdy.co.uk/web-development/osx-yosemite-port-forwarding-for-vagrant/">OSX Yosemite Port Forwarding for Vagrant</a></li>
+<li><a href="http://www.dmuth.org/node/1404/web-development-port-80-and-443-vagrant">Web Development on Port 80 and 443 in Vagrant</a></li>
+</ul>
+
+<p>여러개의 글을 링크했지만 모두 비슷한 방법이다. 그러나 마지막 글의 경우는 확인이 필요하다. 마지막 글에서 사용하는 ipfw는 요세미티에서 deprecated 되었다는 이야기가 있다. 나머지 두개중 개인적으로 가장 마음에 드는 방법을 간단히 요약하자면 아래와 같다.</p>
+
+<p>우선 vagrant-triggers 플러그인을 설치한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>vagrant plugin install vagrant-triggers
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Vagrantfile에 아래의 내용을 추가한다. 당연히 원하는 포트가 다르다면 조정해서 추가하면 된다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -170,80 +239,22 @@
 <span class='line-number'>11</span>
 <span class='line-number'>12</span>
 <span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">extension</span> <span class="n">String</span> <span class="p">{</span>
-</span><span class='line'>    <span class="k">var</span> <span class="nl">lastPathComponent</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
-</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">lastPathComponent</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">var</span> <span class="nl">pathExtension</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
-</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">pathExtension</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">var</span> <span class="nl">stringByDeletingLastPathComponent</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
-</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingLastPathComponent</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">var</span> <span class="nl">stringByDeletingPathExtension</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
-</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingPathExtension</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">var</span> <span class="nl">pathComponents</span><span class="p">:</span> <span class="p">[</span><span class="n">String</span><span class="p">]</span> <span class="p">{</span>
-</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">pathComponents</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">func</span> <span class="n">stringByAppendingPathComponent</span><span class="p">(</span><span class="nl">path</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">String</span> <span class="p">{</span>
-</span><span class='line'>        <span class="k">let</span> <span class="n">nsSt</span> <span class="o">=</span> <span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span>
-</span><span class='line'>        <span class="k">return</span> <span class="n">nsSt</span><span class="p">.</span><span class="n">stringByAppendingPathComponent</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</span><span class='line'>    <span class="p">}</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8080</span>
+</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">443</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8443</span>
 </span><span class='line'>
-</span><span class='line'>    <span class="k">func</span> <span class="n">stringByAppendingPathExtension</span><span class="p">(</span><span class="nl">ext</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">String</span><span class="o">?</span> <span class="p">{</span>
-</span><span class='line'>        <span class="k">let</span> <span class="n">nsSt</span> <span class="o">=</span> <span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span>
-</span><span class='line'>        <span class="k">return</span> <span class="n">nsSt</span><span class="p">.</span><span class="n">stringByAppendingPathExtension</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">after</span> <span class="o">[</span><span class="ss">:provision</span><span class="p">,</span> <span class="ss">:up</span><span class="p">,</span> <span class="ss">:reload</span><span class="o">]</span> <span class="k">do</span>
+</span><span class='line'>      <span class="nb">system</span><span class="p">(</span><span class="s1">&#39;echo &quot;</span>
+</span><span class='line'><span class="s1">rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 80 -&gt; 127.0.0.1 port 8080</span>
+</span><span class='line'><span class="s1">rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 443 -&gt; 127.0.0.1 port 8443</span>
+</span><span class='line'><span class="s1">&quot; | sudo pfctl -f - &gt; /dev/null 2&gt;&amp;1; echo &quot;==&gt; Fowarding Ports: 80 -&gt; 8080, 443 -&gt; 8443&quot;&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">after</span> <span class="o">[</span><span class="ss">:halt</span><span class="p">,</span> <span class="ss">:destroy</span><span class="o">]</span> <span class="k">do</span>
+</span><span class='line'>    <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;sudo pfctl -f /etc/pf.conf &gt; /dev/null 2&gt;&amp;1; echo &#39;==&gt; Removing Port Forwarding&#39;&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>Objective-C의 category나 swift의 extension은 개인적으로 정말 좋은 기능이라고 생각한다. 하지만 위의 코드는 임시로 사용하고 가급적 위 코드의 내용을 참고해서 오류가 나는 부분을 직접 변경하는 것을 권장하고 싶다. 어짜피 나중에는 애플에서 권장하는대로 코딩을 해야할테니 정확한 방법을 익히도록 처리하는 것이 좋다는 얘기다.</p>
-
-<p>아래는 내가 사용한 코드의 일부를 예시로 남긴다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="c1">// before</span>
-</span><span class='line'><span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">file</span><span class="p">.</span><span class="n">lastPathComponent</span><span class="p">.</span><span class="n">stringByDeletingPathExtension</span>
-</span><span class='line'><span class="c1">// after</span>
-</span><span class='line'><span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="p">((</span><span class="n">file</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">lastPathComponent</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingPathExtension</span>
-</span></code></pre></td></tr></table></div></figure>
+<p>이제부터는 80포트와 443 포트가 guest로 포워딩 된다.</p>
 </div>
 
 
@@ -267,13 +278,13 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T13:14:55+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-19T12:24:24+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.19</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
 <span class="categories">
   
-    <a class='category' href='/blog/categories/ios/'>ios</a>, <a class='category' href='/blog/categories/swift/'>swift</a>
+    <a class='category' href='/blog/categories/vagrant/'>vagrant</a>
   
 </span>
 
@@ -282,7 +293,7 @@
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/" data-via="" data-counturl="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/" data-via="" data-counturl="http://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -296,10 +307,8 @@
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/" title="Previous Post: Swift 2 : Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands 오류 해결">&laquo; Swift 2 : Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands 오류 해결</a></li>
+            <li class="previous"><a href="/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/" title="Previous Post: iOS 9 : The resource could not be loaded because the App Transport Security policy requires the use of a secure connection 오류">&laquo; iOS 9 : The resource could not be loaded because the App Transport Security policy requires the use of a secure connection 오류</a></li>
             
-            
-            <li class="next"><a href="/2015/10/05/google-play-services-and-dex-method-limits/" title="Next Post: Google Play services 와 DEX method limits 문제">Google Play services 와 DEX method limits 문제 &raquo;</a></li>
             
           </ul>
         
@@ -379,7 +388,7 @@
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/10/19/vagrant-port-forwarding-on-mac/">Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용</a>
+    <a class="list-group-item active" href="/2015/10/19/vagrant-port-forwarding-on-mac/">Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용</a>
     
     <a class="list-group-item " href="/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/">iOS 9 : The resource could not be loaded because the App Transport Security policy requires the use of a secure connection 오류</a>
     
@@ -423,8 +432,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/';
-        var disqus_url = 'http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/';
+        var disqus_url = 'http://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/';
         var disqus_script = 'embed.js';
       
     (function () {

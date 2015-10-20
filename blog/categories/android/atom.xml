@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-20T11:26:13+09:00</updated>
+  <updated>2015-10-20T14:08:37+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,34 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Google play services out of date 오류 해결]]></title>
+    <link href="http://blog.asamaru.net/2015/10/20/google-play-services-out-of-date/"/>
+    <updated>2015-10-20T13:56:30+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/20/google-play-services-out-of-date</id>
+    <content type="html"><![CDATA[<p>오늘 앱 사용자에게서 오류 보고를 받았다. 기타 내용은 생략하고 App crash가 발생한 원인인 <code>Google play services out of date</code>이다. <a href="https://developers.google.com/android/guides/overview">Google play services</a>의 사용기간이 만료되었다는 오류인데 발생 원인은 Google play services 의 버전이 요구되는 버전과 맞지 않기 때문이다.</p>
+
+<p>우선 해결 방법부터 보자. 나의 경우는 아래와 같은 함수를 만들어서 필요한 화면에서 호출하도록 했다.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">static</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">checkGooglePlayService</span><span class="o">(</span><span class="n">Activity</span> <span class="n">activity</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">Integer</span> <span class="n">resultCode</span> <span class="o">=</span> <span class="n">GooglePlayServicesUtil</span><span class="o">.</span><span class="na">isGooglePlayServicesAvailable</span><span class="o">(</span><span class="n">activity</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">ConnectionResult</span><span class="o">.</span><span class="na">SUCCESS</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="n">Dialog</span> <span class="n">dialog</span> <span class="o">=</span> <span class="n">GooglePlayServicesUtil</span><span class="o">.</span><span class="na">getErrorDialog</span><span class="o">(</span><span class="n">resultCode</span><span class="o">,</span> <span class="n">activity</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">dialog</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">dialog</span><span class="o">.</span><span class="na">show</span><span class="o">();</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><a href="https://developers.google.com/android/reference/com/google/android/gms/common/GooglePlayServicesUtil">GooglePlayServicesUtil</a>를 사용해서 사용 가능 상태를 확인하고 대응하도록 하는 것이다. 결과적으로 Google play services가 설치되어 있지 않다거나 요구 버전보다 낮다거나해서 사용이 불가능하면 오류 Dialog를 띄워주게 된다.</p>
+
+<p>관련된 내용은 <a href="http://www.androidpub.com/2508286">구글플레이 서비스에 대한 유의점</a>에 설명되어있다. <strong>결론은 <a href="https://developers.google.com/android/guides/overview">Google play services</a>를 사용한다면 해당 서비스가 설치되지 않은 상황에 대한 대응을 해줘야 한다는 것이다.</strong></p>
+
+<p>매번 생각하는 것이지만 이런 부분들은 안드로이드에서 알아서 처리해주면 안되는걸까? 사실 조금 이해가 안된다. 개발자가 모두 알아서 하도록 한다는 것이. 물론 대응 방법이 상황에 따라 다를 수 있으니 일원화하는 것이 정답은 아닐 수 있다. 하지만 별다른 지정을 하지 않는다면 앱을 그냥 죽이는 것 보다는 기본적인 안내라도 보여주는 것이 낫지 않느냐는 말이다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[안드로이드 세로 중앙정렬 Span(VerticalCenterSpan)]]></title>
@@ -305,39 +333,6 @@ public int getSize(Paint paint, CharSequence text, int start, int end, Paint.Fon
 <p>여기서 <code>style.Widget_Design_TabLayout</code> 대신 defStyleRes를 넘겨받아 넣어주도록만 해줘도 가능할 것 같은데 아직은 지원하지 않는 것이다.</p>
 
 <p>어쨌든 현재 시점을 기준으로 해결 방법은 위의 예시처럼 reflection을 사용하는 방법뿐이다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류]]></title>
-    <link href="http://blog.asamaru.net/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/"/>
-    <updated>2015-10-12T12:07:06+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions</id>
-    <content type="html"><![CDATA[<p>안드로이드 작업중 <code>java.lang.IllegalStateException: Recursive entry to executePendingTransactions</code> 오류를 만났다. 오류가 발생한 상황은 다음과 같다.</p>
-
-<p>작업중 Fragment에서 하위에 또 다른 Fragment를 추가할 일이 생겼다. 이 작업 중에 하위에 추가되는 Fragment에서 <code>executePendingTransactions()</code> 함수를 호출하니 위 오류가 발생했다. 이해를 위해 처리 과정 중 문제가 발생한 부분만 적는다.</p>
-<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getActivity</span><span class="o">().</span><span class="na">getSupportFragmentManager</span><span class="o">();</span>
-<span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">commit</span><span class="o">();</span>
-<span class="n">ft</span><span class="o">.</span><span class="na">executePendingTransactions</span><span class="o">();</span>
-</code></pre></div>
-<p>FragmentManager를 얻기 위해 현재 Fragment의 Activity를 가져와 <code>getSupportFragmentManager()</code>를 사용했다. 이 부분이 문제가 생기는 이유다. 이런 경우는 아래와 같이 처리할 수 있다.</p>
-<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
-<span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">commit</span><span class="o">();</span>
-<span class="n">ft</span><span class="o">.</span><span class="na">executePendingTransactions</span><span class="o">();</span>
-</code></pre></div>
-<p><code>getChildFragmentManager()</code>를 사용해서 FragmentManager를 얻어서 처리하면 위 오류는 발생하지 않는다.</p>
-
-<p>이와 관련된 설명은 <a href="http://developer.android.com/intl/ru/about/versions/android-4.2.html#NestedFragments">Nested Fragments</a>를 보면 된다. 4.2에 변경된 내용으로 나와 있지만 support library를 사용한다면 하위 호환이 가능한 상황이라 문제되지 않는다.</p>
-
-<p>추가적으로 <a href="http://developer.android.com/intl/ko/reference/android/app/FragmentManager.html#executePendingTransactions%28%29">public abstract boolean executePendingTransactions()</a>에 대해서 궁금하다면 <a href="http://developer.android.com/intl/ko/guide/components/fragments.html#Transactions">프래그먼트 트랜잭션 수행</a>)를 참고하면 된다.</p>
-
-<blockquote>
-<p>commit()을 호출해도 그 즉시 트랜잭션을 수행하지는 않습니다. 그보다는, 액티비티의 UI 스레드(&quot;주요&quot; 스레드)를 스레드가 할 수 있는 한 빨리 이 트랜잭션을 수행하도록 일정을 예약하는 것에 가깝습니다. 하지만 필요한 경우 UI 스레드로부터 executePendingTransactions()를 호출하면 commit()이 제출한 트랜잭션을 즉시 실행할 수 있습니다. 트랜잭션이 다른 스레드의 작업에 대한 종속성이 아니라면 굳이 이렇게 해야만 하는 것은 아닙니다.</p>
-</blockquote>
 ]]></content>
   </entry>
   

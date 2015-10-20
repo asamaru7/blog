@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-20T11:26:13+09:00</updated>
+  <updated>2015-10-20T14:08:37+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,47 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Google play services out of date 오류 해결]]></title>
+    <link href="http://blog.asamaru.net/2015/10/20/google-play-services-out-of-date/"/>
+    <updated>2015-10-20T13:56:30+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/20/google-play-services-out-of-date</id>
+    <content type="html"><![CDATA[<p>오늘 앱 사용자에게서 오류 보고를 받았다. 기타 내용은 생략하고 App crash가 발생한 원인인 <code>Google play services out of date</code>이다. <a href="https://developers.google.com/android/guides/overview">Google play services</a>의 사용기간이 만료되었다는 오류인데 발생 원인은 Google play services 의 버전이 요구되는 버전과 맞지 않기 때문이다.</p>
+
+<p>우선 해결 방법부터 보자. 나의 경우는 아래와 같은 함수를 만들어서 필요한 화면에서 호출하도록 했다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">static</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">checkGooglePlayService</span><span class="o">(</span><span class="n">Activity</span> <span class="n">activity</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">Integer</span> <span class="n">resultCode</span> <span class="o">=</span> <span class="n">GooglePlayServicesUtil</span><span class="o">.</span><span class="na">isGooglePlayServicesAvailable</span><span class="o">(</span><span class="n">activity</span><span class="o">);</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">ConnectionResult</span><span class="o">.</span><span class="na">SUCCESS</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="n">Dialog</span> <span class="n">dialog</span> <span class="o">=</span> <span class="n">GooglePlayServicesUtil</span><span class="o">.</span><span class="na">getErrorDialog</span><span class="o">(</span><span class="n">resultCode</span><span class="o">,</span> <span class="n">activity</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">dialog</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">dialog</span><span class="o">.</span><span class="na">show</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><a href="https://developers.google.com/android/reference/com/google/android/gms/common/GooglePlayServicesUtil">GooglePlayServicesUtil</a>를 사용해서 사용 가능 상태를 확인하고 대응하도록 하는 것이다. 결과적으로 Google play services가 설치되어 있지 않다거나 요구 버전보다 낮다거나해서 사용이 불가능하면 오류 Dialog를 띄워주게 된다.</p>
+
+<p>관련된 내용은 <a href="http://www.androidpub.com/2508286">구글플레이 서비스에 대한 유의점</a>에 설명되어있다. <strong>결론은 <a href="https://developers.google.com/android/guides/overview">Google play services</a>를 사용한다면 해당 서비스가 설치되지 않은 상황에 대한 대응을 해줘야 한다는 것이다.</strong></p>
+
+<p>매번 생각하는 것이지만 이런 부분들은 안드로이드에서 알아서 처리해주면 안되는걸까? 사실 조금 이해가 안된다. 개발자가 모두 알아서 하도록 한다는 것이. 물론 대응 방법이 상황에 따라 다를 수 있으니 일원화하는 것이 정답은 아닐 수 있다. 하지만 별다른 지정을 하지 않는다면 앱을 그냥 죽이는 것 보다는 기본적인 안내라도 보여주는 것이 낫지 않느냐는 말이다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[MFMailComposeViewController without 'No Mail Accounts' messages]]></title>
@@ -1697,231 +1738,6 @@ home 파티션을 구분하지 않고 boot와 swap만 지정하고 나머지 모
 </pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 동작 로그 보기</span>
 </span><span class='line'>service autofs stop
 </span><span class='line'>automount -f -v
-</span></code></pre></td></tr></table></div></figure>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[리눅스 명령어 모음(Centos 6)]]></title>
-    <link href="http://blog.asamaru.net/2015/10/08/useful-commands-for-linux/"/>
-    <updated>2015-10-08T11:44:32+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/08/useful-commands-for-linux</id>
-    <content type="html"><![CDATA[<p>아래의 내용은 개인적으로 간혹 사용이 필요한 내용을 기록해 두기 위한 것으로 잘못된 정보일 수 있으니 참고만 하기 바란다.</p>
-
-<h3 id="시스템-로그-삭제">시스템 로그 삭제</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>/etc/init.d/rsyslog restart
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="sl-인증서-apache-시작시-비밀번호-입력-제거">sl 인증서 + apache 시작시 비밀번호 입력 제거</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>openssl rsa -in key.pem -out key.nopw.pem
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="ssh-접속자-강제-로그아웃">ssh 접속자 강제 로그아웃</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 602 : userid</span>
-</span><span class='line'>pkill -KILL -u 602
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="bash-script에서-실행경로-구하기">bash script에서 실행경로 구하기</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> <span class="k">${</span><span class="nv">0</span><span class="p">%/*</span><span class="k">}</span> 2&gt;/dev/null
-</span><span class='line'><span class="nb">echo</span> <span class="nv">$PWD</span>/<span class="k">${</span><span class="nv">0</span><span class="p">##*/</span><span class="k">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="서버-네트워크-상태-확인">서버 네트워크 상태 확인</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>netstat -an<span class="p">|</span>grep <span class="s2">&quot;:80&quot;</span><span class="p">|</span>awk <span class="s1">&#39;/tcp/ {print $6}&#39;</span><span class="p">|</span>sort -nr<span class="p">|</span> uniq -c
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="아파치-동시접속자-수-확인">아파치 동시접속자 수 확인</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>netstat -anp <span class="p">|</span> grep :80 <span class="p">|</span> grep ESTAB <span class="p">|</span> wc -l
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="권한-파일-찾기-바꾸기">권한 파일 찾기 / 바꾸기</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># root 권한 파일 찾기</span>
-</span><span class='line'>find . -uid 0
-</span><span class='line'>
-</span><span class='line'><span class="c"># chown 특정 사용자만 변경</span>
-</span><span class='line'>chown web.usergroup * -R --from<span class="o">=</span>root.root
-</span><span class='line'>chown --from<span class="o">=</span><span class="m">511</span> -R web account/
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="포트-강제로-죽이기">포트 강제로 죽이기</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo fuser -k -n tcp 444
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="실행-결과-숨기기-stdout-stderr">실행 결과 숨기기(stdout, stderr)</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>명력어 &gt; /dev/null 2&gt;<span class="p">&amp;</span>1
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="검색된-파일만-vi-열기">검색된 파일만 vi 열기</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi -p <span class="k">$(</span>find .<span class="p">|</span>grep ModuleLink<span class="p">|</span>grep -v <span class="s1">&#39;.svn&#39;</span><span class="p">|</span>grep -v CZFramework<span class="k">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="내용-일괄변환">내용 일괄변환</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>find . -type f -name *.php -exec perl -pi -e <span class="s1">&#39;s|\\CZ\\CZFramework|\\CZF|g&#39;</span> <span class="o">{}</span> <span class="se">\;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="ssh-비밀번호-없이-접속">ssh 비밀번호 없이 접속</h3>
-
-<h4 id="local">local</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>ssh-keygen -t rsa
-</span><span class='line'><span class="c"># scp /root/.ssh/id_rsa.pub root@[ip]:/root/.ssh/authorized_keys</span>
-</span><span class='line'>ssh-copy-id -i ~/.ssh/id_rsa.pub admin@<span class="o">[</span>ip<span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="대상-서버-호스트-의-퍼미션">대상 서버(호스트)의 퍼미션</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="m">750</span> /home/admin/
-</span><span class='line'><span class="m">700</span> /home/admin/.ssh/
-</span><span class='line'><span class="m">600</span> /home/admin/.ssh/authorized_keys
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="배드블럭-검사">배드블럭 검사</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>badblocks -v /dev/sda1
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="프로세스-실행경로-확인">프로세스 실행경로 확인</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 프로세스 정보</span>
-</span><span class='line'>ps ef
-</span><span class='line'>ps aux
-</span><span class='line'>
-</span><span class='line'><span class="c"># 프로세스 트리보기</span>
-</span><span class='line'>pstree -aph
-</span><span class='line'>
-</span><span class='line'><span class="c">#프로세스 상세보기</span>
-</span><span class='line'>lsof -P
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="아파치-모든-페이지-요청시-동일페이지-노출">아파치 :  모든 페이지 요청시 동일페이지 노출</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='apacheconf'><span class='line'><span class="nb">RewriteEngine</span> <span class="k">On</span>
-</span><span class='line'><span class="nb">RewriteRule</span> ^(.*)$ <span class="sx">/target/index.html</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h2 id="mysql-사용자-관리">Mysql 사용자 관리</h2>
-
-<h4 id="패턴">패턴</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="err">디비명</span><span class="p">.</span><span class="err">테이블명</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;접속지 주소&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span> <span class="p">(</span><span class="k">with</span> <span class="k">grant</span> <span class="k">option</span><span class="p">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="권한-생성">권한 생성</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="c1"># 원격지에서 root로 접속하는 경우</span>
-</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="n">root</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span> <span class="k">with</span> <span class="k">grant</span> <span class="k">option</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 모든 컴퓨터에서 모든 디비와 테이블에 접속하도록 허용</span>
-</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 localhost 에서 db1 디비의 table1에 접속하도록 허용</span>
-</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="n">root</span><span class="p">.</span><span class="n">db1</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;localhost&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 111.222.333.444 에서 db1 디비의 모든 테이블에 접속하도록 허용</span>
-</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="n">root</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;111.222.333.444&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 111.222.333.0/24 에서 모든 디비와 테이블에 접속하도록 허용</span>
-</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span> <span class="o">@</span><span class="s1">&#39;111.222.333.%&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="권한-제거">권한 제거</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">revoke</span> <span class="k">all</span> <span class="k">on</span> <span class="err">디비명</span><span class="p">.</span><span class="err">테이블명</span> <span class="k">from</span> <span class="err">사용자</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="권한-적용">권한 적용</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="c1"># 모든 명령 후에 항상 아래 명령을 실행해야 실제로 적용된다.</span>
-</span><span class='line'><span class="n">flush</span> <span class="n">privileges</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="connection-상태-확인하기">Connection 상태 확인하기</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">FULL</span> <span class="n">PROCESSLIST</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="connection-수-확인하기">Connection 수 확인하기</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">STATUS</span> <span class="k">LIKE</span> <span class="s1">&#39;Threads_connected&#39;</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="동작중인-connection-수-확인하기">동작중인 Connection 수 확인하기</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">STATUS</span> <span class="k">LIKE</span> <span class="s1">&#39;Threads_running&#39;</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="connection-상태-확인하기">Connection 상태 확인하기</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">FULL</span> <span class="n">PROCESSLIST</span><span class="p">;</span>
 </span></code></pre></td></tr></table></div></figure>
 ]]></content>
   </entry>

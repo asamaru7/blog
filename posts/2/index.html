@@ -138,6 +138,113 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-14T11:44:41+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.14</time>
+        
+           | <a href="/2015/10/14/centos-7-install-partitioning/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/14/centos-7-install-partitioning/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/14/centos-7-install-partitioning/" itemprop="url">Centos 7 설치시 파티셔닝</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>Linux 설치 과정에서 고민되는 것 중 하나가 파티션닝이다. 크게 중요하지 않은 상황이라면 자동으로 설정해주는 것을 그대로 사용하는 것이 편하긴하다. 설치 후에도 파티션을 변경할 수 있는 경우도 있으나 일반적으로 Linux를 서버로 사용하는 경우 동적으로 변경하는 상황은 흔치 않기 때문에 처음 설치시 신중하게 설정하는 것이 좋다.</p>
+
+<p>파티셔닝은 서버의 사용 용도 등에 따라 파티션별 파일시스템의 종류와 용량이 많은 차이를 보일 수 있으므로 참고만 하고 자신이 직접 고민을 해보는 것이 좋을 것이다.</p>
+
+<p>아래의 내용은 <a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Installation_Guide/sect-disk-partitioning-setup-x86.html#sect-custom-partitioning-x86">RED HAT ENTERPRISE LINUX 7 Installation Guide : Manual Partitioning</a>을 기준으로 정리하고자 한다(CentOS 7 기준이지만 대부분의 Linux에서도 비슷할 것이다). 따라서 자세한 내용을 보려면 해당 문서를 자세히 읽어보기를 권한다(아래는 간단하게 필요한 부분만 발췌헤서 간단히 개인적인 의견을 적은 것이다).</p>
+
+<h2 id="파티션의-분할">파티션의 분할</h2>
+
+<p>&#39;6.13.4.5. Recommended Partitioning Scheme&#39;에서 권장하는 파티션 분할은 아래와 같다.</p>
+
+<ul>
+<li>/boot partition - recommended size at least 500 MB</li>
+<li>/ (root) partition - recommended size of 10 GB</li>
+<li>/home partition - recommended size at least 1 GB</li>
+<li>swap partition - recommended size at least 1 GB</li>
+</ul>
+
+<p>위의 파티셔닝은 말그대로 그냥 권장일뿐 상황에 따라서 바뀔 수 있다. 예를들어 나는 간단한 서버인 경우
+home 파티션을 구분하지 않고 boot와 swap만 지정하고 나머지 모두를 /에 할달해서 사용한다(관리 편의상).</p>
+
+<p>그런데 swap은 사람들마다 용량에 대한 의견에 차이가 많은 파티션 중 하나다. 우선 참고할만한 글은 아래와 같다.</p>
+
+<ul>
+<li><a href="http://zetawiki.com/wiki/%EB%A6%AC%EB%88%85%EC%8A%A4_%EC%8A%A4%EC%99%91%EB%A9%94%EB%AA%A8%EB%A6%AC_%ED%81%AC%EA%B8%B0_%EA%B6%8C%EA%B3%A0">리눅스 스왑메모리 크기 권고
+</a></li>
+<li><a href="https://www.centos.org/docs/5/html/Deployment_Guide-en-US/ch-swapspace.html">CentOS 5 Documentation : Swap Space</a></li>
+<li><a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Installation_Guide/sect-disk-partitioning-setup-x86.html#sect-custom-partitioning-x86">RED HAT ENTERPRISE LINUX 7 Installation Guide : Manual Partitioning</a> 중 &#39;6.13.4.5. Recommended Partitioning Scheme&#39;</li>
+</ul>
+
+<p>아래는 RED HAT ENTERPRISE LINUX 7 Installation Guide에 안내된 내용을 가져온 것이다. 일반적인 상황이라면 아래의 기준치를 참고해서 정하면된다. 하지만 서비스를 위한 서버라면 일반적으로 swap 자체가 사용되는 상황을 최대한 없애야 하기 때문에 swap 용량을 많이 책정할 이유는 없다.</p>
+
+<table><thead>
+<tr>
+<th>Amount of RAM in the system</th>
+<th>Recommended swap space</th>
+<th>Recommended swap space if allowing for hibernation</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>less than 2 GB</td>
+<td>2 times the amount of RAM</td>
+<td>3 times the amount of RAM</td>
+</tr>
+<tr>
+<td>2 GB - 8 GB</td>
+<td>Equal to the amount of RAM</td>
+<td>2 times the amount of RAM</td>
+</tr>
+<tr>
+<td>8 GB - 64 GB</td>
+<td>0.5 times the amount of RAM</td>
+<td>1.5 times the amount of RAM</td>
+</tr>
+<tr>
+<td>more than 64 GB</td>
+<td>workload dependent</td>
+<td>hibernation not recommended</td>
+</tr>
+</tbody></table>
+
+<h2 id="파일시스템의-선택">파일시스템의 선택</h2>
+
+<p>CentOS 7은 기본 파일시스템으로 xfs를 사용한다(CentOS 6의 경우 ext4가 기본 파일시스템 이었다). xfs는 데비안 계열의 배포판에서 오래전부터 기본 파일시스템으로 사용하던 것으로 대용량 파일을 지원하며 오랜시간 타 리눅스 배포판에서 사용되면서 안정성이 입증되었다고 판단한 것으로 보인다. 다른 파일시스템도 지원하므로 선택은 자유다. 자세한 내용은 메뉴얼에도 나와있고 찾아보면 많은 자료를 쉽게 찾을 수 있다.
+나의 경우는 파일시스템의 경우 특별한 이유가 있지 않는한 해당 OS에서 기본으로 사용하는 파일시스템을 사용한다.</p>
+
+<h2 id="정리">정리</h2>
+
+<p>앞서 설명할때는 고민을 많이 해야 한다고 했는데 글을 적고 보니 너무 간단한 느낌이다. 사실 아주 고성능과 고가용성이 필요한 서버가 아니라면 위의 내용 정도만 생각해줘도 크게 무리는 없다는 생각이다. 자세히 설명하자면 파티션별 사이즈, 파일시스템 하나 하나에 대해서 설명해야 하는데 그러려면 책이 한권이다. 따라서 그 이상이 필요하다면 메뉴얼을 참고하면 관련 사항들을 하나씩 더 찾아보기 바란다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-13T16:53:54+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.13</time>
         
            | <a href="/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/#disqus_thread" itemprop="discussionUrl"
@@ -970,262 +1077,6 @@
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-08T11:44:32+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.08</time>
-        
-           | <a href="/2015/10/08/useful-commands-for-linux/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/08/useful-commands-for-linux/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/08/useful-commands-for-linux/" itemprop="url">리눅스 명령어 모음(Centos 6)</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>아래의 내용은 개인적으로 간혹 사용이 필요한 내용을 기록해 두기 위한 것으로 잘못된 정보일 수 있으니 참고만 하기 바란다.</p>
-
-<h3 id="시스템-로그-삭제">시스템 로그 삭제</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>/etc/init.d/rsyslog restart
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="sl-인증서-apache-시작시-비밀번호-입력-제거">sl 인증서 + apache 시작시 비밀번호 입력 제거</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>openssl rsa -in key.pem -out key.nopw.pem
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="ssh-접속자-강제-로그아웃">ssh 접속자 강제 로그아웃</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 602 : userid</span>
-</span><span class='line'>pkill -KILL -u 602
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="bash-script에서-실행경로-구하기">bash script에서 실행경로 구하기</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> <span class="k">${</span><span class="nv">0</span><span class="p">%/*</span><span class="k">}</span> 2&gt;/dev/null
-</span><span class='line'><span class="nb">echo</span> <span class="nv">$PWD</span>/<span class="k">${</span><span class="nv">0</span><span class="p">##*/</span><span class="k">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="서버-네트워크-상태-확인">서버 네트워크 상태 확인</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>netstat -an<span class="p">|</span>grep <span class="s2">&quot;:80&quot;</span><span class="p">|</span>awk <span class="s1">&#39;/tcp/ {print $6}&#39;</span><span class="p">|</span>sort -nr<span class="p">|</span> uniq -c
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="아파치-동시접속자-수-확인">아파치 동시접속자 수 확인</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>netstat -anp <span class="p">|</span> grep :80 <span class="p">|</span> grep ESTAB <span class="p">|</span> wc -l
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="권한-파일-찾기-바꾸기">권한 파일 찾기 / 바꾸기</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># root 권한 파일 찾기</span>
-</span><span class='line'>find . -uid 0
-</span><span class='line'>
-</span><span class='line'><span class="c"># chown 특정 사용자만 변경</span>
-</span><span class='line'>chown web.usergroup * -R --from<span class="o">=</span>root.root
-</span><span class='line'>chown --from<span class="o">=</span><span class="m">511</span> -R web account/
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="포트-강제로-죽이기">포트 강제로 죽이기</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo fuser -k -n tcp 444
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="실행-결과-숨기기-stdout-stderr">실행 결과 숨기기(stdout, stderr)</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>명력어 &gt; /dev/null 2&gt;<span class="p">&amp;</span>1
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="검색된-파일만-vi-열기">검색된 파일만 vi 열기</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi -p <span class="k">$(</span>find .<span class="p">|</span>grep ModuleLink<span class="p">|</span>grep -v <span class="s1">&#39;.svn&#39;</span><span class="p">|</span>grep -v CZFramework<span class="k">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="내용-일괄변환">내용 일괄변환</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>find . -type f -name *.php -exec perl -pi -e <span class="s1">&#39;s|\\CZ\\CZFramework|\\CZF|g&#39;</span> <span class="o">{}</span> <span class="se">\;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="ssh-비밀번호-없이-접속">ssh 비밀번호 없이 접속</h3>
-
-<h4 id="local">local</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>ssh-keygen -t rsa
-</span><span class='line'><span class="c"># scp /root/.ssh/id_rsa.pub root@[ip]:/root/.ssh/authorized_keys</span>
-</span><span class='line'>ssh-copy-id -i ~/.ssh/id_rsa.pub admin@<span class="o">[</span>ip<span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="대상-서버-호스트-의-퍼미션">대상 서버(호스트)의 퍼미션</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="m">750</span> /home/admin/
-</span><span class='line'><span class="m">700</span> /home/admin/.ssh/
-</span><span class='line'><span class="m">600</span> /home/admin/.ssh/authorized_keys
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="배드블럭-검사">배드블럭 검사</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>badblocks -v /dev/sda1
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="프로세스-실행경로-확인">프로세스 실행경로 확인</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 프로세스 정보</span>
-</span><span class='line'>ps ef
-</span><span class='line'>ps aux
-</span><span class='line'>
-</span><span class='line'><span class="c"># 프로세스 트리보기</span>
-</span><span class='line'>pstree -aph
-</span><span class='line'>
-</span><span class='line'><span class="c">#프로세스 상세보기</span>
-</span><span class='line'>lsof -P
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="아파치-모든-페이지-요청시-동일페이지-노출">아파치 :  모든 페이지 요청시 동일페이지 노출</h3>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='apacheconf'><span class='line'><span class="nb">RewriteEngine</span> <span class="k">On</span>
-</span><span class='line'><span class="nb">RewriteRule</span> ^(.*)$ <span class="sx">/target/index.html</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h2 id="mysql-사용자-관리">Mysql 사용자 관리</h2>
-
-<h4 id="패턴">패턴</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="err">디비명</span><span class="p">.</span><span class="err">테이블명</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;접속지 주소&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span> <span class="p">(</span><span class="k">with</span> <span class="k">grant</span> <span class="k">option</span><span class="p">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="권한-생성">권한 생성</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="c1"># 원격지에서 root로 접속하는 경우</span>
-</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="n">root</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span> <span class="k">with</span> <span class="k">grant</span> <span class="k">option</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 모든 컴퓨터에서 모든 디비와 테이블에 접속하도록 허용</span>
-</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 localhost 에서 db1 디비의 table1에 접속하도록 허용</span>
-</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="n">root</span><span class="p">.</span><span class="n">db1</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;localhost&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 111.222.333.444 에서 db1 디비의 모든 테이블에 접속하도록 허용</span>
-</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="n">root</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;111.222.333.444&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 111.222.333.0/24 에서 모든 디비와 테이블에 접속하도록 허용</span>
-</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span> <span class="o">@</span><span class="s1">&#39;111.222.333.%&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="권한-제거">권한 제거</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">revoke</span> <span class="k">all</span> <span class="k">on</span> <span class="err">디비명</span><span class="p">.</span><span class="err">테이블명</span> <span class="k">from</span> <span class="err">사용자</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="권한-적용">권한 적용</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="c1"># 모든 명령 후에 항상 아래 명령을 실행해야 실제로 적용된다.</span>
-</span><span class='line'><span class="n">flush</span> <span class="n">privileges</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="connection-상태-확인하기">Connection 상태 확인하기</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">FULL</span> <span class="n">PROCESSLIST</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="connection-수-확인하기">Connection 수 확인하기</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">STATUS</span> <span class="k">LIKE</span> <span class="s1">&#39;Threads_connected&#39;</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="동작중인-connection-수-확인하기">동작중인 Connection 수 확인하기</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">STATUS</span> <span class="k">LIKE</span> <span class="s1">&#39;Threads_running&#39;</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="connection-상태-확인하기">Connection 상태 확인하기</h4>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">FULL</span> <span class="n">PROCESSLIST</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1295,7 +1146,7 @@
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (29)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (8)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (30)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (8)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1304,6 +1155,8 @@
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/20/google-play-services-out-of-date/">Google play services out of date 오류 해결</a>
+    
     <a class="list-group-item " href="/2015/10/20/mfmailcomposeviewcontroller-without-no-mail-accounts-messages/">MFMailComposeViewController without 'No Mail Accounts' messages</a>
     
     <a class="list-group-item " href="/2015/10/20/ios-9-xcode-you-must-rebuild-it-with-bitcode-enabled/">Xcode 7 - You must rebuild it with bitcode enabled 오류 해결</a>
@@ -1311,8 +1164,6 @@
     <a class="list-group-item " href="/2015/10/19/vagrant-port-forwarding-on-mac/">Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용</a>
     
     <a class="list-group-item " href="/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/">iOS 9 : The resource could not be loaded because the App Transport Security policy requires the use of a secure connection 오류</a>
-    
-    <a class="list-group-item " href="/2015/10/16/centos-7-firewalld/">CentOS 7 firewalld vs iptables</a>
     
   </div>
 </section>

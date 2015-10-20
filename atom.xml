@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-19T21:48:44+09:00</updated>
+  <updated>2015-10-20T09:32:35+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,37 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Xcode 7 - You must rebuild it with bitcode enabled 오류 해결]]></title>
+    <link href="http://blog.asamaru.net/2015/10/20/ios-9-xcode-you-must-rebuild-it-with-bitcode-enabled/"/>
+    <updated>2015-10-20T09:08:30+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/20/ios-9-xcode-you-must-rebuild-it-with-bitcode-enabled</id>
+    <content type="html"><![CDATA[<p>Xcode 7에서 빌드시 아래와 같은 오류가 날 수 있다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ld: '/Volumes/Data/work/ios/bang9/Pods/GoogleMaps/Frameworks/GoogleMaps.framework/GoogleMaps(GMSCachedTile.o)' does not contain bitcode. You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE), obtain an updated library from the vendor, or disable bitcode for this target. for architecture armv7
+</span><span class='line'>clang: error: linker command failed with exit code 1 (use -v to see invocation)</span></code></pre></td></tr></table></div></figure>
+
+<p>내용을 확인해 보니 Xcode 7부터는 <a href="https://developer.apple.com/library/prerelease/watchos/documentation/IDEs/Conceptual/AppDistributionGuide/AppThinning/AppThinning.html#//apple_ref/doc/uid/TP40012582-CH35-SW2">Bitcode</a>가 기본적으로 enabled 되어 있다는 것이다.</p>
+
+<p><a href="http://blog.kollus.com/?p=1252">iOS9 출시에 따른 개발자 대응 방안</a>에 보면 Bitcode에 대해 설명되어 있다.</p>
+
+<blockquote>
+<p>iOS9 에서 LLVM Compiler에서 Bitcode를 생성을 지원한다. Bitcode를 사용하는 경우 AppStore에서 필요한 경우에 해당 코드를 사용하여 다시 최적화 된 바이너리를 생성하여 End user에게 전송해 주는 역할을 담당한다.
+Xcode에서 Bitcode를 포함한 iOS 앱을 AppStore로 전송하면, AppStore 내에서 사용자의 디바이스에 따라 최적화된 바이너리를 다시 빌드하는 과정을 거친다. 따라서, Bitcode가 적용된 앱을 앱스토어로 전송한 경우 개발자는 추후 새롭게 출시되는 디바이스의 특성에 따라 다시 빌드하는 수고를 덜어줄 것으로 예상된다.</p>
+</blockquote>
+
+<p>결론은 가장 쉽게 해결하는 방법은 Bitcode를 Disabled로 변경하면된다.</p>
+
+<p>프로젝트를 선택한 후 Build Settings 탭에서 bitcode로 검색하면 해당 항목을 찾을 수 있다. 여기서 값을 NO로 변경하면 된다. 찾기가 어렵다면 위 링크에 스샷으로 설명해주고 있으니 참고 바란다. 그리고 혹시 예전에 생성했던 프로젝트라면 해당 설정이 없을 수 있다. 그렇다면 <a href="http://theeye.pe.kr/archives/2501">iOS9 ENABLE_BITCODE 설정을 찾을 수 없을 때 강제 추가하기</a>를 참고해서 강제로 추가하면 된다.</p>
+
+<p>그런데 나의 경우는 GoogleMaps에서 문제가 발생한 경우다. 그래서 Bitcode를 Enabled 상태로 문제를 해결하는 방법을 찾고 싶었다. 그래서 조금 더 찾아보니 Google SDK to 1.10.2+ 이상을 사용하면 된다는 내용을 찾았다. 하지만 내가 사용하던 버전은 1.10.3이었다. 그래도 혹시나 싶어 cocoapod에서 업데이트 했더니 1.10.4로 업데이트가 되었다. 그래서 다시 빌드 시도. 그런데 결과는 역시나 동일한 오류가 난다.</p>
+
+<p><a href="https://code.google.com/p/gmaps-api-issues/issues/detail?id=8219">gmaps-api-issues - Bitcode Build</a>에 보면 관련된 이슈가 진행중이다. 이 문제는 해당 라이브러리에서 지원해야만 해결할 수 있는 문제로 구글에서 패치가 될 때까지는 Bitcode를 Disabled 상태로 사용할 수 밖에 없다. 하지만 곧 해결될 것이라고 생각한다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용]]></title>
@@ -1814,33 +1845,6 @@ home 파티션을 구분하지 않고 boot와 swap만 지정하고 나머지 모
 <li>새로운 이름으로 변경</li>
 <li>끝</li>
 </ol>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[퓨니코드(Punycode)]]></title>
-    <link href="http://blog.asamaru.net/2015/10/06/punycode/"/>
-    <updated>2015-10-06T11:49:03+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/06/punycode</id>
-    <content type="html"><![CDATA[<blockquote>
-<p>퓨니코드(Punycode)는 유니코드 문자열을 호스트 이름에서 허용된 문자만으로 인코딩하는 방법으로, <a href="https://tools.ietf.org/html/rfc3492">RFC 3492</a>에 기술되어 있다. 퓨니코드는 유니코드가 지원하는 모든 언어로 국제화 도메인을 쓸 수 있게 한 IDNA의 일부로, 변환은 전적으로 웹 브라우저와 같은 클라이언트에서 이루어진다.
-출처 : <a href="https://ko.wikipedia.org/wiki/%ED%93%A8%EB%8B%88%EC%BD%94%EB%93%9C">https://ko.wikipedia.org/wiki/%ED%93%A8%EB%8B%88%EC%BD%94%EB%93%9C</a></p>
-</blockquote>
-
-<p>쉽게 얘기해서 기본적으로 도메인은 ASCII 문자 집합만 사용 가능한데 국제화 도메인을 사용하기 위해서 퓨니코드라는 것이 필요하다는 것이다. 퓨니코드는 <code>xn--</code> 접두어를 통해 구분된다. 예를들어 &quot;wiki백과.한국&quot; 도메인은 IDNA에서 xn--wiki-ei4p334e.xn--3e0b707e로 변환된다.</p>
-
-<p>국제화 도메인과 퓨니코드를 상호 변환을 테스트 해보려면 <a href="http://krnic.or.kr/jsp/resources/domainInfo/punyCode.jsp">KISA 퓨니코드 변환기</a>를 사용할 수 있다. 이 외에도 퓨니코드 변환기로 검색하면 많은 변환기들이 존재한다.</p>
-
-<p>사실 이 퓨니코드에 대한 소개를 하는 이유는 일반적인 상황에서는 직접 처리해야할 일이 없지만 특수한 경우에는 이것이 필요할 수 있기 때문이다. 예를들어 이런 경우가 있다. IE8 이하에서는 한글도메인과 퓨니코드로 변환된 도메인을 다르게 인식하여 AJAX 사용시 cross domain 문제를 일으킬 수 있다. 이런 경우엔 퓨니코드를 한글 도메인으로 다시 변환하여 URL을 사용해야 문제를 막을 수 있다.</p>
-
-<p>따라서 퓨니코드에 대한 이해와 변환 방법에 대해 알아두면 도움이 될 것이다. 아래는 변환에 바로 사용할 수 있는 몇가지 오픈소스 프로젝트를 안내한다. 이외에도 조금만 검색하면 많은 오픈소스를 찾을 수 있다.</p>
-
-<ul>
-<li><a href="https://github.com/bestiejs/punycode.js">punycode.js</a></li>
-<li><a href="https://github.com/true/php-punycode">php-punycode</a></li>
-<li><a href="https://github.com/Wevah/Punycode-Cocoa">Punycode-Cocoa</a></li>
-<li><a href="http://opensource.apple.com/source/ChatServer/ChatServer-262/libidn/java/gnu/inet/encoding/Punycode.java">Punycode.java</a></li>
-</ul>
 ]]></content>
   </entry>
   

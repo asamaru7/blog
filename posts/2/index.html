@@ -138,6 +138,199 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-13T14:38:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.13</time>
+        
+           | <a href="/2015/10/13/octopress-github-flavored-markdown-redcarpet/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/13/octopress-github-flavored-markdown-redcarpet/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/13/octopress-github-flavored-markdown-redcarpet/" itemprop="url">Octopress에서 GitHub Flavored Markdown 사용하기(redcarpet)</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>옥토프레스에서는 markdown 해석기로 <a href="https://github.com/davidfstr/rdiscount">rdiscount</a>를 기본으로 사용하고 있다. 현재 사용해보니 rdiscount에서도 GitHub Flavored Markdown를 지원하는 것으로 보이는데 예전엔 제대로 지원이 안되고 있었는지 <a href="https://github.com/vmg/redcarpet">redcarpet</a>으로 바꾸서 사용하는 사람들이 많았다. 그래서 나도 바꿔 봤다.</p>
+
+<p>변경을 위해 참고한 글은 다음과 같다.</p>
+
+<ul>
+<li><a href="http://blog.tdksk.com/2013/05/06/use-gfm-in-octopress.html">Octopress で GitHub Flavored Markdown (GFM) を使う</a></li>
+<li><a href="http://yangsu.github.io/blog/2012/10/11/using-octopress-with-github-flavored-markdown-redcarpet/">Using Octopress With Github Flavored Markdown (RedCarpet)</a></li>
+</ul>
+
+<p>그런데 위 글들이 작성된 시점이 조금 오래되어서 그런지 그대로 따라해서는 정상적으로 적용이 되지 않았다. 그래서 몇가지를 수정해서 적용을 완료했다.</p>
+
+<h2 id="redcarpet-설치">redcarpet 설치</h2>
+
+<p>Gemfile에 아래의 내용을 추가 한다.</p>
+
+<figure class='code notranslate'><figcaption><span>Gemfile</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">gem</span> <span class="s1">&#39;redcarpet&#39;</span><span class="p">,</span> <span class="s1">&#39;~&gt; 3.3.2&#39;</span>
+</span><span class='line'><span class="n">gem</span> <span class="s1">&#39;albino&#39;</span><span class="p">,</span> <span class="s1">&#39;~&gt; 1.3.3&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>sudo<span class="o">]</span> bundle install
+</span></code></pre></td></tr></table></div></figure>
+
+<h2 id="redcarpet-플러그인-설치">redcarpet 플러그인 설치</h2>
+
+<p>plugins/redcarpet2_markdown.rb 파일을 추가한다. 원본은 <a href="https://github.com/nono/Jekyll-plugins%EC%97%90">https://github.com/nono/Jekyll-plugins에</a> 가면 볼 수 있다. 거의 그대로인데 약간 수정을 했다.</p>
+
+<figure class='code notranslate'><figcaption><span>plugins/redcarpet2_markdown.rb</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">require</span> <span class="s1">&#39;fileutils&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;digest/md5&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;redcarpet&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;albino&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># PYGMENTS_CACHE_DIR = File.expand_path(&#39;../../_cache&#39;, __FILE__)</span>
+</span><span class='line'><span class="no">FileUtils</span><span class="o">.</span><span class="n">mkdir_p</span><span class="p">(</span><span class="no">PYGMENTS_CACHE_DIR</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">Redcarpet2Markdown</span> <span class="o">&lt;</span> <span class="no">Redcarpet</span><span class="o">::</span><span class="no">Render</span><span class="o">::</span><span class="no">HTML</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">block_code</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">lang</span> <span class="o">=</span> <span class="n">lang</span> <span class="o">||</span> <span class="s2">&quot;text&quot;</span>
+</span><span class='line'>    <span class="n">path</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">PYGMENTS_CACHE_DIR</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">lang</span><span class="si">}</span><span class="s2">-</span><span class="si">#{</span><span class="no">Digest</span><span class="o">::</span><span class="no">MD5</span><span class="o">.</span><span class="n">hexdigest</span> <span class="n">code</span><span class="si">}</span><span class="s2">.html&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">cache</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">colorized</span> <span class="o">=</span> <span class="no">Albino</span><span class="o">.</span><span class="n">colorize</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lang</span><span class="o">.</span><span class="n">downcase</span><span class="p">)</span>
+</span><span class='line'>      <span class="n">add_code_tags</span><span class="p">(</span><span class="n">colorized</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">add_code_tags</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">code</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sr">/&lt;pre&gt;/</span><span class="p">,</span> <span class="s2">&quot;&lt;pre&gt;&lt;code class=</span><span class="se">\&quot;</span><span class="si">#{</span><span class="n">lang</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&gt;&quot;</span><span class="p">)</span><span class="o">.</span>
+</span><span class='line'>         <span class="nb">sub</span><span class="p">(</span><span class="sr">/&lt;\/pre&gt;/</span><span class="p">,</span> <span class="s2">&quot;&lt;/code&gt;&lt;/pre&gt;&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">cache</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="no">File</span><span class="o">.</span><span class="n">exist?</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span class='line'>      <span class="no">File</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'>      <span class="n">content</span> <span class="o">=</span> <span class="k">yield</span>
+</span><span class='line'>      <span class="no">File</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">f</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">content</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'>      <span class="n">content</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">Jekyll</span><span class="o">::</span><span class="no">MarkdownConverter</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">extensions</span>
+</span><span class='line'>    <span class="no">Hash</span><span class="o">[</span> <span class="o">*</span><span class="vi">@config</span><span class="o">[</span><span class="s1">&#39;redcarpet&#39;</span><span class="o">][</span><span class="s1">&#39;extensions&#39;</span><span class="o">].</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">e</span><span class="o">|</span> <span class="o">[</span><span class="n">e</span><span class="o">.</span><span class="n">to_sym</span><span class="p">,</span> <span class="kp">true</span><span class="o">]</span> <span class="p">}</span><span class="o">.</span><span class="n">flatten</span> <span class="o">]</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">markdown</span>
+</span><span class='line'>    <span class="vi">@markdown</span> <span class="o">||=</span> <span class="no">Redcarpet</span><span class="o">::</span><span class="no">Markdown</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">Redcarpet2Markdown</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">extensions</span><span class="p">),</span> <span class="n">extensions</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="k">super</span> <span class="k">unless</span> <span class="vi">@config</span><span class="o">[</span><span class="s1">&#39;markdown&#39;</span><span class="o">]</span> <span class="o">==</span> <span class="s1">&#39;redcarpet&#39;</span>
+</span><span class='line'>    <span class="n">markdown</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h2 id="config-설정">config 설정</h2>
+
+<p>_config.yml 파일을 열어서 rdiscount 부분을 아래와 같이 수정한다.</p>
+
+<figure class='code notranslate'><figcaption><span>_config.yml</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="c1">#markdown: rdiscount</span>
+</span><span class='line'><span class="l-Scalar-Plain">markdown</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">redcarpet</span>
+</span><span class='line'><span class="l-Scalar-Plain">redcarpet</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">extensions</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;no_intra_emphasis&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;fenced_code_blocks&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;autolink&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;tables&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;with_toc_data&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;strikethrough&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;superscript&quot;</span><span class="p-Indicator">]</span>
+</span><span class='line'><span class="c1">#rdiscount:</span>
+</span><span class='line'><span class="c1">#  extensions:</span>
+</span><span class='line'><span class="c1">#    - autolink</span>
+</span><span class='line'><span class="c1">#    - footnotes</span>
+</span><span class='line'><span class="c1">#    - smart</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>참고 사이트들 설명을 보면 extensions에 hard_wrap을 추가하라고 되어 있는데 나의 경우는 이 옵션을 추가하면 Pygments에서 오류가 났다.</p>
+
+<p>이것으로 설치는 끝이다. generate를 해보면 페이지가 잘 생성된다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-13T11:35:54+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.13</time>
         
            | <a href="/2015/10/13/remove-line-break-in-tablayout/#disqus_thread" itemprop="discussionUrl"
@@ -936,64 +1129,6 @@
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-06T11:49:03+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.06</time>
-        
-           | <a href="/2015/10/06/punycode/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/06/punycode/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/06/punycode/" itemprop="url">퓨니코드(Punycode)</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><blockquote>
-<p>퓨니코드(Punycode)는 유니코드 문자열을 호스트 이름에서 허용된 문자만으로 인코딩하는 방법으로, <a href="https://tools.ietf.org/html/rfc3492">RFC 3492</a>에 기술되어 있다. 퓨니코드는 유니코드가 지원하는 모든 언어로 국제화 도메인을 쓸 수 있게 한 IDNA의 일부로, 변환은 전적으로 웹 브라우저와 같은 클라이언트에서 이루어진다.
-출처 : <a href="https://ko.wikipedia.org/wiki/%ED%93%A8%EB%8B%88%EC%BD%94%EB%93%9C">https://ko.wikipedia.org/wiki/%ED%93%A8%EB%8B%88%EC%BD%94%EB%93%9C</a></p>
-</blockquote>
-
-<p>쉽게 얘기해서 기본적으로 도메인은 ASCII 문자 집합만 사용 가능한데 국제화 도메인을 사용하기 위해서 퓨니코드라는 것이 필요하다는 것이다. 퓨니코드는 <code>xn--</code> 접두어를 통해 구분된다. 예를들어 &quot;wiki백과.한국&quot; 도메인은 IDNA에서 xn--wiki-ei4p334e.xn--3e0b707e로 변환된다.</p>
-
-<p>국제화 도메인과 퓨니코드를 상호 변환을 테스트 해보려면 <a href="http://krnic.or.kr/jsp/resources/domainInfo/punyCode.jsp">KISA 퓨니코드 변환기</a>를 사용할 수 있다. 이 외에도 퓨니코드 변환기로 검색하면 많은 변환기들이 존재한다.</p>
-
-<p>사실 이 퓨니코드에 대한 소개를 하는 이유는 일반적인 상황에서는 직접 처리해야할 일이 없지만 특수한 경우에는 이것이 필요할 수 있기 때문이다. 예를들어 이런 경우가 있다. IE8 이하에서는 한글도메인과 퓨니코드로 변환된 도메인을 다르게 인식하여 AJAX 사용시 cross domain 문제를 일으킬 수 있다. 이런 경우엔 퓨니코드를 한글 도메인으로 다시 변환하여 URL을 사용해야 문제를 막을 수 있다.</p>
-
-<p>따라서 퓨니코드에 대한 이해와 변환 방법에 대해 알아두면 도움이 될 것이다. 아래는 변환에 바로 사용할 수 있는 몇가지 오픈소스 프로젝트를 안내한다. 이외에도 조금만 검색하면 많은 오픈소스를 찾을 수 있다.</p>
-
-<ul>
-<li><a href="https://github.com/bestiejs/punycode.js">punycode.js</a></li>
-<li><a href="https://github.com/true/php-punycode">php-punycode</a></li>
-<li><a href="https://github.com/Wevah/Punycode-Cocoa">Punycode-Cocoa</a></li>
-<li><a href="http://opensource.apple.com/source/ChatServer/ChatServer-262/libidn/java/gnu/inet/encoding/Punycode.java">Punycode.java</a></li>
-</ul>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1063,7 +1198,7 @@
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (29)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (6)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (29)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (7)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (3)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1072,6 +1207,8 @@
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/20/ios-9-xcode-you-must-rebuild-it-with-bitcode-enabled/">Xcode 7 - You must rebuild it with bitcode enabled 오류 해결</a>
+    
     <a class="list-group-item " href="/2015/10/19/vagrant-port-forwarding-on-mac/">Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용</a>
     
     <a class="list-group-item " href="/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/">iOS 9 : The resource could not be loaded because the App Transport Security policy requires the use of a secure connection 오류</a>
@@ -1079,8 +1216,6 @@
     <a class="list-group-item " href="/2015/10/16/centos-7-firewalld/">CentOS 7 firewalld vs iptables</a>
     
     <a class="list-group-item " href="/2015/10/16/android-verticalcenterspan/">안드로이드 세로 중앙정렬 Span(VerticalCenterSpan)</a>
-    
-    <a class="list-group-item " href="/2015/10/16/android-spannablestring-concat/">안드로이드 SpannableString 합치기</a>
     
   </div>
 </section>

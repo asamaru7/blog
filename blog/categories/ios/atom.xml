@@ -4,7 +4,7 @@
   <title><![CDATA[Category: ios | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-21T13:42:18+09:00</updated>
+  <updated>2015-10-21T17:10:00+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,173 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Swift 2.0에서 상속 가능한 Singleton 생성하기]]></title>
+    <link href="http://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/"/>
+    <updated>2015-10-21T16:28:03+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton</id>
+    <content type="html"><![CDATA[<p>오늘은 swift에서 Singleton 객체를 생성하는 방법을 설명하고자 한다.</p>
+
+<p>우선 Objective-C에서는 어떻게 생성하는지는 아래를 보면 알 수 있다.</p>
+
+<p>우선 Singleton Class 정의.</p>
+<div class="highlight"><pre><code class="language-ObjC" data-lang="ObjC"><span class="k">@implementation</span> <span class="nc">SingletonCls</span>
+
+<span class="p">+</span> <span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nf">sharedManager</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="n">SingletonCls</span> <span class="o">*</span><span class="n">staticManager</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="k">static</span> <span class="kt">dispatch_once_t</span> <span class="n">onceToken</span><span class="p">;</span>
+
+    <span class="n">dispatch_once</span><span class="p">(</span><span class="o">&amp;</span><span class="n">onceToken</span><span class="p">,</span> <span class="o">^</span><span class="p">{</span>
+        <span class="n">staticManager</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">self</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+    <span class="p">});</span>
+    <span class="k">return</span> <span class="n">staticManager</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">@end</span>
+</code></pre></div>
+<p>그리고 사용시.</p>
+<div class="highlight"><pre><code class="language-ObjC" data-lang="ObjC"><span class="p">[</span><span class="n">SingletonCls</span> <span class="n">sharedManager</span><span class="p">];</span>
+</code></pre></div>
+<p>그럼 Swift에서는 어떻게 하는지를 살펴보자. 사실 아주 간단하다.</p>
+
+<p>Singleton Class 정의.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="k">let</span> <span class="n">sharedInstance</span> <span class="o">=</span> <span class="n">SingletonCls</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>그리고 사용시.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="n">SingletonCls</span><span class="p">.</span><span class="n">sharedInstance</span>
+</code></pre></div>
+<p>그런데 오늘 하고자하는 이야기는 이게 아니다. 기본적인 Singleton Class를 정의하는 것은 검색하면 많이 나온다. 하지만 내가 필요했던 것은 상속이 가능한 Swift Singleton Class다. 아래의 예를 보자.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="k">let</span> <span class="n">sharedInstance</span> <span class="o">=</span> <span class="n">SingletonCls</span><span class="p">()</span>
+
+    <span class="k">var</span> <span class="nl">X</span><span class="p">:</span><span class="n">Int</span><span class="o">?</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nl">Y</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="p">}</span>
+
+<span class="k">let</span> <span class="n">A</span> <span class="o">=</span> <span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">sharedInstance</span><span class="p">;</span>
+<span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">);</span>
+<span class="n">print</span><span class="p">((</span><span class="n">A</span> <span class="kt">as</span><span class="o">!</span> <span class="n">SingletonClsChild</span><span class="p">).</span><span class="n">Y</span><span class="p">);</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">test.SingletonCls
+Could not cast value of type &#39;test.SingletonCls&#39; (0x10d89d2e0) to &#39;test.SingletonClsChild&#39; (0x10d89d390).
+</code></pre></div>
+<p>위 코드는 실행하면 오류가 난다. <code>SingletonClsChild.sharedInstance</code>의 결과가 <code>SingletonCls</code> 인스턴스이기 때문이다.</p>
+
+<p>우선 이 문제를 해결하기 위한 기본 코드부터 보자. <a href="http://www.scriptscoop.net/t/23f5fc2cdd82/swift-singleton-inheritance.html">Swift: Singleton Inheritance</a>에 나온 코드를 약간 수정했다.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="k">var</span> <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="p">[</span><span class="nl">String</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="p">]()</span>
+    <span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">classname</span> <span class="o">=</span> <span class="n">NSStringFromClass</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span><span class="o">!</span>
+            <span class="p">}</span>
+            <span class="k">let</span> <span class="n">singletonObject</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
+            <span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">]</span> <span class="o">=</span> <span class="n">singletonObject</span>
+            <span class="k">return</span> <span class="n">singletonObject</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">public</span> <span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+<span class="p">}</span>
+</code></pre></div><div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="n">SingletonCls</span><span class="p">.</span><span class="n">sharedInstance</span>
+<span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">sharedInstance</span>
+</code></pre></div>
+<p>위 코드에서 제시한 방법을 사용하면 상속이 가능한 Singleton Class를 정의할 수 있다. 사실 여기에 약간의 기능이 더 추가되어 있다. 호출하는 Class에 따라 각각의 Instance를 생성해서 보관하는 부분이다. 예를 들어 아래의 코드를 보자.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="k">var</span> <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="p">[</span><span class="nl">String</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="p">]()</span>
+    <span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">classname</span> <span class="o">=</span> <span class="n">NSStringFromClass</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span><span class="o">!</span>
+            <span class="p">}</span>
+            <span class="k">let</span> <span class="n">singletonObject</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
+            <span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">]</span> <span class="o">=</span> <span class="n">singletonObject</span>
+            <span class="k">return</span> <span class="n">singletonObject</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+
+    <span class="k">var</span> <span class="nl">X</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="p">}</span>
+
+<span class="n">public</span> <span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nl">Y</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="p">}</span>
+
+<span class="k">let</span> <span class="n">A</span> <span class="o">=</span> <span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">shareInstance</span><span class="p">;</span>
+<span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">.</span><span class="n">X</span><span class="p">);</span>
+<span class="n">print</span><span class="p">((</span><span class="n">A</span> <span class="kt">as</span><span class="o">!</span> <span class="n">SingletonClsChild</span><span class="p">).</span><span class="n">Y</span><span class="p">);</span>
+<span class="n">A</span><span class="p">.</span><span class="n">X</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="k">let</span> <span class="n">B</span> <span class="o">=</span> <span class="n">SingletonCls</span><span class="p">.</span><span class="n">shareInstance</span><span class="p">;</span>
+<span class="n">print</span><span class="p">(</span><span class="n">B</span><span class="p">.</span><span class="n">X</span><span class="p">);</span>
+</code></pre></div>
+<p>결과.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">1
+9
+1
+</code></pre></div>
+<p>결과를 보면 맨 마지막 값이 2가 아닌 1이 나오는 것을 확인 할 수 있다. 이것은 Singleton이 만들어 졌으나 <code>SingletonCls</code>와 <code>SingletonClsChild</code>가 각각 만들어 졌음을 뜻한다.</p>
+
+<p>이런 추가적인 부분을 제외하고 기본적인 형태만 사용하고자 할 경우에는 아래와 같이 하면 된다.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="k">var</span> <span class="nl">_singleton_instance</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="o">?</span>
+    <span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">_singleton_instance</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="n">_singleton_instance</span><span class="o">!</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="n">SingletonCls</span><span class="p">.</span><span class="n">sharedInstance</span>
+</code></pre></div>
+<p>위 코드를 기준으로 오류가 나던 코드를 다시 만들어 보자.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="k">var</span> <span class="nl">_singleton_instance</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="o">?</span>
+    <span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">_singleton_instance</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="n">_singleton_instance</span><span class="o">!</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+
+    <span class="k">var</span> <span class="nl">X</span><span class="p">:</span><span class="n">Int</span><span class="o">?</span>
+<span class="p">}</span>
+
+<span class="n">public</span> <span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nl">Y</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="p">}</span>
+
+<span class="k">let</span> <span class="n">A</span> <span class="o">=</span> <span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">shareInstance</span><span class="p">;</span>
+<span class="n">A</span><span class="p">.</span><span class="n">X</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">.</span><span class="n">X</span><span class="p">);</span>
+<span class="n">print</span><span class="p">((</span><span class="n">A</span> <span class="kt">as</span><span class="o">!</span> <span class="n">SingletonClsChild</span><span class="p">).</span><span class="n">Y</span><span class="p">);</span>
+</code></pre></div>
+<p>아래와 같은 결과가 출력된다. 원하던 결과를 얻었다.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">test.SingletonClsChild
+Optional(1)
+9
+</code></pre></div>]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Xcode에서 CocoaPods를 이용해 sub module 만들기]]></title>
@@ -267,104 +434,6 @@ Xcode에서 Bitcode를 포함한 iOS 앱을 AppStore로 전송하면, AppStore �
 <p>그런데 나의 경우는 GoogleMaps에서 문제가 발생한 경우다. 그래서 Bitcode를 Enabled 상태로 문제를 해결하는 방법을 찾고 싶었다. 그래서 조금 더 찾아보니 Google SDK to 1.10.2+ 이상을 사용하면 된다는 내용을 찾았다. 하지만 내가 사용하던 버전은 1.10.3이었다. 그래도 혹시나 싶어 cocoapod에서 업데이트 했더니 1.10.4로 업데이트가 되었다. 그래서 다시 빌드 시도. 그런데 결과는 역시나 동일한 오류가 난다.</p>
 
 <p><a href="https://code.google.com/p/gmaps-api-issues/issues/detail?id=8219">gmaps-api-issues - Bitcode Build</a>에 보면 관련된 이슈가 진행중이다. 이 문제는 해당 라이브러리에서 지원해야만 해결할 수 있는 문제로 구글에서 패치가 될 때까지는 Bitcode를 Disabled 상태로 사용할 수 밖에 없다. 하지만 곧 해결될 것이라고 생각한다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[iOS 9 : The resource could not be loaded because the App Transport Security policy requires the use of a secure connection 오류]]></title>
-    <link href="http://blog.asamaru.net/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/"/>
-    <updated>2015-10-19T09:24:41+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection</id>
-    <content type="html"><![CDATA[<p>iOS 9을 대상으로 개발시 아래와 같은 오류를 만날 수 있다.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">ERRO AppDelegate[application(_:didFinishLaunchingWithOptions:):32]: Optional(Error Domain=NSURLErrorDomain Code=-1022 &quot;The resource could not be loaded because the App Transport Security policy requires the use of a secure connection.&quot; UserInfo={NSUnderlyingError=0x7fddb1cb34b0 {Error Domain=kCFErrorDomainCFNetwork Code=-1022 &quot;(null)&quot;}, NSErrorFailingURLStringKey=http://yourdomain.com/session/get, NSErrorFailingURLKey=http://yourdomain.com/session/get, NSLocalizedDescription=The resource could not be loaded because the App Transport Security policy requires the use of a secure connection.})
-</code></pre></div>
-<p>iOS 9과 OS X 10.11 이후에 App Transport Security 정책이 추가되어 발생하는 오류로 관련된 정보는 <a href="https://developer.apple.com/library/prerelease/ios/technotes/App-Transport-Security-Technote/index.html">App Transport Security Technote</a>에서 자세히 볼 수 있다. 안내에 나와 있듯이 현재 개발중인 기능이라 추후 변경 가능성이 있다고 되어있다.</p>
-
-<blockquote>
-<p>App Transport Security is a feature that improves the security of connections between an app and web services. The feature consists of default connection requirements that conform to best practices for secure connections. Apps can override this default behavior and turn off transport security.</p>
-
-<p>Transport security is available in iOS 9.0 or later, and in OS X v10.11 and later.</p>
-</blockquote>
-
-<p>해결방법은 아래와 같다.</p>
-
-<p>Info.plist 파일에 NSAppTransportSecurity 항목을 추가해서 필요한 설정을 해준다. NSAppTransportSecurity의 구조는 아래와 같다.</p>
-
-<table><thead>
-<tr>
-<th>Key</th>
-<th>Type</th>
-</tr>
-</thead><tbody>
-<tr>
-<td>NSAppTransportSecurity</td>
-<td>Dictionary</td>
-</tr>
-<tr>
-<td>&nbsp; NSAllowsArbitraryLoads</td>
-<td>Boolean</td>
-</tr>
-<tr>
-<td>&nbsp; NSExceptionDomains</td>
-<td>Dictionary</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; &lt;domain-name-for-exception-as-string&gt;</td>
-<td>Dictionary</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSExceptionMinimumTLSVersion</td>
-<td>String</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSExceptionRequiresForwardSecrecy</td>
-<td>Boolean</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSExceptionAllowsInsecureHTTPLoads</td>
-<td>Boolean</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSIncludesSubdomains</td>
-<td>Boolean</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSThirdPartyExceptionMinimumTLSVersion</td>
-<td>String</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSThirdPartyExceptionRequiresForwardSecrecy</td>
-<td>Boolean</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSThirdPartyExceptionAllowsInsecureHTTPLoads</td>
-<td>Boolean</td>
-</tr>
-</tbody></table>
-
-<p>정확하게 설명하자면 두가지 방법이 있다.
-* NSAppTransportSecurity &gt; NSAllowsArbitraryLoads를 추가해서 NSAllowsArbitraryLoads 값을 YES로 넣어준다.
-  * 앱 내의 모든 네트워크 통신에 대한 제한을 푼다.
-* NSAppTransportSecurity &gt; NSExceptionDomains를 추가하고 세부항목을 설정한다.
-  * 지정된 도메인의 네트워크 통신에 대한 제한을 푼다.
-  * NSExceptionMinimumTLSVersion: TLS 최소 버전을 문자열로 입력한다. 아래 값들 중 하나를 넣을 수 있거나 생략할 수 있다.
-    * TLSv1.0
-    * TLSv1.1
-    * TLSv1.2 (생략할 경우의 기본값)
-  * NSExceptionRequiresForwardSecrecy: forward secrecy 라는 비밀키 암호화 설정이다. 기본으 YES이며 NO를 선택시 사용할 수 있는 ciphers 목록은 아래와 같다.
-    * TLS_RSA_WITH_AES_256_GCM_SHA384
-    * TLS_RSA_WITH_AES_128_GCM_SHA256
-    * TLS_RSA_WITH_AES_256_CBC_SHA256
-    * TLS_RSA_WITH_AES_256_CBC_SHA
-    * TLS_RSA_WITH_AES_128_CBC_SHA256
-    * TLS_RSA_WITH_AES_128_CBC_SHA
-  * NSExceptionAllowsInsecureHTTPLoads: HTTPS(SSL) 연결이 아니더라도 통신을 허용 것인지에 대한 설정이다. 기본값은 NO이다.
-  * NSIncludesSubdomains: 이 사이트의 하부도메인들에도 이 설정을 적용할 것인지에 대한 설정이다. 기본값은 NO이다.
-  * NSThirdPartyExceptionMinimumTLSVersion: 써드파티 TLS 버전을 설정한다.
-  * NSThirdPartyExceptionRequiresForwardSecrecy: 써드파티 Forward Secrecy 설정이다.
-  * NSThirdPartyExceptionAllowsInsecureHTTPLoads: 써드파티 HTTPS 연결을 강제를 할 것이지에 대한 설정이다.</p>
-
-<p>필요에 따라 방법을 선택하면 된다.</p>
 ]]></content>
   </entry>
   

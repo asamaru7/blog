@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-21T13:42:18+09:00</updated>
+  <updated>2015-10-21T17:10:00+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,329 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Swift 2.0에서 상속 가능한 Singleton 생성하기]]></title>
+    <link href="http://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/"/>
+    <updated>2015-10-21T16:28:03+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton</id>
+    <content type="html"><![CDATA[<p>오늘은 swift에서 Singleton 객체를 생성하는 방법을 설명하고자 한다.</p>
+
+<p>우선 Objective-C에서는 어떻게 생성하는지는 아래를 보면 알 수 있다.</p>
+
+<p>우선 Singleton Class 정의.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='ObjC'><span class='line'><span class="k">@implementation</span> <span class="nc">SingletonCls</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">+</span> <span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nf">sharedManager</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">static</span> <span class="n">SingletonCls</span> <span class="o">*</span><span class="n">staticManager</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">static</span> <span class="kt">dispatch_once_t</span> <span class="n">onceToken</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">dispatch_once</span><span class="p">(</span><span class="o">&amp;</span><span class="n">onceToken</span><span class="p">,</span> <span class="o">^</span><span class="p">{</span>
+</span><span class='line'>        <span class="n">staticManager</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">self</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">});</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">staticManager</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">@end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>그리고 사용시.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ObjC'><span class='line'><span class="p">[</span><span class="n">SingletonCls</span> <span class="n">sharedManager</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>그럼 Swift에서는 어떻게 하는지를 살펴보자. 사실 아주 간단하다.</p>
+
+<p>Singleton Class 정의.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">static</span> <span class="k">let</span> <span class="n">sharedInstance</span> <span class="o">=</span> <span class="n">SingletonCls</span><span class="p">()</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>그리고 사용시.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">SingletonCls</span><span class="p">.</span><span class="n">sharedInstance</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>그런데 오늘 하고자하는 이야기는 이게 아니다. 기본적인 Singleton Class를 정의하는 것은 검색하면 많이 나온다. 하지만 내가 필요했던 것은 상속이 가능한 Swift Singleton Class다. 아래의 예를 보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">static</span> <span class="k">let</span> <span class="n">sharedInstance</span> <span class="o">=</span> <span class="n">SingletonCls</span><span class="p">()</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">var</span> <span class="nl">X</span><span class="p">:</span><span class="n">Int</span><span class="o">?</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">var</span> <span class="nl">Y</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">9</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">let</span> <span class="n">A</span> <span class="o">=</span> <span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">sharedInstance</span><span class="p">;</span>
+</span><span class='line'><span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">);</span>
+</span><span class='line'><span class="n">print</span><span class="p">((</span><span class="n">A</span> <span class="kt">as</span><span class="o">!</span> <span class="n">SingletonClsChild</span><span class="p">).</span><span class="n">Y</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">test</span><span class="p">.</span><span class="n">SingletonCls</span>
+</span><span class='line'><span class="n">Could</span> <span class="n">not</span> <span class="n">cast</span> <span class="n">value</span> <span class="n">of</span> <span class="n">type</span> <span class="err">&#39;</span><span class="n">test</span><span class="p">.</span><span class="n">SingletonCls</span><span class="err">&#39;</span> <span class="p">(</span><span class="mh">0x10d89d2e0</span><span class="p">)</span> <span class="n">to</span> <span class="err">&#39;</span><span class="n">test</span><span class="p">.</span><span class="n">SingletonClsChild</span><span class="err">&#39;</span> <span class="p">(</span><span class="mh">0x10d89d390</span><span class="p">).</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>위 코드는 실행하면 오류가 난다. <code>SingletonClsChild.sharedInstance</code>의 결과가 <code>SingletonCls</code> 인스턴스이기 때문이다.</p>
+
+<p>우선 이 문제를 해결하기 위한 기본 코드부터 보자. <a href="http://www.scriptscoop.net/t/23f5fc2cdd82/swift-singleton-inheritance.html">Swift: Singleton Inheritance</a>에 나온 코드를 약간 수정했다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">static</span> <span class="k">var</span> <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="p">[</span><span class="nl">String</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="p">]()</span>
+</span><span class='line'>  <span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'>      <span class="kr">get</span> <span class="p">{</span>
+</span><span class='line'>          <span class="k">let</span> <span class="n">classname</span> <span class="o">=</span> <span class="n">NSStringFromClass</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">((</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>              <span class="k">return</span> <span class="p">(</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span><span class="o">!</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>          <span class="k">let</span> <span class="n">singletonObject</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
+</span><span class='line'>          <span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">]</span> <span class="o">=</span> <span class="n">singletonObject</span>
+</span><span class='line'>          <span class="k">return</span> <span class="n">singletonObject</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">SingletonCls</span><span class="p">.</span><span class="n">sharedInstance</span>
+</span><span class='line'><span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">sharedInstance</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>위 코드에서 제시한 방법을 사용하면 상속이 가능한 Singleton Class를 정의할 수 있다. 사실 여기에 약간의 기능이 더 추가되어 있다. 호출하는 Class에 따라 각각의 Instance를 생성해서 보관하는 부분이다. 예를 들어 아래의 코드를 보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">static</span> <span class="k">var</span> <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="p">[</span><span class="nl">String</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="p">]()</span>
+</span><span class='line'>  <span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'>      <span class="kr">get</span> <span class="p">{</span>
+</span><span class='line'>          <span class="k">let</span> <span class="n">classname</span> <span class="o">=</span> <span class="n">NSStringFromClass</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">((</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>              <span class="k">return</span> <span class="p">(</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span><span class="o">!</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>          <span class="k">let</span> <span class="n">singletonObject</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
+</span><span class='line'>          <span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">]</span> <span class="o">=</span> <span class="n">singletonObject</span>
+</span><span class='line'>          <span class="k">return</span> <span class="n">singletonObject</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">var</span> <span class="nl">X</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">var</span> <span class="nl">Y</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">9</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">let</span> <span class="n">A</span> <span class="o">=</span> <span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">shareInstance</span><span class="p">;</span>
+</span><span class='line'><span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">.</span><span class="n">X</span><span class="p">);</span>
+</span><span class='line'><span class="n">print</span><span class="p">((</span><span class="n">A</span> <span class="kt">as</span><span class="o">!</span> <span class="n">SingletonClsChild</span><span class="p">).</span><span class="n">Y</span><span class="p">);</span>
+</span><span class='line'><span class="n">A</span><span class="p">.</span><span class="n">X</span> <span class="o">=</span> <span class="mi">2</span>
+</span><span class='line'><span class="k">let</span> <span class="n">B</span> <span class="o">=</span> <span class="n">SingletonCls</span><span class="p">.</span><span class="n">shareInstance</span><span class="p">;</span>
+</span><span class='line'><span class="n">print</span><span class="p">(</span><span class="n">B</span><span class="p">.</span><span class="n">X</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>결과.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="mi">1</span>
+</span><span class='line'><span class="mi">9</span>
+</span><span class='line'><span class="mi">1</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>결과를 보면 맨 마지막 값이 2가 아닌 1이 나오는 것을 확인 할 수 있다. 이것은 Singleton이 만들어 졌으나 <code>SingletonCls</code>와 <code>SingletonClsChild</code>가 각각 만들어 졌음을 뜻한다.</p>
+
+<p>이런 추가적인 부분을 제외하고 기본적인 형태만 사용하고자 할 경우에는 아래와 같이 하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">static</span> <span class="k">var</span> <span class="nl">_singleton_instance</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="o">?</span>
+</span><span class='line'>  <span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'>      <span class="kr">get</span> <span class="p">{</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="n">_singleton_instance</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>              <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>          <span class="k">return</span> <span class="n">_singleton_instance</span><span class="o">!</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">SingletonCls</span><span class="p">.</span><span class="n">sharedInstance</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>위 코드를 기준으로 오류가 나던 코드를 다시 만들어 보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">static</span> <span class="k">var</span> <span class="nl">_singleton_instance</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="o">?</span>
+</span><span class='line'>  <span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'>      <span class="kr">get</span> <span class="p">{</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="n">_singleton_instance</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>              <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>          <span class="k">return</span> <span class="n">_singleton_instance</span><span class="o">!</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">var</span> <span class="nl">X</span><span class="p">:</span><span class="n">Int</span><span class="o">?</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">var</span> <span class="nl">Y</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">9</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">let</span> <span class="n">A</span> <span class="o">=</span> <span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">shareInstance</span><span class="p">;</span>
+</span><span class='line'><span class="n">A</span><span class="p">.</span><span class="n">X</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'><span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+</span><span class='line'><span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">.</span><span class="n">X</span><span class="p">);</span>
+</span><span class='line'><span class="n">print</span><span class="p">((</span><span class="n">A</span> <span class="kt">as</span><span class="o">!</span> <span class="n">SingletonClsChild</span><span class="p">).</span><span class="n">Y</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>아래와 같은 결과가 출력된다. 원하던 결과를 얻었다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">test</span><span class="p">.</span><span class="n">SingletonClsChild</span>
+</span><span class='line'><span class="n">Optional</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'><span class="mi">9</span>
+</span></code></pre></td></tr></table></div></figure>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Xcode에서 CocoaPods를 이용해 sub module 만들기]]></title>
@@ -1856,25 +2179,6 @@ home 파티션을 구분하지 않고 boot와 swap만 지정하고 나머지 모
 </span></code></pre></td></tr></table></div></figure>
 
 <p>하지만 이렇게 한다면 <code>@Extra</code>를 사용하는 의미가 없고 <code>@AfterExtras</code>도 정상적으로 사용할 수 없으므로 패치를 기다렸다가 코드를 다시 처리 해야할 것 같다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다]]></title>
-    <link href="http://blog.asamaru.net/2015/10/12/gitlab-ce-to-gitlab-dot-com/"/>
-    <updated>2015-10-12T08:26:40+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/12/gitlab-ce-to-gitlab-dot-com</id>
-    <content type="html"><![CDATA[<p><a href="http://blog.asamaru.net/2015/09/22/how-to-install-gitlib-on-centos/">CentOS에 Gitlab 설치하기</a>에 포스팅 했던 것 처럼 회사에서 git를 사용하기 위해 Gitlab CE 버전을 자체 서버에 설치해서 사용했다. 얼마 사용하지는 않았는데 속도가 너무 느린감이 있어서 옮기게 되었다. 사실 Gitlab을 설치한 서버는 사내에 다른 용도로 사용하던 서버로 dual lan이 설정되어 있는데 간혹 네트워크가 느려지는 문제가 있다. gateway를 지정해서 어느정도 문제를 해결해서 사용하긴 하지만 간혹 접속이 느려지는 경우가 있다. 사실 이 문제가 아니라 gitlab 자체가 많이 느린 느낌이다.</p>
-
-<p>그래서 private project를 지원하는 <a href="https://bitbucket.org/">bitbucket</a>으로 옮겼다. 사실 github가 최고이긴하나 굳이 비용을 들여가면서 사용할 이유는 없기 때문이다(아직 다양한 기능을 활용하지 못하니). 그런데 여기서도 문제에 부딪혔다. 네트워크 속도가 느리다. 외국에서 서비스 하고 있다보니 어느 정도는 감안해야 하지만 그래도 너무 느렸다. clone 받는데 30kb/s 가 평균이었다. 그래서 어쩔 수 없이 다른 곳을 알아보았다.</p>
-
-<p>그런데 <a href="https://gitlab.com/">gitlab</a>에서도 무료 호스팅을 해주고 있었다. 전에 gitlab을 다운 받을 때는 자세히 보지 않아서 몰랐지만 이미 제공되고 있었던 것이다. 게대가 bitbucket과 같은 제약 사항도 없다. 앞으로도 유료화하지 않을 것이라는 안내도 되어있다. 그래서 다시 옮겼다.</p>
-
-<p>옮기는 과정은 굳이 설명하지 않아도 될것 같다. gitlab에서 기능을 잘 제공하고 있다. bitbucket에서 자동이전할 수 있는 기능을 제공한다(github, bitbucket, gitorious.org, google code, fogbugz, any repo by url을 제공한다).</p>
-
-<p>결과는 나른 만족스럽다. 이전도 아주 단순하고 gitlab의 ce 버전 이상의 기능을 제공하며 속도도 그럭저럭 쓸만하다. 아주 쾌적한 속도는 아니지만 bitbucket에 비하면 아주 빠르다.</p>
-
-<p>당분간은 gitlab을 사용하게 될 것 같다. 향후에 git의 다양한 기능을 제대로 활용하게되고 익숙해 진다면 github로 이전을 다시 할지는 모르겠으나 이 정도면 아직은 충분한 것 같다.</p>
 ]]></content>
   </entry>
   

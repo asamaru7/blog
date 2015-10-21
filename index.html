@@ -229,9 +229,40 @@
 
 <p>Sub Module로 사용할 프로젝트를 하나 더 생성한다. 나의 경우는 Cocoa Touch Framework로 생성했다. Cocoa Touch Static Library 등의 다른 형식은 적용해보지 않아서 동일하게 적용이 되는지는 모르겠다. 특별한 이유가 없다면 Cocoa Touch Framework로 생성한다.</p>
 
-<p><img src="../img/2015-10-21-xcode-create-sub-module-using-cocoapods-1.png" alt=""></p>
+<p><img src="/img/2015-10-21-xcode-create-sub-module-using-cocoapods-1.png" alt=""></p>
 
 <p>이후 부터는 화면에서 안내하는대로 프로젝트를 개설하면 되므로 자세한 설명은 생략하겠다. 생성을 마쳤다면 이 프로젝트도 &quot;Xcode 프로젝트 만들기&quot; 부분에서 예를 들었던 내용처럼 git에 연결한다.</p>
+
+<h4 id="podspec-생성">podspec 생성</h4>
+
+<p>Sub Module을 만들었다면 CocoaPods을 통해 연결할 수 있도록 podspec을 생성해야 한다.
+Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하고 아래와 같이 내용을 넣어준다. 이 부분도 상황에 따라 내용을 변경해도 상관없다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Pod</span><span class="o">::</span><span class="no">Spec</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">s</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">name</span>     <span class="o">=</span> <span class="s1">&#39;{모듈명}&#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">version</span>  <span class="o">=</span> <span class="s1">&#39;1.0.0&#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="s1">&#39;MIT&#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">summary</span>  <span class="o">=</span> <span class="s1">&#39;{설명}&#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">homepage</span> <span class="o">=</span> <span class="s1">&#39;https://gitlab.com/subva/SUBiOSFramework&#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">author</span>   <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;{작성자}&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;{작성자}{도메인}&#39;</span> <span class="p">}</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source</span>   <span class="o">=</span> <span class="p">{</span> <span class="ss">:git</span> <span class="o">=&gt;</span> <span class="s1">&#39;{git repository}&#39;</span><span class="p">,</span> <span class="ss">:tag</span> <span class="o">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">version</span> <span class="p">}</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">ios</span><span class="o">.</span><span class="n">deployment_target</span> <span class="o">=</span> <span class="s1">&#39;8.0&#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source_files</span> <span class="o">=</span> <span class="s1">&#39;{모듈명}/*.swift&#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">requires_arc</span> <span class="o">=</span> <span class="kp">true</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
 
 <h3 id="sub-module-연결">Sub Module 연결</h3>
 
@@ -260,7 +291,7 @@
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">ource</span> <span class="s1">&#39;https://github.com/CocoaPods/Specs.git&#39;</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">source</span> <span class="s1">&#39;https://github.com/CocoaPods/Specs.git&#39;</span>
 </span><span class='line'><span class="n">platform</span> <span class="ss">:ios</span><span class="p">,</span> <span class="s1">&#39;8.0&#39;</span>
 </span><span class='line'><span class="n">use_frameworks!</span>
 </span><span class='line'>

@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-21T17:14:52+09:00</updated>
+  <updated>2015-10-22T11:55:15+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,45 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[CocoaPods의 Swift compiler flags(DEBUG) 설정하기]]></title>
+    <link href="http://blog.asamaru.net/2015/10/22/setting-swift-compiler-flags-in-cocoapods/"/>
+    <updated>2015-10-22T11:28:37+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/22/setting-swift-compiler-flags-in-cocoapods</id>
+    <content type="html"><![CDATA[<p><a href="http://blog.asamaru.net/2015/10/21/xcode-create-sub-module-using-cocoapods/">Xcode에서 CocoaPods를 이용해 sub module 만들기</a>라는 글에서 Sub Module을 만드는 방법을 설명했었다. 그런데 이렇게 연결된 Module을 사용하는 과정에서 불편한 부분이 생겼다. 다름아닌 <code>#if DEBUG</code>를 Sub Module에서 적용이 되지 않는 것이다. 이 부분은 생각해보면 당연하다 별개의 Module을 빌드에서 연결하는 것이니 <code>DEBUG</code> 상수를 사용하기 위한 설정을 별도로 해야 하는 것이다(<code>DEBUG</code> 상수 설정 방법은 <a href="http://seorenn.blogspot.kr/2014/11/xcode-swift-debug.html">Swift 프로젝트의 디버그(DEBUG) 플래그</a>을 참고하면 된다). 그래서 CocoaPods에서 추가해준 프로젝트에 <code>DEBUG</code> 관련 설정을 해주니 원하는대로 <code>#if DEBUG</code>를 사용할 수 있었다. 그런데 여기서 모든 문제가 해결된 것이 아니었다. <code>pod update</code> 실행시 Module이 재설치 되면서 관련 설정이 다시 초기화 되는 것이다. 이걸 매번 해줄 수도 없고... 그래서 조금 찾아보니 <a href="http://marginalfutility.net/2015/10/11/swift-compiler-flags/">Setting Swift compiler flags in CocoaPods</a>라는 글에서 해결 방법을 제시하고 있었다.</p>
+
+<p>결론을 이야기하자면 <code>Podfile</code>에서 <code>post_install</code>을 사용해서 <code>DEBUG</code> 상수를 자동으로 추가하도록 하는 것이다. <code>Podfile</code>에 아래의 내용을 추가하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">post_install</span> <span class="k">do</span> <span class="o">|</span><span class="n">installer</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">installer</span><span class="o">.</span><span class="n">pods_project</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">target</span><span class="o">|</span>
+</span><span class='line'>      <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;{원하는 모듈명}&#39;</span>
+</span><span class='line'>          <span class="n">target</span><span class="o">.</span><span class="n">build_configurations</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+</span><span class='line'>              <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;Debug&#39;</span>
+</span><span class='line'>                  <span class="n">config</span><span class="o">.</span><span class="n">build_settings</span><span class="o">[</span><span class="s1">&#39;OTHER_SWIFT_FLAGS&#39;</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;-DDEBUG&#39;</span>
+</span><span class='line'>                  <span class="k">else</span>
+</span><span class='line'>                  <span class="n">config</span><span class="o">.</span><span class="n">build_settings</span><span class="o">[</span><span class="s1">&#39;OTHER_SWIFT_FLAGS&#39;</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'>              <span class="k">end</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Swift 2.0에서 상속 가능한 Singleton 생성하기]]></title>
@@ -2150,35 +2189,6 @@ home 파티션을 구분하지 않고 boot와 swap만 지정하고 나머지 모
 <blockquote>
 <p>commit()을 호출해도 그 즉시 트랜잭션을 수행하지는 않습니다. 그보다는, 액티비티의 UI 스레드(&quot;주요&quot; 스레드)를 스레드가 할 수 있는 한 빨리 이 트랜잭션을 수행하도록 일정을 예약하는 것에 가깝습니다. 하지만 필요한 경우 UI 스레드로부터 executePendingTransactions()를 호출하면 commit()이 제출한 트랜잭션을 즉시 실행할 수 있습니다. 트랜잭션이 다른 스레드의 작업에 대한 종속성이 아니라면 굳이 이렇게 해야만 하는 것은 아닙니다.</p>
 </blockquote>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[안드로이드에서 인턴트 호출시 Intent.FLAG_ACTIVITY_CLEAR_TOP 또는 Intent.FLAG_ACTIVITY_SINGLE_TOP 사용시 Androidannotations @Extra가 동작하지 않는 문제]]></title>
-    <link href="http://blog.asamaru.net/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top/"/>
-    <updated>2015-10-12T10:14:56+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/12/androidannotations-at-extra-with-intent-dot-flag-activity-clear-top-or-intent-dot-flag-activity-single-top</id>
-    <content type="html"><![CDATA[<p><a href="http://androidannotations.org/">Androidannotations</a>를 사용하면 <code>@Extra</code>를 사용해서 인자를 받을 수 있다. 그런데 여기서 주의할 점이 있다. 인턴트 호출시 <code>Intent.FLAG_ACTIVITY_CLEAR_TOP</code> 또는 <code>Intent.FLAG_ACTIVITY_SINGLE_TOP</code>를 사용하게되면 인턴트가 이미 존재할 경우 <code>@Extra</code>가 동작하지 않는다. 이와 관련해서 <a href="https://github.com/excilys/androidannotations/issues/1578">Always call #onNewIntent(), even without @AfterExtras method(s)</a>에서도 이슈가 진행중이다. 앞서 이야기한 문제와 이 이슈는 정확하게 같은 내용은 아니지만 동일한 이유로 발생하며 유사한 내용이라고도 볼 수 있다.</p>
-
-<p>간단히 요약하자면 <code>@Extra</code>는 관련 처리를 <code>setIntent()</code>와 <code>onCraete()</code>에서 하는데 <code>Intent.FLAG_ACTIVITY_CLEAR_TOP</code> 또는 <code>Intent.FLAG_ACTIVITY_SINGLE_TOP</code>를 사용하게되면 인턴트가 존재할 경우 두 함수가 실행되지 않는다는 것이다(<code>onCraete()</code> 대신에 <code>onNewIntent(Intent intent)</code>가 호출이 되고 그 다음 onResume() 이 호출이 된다).</p>
-
-<p>현재까지는 <a href="http://androidannotations.org/">Androidannotations</a>에서 해당 문제를 해결하지 않았으므로 그에 따른 대응이 필요하다(Androidannotations을 사용하지 않는 상황이라면 <code>onResume</code>에서 extra 값을 받아오도록 하면 당연히 문제가 없다).</p>
-
-<p>현재로써는 특별한 방법이 없어 아래와 같이 <code>onNewIntent()</code>애서 직접 값을 받도록 처리했다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
-</span><span class='line'><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onNewIntent</span><span class="o">(</span><span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>  <span class="kd">super</span><span class="o">.</span><span class="na">onNewIntent</span><span class="o">(</span><span class="n">intent</span><span class="o">);</span>
-</span><span class='line'>  <span class="n">moveOwnLocation</span> <span class="o">=</span> <span class="n">intent</span><span class="o">.</span><span class="na">getBooleanExtra</span><span class="o">(</span><span class="s">&quot;EXTRA_NAME&quot;</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>하지만 이렇게 한다면 <code>@Extra</code>를 사용하는 의미가 없고 <code>@AfterExtras</code>도 정상적으로 사용할 수 없으므로 패치를 기다렸다가 코드를 다시 처리 해야할 것 같다.</p>
 ]]></content>
   </entry>
   

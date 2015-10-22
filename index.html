@@ -138,6 +138,76 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-22T11:28:37+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.22</time>
+        
+           | <a href="/2015/10/22/setting-swift-compiler-flags-in-cocoapods/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/22/setting-swift-compiler-flags-in-cocoapods/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/22/setting-swift-compiler-flags-in-cocoapods/" itemprop="url">CocoaPods의 Swift compiler flags(DEBUG) 설정하기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p><a href="http://blog.asamaru.net/2015/10/21/xcode-create-sub-module-using-cocoapods/">Xcode에서 CocoaPods를 이용해 sub module 만들기</a>라는 글에서 Sub Module을 만드는 방법을 설명했었다. 그런데 이렇게 연결된 Module을 사용하는 과정에서 불편한 부분이 생겼다. 다름아닌 <code>#if DEBUG</code>를 Sub Module에서 적용이 되지 않는 것이다. 이 부분은 생각해보면 당연하다 별개의 Module을 빌드에서 연결하는 것이니 <code>DEBUG</code> 상수를 사용하기 위한 설정을 별도로 해야 하는 것이다(<code>DEBUG</code> 상수 설정 방법은 <a href="http://seorenn.blogspot.kr/2014/11/xcode-swift-debug.html">Swift 프로젝트의 디버그(DEBUG) 플래그</a>을 참고하면 된다). 그래서 CocoaPods에서 추가해준 프로젝트에 <code>DEBUG</code> 관련 설정을 해주니 원하는대로 <code>#if DEBUG</code>를 사용할 수 있었다. 그런데 여기서 모든 문제가 해결된 것이 아니었다. <code>pod update</code> 실행시 Module이 재설치 되면서 관련 설정이 다시 초기화 되는 것이다. 이걸 매번 해줄 수도 없고... 그래서 조금 찾아보니 <a href="http://marginalfutility.net/2015/10/11/swift-compiler-flags/">Setting Swift compiler flags in CocoaPods</a>라는 글에서 해결 방법을 제시하고 있었다.</p>
+
+<p>결론을 이야기하자면 <code>Podfile</code>에서 <code>post_install</code>을 사용해서 <code>DEBUG</code> 상수를 자동으로 추가하도록 하는 것이다. <code>Podfile</code>에 아래의 내용을 추가하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">post_install</span> <span class="k">do</span> <span class="o">|</span><span class="n">installer</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">installer</span><span class="o">.</span><span class="n">pods_project</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">target</span><span class="o">|</span>
+</span><span class='line'>      <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;{원하는 모듈명}&#39;</span>
+</span><span class='line'>          <span class="n">target</span><span class="o">.</span><span class="n">build_configurations</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+</span><span class='line'>              <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;Debug&#39;</span>
+</span><span class='line'>                  <span class="n">config</span><span class="o">.</span><span class="n">build_settings</span><span class="o">[</span><span class="s1">&#39;OTHER_SWIFT_FLAGS&#39;</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;-DDEBUG&#39;</span>
+</span><span class='line'>                  <span class="k">else</span>
+</span><span class='line'>                  <span class="n">config</span><span class="o">.</span><span class="n">build_settings</span><span class="o">[</span><span class="s1">&#39;OTHER_SWIFT_FLAGS&#39;</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'>              <span class="k">end</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-21T16:28:03+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.21</time>
         
            | <a href="/2015/10/21/swift-2-dot-0-singleton/#disqus_thread" itemprop="discussionUrl"
@@ -1437,196 +1507,6 @@ On Unix-based hosts (e.g. Linux, Solaris, Mac OS X) it is not possible to bind t
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-16T13:37:07+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.16</time>
-        
-           | <a href="/2015/10/16/android-verticalcenterspan/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/16/android-verticalcenterspan/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/16/android-verticalcenterspan/" itemprop="url">안드로이드 세로 중앙정렬 Span(VerticalCenterSpan)</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>SpannableString을 사용하던 중에 사이즈가 다른 두 단어를 세로로 중앙 정렬해야 할 일이 생겼다. 그런데 찾아보니 그런 Span은 없고 비슷한 기능이 있는 것들도 BASELINE 또는 BOTTOM으로만 정렬이 가능했다. 그래서 간단하게 Span 클래스를 하나 만들었다. 단, 주의할 것은 multi line은 지원하지 않는다는 것이다(내가 당장 필요하지 않아서 기능을 구현하지 않았다).</p>
-
-<figure class='code notranslate'><figcaption><span>VerticalCenterSpan.java  </span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">import</span> <span class="nn">android.graphics.Canvas</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.graphics.Paint</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.text.style.ReplacementSpan</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">VerticalCenterSpan</span> <span class="kd">extends</span> <span class="n">ReplacementSpan</span> <span class="o">{</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="nf">VerticalCenterSpan</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">draw</span><span class="o">(</span><span class="n">Canvas</span> <span class="n">canvas</span><span class="o">,</span> <span class="n">CharSequence</span> <span class="n">text</span><span class="o">,</span> <span class="kt">int</span> <span class="n">start</span><span class="o">,</span> <span class="kt">int</span> <span class="n">end</span><span class="o">,</span> <span class="kt">float</span> <span class="n">x</span><span class="o">,</span> <span class="kt">int</span> <span class="n">top</span><span class="o">,</span> <span class="kt">int</span> <span class="n">y</span><span class="o">,</span> <span class="kt">int</span> <span class="n">bottom</span><span class="o">,</span> <span class="n">Paint</span> <span class="n">paint</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">yPos</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="o">((</span><span class="n">canvas</span><span class="o">.</span><span class="na">getHeight</span><span class="o">()</span> <span class="o">/</span> <span class="mi">2</span><span class="o">)</span> <span class="o">-</span> <span class="o">((</span><span class="n">paint</span><span class="o">.</span><span class="na">descent</span><span class="o">()</span> <span class="o">+</span> <span class="n">paint</span><span class="o">.</span><span class="na">ascent</span><span class="o">())</span> <span class="o">/</span> <span class="mi">2</span><span class="o">));</span>
-</span><span class='line'>      <span class="n">canvas</span><span class="o">.</span><span class="na">drawText</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">start</span><span class="o">,</span> <span class="n">end</span><span class="o">,</span> <span class="n">x</span><span class="o">,</span> <span class="n">yPos</span><span class="o">,</span> <span class="n">paint</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getSize</span><span class="o">(</span><span class="n">Paint</span> <span class="n">paint</span><span class="o">,</span> <span class="n">CharSequence</span> <span class="n">text</span><span class="o">,</span> <span class="kt">int</span> <span class="n">start</span><span class="o">,</span> <span class="kt">int</span> <span class="n">end</span><span class="o">,</span> <span class="n">Paint</span><span class="o">.</span><span class="na">FontMetricsInt</span> <span class="n">fm</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="k">return</span> <span class="n">Math</span><span class="o">.</span><span class="na">round</span><span class="o">(</span><span class="n">paint</span><span class="o">.</span><span class="na">measureText</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">start</span><span class="o">,</span> <span class="n">end</span><span class="o">));</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>그런데 사용시에 유의할 점이 있다. 다른 Span과 함께 적용시에 일부는 적용되지 않을 수 있다는 것이다. 예를 들어 아래의 예를 보자(아래 소스는 이해를 위해 부분만 넣어둔 것이다).</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">AbsoluteSizeSpan</span><span class="o">(</span><span class="mi">12</span><span class="o">,</span> <span class="kc">true</span><span class="o">),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</span><span class='line'><span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">ForegroundColorSpan</span><span class="o">(</span><span class="n">ContextCompat</span><span class="o">.</span><span class="na">getColor</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">R</span><span class="o">.</span><span class="na">color</span><span class="o">.</span><span class="na">newColor</span><span class="o">)),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</span><span class='line'><span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">VerticalCenterSpan</span><span class="o">(),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>위 소스는 글자 크기와 색상을 바꾼 후 세로 중앙정렬을 하기 위한 코드다. 그런데 실행해보면 색상이 적용되지 않는다. 이 것과 관련해서는 정확한 이유를 확인해보지는 못했지만 <a href="http://stackoverflow.com/a/28329166">ForegroundColorSpan is not applied to ReplacementSpan</a>를 보면 버그라고 추정하는 것 같다. 어쨌든 색상도 함께 바꾸어야 할 경우를 위해 조금 변경한 소스는 아래와 같다.</p>
-
-<figure class='code notranslate'><figcaption><span>ColorVerticalCenterSpan.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">import</span> <span class="nn">android.graphics.Canvas</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.graphics.Paint</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.graphics.RectF</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.text.style.ReplacementSpan</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ColorVerticalCenterSpan</span> <span class="kd">extends</span> <span class="n">ReplacementSpan</span> <span class="o">{</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="kt">int</span> <span class="n">backgroundColor</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="kt">int</span> <span class="n">foregroundColor</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="kd">public</span> <span class="nf">ColorVerticalCenterSpan</span><span class="o">(</span><span class="kt">int</span> <span class="n">foregroundColor</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="k">this</span><span class="o">.</span><span class="na">foregroundColor</span> <span class="o">=</span> <span class="n">foregroundColor</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="kd">public</span> <span class="nf">ColorVerticalCenterSpan</span><span class="o">(</span><span class="kt">int</span> <span class="n">foregroundColor</span><span class="o">,</span> <span class="kt">int</span> <span class="n">backgroundColor</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="k">this</span><span class="o">.</span><span class="na">backgroundColor</span> <span class="o">=</span> <span class="n">backgroundColor</span><span class="o">;</span>
-</span><span class='line'>      <span class="k">this</span><span class="o">.</span><span class="na">foregroundColor</span> <span class="o">=</span> <span class="n">foregroundColor</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">draw</span><span class="o">(</span><span class="n">Canvas</span> <span class="n">canvas</span><span class="o">,</span> <span class="n">CharSequence</span> <span class="n">text</span><span class="o">,</span> <span class="kt">int</span> <span class="n">start</span><span class="o">,</span> <span class="kt">int</span> <span class="n">end</span><span class="o">,</span> <span class="kt">float</span> <span class="n">x</span><span class="o">,</span> <span class="kt">int</span> <span class="n">top</span><span class="o">,</span> <span class="kt">int</span> <span class="n">y</span><span class="o">,</span> <span class="kt">int</span> <span class="n">bottom</span><span class="o">,</span> <span class="n">Paint</span> <span class="n">paint</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="c1">// Background</span>
-</span><span class='line'>      <span class="k">if</span> <span class="o">(</span><span class="n">backgroundColor</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>          <span class="n">paint</span><span class="o">.</span><span class="na">setColor</span><span class="o">(</span><span class="n">backgroundColor</span><span class="o">);</span>
-</span><span class='line'>          <span class="n">canvas</span><span class="o">.</span><span class="na">drawRect</span><span class="o">(</span><span class="k">new</span> <span class="nf">RectF</span><span class="o">(</span><span class="n">x</span><span class="o">,</span> <span class="n">top</span><span class="o">,</span> <span class="n">x</span> <span class="o">+</span> <span class="n">paint</span><span class="o">.</span><span class="na">measureText</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">start</span><span class="o">,</span> <span class="n">end</span><span class="o">),</span> <span class="n">bottom</span><span class="o">),</span> <span class="n">paint</span><span class="o">);</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="c1">// Text</span>
-</span><span class='line'>      <span class="k">if</span> <span class="o">(</span><span class="n">foregroundColor</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>          <span class="n">paint</span><span class="o">.</span><span class="na">setColor</span><span class="o">(</span><span class="n">foregroundColor</span><span class="o">);</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">yPos</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="o">((</span><span class="n">canvas</span><span class="o">.</span><span class="na">getHeight</span><span class="o">()</span> <span class="o">/</span> <span class="mi">2</span><span class="o">)</span> <span class="o">-</span> <span class="o">((</span><span class="n">paint</span><span class="o">.</span><span class="na">descent</span><span class="o">()</span> <span class="o">+</span> <span class="n">paint</span><span class="o">.</span><span class="na">ascent</span><span class="o">())</span> <span class="o">/</span> <span class="mi">2</span><span class="o">));</span>
-</span><span class='line'>      <span class="n">canvas</span><span class="o">.</span><span class="na">drawText</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">start</span><span class="o">,</span> <span class="n">end</span><span class="o">,</span> <span class="n">x</span><span class="o">,</span> <span class="n">yPos</span><span class="o">,</span> <span class="n">paint</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getSize</span><span class="o">(</span><span class="n">Paint</span> <span class="n">paint</span><span class="o">,</span> <span class="n">CharSequence</span> <span class="n">text</span><span class="o">,</span> <span class="kt">int</span> <span class="n">start</span><span class="o">,</span> <span class="kt">int</span> <span class="n">end</span><span class="o">,</span> <span class="n">Paint</span><span class="o">.</span><span class="na">FontMetricsInt</span> <span class="n">fm</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="k">return</span> <span class="n">Math</span><span class="o">.</span><span class="na">round</span><span class="o">(</span><span class="n">paint</span><span class="o">.</span><span class="na">measureText</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">start</span><span class="o">,</span> <span class="n">end</span><span class="o">));</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이 코드를 이용해서 아래와 같이 사용하면 원하는 결과를 얻을 수 있다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">AbsoluteSizeSpan</span><span class="o">(</span><span class="mi">12</span><span class="o">,</span> <span class="kc">true</span><span class="o">),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</span><span class='line'><span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">ColorVerticalCenterSpan</span><span class="o">(</span><span class="n">ContextCompat</span><span class="o">.</span><span class="na">getColor</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">R</span><span class="o">.</span><span class="na">color</span><span class="o">.</span><span class="na">newColor</span><span class="o">)),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>아니면 위에 링크한 StackOverflow의 답변처럼 FontColorSpan 클래스를 추가해서 사용하는 방법도 가능하다. 예를들면 아래처럼.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">AbsoluteSizeSpan</span><span class="o">(</span><span class="mi">12</span><span class="o">,</span> <span class="kc">true</span><span class="o">),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</span><span class='line'><span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">FontColorSpan</span><span class="o">(</span><span class="n">ContextCompat</span><span class="o">.</span><span class="na">getColor</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">R</span><span class="o">.</span><span class="na">color</span><span class="o">.</span><span class="na">newColor</span><span class="o">)),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</span><span class='line'><span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">VerticalCenterSpan</span><span class="o">(),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1696,7 +1576,7 @@ On Unix-based hosts (e.g. Linux, Solaris, Mac OS X) it is not possible to bind t
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (30)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (11)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (4)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (30)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (12)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1705,6 +1585,8 @@ On Unix-based hosts (e.g. Linux, Solaris, Mac OS X) it is not possible to bind t
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/22/setting-swift-compiler-flags-in-cocoapods/">CocoaPods의 Swift compiler flags(DEBUG) 설정하기</a>
+    
     <a class="list-group-item " href="/2015/10/21/swift-2-dot-0-singleton/">Swift 2.0에서 상속 가능한 Singleton 생성하기</a>
     
     <a class="list-group-item " href="/2015/10/21/xcode-create-sub-module-using-cocoapods/">Xcode에서 CocoaPods를 이용해 sub module 만들기</a>
@@ -1712,8 +1594,6 @@ On Unix-based hosts (e.g. Linux, Solaris, Mac OS X) it is not possible to bind t
     <a class="list-group-item " href="/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/">xcode 7 : Alcatraz 와 CocoaPods Xcode plugins</a>
     
     <a class="list-group-item " href="/2015/10/20/google-play-services-out-of-date/">Google play services out of date 오류 해결</a>
-    
-    <a class="list-group-item " href="/2015/10/20/mfmailcomposeviewcontroller-without-no-mail-accounts-messages/">MFMailComposeViewController without 'No Mail Accounts' messages</a>
     
   </div>
 </section>

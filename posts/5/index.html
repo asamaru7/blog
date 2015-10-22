@@ -138,6 +138,72 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-25T13:47:37+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.25</time>
+        
+           | <a href="/2015/09/25/android-6-apache-http-client-removal/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/25/android-6-apache-http-client-removal/" itemprop="url">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>지난 포스팅 <a href="/2015/08/28/android-getcolor-getdrawable-deprecated/">Android 6(API 23)의 getColor() deprecated 대응 + getDrawable() deprecated</a>에서 잠깐 언급했던 <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a>에 대해 이야기하고자 한다.</p>
+
+<p>우선 안드로이드에 안내하고 있는 원문은 아래와 같다.</p>
+
+<ul>
+<li>영문 : <a href="https://developer.android.com/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP Client Removal</a></li>
+<li>한글 : <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a></li>
+</ul>
+
+<p>한글 문서의 내용은 아래와 같다.</p>
+
+<blockquote>
+<p>Apache HTTP 클라이언트에 대한 지원을 제거합니다. 앱이 이 클라이언트를 사용하고 Android 2.3(API 레벨 9) 이상을 대상으로 하는 경우, HttpURLConnection 클래스를 대신 사용하세요. 이는 투명한 압축과 응답 캐싱을 통해 네트워크 사용량을 줄이고 전력 소모를 최소화하기 때문에 API가 더 효율적입니다. Apache HTTP API를 계속 사용하려면 우선 다음과 같은 컴파일-시간 종속성을 build.gradle 파일에서 선언해야 합니다.
+<code>gradle
+android {
+    useLibrary &#39;org.apache.http.legacy&#39;
+}
+</code></p>
+</blockquote>
+
+<p>이 부분이 제거되면서 문제가 되는 부분은 위의 안내와 같이 gradle에 임시 코드를 넣음으로써 해결이 가능하다. 하지만 제거 과정이 여러가지 문제를 일으켰다. 사실 안드로이드에서는 해당 기능을 Deprecated하고 대체  기능의 사용을 권장하고 있었으나 이를 사용하는 오픈소스 라이브러리들이 미리 대응을 하지 않았던 것이 문제가 되었다. 나의 경우는 <a href="https://github.com/ACRA/acra">ACRA</a>와 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>가 해당 기능을 사용해서 구현되어 있어서 <code>org.apache.http.legacy</code>를 통해 급한 문제들은 해결했었다.</p>
+
+<p>현재 기준으로 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>는 1.4.9로 버전업 되면서 Http에 관련된 부분을 대체 라이브러리로 교체함으로써 문제가 해결되었고 <a href="https://github.com/ACRA/acra">ACRA</a>의 경우는 4.6.2로 버전 기준으로 처리가 되었다고 어디서 본것 같았는데 실제로는 빌드 과정에서 오류가 발생했다. 그래서 다시 알아보니 4.7.0 버전에서 HtttpUrlConnection를 사용함으로써 Android M (6.0)을 정식 지원한다고 안내되어 있다. 하지만 아직 RC2로 정식 버전업이 되지 않았다. 나의 경우는 조금만 더 기다리면 useLibrary &#39;org.apache.http.legacy&#39;를 사용하지 않아도 될 것으로 예상된다.</p>
+
+<p>사실 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>도 현재 버전에서는 문제가 있다. 공식 사이트에서는 해당 현상에 대한 이야기는 없으나 나의 경우엔 proguard 적용시 완료 callback이 호출되지 않는 문제가 있었다. 관련해서는 <a href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/">Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결</a>에 별도로 포스팅한다.</p>
+
+<p>어쨌든 이 문제는 시간이 지나면서 오픈 소스들이 대응을 시작하면 대부분 해결될 것으로 생각된다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-25T12:10:09+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.25</time>
         
            | <a href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/#disqus_thread" itemprop="discussionUrl"
@@ -1448,72 +1514,6 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-18T12:13:16+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.18</time>
-        
-           | <a href="/2015/09/18/google-translate-exclude-words/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/18/google-translate-exclude-words/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/18/google-translate-exclude-words/" itemprop="url">구글 번역 사용시 특정 영역을 번역에서 제외하기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>이 블로그에는 구글 번역 기능이 붙어 있다. 관련해서 포스팅한 글 <a href="/2015/09/05/octopress-google-translate/">옥토프레스에 구글 번역기 달기</a>도 있다.
-현재 테스트로 몇가지 언어를 선택 가능하도록 하고 사용중인데 문제가 생겼다. 기존에는 기능을 달아 놓고 번역이 되는 것만 확인하고는 자세히 보지 않아서 몰랐는데 오늘 확인하니 소스 코드까지 부분적으로 번역이 되는 것이 아닌가. 사실 이 블로그의 주된 내용이 프로그래밍 관련이라 코드 블록이 아주 많다.
-그래서 방법을 구글 번역 메뉴얼에서 보니 다음과 같은 방법이 나와있었다.</p>
-
-<h2 id="부분적으로-번역-제외하기">부분적으로 번역 제외하기</h2>
-
-<p>해당 영역을 둘러싸고 있는 Tag에 notranslate Class를 준다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">&quot;notranslate&quot;</span><span class="nt">&gt;</span>번역하지 말아야 할 영역<span class="nt">&lt;/span&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h2 id="문서-전체를-번역-제외하기">문서 전체를 번역 제외하기</h2>
-
-<p>Html의 head 영역에 아래의 Meta 정보를 추가한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">&quot;google&quot;</span> <span class="na">content=</span><span class="s">&quot;notranslate&quot;</span><span class="nt">&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h2 id="옥토프레스에-적용하기">옥토프레스에 적용하기</h2>
-
-<p>문제는 옥토프레스의 결과 HTML은 직접 만드는 것이 아니라는 것이다. 여러가지 방법이 있을 수 있으나 나는 code block만 검색에서 제외되면 되므로 그냥 관련 플러그인을 수정해 버렸다. <code>backtick_code_block.rb</code> 파일에서 <code>&lt;figure class=&#39;code&#39;&gt;</code> 부분을 찾아서 <code>&lt;figure class=&#39;code notranslate&#39;&gt;</code>로 바꿔 버렸다.</p>
-
-<p>이것으로 모든 것이 해결된 것은 아니다. 문장 내에서 사용된 코드 블록은 backtick_code_block 플러그인에서 처리하지 않으니 다른 플러그인을 고쳐야 하는데 어딘지 찾지 못했다. 아마도 markdown 해석 플러그인 내부에 있을텐데 gem으로 설치된 것인지 내부에서는 보이지 않는 듯하다(사실 귀찮아서 자세히 찾지 않았다. 게다가 Ruby를 거의 모른다.)</p>
-
-<p>어쨌든 이로써 소스 코드 영역은 번역에서 제외되어 조금은 나아졌다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1583,7 +1583,7 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (30)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (11)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (4)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (30)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (12)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1592,6 +1592,8 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/22/setting-swift-compiler-flags-in-cocoapods/">CocoaPods의 Swift compiler flags(DEBUG) 설정하기</a>
+    
     <a class="list-group-item " href="/2015/10/21/swift-2-dot-0-singleton/">Swift 2.0에서 상속 가능한 Singleton 생성하기</a>
     
     <a class="list-group-item " href="/2015/10/21/xcode-create-sub-module-using-cocoapods/">Xcode에서 CocoaPods를 이용해 sub module 만들기</a>
@@ -1599,8 +1601,6 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
     <a class="list-group-item " href="/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/">xcode 7 : Alcatraz 와 CocoaPods Xcode plugins</a>
     
     <a class="list-group-item " href="/2015/10/20/google-play-services-out-of-date/">Google play services out of date 오류 해결</a>
-    
-    <a class="list-group-item " href="/2015/10/20/mfmailcomposeviewcontroller-without-no-mail-accounts-messages/">MFMailComposeViewController without 'No Mail Accounts' messages</a>
     
   </div>
 </section>

@@ -13,6 +13,7 @@ categories: html
 마이크로소프트의 윈도우 사이트에 보면 "[왜 Internet Explorer 8에서 일부 웹 사이트가 올바르게 표시되지 않습니까?](http://windows.microsoft.com/ko-kr/windows/websites-display-incorrectly-internet-explorer-8#1TC=windows-7)"라는 글이 있다. 사실 이 글에서도 명확하게 설명하진 않지만 "이전 버전의 Internet Explorer(인터넷 익스플로러)용 웹 사이트는 현재 버전에서 올바르게 표시되지 않을 수도 있습니다. 하지만 호환성 보기를 사용하여 Internet Explorer(인터넷 익스플로러)에서 웹 사이트가 표시되는 방식을 개선할 수 있습니다."라고 되어 있다.
 
 **MS 관련글**
+
 * [호환성 보기를 사용하여 사이트 표시 문제 해결하기](http://windows.microsoft.com/ko-kr/internet-explorer/use-compatibility-view#ie=ie-11)
 * [Internet Explorer 9에서 호환성 보기 방법](https://support.microsoft.com/ko-kr/kb/2536204)
 

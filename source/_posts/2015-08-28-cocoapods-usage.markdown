@@ -27,10 +27,12 @@ cd 프로젝트 폴더
 vi Podfile
 ```
 
-아래의 내용입력.
+아래의 내용처럼 필요한 pod을 설정.
 
-	platform :ios, '7.0'
-	pod 'HZWebViewController', '~> 0.0.2'
+```
+platform :ios, '7.0'
+pod 'HZWebViewController', '~> 0.0.2'
+```
 
 ### Pod 설치
 

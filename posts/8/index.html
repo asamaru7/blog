@@ -138,6 +138,162 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-04T10:12:29+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.04</time>
+        
+           | <a href="/2015/09/04/android-view-dot-islaidout-and-view-dot-post/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/04/android-view-dot-islaidout-and-view-dot-post/" itemprop="url">안드로이드 View.isLaidOut / View.post</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 View는 isLaidOut이라는 함수를 가지고 있다. 단, API 19(KITKAT)부터 사용가능하다. 사실 그 이하의 기기에서도 다른 방법을 통해서 사용가능하다. 아주 간단히. 이 부분은 나중에 다시 설명하겠다.</p>
+
+<p>우선 isLaidOut 함수에 대해 안드로이드 메뉴얼에는 다음과 같이 나와있다.</p>
+
+<blockquote>
+<p>public boolean isLaidOut ()</p>
+
+<p>Added in API level 19</p>
+
+<p>Returns true if this view has been through at least one layout since it was last attached to or detached from a window.</p>
+</blockquote>
+
+<p>쉽게 말해서 &quot;해당 View가 layout이 그려졌는가?&quot;를 반환하는 함수다.</p>
+
+<p>다음은 post 함수에 대한 안드로이드 메뉴얼이다.</p>
+
+<blockquote>
+<p>public boolean post (Runnable action)</p>
+
+<p>Added in API level 1</p>
+
+<p>Causes the Runnable to be added to the message queue. The runnable will be run on the user interface thread.</p>
+</blockquote>
+
+<p>Runnalbe을 넘겨 받아 UIThread에서 실행시켜준다고 한다.</p>
+
+<p>그래서 어디에 써먹을 수 있나?
+한가지 예를들어 보자면 TextView의 getLineCount()의 반환값 문제를 해결할 수 있다.</p>
+
+<p>구글에서 &quot;<a href="https://www.google.co.kr/search?q=isLaidOut&amp;gws_rd=ssl#newwindow=1&amp;safe=off&amp;q=textview+getlinecount">textview getlinecount</a>&quot;로 검색하면 많이 나오는 것 중 하나가 &quot;textview.getLineCount always 0 in android&quot;라는 질문이다.</p>
+
+<p>textview의 getLineCount()를 요청하면 항상 0이 나오는 문제가 있다는 얘기인데, 이런 문제의 원인은 getLineCount() 함수가 TextView가 그려진 후 그 상황에 맞는 라인수를 반환한다는 것이다. 따라서 그려지기 전에는 항상 0을 반환한다.</p>
+
+<p>그럼 이 문제를 isLaidOut을 써서 해결해보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">TextView</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;test message&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="k">if</span> <span class="o">(</span><span class="n">textView</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">textView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
+</span><span class='line'><span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="n">TextView</span> <span class="n">postTextView</span> <span class="o">=</span> <span class="n">textView</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">textView</span><span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="nd">@Override</span>
+</span><span class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">postTextView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">});</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>여러가지 상황이 있을 수 있다. 위의 예시와 다르게 layout xml에서 TextView가 정의될 수도 있고.
+중요한 것은 TextView가 그려지기 전에 getLineCount() 함수를 사용하려는 것이다.</p>
+
+<p>그런데 여기서도 한계는 있다. 값을 가져오는 부분이 비동기 방식이 된다는 것이다. 이를 해결하기 위해서는 다른 방법이 필요하다. 하지만 여기서는 isLaidOut에 대한 설명을 하고자 하는 것이므로 다음으로 넘긴다. 사실 찾아보면 여러가지 방법들이 제시되어 있는데 아주 깔끔한 방법은 현재로써는 찾기 힘들다.</p>
+
+<p>위의 TextView 사례는 말그대로 예시일뿐 isLaidOut에 대한 활용 범위는 아주 다양할 수 있다.</p>
+
+<p>마지막으로 isLaidOut을 API 19 이하에서 사용할 수 있는 방법은 다음의 예시를 참고하자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">TextView</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">...</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;test message&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="k">if</span> <span class="o">(</span><span class="n">ViewCompat</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">(</span><span class="n">textView</span><span class="o">))</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">textView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
+</span><span class='line'><span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="n">TextView</span> <span class="n">postTextView</span> <span class="o">=</span> <span class="n">textView</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">textView</span><span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="nd">@Override</span>
+</span><span class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">postTextView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">});</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>중요한 부분은 ViewCompat을 사용한다는 부분이다. 아주 간단한 방법으로 사용할 수 있으므로 하위 버전을 지원해야 한다하더라도 사용할 수 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ViewCompat</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">(</span><span class="n">textView</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-03T18:48:08+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.03</time>
         
            | <a href="/2015/09/03/android-http-ping/#disqus_thread" itemprop="discussionUrl"
@@ -1171,146 +1327,6 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-08-20T22:56:20+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.08.20</time>
-        
-           | <a href="/2015/08/20/octopress-rake-deploy-error/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/08/20/octopress-rake-deploy-error/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/08/20/octopress-rake-deploy-error/" itemprop="url">옥토프레스 rake deploy에서 오류가 날 경우</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>옥토프레스를 설치하고 테스트 포스팅을 한 후 본격적으로 세팅을 하려고 시작했다.
-도메인도 세팅하고 구글 어날리틱스, disqus 등도 연결을 하고자 _config.xml 파일을 수정하고 몇가지 글도 포스팅하려고 저장 후 generate 했다.</p>
-
-<p>이제 배포를 하려고 rake deploy를 하니 아래와 같은 오류가 나타났다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>To https://github.com/asamaru7/blog.git
-</span><span class='line'> ! <span class="o">[</span>rejected<span class="o">]</span>        gh-pages -&gt; gh-pages <span class="o">(</span>non-fast-forward<span class="o">)</span>
-</span><span class='line'>error: failed to push some refs to <span class="s1">&#39;https://github.com/asamaru7/blog.git&#39;</span>
-</span><span class='line'>hint: Updates were rejected because the tip of your current branch is behind
-</span><span class='line'>hint: its remote counterpart. Integrate the remote changes <span class="o">(</span>e.g.
-</span><span class='line'>hint: <span class="s1">&#39;git pull ...&#39;</span><span class="o">)</span> before pushing again.
-</span><span class='line'>hint: See the <span class="s1">&#39;Note about fast-forwards&#39;</span> in <span class="s1">&#39;git push --help&#39;</span> <span class="k">for</span> details.
-</span></code></pre></td></tr></table></div></figure>
-
-<p>구글에서 검색해서 여러가지 방법들을 따라 시도해도 진행이 되지 않다가 발견한 stackoverflow에서 강제 업데이트하는 방법을 안내하고 있었다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi Rakefile
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Rakefile을 열어 deploy_branch로 검색하다 보면 아래와 같은 부분을 볼 수 있다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">desc</span> <span class="s2">&quot;deploy public directory to github pages&quot;</span>
-</span><span class='line'><span class="n">multitask</span> <span class="ss">:push</span> <span class="k">do</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;## Deploying branch to Github Pages &quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;## Pulling any updates from Github Pages &quot;</span>
-</span><span class='line'>  <span class="n">cd</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">do</span>
-</span><span class='line'>    <span class="no">Bundler</span><span class="o">.</span><span class="n">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">&quot;git pull&quot;</span> <span class="p">}</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>  <span class="p">(</span><span class="no">Dir</span><span class="o">[</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">/*&quot;</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">rm_rf</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">}</span>
-</span><span class='line'>  <span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="o">[</span><span class="ss">:copydot</span><span class="o">].</span><span class="n">invoke</span><span class="p">(</span><span class="n">public_dir</span><span class="p">,</span> <span class="n">deploy_dir</span><span class="p">)</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Copying </span><span class="si">#{</span><span class="n">public_dir</span><span class="si">}</span><span class="s2"> to </span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="n">cp_r</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">public_dir</span><span class="si">}</span><span class="s2">/.&quot;</span><span class="p">,</span> <span class="n">deploy_dir</span>
-</span><span class='line'>  <span class="n">cd</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">do</span>
-</span><span class='line'>    <span class="nb">system</span> <span class="s2">&quot;git add -A&quot;</span>
-</span><span class='line'>    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Site updated at </span><span class="si">#{</span><span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">utc</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Committing: </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="nb">system</span> <span class="s2">&quot;git commit -m </span><span class="se">\&quot;</span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Pushing generated </span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2"> website&quot;</span>
-</span><span class='line'>    <span class="no">Bundler</span><span class="o">.</span><span class="n">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">&quot;git push origin </span><span class="si">#{</span><span class="n">deploy_branch</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">}</span>
-</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Github Pages deploy complete&quot;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>여기서 고칠 부분은 <code>Bundler.with_clean_env { system &quot;git push origin #{deploy_branch}&quot; }</code> 이 부분이다.
-<code>#{deploy_branch}&quot;</code> 앞에 +를 붙여준다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Bundler</span><span class="o">.</span><span class="n">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">&quot;git push origin </span><span class="si">#{</span><span class="n">deploy_branch</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이제 저장후 나와서 다시 deploy...</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">## Pushing generated _deploy website</span>
-</span><span class='line'>Counting objects: 36, <span class="k">done</span>.
-</span><span class='line'>Delta compression using up to <span class="m">4</span> threads.
-</span><span class='line'>Compressing objects: 100% <span class="o">(</span>27/27<span class="o">)</span>, <span class="k">done</span>.
-</span><span class='line'>Writing objects: 100% <span class="o">(</span>36/36<span class="o">)</span>, 12.90 KiB <span class="p">|</span> <span class="m">0</span> bytes/s, <span class="k">done</span>.
-</span><span class='line'>Total <span class="m">36</span> <span class="o">(</span>delta 14<span class="o">)</span>, reused <span class="m">0</span> <span class="o">(</span>delta 0<span class="o">)</span>
-</span><span class='line'>To https://github.com/asamaru7/blog.git
-</span><span class='line'> + 9295247...d6c0b14 gh-pages -&gt; gh-pages <span class="o">(</span>forced update<span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이번엔 gh-pages (forced update) 안내를 보여주며 push 성공.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1380,7 +1396,7 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (30)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (12)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (8)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (30)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (12)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1389,6 +1405,8 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/23/php-cli-ansi-colors/">PHP를 CLI에서 사용시 ANSI Colors 적용하기</a>
+    
     <a class="list-group-item " href="/2015/10/22/setting-swift-compiler-flags-in-cocoapods/">CocoaPods의 Swift compiler flags(DEBUG) 설정하기</a>
     
     <a class="list-group-item " href="/2015/10/21/swift-2-dot-0-singleton/">Swift 2.0에서 상속 가능한 Singleton 생성하기</a>
@@ -1396,8 +1414,6 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
     <a class="list-group-item " href="/2015/10/21/xcode-create-sub-module-using-cocoapods/">Xcode에서 CocoaPods를 이용해 sub module 만들기</a>
     
     <a class="list-group-item " href="/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/">xcode 7 : Alcatraz 와 CocoaPods Xcode plugins</a>
-    
-    <a class="list-group-item " href="/2015/10/20/google-play-services-out-of-date/">Google play services out of date 오류 해결</a>
     
   </div>
 </section>

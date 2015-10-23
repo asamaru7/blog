@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "xcode 프로젝트 앱 이름 변경"
+title: "Xcode 프로젝트 앱 이름 변경"
 date: 2015-10-08 11:41:12 +0900
 comments: true
 categories: iOS

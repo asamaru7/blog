@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-23T21:10:56+09:00</updated>
+  <updated>2015-10-26T15:00:52+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,116 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[ANSI text를 HTML로 변환하기]]></title>
+    <link href="http://blog.asamaru.net/2015/10/26/ansi-to-html/"/>
+    <updated>2015-10-26T14:38:36+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/26/ansi-to-html</id>
+    <content type="html"><![CDATA[<p>지난 글 <a href="http://blog.asamaru.net/2015/10/23/php-cli-ansi-colors/">PHP를 CLI에서 사용시 ANSI Colors 적용하기</a>에서 php cli에서 ANSI를 사용해서 출력하는 것에 대해 설명했었다. 이번엔 ANSI text를 HTML로 변환하는 것에 대해서 설명하려고 한다.
+이게 왜 필요할까? ANSI는 shell에서만 색상이 적용되므로 해당 내용을 text 파일로 저장해서 다른 곳에서 열어보면 ANSI code가 그대로 보이거나 일반 text로 보인다. 따라서 결과물을 색상을 포함해서 다른 곳에 공유하기가 어렵다.
+나의 경우는 ANSI를 html로 변환해서 chrome에서 열고 pdf로 출력헤서 사용했다.</p>
+
+<p>그럼 본론으로 들어가서 어떻게 하면 되는가? 여러가지 방법이 있다. PHP를 사용하는 방법, Bash script를 사용하는 방법, 특정 프로그램을 사용하는 방법 등 많지만 오늘은 그 중에서 몇가지만 소개하려고 한다.</p>
+
+<p>우선 지난 번에 PHP에서 ANSI를 생성하는 것을 설명했으니 PHP 부터 보자.</p>
+
+<p><a href="https://github.com/sensiolabs/ansi-to-html">ansi-to-html</a> 라이브러리를 사용해서 변환할 수 있다. 자세한 설명은 해당 사이트를 참고하면 자세히 나와 있다.</p>
+
+<p>다음은 Bash script.</p>
+
+<p><a href="http://pablomarin-garcia.blogspot.kr/2011/04/converting-ansi-to-html-how-to-convert.html">converting ANSI to HTML. How to convert to html the colored shell output</a>를 참고하면 Perl CPAN을 사용하는 방법과 <a href="http://www.pixelbeat.org/scripts/ansi2html.sh">ansi2html.sh from pixelbeat</a> Bash script를 사용하는 방법을 안내하고 있다.
+하지만 이 스크립트는 크게 권장하고 싶지는 않다. 간단한 내용엔 문제가 되지 않는데 text 양이 많아지니 너무 느렸다(300kb 가량).</p>
+
+<p>마지막으로 <a href="https://github.com/theZiz/aha">aha</a>를 사용하는 방법이다. 링크를 따라가면 github의 aha repository를 볼 수 있다. 설명은 설치 방법만 나와 있는데 아주 심플하다. 그래서 아래에 직접 사용한 방법을 조금 더 설명하겠다.</p>
+
+<p>centos 기준으로 아래와 같이 설치가 가능하다. 우분투라면 <code>sudo apt-get install aha</code>로 설치가 가능하다고 설명하는 사람이 있는데 확인은 못했다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>su -
+</span><span class='line'><span class="nv">$ </span>git clone https://github.com/theZiz/aha.git
+</span><span class='line'><span class="nv">$ </span>make
+</span><span class='line'><span class="nv">$ </span>install
+</span></code></pre></td></tr></table></div></figure>
+
+<p>사용법은 help를 보면 아래와 같이 나온다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>Ansi Html Adapter Version 0.4.8.0
+</span><span class='line'>aha takes SGR-colored Input and prints W3C conform HTML-Code
+</span><span class='line'>use: aha &lt;options&gt; <span class="o">[</span>-f file<span class="o">]</span>
+</span><span class='line'>     aha <span class="o">(</span>--help<span class="p">|</span>-h<span class="p">|</span>-?<span class="o">)</span>
+</span><span class='line'>aha reads the Input from a file or stdin and writes HTML-Code to stdout
+</span><span class='line'>options: --black,      -b: Black Background and White <span class="s2">&quot;standard color&quot;</span>
+</span><span class='line'>         --pink,       -p: Pink Background
+</span><span class='line'>         --stylesheet, -s: Use a stylesheet instead of inline styles
+</span><span class='line'>         --iso X,    -i X: Uses ISO 8859-X instead of utf-8. X must be 1..16
+</span><span class='line'>         --title X,  -t X: Gives the html output the title <span class="s2">&quot;X&quot;</span> instead of
+</span><span class='line'>                           <span class="s2">&quot;stdin&quot;</span> or the filename
+</span><span class='line'>         --line-fix,   -l: Uses a fix <span class="k">for</span> inputs using control sequences to
+</span><span class='line'>                           change the cursor position like htop. It<span class="s1">&#39;s a hot fix,</span>
+</span><span class='line'><span class="s1">                           it may not work with any program like htop. Example:</span>
+</span><span class='line'><span class="s1">                           echo q | htop | aha -l &gt; htop.htm</span>
+</span><span class='line'><span class="s1">         --word-wrap,  -w: Wrap long lines in the html file. This works with</span>
+</span><span class='line'><span class="s1">                           CSS3 supporting browsers as well as many older ones.</span>
+</span><span class='line'><span class="s1">         --no-header,  -n: Don&#39;</span>t include header into generated HTML,
+</span><span class='line'>                           useful <span class="k">for</span> inclusion in full HTML files.
+</span><span class='line'>Example: aha --help <span class="p">|</span> aha --black &gt; aha-help.htm
+</span><span class='line'>         Writes this <span class="nb">help </span>text to the file aha-help.htm
+</span><span class='line'>
+</span><span class='line'>Copyleft Alexander Matthes aka Ziz 2015
+</span><span class='line'>         zizsdl@googlemail.com
+</span><span class='line'>         http://ziz.delphigl.com/tool_aha.php
+</span><span class='line'>This application is subject to the MPL or LGPL.
+</span></code></pre></td></tr></table></div></figure>
+
+<p>간단한 사용법은 다음과 같다. 기타 옵션들은 몇가지 안되니 바로 보면 된다(사실상 사용할 일이 거의 없을 거 같다).</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>ls -ahl <span class="p">|</span> aha &gt; result.html
+</span><span class='line'>
+</span><span class='line'><span class="c"># 또는</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">$ </span>aha -f <span class="o">{</span>ANSI 파일<span class="o">}</span> &gt; result.html
+</span></code></pre></td></tr></table></div></figure>
+
+<p>나는 이 방법을 사용했다. 일단 c로 만들어져서 그런지 속도가 아주 빠르다. 하지만 한가지 단점이 있다. 표준 ANSI만 지원하는 것 같다. aixterm 에서 사용하는 속성들은 결과에서 무시되었다. 예를들어 글자색은 30-37 만 사용 가능하다.</p>
+
+<p>구글에서 ansi to html 이라고 검색하면 보다 다양한 방법들이 있으니 필요하다면 한번 검색해보길 바란다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[PHP를 CLI에서 사용시 ANSI Colors 적용하기]]></title>
@@ -2146,32 +2256,6 @@ home 파티션을 구분하지 않고 boot와 swap만 지정하고 나머지 모
 <p>여기서 <code>style.Widget_Design_TabLayout</code> 대신 defStyleRes를 넘겨받아 넣어주도록만 해줘도 가능할 것 같은데 아직은 지원하지 않는 것이다.</p>
 
 <p>어쨌든 현재 시점을 기준으로 해결 방법은 위의 예시처럼 reflection을 사용하는 방법뿐이다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[북마클릿(bookmarklet) 생성기]]></title>
-    <link href="http://blog.asamaru.net/2015/10/12/bookmarklet/"/>
-    <updated>2015-10-12T19:58:04+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/12/bookmarklet</id>
-    <content type="html"><![CDATA[<p><a href="https://en.wikipedia.org/wiki/Bookmarklet">Bookmarklet</a>은 브라우저에 새로운 기능을 추가하는 자바스크립트 명령을 포함한 브라우저 북마크다.
-표준으로 정의된 형식은 없으나 일반적으로 아래와 같은 형태를 가진다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">javascript</span><span class="o">:</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
-</span><span class='line'>  <span class="c1">//Statements returning a non-undefined type.</span>
-</span><span class='line'><span class="p">})();</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>북마클릿에 대해 상세히 설명할 내용은 없다. 북마클릿을 사용해서 할 수 있는 일은 무궁무진하다. 단, 브라우저에 사용자가 직접 추가해야하며 직접 북마크를 눌러 실행해야 한다. 예를들어 핀터레스트에서는 &quot;Pin it&quot; 기능을 <a href="https://about.pinterest.com/en/goodies">The Pin It button</a> 북마클릿으로 제공하고 있다.</p>
-
-<p>마지막으로 북마클릿을 쉽게 만들수 있도록 도와주는 도구를 소개하고자 한다.</p>
-
-<p><strong><a href="http://bookmarklet.asamaru.net/">Bookmarklet Generator</a></strong></p>
-
-<p>여러가지 도구가 있지만 이게 가장 직관적인 것 같다. 이 도구는 <a href="http://web-development.cc/bookmarklet-generator/">bookmarklet generator</a>을 fork하여 jquery 버전만 수정했다. 기존 프로젝트는 사용중인 jquery의 버전이 낮아서 만들어진 북마크릿이 정상 동작하지 않는다. 향후 시간이 된다면 불편한 부분들을 개선하도록 하겠다.</p>
 ]]></content>
   </entry>
   

@@ -138,6 +138,137 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-19T09:24:41+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.19</time>
+        
+           | <a href="/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/" itemprop="url">iOS 9 : The resource could not be loaded because the App Transport Security policy requires the use of a secure connection 오류</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>iOS 9을 대상으로 개발시 아래와 같은 오류를 만날 수 있다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ERRO AppDelegate[application(_:didFinishLaunchingWithOptions:):32]: Optional(Error Domain=NSURLErrorDomain Code=-1022 "The resource could not be loaded because the App Transport Security policy requires the use of a secure connection." UserInfo={NSUnderlyingError=0x7fddb1cb34b0 {Error Domain=kCFErrorDomainCFNetwork Code=-1022 "(null)"}, NSErrorFailingURLStringKey=http://yourdomain.com/session/get, NSErrorFailingURLKey=http://yourdomain.com/session/get, NSLocalizedDescription=The resource could not be loaded because the App Transport Security policy requires the use of a secure connection.})</span></code></pre></td></tr></table></div></figure>
+
+<p>iOS 9과 OS X 10.11 이후에 App Transport Security 정책이 추가되어 발생하는 오류로 관련된 정보는 <a href="https://developer.apple.com/library/prerelease/ios/technotes/App-Transport-Security-Technote/index.html">App Transport Security Technote</a>에서 자세히 볼 수 있다. 안내에 나와 있듯이 현재 개발중인 기능이라 추후 변경 가능성이 있다고 되어있다.</p>
+
+<blockquote>
+<p>App Transport Security is a feature that improves the security of connections between an app and web services. The feature consists of default connection requirements that conform to best practices for secure connections. Apps can override this default behavior and turn off transport security.</p>
+
+<p>Transport security is available in iOS 9.0 or later, and in OS X v10.11 and later.</p>
+</blockquote>
+
+<p>해결방법은 아래와 같다.</p>
+
+<p>Info.plist 파일에 NSAppTransportSecurity 항목을 추가해서 필요한 설정을 해준다. NSAppTransportSecurity의 구조는 아래와 같다.</p>
+
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>NSAppTransportSecurity</td>
+<td>Dictionary</td>
+</tr>
+<tr>
+<td>&nbsp; NSAllowsArbitraryLoads</td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>&nbsp; NSExceptionDomains</td>
+<td>Dictionary</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp; &lt;domain-name-for-exception-as-string&gt;</td>
+<td>Dictionary</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp; NSExceptionMinimumTLSVersion</td>
+<td>String</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp; NSExceptionRequiresForwardSecrecy</td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp; NSExceptionAllowsInsecureHTTPLoads</td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp; NSIncludesSubdomains</td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp; NSThirdPartyExceptionMinimumTLSVersion</td>
+<td>String</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp; NSThirdPartyExceptionRequiresForwardSecrecy</td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp; NSThirdPartyExceptionAllowsInsecureHTTPLoads</td>
+<td>Boolean</td>
+</tr>
+</tbody></table>
+
+<p>정확하게 설명하자면 두가지 방법이 있다.
+* NSAppTransportSecurity &gt; NSAllowsArbitraryLoads를 추가해서 NSAllowsArbitraryLoads 값을 YES로 넣어준다.
+  * 앱 내의 모든 네트워크 통신에 대한 제한을 푼다.
+* NSAppTransportSecurity &gt; NSExceptionDomains를 추가하고 세부항목을 설정한다.
+  * 지정된 도메인의 네트워크 통신에 대한 제한을 푼다.
+  * NSExceptionMinimumTLSVersion: TLS 최소 버전을 문자열로 입력한다. 아래 값들 중 하나를 넣을 수 있거나 생략할 수 있다.
+    * TLSv1.0
+    * TLSv1.1
+    * TLSv1.2 (생략할 경우의 기본값)
+  * NSExceptionRequiresForwardSecrecy: forward secrecy 라는 비밀키 암호화 설정이다. 기본으 YES이며 NO를 선택시 사용할 수 있는 ciphers 목록은 아래와 같다.
+    * TLS_RSA_WITH_AES_256_GCM_SHA384
+    * TLS_RSA_WITH_AES_128_GCM_SHA256
+    * TLS_RSA_WITH_AES_256_CBC_SHA256
+    * TLS_RSA_WITH_AES_256_CBC_SHA
+    * TLS_RSA_WITH_AES_128_CBC_SHA256
+    * TLS_RSA_WITH_AES_128_CBC_SHA
+  * NSExceptionAllowsInsecureHTTPLoads: HTTPS(SSL) 연결이 아니더라도 통신을 허용 것인지에 대한 설정이다. 기본값은 NO이다.
+  * NSIncludesSubdomains: 이 사이트의 하부도메인들에도 이 설정을 적용할 것인지에 대한 설정이다. 기본값은 NO이다.
+  * NSThirdPartyExceptionMinimumTLSVersion: 써드파티 TLS 버전을 설정한다.
+  * NSThirdPartyExceptionRequiresForwardSecrecy: 써드파티 Forward Secrecy 설정이다.
+  * NSThirdPartyExceptionAllowsInsecureHTTPLoads: 써드파티 HTTPS 연결을 강제를 할 것이지에 대한 설정이다.</p>
+
+<p>필요에 따라 방법을 선택하면 된다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-16T14:33:14+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.16</time>
         
            | <a href="/2015/10/16/centos-7-firewalld/#disqus_thread" itemprop="discussionUrl"
@@ -1505,63 +1636,6 @@ home 파티션을 구분하지 않고 boot와 swap만 지정하고 나머지 모
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-12T19:58:04+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.12</time>
-        
-           | <a href="/2015/10/12/bookmarklet/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/12/bookmarklet/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/12/bookmarklet/" itemprop="url">북마클릿(bookmarklet) 생성기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p><a href="https://en.wikipedia.org/wiki/Bookmarklet">Bookmarklet</a>은 브라우저에 새로운 기능을 추가하는 자바스크립트 명령을 포함한 브라우저 북마크다.
-표준으로 정의된 형식은 없으나 일반적으로 아래와 같은 형태를 가진다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">javascript</span><span class="o">:</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
-</span><span class='line'>  <span class="c1">//Statements returning a non-undefined type.</span>
-</span><span class='line'><span class="p">})();</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>북마클릿에 대해 상세히 설명할 내용은 없다. 북마클릿을 사용해서 할 수 있는 일은 무궁무진하다. 단, 브라우저에 사용자가 직접 추가해야하며 직접 북마크를 눌러 실행해야 한다. 예를들어 핀터레스트에서는 &quot;Pin it&quot; 기능을 <a href="https://about.pinterest.com/en/goodies">The Pin It button</a> 북마클릿으로 제공하고 있다.</p>
-
-<p>마지막으로 북마클릿을 쉽게 만들수 있도록 도와주는 도구를 소개하고자 한다.</p>
-
-<p><strong><a href="http://bookmarklet.asamaru.net/">Bookmarklet Generator</a></strong></p>
-
-<p>여러가지 도구가 있지만 이게 가장 직관적인 것 같다. 이 도구는 <a href="http://web-development.cc/bookmarklet-generator/">bookmarklet generator</a>을 fork하여 jquery 버전만 수정했다. 기존 프로젝트는 사용중인 jquery의 버전이 낮아서 만들어진 북마크릿이 정상 동작하지 않는다. 향후 시간이 된다면 불편한 부분들을 개선하도록 하겠다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1631,7 +1705,7 @@ home 파티션을 구분하지 않고 boot와 swap만 지정하고 나머지 모
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (30)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (12)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (30)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (12)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip, (1)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1640,6 +1714,8 @@ home 파티션을 구분하지 않고 boot와 swap만 지정하고 나머지 모
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/26/ansi-to-html/">ANSI text를 HTML로 변환하기</a>
+    
     <a class="list-group-item " href="/2015/10/23/php-cli-ansi-colors/">PHP를 CLI에서 사용시 ANSI Colors 적용하기</a>
     
     <a class="list-group-item " href="/2015/10/22/setting-swift-compiler-flags-in-cocoapods/">CocoaPods의 Swift compiler flags(DEBUG) 설정하기</a>
@@ -1647,8 +1723,6 @@ home 파티션을 구분하지 않고 boot와 swap만 지정하고 나머지 모
     <a class="list-group-item " href="/2015/10/21/swift-2-dot-0-singleton/">Swift 2.0에서 상속 가능한 Singleton 생성하기</a>
     
     <a class="list-group-item " href="/2015/10/21/xcode-create-sub-module-using-cocoapods/">Xcode에서 CocoaPods를 이용해 sub module 만들기</a>
-    
-    <a class="list-group-item " href="/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/">xcode 7 : Alcatraz 와 CocoaPods Xcode plugins</a>
     
   </div>
 </section>

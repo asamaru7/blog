@@ -138,6 +138,288 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T21:19:47+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
+        
+           | <a href="/2015/10/05/swift-2-dot-1-try-catch/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/05/swift-2-dot-1-try-catch/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/05/swift-2-dot-1-try-catch/" itemprop="url">Swift 2.1에서의 오류 처리(do try catch)</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>애플이 2015.06.08.에 <a href="https://developer.apple.com/swift/blog/?id=29">&#39;세계개발자회의(WWDC) 2015&#39;에서 스위프트 2.0을 공개</a> 했지만 최근 다시 iOS 작업을 시작하면서 이제서야 swift 2.0을 사용하게 되었다. 그런데 이제 2.0 보려고 하는데 벌써 Xcode 7.1 beta 2가 나오면서 swift 2.1이 공개되었다.</p>
+
+<p>오늘은 swift의 내용 중에서 오류 처리에 관련된 내용을 살펴보고자 한다. 아래의 내용은 <a href="http://qiita.com/koher/items/0c60b13ff0fe93220210">Swift 2.0 の try, catch ファーストインプレッション</a>와 공식 메뉴얼(<a href="https://developer.apple.com/library/prerelease/ios/documentation/Swift/Conceptual/Swift_Programming_Language/ErrorHandling.html">Error Handling</a>)의 내용을 참고하여 정리한 것이다.</p>
+
+<p>공식 메뉴얼(<a href="https://developer.apple.com/library/prerelease/ios/documentation/Swift/Conceptual/Swift_Programming_Language/ErrorHandling.html">Error Handling</a>)에서는 swift 2.0이 아닌 swift 2.1로 안내하고 있으니 그냥 2.1을 기준으로 살펴보고자 한다(확실하지는 않지만 대충 알아본 결과 2.1에서의 변화에 Error Handling 부분은 포함되지 않는 것 같다).</p>
+
+<p>메뉴얼의 내용을 빌어 Error Handling의 필요성에 대해 설명하자면 다음과 같다.</p>
+
+<blockquote>
+<p>일부 작업은 항상 완전한 실행을 보증하거나 유용한 출력을 생성하지 않는다. Optionals를 사용하여 값의 유무를 전달함으로써 작업의 성공/실패 유무를 판단할 수 있지만 작업이 실패 할 때 코드가 적절히 응답 할 수 있도록 함으로써 오류의 원인을 이해하는 데 도움을 줄 수 있다. 예를들어 디스크상의 파일을 읽어서 처리하는 작업에서 발생할 수 있는 오류는 &#39;존재하지 않는 파일&#39;, &#39;읽기 권한 없음&#39;, &#39;호환되는 형식이 아님&#39; 등의 여러가지가 존재할 수 있다. 이러한 경우처럼 오류의 원인에 따라 다양한 대응이 필요한 경우라면 오류의 정보를 정확히 전달함으로써 오류를 복구하는데 도움을 줄 수 있다.</p>
+</blockquote>
+
+<p><strong>Swift 2.0 이후부터는 Error Handling(런타임 상에서 오류를 발견하여 응답하고 복구하는 과정)을 위해 throwing, catching, propagating(전파), 런타임에서 복구할 수 있는 오류를 조작(manipulating recoverable errors at runtime) 할 수 있도록 지원한다.</strong></p>
+
+<h2 id="오류의-사용자-정의">오류의 사용자 정의</h2>
+
+<p>Swift에서는 ErrorType protocol라는 빈 protocol을 사용하여 오류를 표시한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">enum</span> <span class="nl">VendingMachineError</span><span class="p">:</span> <span class="n">ErrorType</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">case</span> <span class="n">InvalidSelection</span>
+</span><span class='line'>    <span class="k">case</span> <span class="n">InsufficientFunds</span><span class="p">(</span><span class="nl">coinsNeeded</span><span class="p">:</span> <span class="n">Int</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">case</span> <span class="n">OutOfStock</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이렇게 생성된 Error는 아래와 같이 발생시킬 수 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">throw</span> <span class="n">VendingMachineError</span><span class="p">.</span><span class="n">InsufficientFunds</span><span class="p">(</span><span class="nl">coinsNeeded</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>조금더 자세히 보자면 ErrorType은 enum으로 정의될 수 있다. Swift에서 try, catch는 항상 ErrorType를 throw 한다. Java에서는 오류 유형을 클래스로 취급하므로 종류마다 클래스를 정의하므로 개수가 많아지고 오류를 처리에 따라 묶어서 관리하기 어렵다. 하지만 Swift의 ErrorType는 관련 오류를 enum으로 정리할 수 있기 때문에 정리가 쉽다.</p>
+
+<p>예들들어 String을 Int로 변환하는 함수를 가정할 경우 발생할 수 있는 오류는 String이 nil이거나 숫자로 변환될 수 없는 문자열일 수 있다. 이를 ErrorType 로 구현하면 다음과 같이 정의할 수 있다.
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">enum</span> <span class="nl">ParseError</span> <span class="p">:</span> <span class="n">ErrorType</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">case</span> <span class="n">Nil</span> <span class="c1">// nil 인 경우</span>
+</span><span class='line'>    <span class="k">case</span> <span class="n">IllegalFormat</span> <span class="c1">// Int로 해석 할 수 없었던 경우</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>ErrorType는 오류의 종류를 나타낼뿐만 아니라 오류 정보를 함께 가질 수 있다.
+위의 예시에서 IllegalFormat 오류일 때 해당 String이 무엇이었는지를 함께 넘겨주고 싶을 수 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">enum</span> <span class="nl">ParseError</span> <span class="p">:</span> <span class="n">ErrorType</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">case</span> <span class="n">Nil</span>
+</span><span class='line'>    <span class="k">case</span> <span class="n">IllegalFormat</span> <span class="p">(</span><span class="n">String</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이 방식의 좋은 점은 오류의 종류에 따라 다른 유형의 인자를 가질 수 있어 Type Safe하게 값을 얻어낼 수 있다는 것이다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">switch</span> <span class="n">error</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">case</span><span class="p">.</span> <span class="nl">Nil</span> <span class="p">:</span>
+</span><span class='line'>      <span class="n">print</span> <span class="p">(</span> <span class="s">&quot;The text is nil.&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">case</span><span class="p">.</span> <span class="n">IllegalFormat</span> <span class="p">(</span><span class="k">let</span> <span class="n">string</span><span class="p">)</span> <span class="o">:</span>
+</span><span class='line'>      <span class="n">print</span> <span class="p">(</span> <span class="s">&quot;Illegal format : \ (string)&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Objective-C의 NSError에서도 오류 정보를 가질 수 있지만, Type 정보가 사라져 버리기 때문에 Type Safe 하지 않다.</p>
+
+<h2 id="오류-제어">오류 제어</h2>
+
+<p>오류가 발생하면 문제를 보정하는 방법을 시도하거나 사용자에게 알림으로써 오류를 처리해야 한다. Swift에서는 오류를 처리 할 수있는 네 가지 방법이 있다.</p>
+
+<ul>
+<li>Throwing Functions을 이용한 오류 전파(Propagating Errors Using Throwing Functions)</li>
+<li>Do-Catch를 이용한 오류 처리(Handling Errors Using Do-Catch)</li>
+<li>Error를 Optional Values로 변환(Converting Errors to Optional Values)</li>
+<li>오류 전파 비활성화(Disabling Error Propagation)</li>
+</ul>
+
+<p>각각의 처리 방법을 하나씩 알아보자.</p>
+
+<h3 id="throwing-functions을-이용한-오류-전파-propagating-errors-using-throwing-functions">Throwing Functions을 이용한 오류 전파(Propagating Errors Using Throwing Functions)</h3>
+
+<p>함수, 메소드, 초기화시에 오류가 throw될 수 있음을 표시하려면 함수 선언시 인자 뒤에 throws 키워드를 추가할 수 있다. 아래의 예시를 보면 이해가 편할 것이다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">func</span> <span class="n">canThrowErrors</span><span class="p">()</span> <span class="n">throws</span> <span class="o">-&gt;</span> <span class="n">String</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">func</span> <span class="n">cannotThrowErrors</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">String</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><code>canThrowErrors</code> 함수 내부에서 오류가 발생하면 이 오류는 자신을 호출한 함수로 전파된다.</p>
+
+<h3 id="do-catch를-이용한-오류-처리-handling-errors-using-do-catch">Do-Catch를 이용한 오류 처리(Handling Errors Using Do-Catch)</h3>
+
+<p>오류를 제어 하고자하는 코드의 블록이 있을 경우는 do-catch를 사용할 수 있다. 문법 상의 차이는 있지만 다른 언어에서의 try-catch와 유사하므로 코드를 보는 것이 이해가 더 빠를 것으로 생각된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">var</span> <span class="n">vendingMachine</span> <span class="o">=</span> <span class="n">VendingMachine</span><span class="p">()</span>
+</span><span class='line'><span class="n">vendingMachine</span><span class="p">.</span><span class="n">coinsDeposited</span> <span class="o">=</span> <span class="mi">8</span>
+</span><span class='line'><span class="k">do</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">try</span> <span class="n">buyFavoriteSnack</span><span class="p">(</span><span class="s">&quot;Alice&quot;</span><span class="p">,</span> <span class="nl">vendingMachine</span><span class="p">:</span> <span class="n">vendingMachine</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span> <span class="n">catch</span> <span class="n">VendingMachineError</span><span class="p">.</span><span class="n">InvalidSelection</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">print</span><span class="p">(</span><span class="s">&quot;Invalid Selection.&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span> <span class="n">catch</span> <span class="n">VendingMachineError</span><span class="p">.</span><span class="n">OutOfStock</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">print</span><span class="p">(</span><span class="s">&quot;Out of Stock.&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span> <span class="n">catch</span> <span class="n">VendingMachineError</span><span class="p">.</span><span class="n">InsufficientFunds</span><span class="p">(</span><span class="k">let</span> <span class="n">coinsNeeded</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">print</span><span class="p">(</span><span class="s">&quot;Insufficient funds. Please insert an additional \(coinsNeeded) coins.&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><code>buyFavoriteSnack</code> 함수는 try에 의해 호출되며 오류가 발생하면 오류의 타입에 해당하는 catch에 의해 제어된다. 다른 예시를 하나 살펴보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">do</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">let</span> <span class="n">number</span> <span class="o">=</span> <span class="n">try</span> <span class="n">toInt</span> <span class="p">(</span><span class="n">label</span><span class="p">.</span> <span class="n">text</span><span class="p">)</span>
+</span><span class='line'>    <span class="c1">// number를 사용한 처리</span>
+</span><span class='line'><span class="p">}</span> <span class="n">catch</span> <span class="n">ParseError</span><span class="p">.</span> <span class="n">Nil</span> <span class="p">{</span>
+</span><span class='line'>  <span class="n">print</span> <span class="p">(</span> <span class="s">&quot;The text is nil.&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span> <span class="n">catch</span> <span class="n">ParseError</span><span class="p">.</span> <span class="n">IllegalFormat</span> <span class="p">(</span><span class="k">let</span> <span class="n">string</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="n">print</span> <span class="p">(</span> <span class="s">&quot;Illegal format : \ (string)&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="error를-optional-values로-변환-converting-errors-to-optional-values">Error를 Optional Values로 변환(Converting Errors to Optional Values)</h3>
+
+<p><code>try?</code> 구문을 이용해서 오류를 optional value로 변환할 수 있다. 예를들어 어떤 값을 반환하는 함수가 있을 때 내부에서 오류가 발생하면 오류를 무시하고 nil이 반환된 것과 동일하게 처리할 수 있다. 역시 아래의 예시를 보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">func</span> <span class="n">someThrowingFunction</span><span class="p">()</span> <span class="n">throws</span> <span class="o">-&gt;</span> <span class="n">Int</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1">// ...</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="n">try</span><span class="o">?</span> <span class="n">someThrowingFunction</span><span class="p">()</span>
+</span><span class='line'><span class="k">let</span> <span class="nl">y</span><span class="p">:</span> <span class="n">Int</span><span class="o">?</span>
+</span><span class='line'><span class="k">do</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">y</span> <span class="o">=</span> <span class="n">try</span> <span class="n">someThrowingFunction</span><span class="p">()</span>
+</span><span class='line'><span class="p">}</span> <span class="n">catch</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">y</span> <span class="o">=</span> <span class="nb">nil</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>아래와 같이 사용하는 것도 가능하다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">func</span> <span class="nf">fetchData</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Data</span><span class="o">?</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="k">let</span> <span class="n">data</span> <span class="o">=</span> <span class="n">try</span><span class="o">?</span> <span class="n">fetchDataFromDisk</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="n">data</span> <span class="p">}</span>
+</span><span class='line'>    <span class="k">if</span> <span class="k">let</span> <span class="n">data</span> <span class="o">=</span> <span class="n">try</span><span class="o">?</span> <span class="n">fetchDataFromServer</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="n">data</span> <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">nil</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="오류-전파-비활성화-disabling-error-propagation">오류 전파 비활성화(Disabling Error Propagation)</h3>
+
+<p>실질적으로는 런타임시 오류를 발생시키지 않는 throwing 함수나 메서드를 사용할 경우가 있다. 이 경우 <code>try!</code>(forced-try)를 사용하여 throwing 함수나 메서드를 호출할 수 있다. <code>try!</code>를 사용하여 throwing 함수나 메서드를 호출하면 error 전파가 비활성화 되고 에러를 던지지 않는 런타임
+assertion 안에서의 호출로 랩핑된다. 따라서 만일 실제로 에러가 thrown 되면, 런타임 에러를 만나게 된다. 아래의 예시를 보자.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">let</span> <span class="n">photo</span> <span class="o">=</span> <span class="n">try</span><span class="o">!</span> <span class="n">loadImage</span><span class="p">(</span><span class="s">&quot;./Resources/John Appleseed.jpg&quot;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><code>loadImage(_:)</code> 함수의 경우 Resources에서 이미지를 호출하고 있으므로 런타임 상에서 오류가 발생하지 않는다(빌드시 이미지가 포함되므로). 이런 경우 <code>try!</code>를 사용하여 오류 제어를 줄일 수 있다.</p>
+
+<h2 id="clearn-up-actions-지정-specifying-clearn-up-actions">Clearn-Up Actions 지정 (Specifying Clearn-Up Actions)</h2>
+
+<p><code>defer</code>를 사용하면 코드의 실행이 코드 블럭을 벗어나기 전에 일련의 작업을 수행하게 할 수 있다. 다시말해 오류의 발생과 무관하게 반드시 실행되어야할 작업을 지정할 수 있다. 다른 언어의 finally와 유사하다고 볼 수 있다. 예를들면 열려진 파일을 닫거나, 수동으로 할당된 메모리를 해제하는 작업이 될 수 있다.</p>
+
+<p>defer 내부의 구문은 제어흐픔을 벗어나게 할 수 있는 break, return, throw 등을 포함해서는 안된다. 또한 defer는 기술된 순서의 역순으로 실행된다. 다시말해 마지막에 있는 defer부터 실행되어 올라온다.</p>
+
+<p>아래의 예시는 파일을 열어서 내용을 읽어서 처리하며 defer를 사용하여 오류 발생과 무관하게 파일을 닫아주도록 하고 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">func</span> <span class="nf">processFile</span><span class="p">(</span><span class="nl">filename</span><span class="p">:</span><span class="n">String</span><span class="p">)</span> <span class="n">throws</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">let</span> <span class="n">file</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">defer</span> <span class="p">{</span>
+</span><span class='line'>            <span class="n">close</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">while</span> <span class="k">let</span> <span class="o">=</span> <span class="n">try</span> <span class="n">file</span><span class="p">.</span><span class="n">readline</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>            <span class="c1">// work with the file</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>        <span class="c1">// close(file) is called here, at the end of the scope.</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T20:49:03+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
         
            | <a href="/2015/10/05/google-play-services-and-dex-method-limits/#disqus_thread" itemprop="discussionUrl"
@@ -1196,163 +1478,6 @@ By default, AndroidAnnotations try to find the R class by extracting application
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-29T09:26:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.29</time>
-        
-           | <a href="/2015/09/29/android-gradle-builds-speed-up/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/29/android-gradle-builds-speed-up/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/29/android-gradle-builds-speed-up/" itemprop="url">Android Gradle 빌드 속도 높이기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 개발을 하면서 여러가지 불만이 있지만 그중에 가장 맘에 들지않는 것 중 하나가 빌드 속도이다. 프로젝트의 규모에 따라 다르겠지만 xcode와의 빌드 시간을 비교하면 전체 빌드의 시간은 비슷한 것 같으나 수시로 하게되는 빌드는 안드로이드 스튜디오가 훨씬 느리게 느껴진다. 안드로이드 개발시 빌드에 사용되는 Gradle은 많은 유연성을 제공하지만 빌드에 많은 프로세스 비용이 든다는 것이 단점이다. 그래서 빌드 속도를 높일 수 있는 방법을 찾아서 적용해 보았다.</p>
-
-<p>그리고 빌드 시간에 크게 영향을 주는 것 중에는 proguard와 multidex가 포함된다. proguard는 코드 최적화/난독화 등을 위한 처리이며 multidex는 65K이상의 메소드를 사용할 경우에 대한 대응책으로 사용되며 자세한 내용은 <a href="https://developer.android.com/intl/ko/tools/building/multidex.html">Building Apps with Over 65K Methods</a>에서 참고하면 된다. 메소드 수가 어떻게하면 65K를 넘나 싶을 수 있지만 금방 넘어선다. 라이브러리를 막 추가하다보면 금방 문제를 만나게 된다(proguard 등을 통해 메소드 수를 줄일 수 있다). 이 글에서도 나와있는 것이지만 빌드 속도 문제를 떠나서도 최대한 multidex를 사용하는 상황을 만들지 않는 것이 좋다. 그리고 나는 proguard를 항상 켜둔 상태도 개발을 하는 편이다. 프로젝트 막판에 proguard를 적용하게되면 proguard로 인한 여러가지 문제를 만날 수 있기 때문에 충돌을 미리 발견하기 위해서다. 하지만 이렇게하다보면 빌드 속도가 너무 떨어진다. 그래서 켰다가 껐다가 하긴하는데 너무 귀찮다.</p>
-
-<p>그럼 본격적으로 설정을 시작해보자.</p>
-
-<h2 id="1-gradle-properties-파일을-변경">1. gradle.properties 파일을 변경</h2>
-
-<p>프로젝트 Root에 있는 gradle.properties을 편집한다. 기존에 파일이 없다면 추가한다. 여기에는 gradle 빌드 할 때 인수를 설정할 수 있다.
-한가지 더 알려주자면 프로젝트별로 설정하는 것외에도 모든 프로젝트에 설정을 추가할 수도 있다. 해당 파일의 경로는 OSX 기준으로 <code>~/.gradle/gradle.properties</code> 이다. 윈도우나 리눅스도 비슷한 경로에 있을 것으로 생각된다.</p>
-
-<p><strong>gradle.properties</strong></p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-</pre></td><td class='code'><pre><code class='ini'><span class='line'><span class="c1"># Project-wide Gradle settings.</span>
-</span><span class='line'><span class="c1"># IDE (eg Android Studio) users :</span>
-</span><span class='line'><span class="c1"># Settings specified in this file will override any Gradle settings</span>
-</span><span class='line'><span class="c1"># configured through the IDE.</span>
-</span><span class='line'><span class="c1"># For more details on how to configure your build environment visit</span>
-</span><span class='line'><span class="c1"># http : // www.gradle.org/docs/current/userguide/build_environment.html</span>
-</span><span class='line'><span class="c1"># The Gradle daemon aims to improve the startup and execution time of Gradle.</span>
-</span><span class='line'><span class="c1"># When set to true the Gradle daemon is to run the build.</span>
-</span><span class='line'><span class="c1"># TODO : disable daemon on CI, Since Builds should BE clean and Reliable on servers</span>
-</span><span class='line'><span class="na">org.gradle.daemon</span> <span class="o">=</span> <span class="s">true</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># Specifies the JVM arguments used for the daemon process.</span>
-</span><span class='line'><span class="c1"># The setting is particularly useful for tweaking memory settings.</span>
-</span><span class='line'><span class="c1"># Default value : -Xmx10248m -XX : MaxPermSize = 256M</span>
-</span><span class='line'><span class="na">org.gradle.jvmargs</span> <span class="o">=</span> <span class="s">-Xmx2048m -XX : MaxPermSize = 512m -XX + HeapDumpOnOutOfMemoryError -Dfile.encoding = UTF-8</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># When configured, Gradle will run in incubating parallel mode.</span>
-</span><span class='line'><span class="c1"># This option should only be used with decoupled projects. More details, visit</span>
-</span><span class='line'><span class="c1"># http://www.gradle.org/docs/current/userguide/multi_project_builds.html#sec : decoupled_projects</span>
-</span><span class='line'><span class="na">org.gradle.parallel</span> <span class="o">=</span> <span class="s">true</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># Enables new incubating mode that makes Gradle selective when configuring projects.</span>
-</span><span class='line'><span class="c1"># Only relevant projects are configured which results in faster builds for large multi-projects.</span>
-</span><span class='line'><span class="c1"># http://www.gradle.org/docs/current/userguide/multi_project_builds.html #sec : configuration_on_demand</span>
-</span><span class='line'><span class="na">org.gradle.configureondemand</span> <span class="o">=</span> <span class="s">true</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>위 설정에 대한 간략한 설명은 아래와 같다.</p>
-
-<ul>
-<li><strong>org.gradle.daemon</strong> : 데몬 프로세스를 사용할지 여부 설정한다. true 설정시 gradle을 daemon 모드로 실행하여 빌드시 gradle을 다시 실행하는 시간을 줄여준다.</li>
-<li><strong>org.gradle.jvmargs</strong> : 실행시 JVM 인수로 메모리를 설정을 늘려 메모리 부족으로 인한 속도저하를 막는 것이 목적이다. 따라서 적절한 양의 메모리를 할당해 주면 된다.</li>
-<li><strong>org.gradle.parallel</strong> : gradle 병렬 빌드 모드를 설정한다. 여러 프로젝트를 빌드 할 때 효과가 있다.</li>
-<li><strong>org.gradle.configureondemand</strong> : 관련 프로젝트가 있다면 필요한 부분만 빌드 설정한다.</li>
-</ul>
-
-<p>크게 성능이 향상되는 것 같지는 않지만 조금의 성능 향상은 있는 것 같다. 사실 다음에 소개할 gradle 버전 업이 훨씬 체감 성능 향상에 도움을 준다.</p>
-
-<h2 id="2-android-studio-1-3-gradle-2-4-이상-사용">2. Android Studio 1.3 / Gradle 2.4 이상 사용</h2>
-
-<p>Android Studio 1.3 / Gradle 2.4 이상으로 버전업되면서 대폭 성능 향상이 있었다. 실제로 나의 경우엔 상당한 속도 향상이 있었다. 그래도 proguard를 적용하게되면 느리긴 마찬가지긴 하다.
-구글의 설명을 보려면 <a href="https://www.youtube.com/watch?t=502&amp;v=f7ihSQ44WO0">Google I/O 2015 - What&#39;s New in Android Development Tools</a>을 참고하면 된다. 단, 주의할 것은 Android Studio 1.3 이상을 사용한다고 Gradle 2.4 이상을 무조건 사용하는 것은 아니라는 것이다. 신규 프로젝트가 아니어서 그런지 나의 프로젝트에서는 2.2.1을 그대로 사용하고 있었다(File &gt; Project Structure &gt; Project &gt; Gradle version에서 2.4로 변경함으로써 적용할 수 있다).</p>
-
-<h2 id="3-gradle를-오프라인-모드로-변경">3. gradle를 오프라인 모드로 변경</h2>
-
-<p>다른 사람들은 이 방법이 아주 효과적이었다고 하는데 나의 경우는 크게 차이가 나지 않았다(proguard로 인한 속도 저하라서 이 방법에 큰 도움이 되지 않았던 것 같다). 어쨌든 이 설정을 적용하면 gradle에서 매번 최신 버전을 확인하러가는 것을 생략 해 준다. 단, 신규 dependency를 추가하거나 변경하는 경우는 이 설정을 해제해야 한다. 약간은 귀찮을 수 있지만 dependency 변경은 크게 자주 발생하는 경우는 아니므로 문제되지 않을 것으로 생각된다.</p>
-
-<p><img src="/img/2015-09-29-android-gradle-builds-speed-up-1.png" alt="Offline work">
-Android Studio&gt; Preferences&gt; Gradle 의 Offline work에 체크.</p>
-
-<h2 id="4-speeding-up-gradle-builds">4. <a href="http://kevinpelgrims.com/blog/2015/06/11/speeding-up-your-gradle-builds/">Speeding up Gradle builds</a></h2>
-
-<p><a href="http://kevinpelgrims.com/blog/2015/06/11/speeding-up-your-gradle-builds/">Speeding up Gradle builds</a>에서는 몇가지 방법을 더 안내하고 있다. 간략하게 요약하면 아래와 같다(위의 설명들과 유사한 부분도 많다). 상세한 설명은 위 링크를 참조하기 바란다.</p>
-
-<h3 id="maven-central-vs-jcenter">Maven Central vs. JCenter</h3>
-
-<p>mavenCentral() 대신 jcenter()를 사용해라.</p>
-
-<h3 id="get-the-latest-version-of-gradle">Get the latest version of Gradle</h3>
-
-<p>최신 버전의 Gradle을 사용하라.</p>
-
-<h3 id="gradle-properties">Gradle properties</h3>
-
-<p>아래의 Gradle properties를 적용하라(위의 설명이 더 상세하다).
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ini'><span class='line'><span class="na">org.gradle.parallel</span><span class="o">=</span><span class="s">true</span>
-</span><span class='line'><span class="na">org.gradle.daemon</span><span class="o">=</span><span class="s">true</span>
-</span><span class='line'><span class="na">org.gradle.jvmargs</span><span class="o">=</span><span class="s">-Xms256m -Xmx1024m</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<h3 id="how-to-use-gradle-properties">How to use Gradle properties</h3>
-
-<p>Gradle properties를 프로젝트별로 설정하기보다 전역으로 설정하라.</p>
-
-<h3 id="다중-모듈-빌드">다중 모듈 빌드</h3>
-
-<p>다중 모뮬을 사용하는 경우에 속도 향상 방법이 안내되어 있으니 필요한 경우에 원본글에 가서 참조 바란다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1422,7 +1547,7 @@ Android Studio&gt; Preferences&gt; Gradle 의 Offline work에 체크.</p>
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (30)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (12)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (7)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (30)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (12)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (1)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (3)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (4)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip, (1)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1431,6 +1556,8 @@ Android Studio&gt; Preferences&gt; Gradle 의 Offline work에 체크.</p>
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/10/26/ansi-to-html/">ANSI text를 HTML로 변환하기</a>
+    
     <a class="list-group-item " href="/2015/10/23/php-cli-ansi-colors/">PHP를 CLI에서 사용시 ANSI Colors 적용하기</a>
     
     <a class="list-group-item " href="/2015/10/22/setting-swift-compiler-flags-in-cocoapods/">CocoaPods의 Swift compiler flags(DEBUG) 설정하기</a>
@@ -1438,8 +1565,6 @@ Android Studio&gt; Preferences&gt; Gradle 의 Offline work에 체크.</p>
     <a class="list-group-item " href="/2015/10/21/swift-2-dot-0-singleton/">Swift 2.0에서 상속 가능한 Singleton 생성하기</a>
     
     <a class="list-group-item " href="/2015/10/21/xcode-create-sub-module-using-cocoapods/">Xcode에서 CocoaPods를 이용해 sub module 만들기</a>
-    
-    <a class="list-group-item " href="/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/">xcode 7 : Alcatraz 와 CocoaPods Xcode plugins</a>
     
   </div>
 </section>

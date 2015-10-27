@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>안드로이드 SpannableString 합치기 - 이 세상에 하나는 남기고 가자</title>
+  <title>카카오톡 링크를 requirejs(AMD)와 함께 사용시 발생하는 오류 - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/10/16/android-spannablestring-concat/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/10/27/kakaotalk-share-link-with-requirejs-error/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/10/16/android-spannablestring-concat/">
-  <meta property="og:title" content="안드로이드 SpannableString 합치기 - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/10/27/kakaotalk-share-link-with-requirejs-error/">
+  <meta property="og:title" content="카카오톡 링크를 requirejs(AMD)와 함께 사용시 발생하는 오류 - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -134,7 +134,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-16T13:16:51+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.16</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-27T14:23:28+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.27</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -143,16 +143,18 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        안드로이드 SpannableString 합치기
+        카카오톡 링크를 requirejs(AMD)와 함께 사용시 발생하는 오류
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드에서 TextView, EditText 등에서 문자를 출력할 때 스타일을 지정하기 위해서 <a href="http://developer.android.com/intl/ko/reference/android/text/SpannableString.html">SpannableString</a>을 사용한다. 다른 방법으로는 <a href="http://developer.android.com/intl/ko/reference/android/text/Html.html#fromHtml%28java.lang.String%29">Html.fromHtml</a>을 사용하는 방법도 있으나 결국 내부에서는 SpannableString로 처리된다.</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>어제 고객으로부터 사용중인 페이지에서 카카오톡 링크가 동작하지 않는다는 보고를 받았다.
+확인해 보니 안드로이드 크롬 브라우저에서 <code>탐색이 차단됨: intent:kakaolink://send?appkey=TGIF&amp;appver=1.0&amp;apiver=3.0&amp;linkver=3.5&amp;extras=%7B%2…b.io%22%7D&amp;objs=%5B%5D&amp;forwardable=false#Intent;package=com.kakao.talk;end;</code>라는 오류를 발생시키면서 기능이 정상적으로 동작하지 않았다. 웃긴건 해당 링크를 빠르게 여러번 클릭하면 한번씩 동작한다는 것. 이 문제는 항상 발생한다기 보다 특수한 경우에 발생하는 것으로 보인다.</p>
 
-<p>그런데 작업을 하다보면 각각의 SpannableString을 합쳐야할 때가 있다. 이런 경우에 사용할 수 있는 것이 <a href="http://developer.android.com/intl/ko/reference/android/text/TextUtils.html#concat%28java.lang.CharSequence...%29">TextUtils.concat</a> 이다. 아래의 예시를 보자.</p>
+<p>아래의 코드를 보자. 오류를 kakao에 전달하기 위해 github에 페이지도 하나 만들어 두었다. <a href="https://asamaru7.github.io/requirejs-test/index2.html">https://asamaru7.github.io/requirejs-test/index2.html</a>
+그리고 kakao api가 버전업되면 상황이 달라질 수도 있다. 현재는 v1.0.49다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -161,18 +163,69 @@
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">SpannableString</span> <span class="n">styledText1</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SpannableString</span><span class="o">(</span><span class="s">&quot;Text String1&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="n">styledText1</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">AbsoluteSizeSpan</span><span class="o">(</span><span class="mi">12</span><span class="o">,</span> <span class="kc">true</span><span class="o">),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">SpannableString</span> <span class="n">styledText2</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SpannableString</span><span class="o">(</span><span class="s">&quot;Text String2&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="n">styledText2</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">AbsoluteSizeSpan</span><span class="o">(</span><span class="mi">20</span><span class="o">,</span> <span class="kc">true</span><span class="o">),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">CharSequence</span> <span class="n">concatString</span> <span class="o">=</span> <span class="n">TextUtils</span><span class="o">.</span><span class="na">concat</span><span class="o">(</span><span class="n">styledText1</span><span class="o">,</span> <span class="s">&quot; &quot;</span><span class="o">,</span> <span class="n">styledText2</span><span class="o">);</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="o">&lt;!</span><span class="nx">DOCTYPE</span> <span class="nx">html</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="nx">html</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="nx">head</span><span class="o">&gt;</span>
+</span><span class='line'>        <span class="o">&lt;</span><span class="nx">script</span> <span class="nx">data</span><span class="o">-</span><span class="nx">main</span><span class="o">=</span><span class="s2">&quot;app2&quot;</span> <span class="nx">src</span><span class="o">=</span><span class="s2">&quot;lib/require.js&quot;</span><span class="o">&gt;&lt;</span><span class="err">/script&gt;</span>
+</span><span class='line'>        <span class="o">&lt;</span><span class="nx">script</span> <span class="nx">type</span><span class="o">=</span><span class="s2">&quot;text/javascript&quot;</span><span class="o">&gt;</span>
+</span><span class='line'>          <span class="kd">function</span> <span class="nx">test1</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>                <span class="nx">requirejs</span><span class="p">([</span><span class="s2">&quot;kakao&quot;</span><span class="p">],</span> <span class="kd">function</span><span class="p">(</span><span class="nx">Kakao</span><span class="p">,</span> <span class="nx">print</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                  <span class="nx">Kakao</span><span class="p">.</span><span class="nx">init</span><span class="p">(</span><span class="s1">&#39;TGIF&#39;</span><span class="p">);</span>
+</span><span class='line'>                  <span class="nx">Kakao</span><span class="p">.</span><span class="nx">Link</span><span class="p">.</span><span class="nx">sendTalkLink</span><span class="p">({});</span>
+</span><span class='line'>                <span class="p">});</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>        <span class="o">&lt;</span><span class="err">/script&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="err">/head&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="nx">body</span><span class="o">&gt;</span>
+</span><span class='line'>        <span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="err">탐색이</span> <span class="err">차단됨</span> <span class="err">오류</span> <span class="err">테스트</span> <span class="o">:</span> <span class="err">스마트폰에서</span> <span class="err">테스트</span><span class="o">&lt;</span><span class="err">/h1&gt;</span>
+</span><span class='line'>        <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">type</span><span class="o">=</span><span class="s2">&quot;button&quot;</span> <span class="nx">onclick</span><span class="o">=</span><span class="s2">&quot;test1();&quot;</span><span class="o">&gt;</span><span class="nx">KAKAO</span> <span class="nx">link</span><span class="o">&lt;</span><span class="err">/button&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="err">/body&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="err">/html&gt;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>소스를 보면 알겠지만 주의할 점은 반환값이 <a href="http://developer.android.com/intl/ko/reference/java/lang/CharSequence.html">CharSequence</a>라는 것이다.</p>
+<p>이 코드를 모바일 크롬 브라우저에서 확인하면 위의 오류를 볼 수 있다.
+추정하는 상황은 이렇다. 브라우저에서 팝업창을 열려고 할 경우 사용자의 액션(클릭 이벤트)의 스코프를 벗어나서 <code>window.open</code>을 하려고하면 보안상의 이유로 팝업을 기본적으로 차단한다. 이것 또한 동일한 원인으로 예상된다. requirejs를 통해 kakao js를 호출하고 완료되면 동작을 실행하므로 스코프를 벗어나게 된다. 그렇기에 크롬에서 해당 링크를 차단시켜버리는 것으로 추정하고 있다. 현재로써는 이 문제를 해결하려면 kakao js의 호출과 init을 액션(클릭 이벤트)이 발생하기 이전에 해주는 방법 밖에 없다.</p>
 
-<p>그리고 SpannableString을 이미 사용한다면 대부분 아는 내용일 수 있지만 처음 사용하는 사람이라면 SpannableString에서 가능한 것들이 무엇이 있는지 궁금할 수 있다(Class가 다양하다). 이 경우엔 <a href="http://flavienlaurent.com/blog/2014/01/31/spans/">Spans, a Powerful Concept.</a>를 참고하면 도움이 될 것이다.</p>
+<p>이 부분에 관련한 오류 보고를 개발자 센터에 등록했지만 kakao에서도 어쩔 수 없을 것으로 생각된다.</p>
+
+<p><strong>하지만 정작 하고자 하는 이야기는 지금 부터다.</strong></p>
+
+<p>사실 이 문제를 확인하다가 다른 오류를 만났다. 이와 관련된 오류 보고는 이미 수개월 전에 <a href="https://devtalk.kakao.com/t/amd-requirejs/10948">kakao 개발자 센터에 보고</a>되어 있었다.</p>
+
+<p>요약하자만 이렇다. AMD(requirejs)를 사용해서 Kakao 모듈을 로드하고 나면 그 후 최초로 호출(require)되는 모듈은 <code>Uncaught Error: Mismatched anonymous define() module: function (){return dt}</code> 오류가 나면서 불려지지 않는다. 이를 해결하는 방법은 오류 보고에서 나왔던 것 처럼 dummy 모듈을 kakao 모듈 호출 후 한번 불러주는 것이다. 실제로 효과가 있고 나 또한 이렇게 임시 처리해서 서비스 중이다(찜찜하지만 현재로써는 다른 방법이 없다). 정확하게 이야기하자면 js 호출 시점이 문제가 아니라 init 함수 호출 직후부터 위 문제가 발생한다.</p>
+
+<p>아래는 샘플 코드다. 이대로 넣으면 안되고 어떻게 처리하는지 흐름만 참고하기 바란다. 중요한 포인트는 init 직후 DUMMY 모듈을 한번 호출한다는 것이다. 당연히 DUMMY는 정의되지 않은 모듈이다. 불필요한 js 호출이 싫다면 실제로 dummy를 만들어 두고 호출해도 상관없다. 그리고 아래 코드에서는 kakao js를 호출하는 부분이 빠져있는데 당연히 불러줘야 한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">kakaoApiInit</span> <span class="o">==</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nb">window</span><span class="p">.</span><span class="nx">Kakao</span><span class="p">.</span><span class="nx">init</span><span class="p">(</span><span class="s1">&#39;apikey&#39;</span><span class="p">);</span>
+</span><span class='line'>  <span class="nx">kakaoApiInit</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+</span><span class='line'>  <span class="k">try</span> <span class="p">{</span> <span class="nx">require</span><span class="p">([</span><span class="s1">&#39;DUMMY&#39;</span><span class="p">],</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{});</span> <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{};</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="nb">window</span><span class="p">.</span><span class="nx">Kakao</span><span class="p">.</span><span class="nx">Link</span><span class="p">.</span><span class="nx">sendTalkLink</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><strong>사실 당황스러운 것은 이런 오류가 발생한다는 것보다 관련된 오류 보고가 수개월 전에 되었음에도 불구하고 아직 해결이되지 않았다는 것이다.</strong> kakao 개발자 측에서는 오류 재현이 되지 않으니 샘플 코드를 올려달라는 것이다. 이미 문제를 제기한 사람이 정확한 상황을 제시 했음에도 불구하고 재현을 하지 못한다니... 의아스럽다.</p>
+
+<p>처음엔 나도 일단은 그냥 이대로 두려고 했다. 하지만 아무래도 찝찝해서 오늘 시간을 내서 kakao에서 원하는 샘플 코드를 친절히(?) 작성해서 오류 보고에 댓글로 추가해 두었다. 앞으로의 kakao의 대응을 지켜보겠지만 사실 이미 실망스럽다. 비단 이번 오류가 아니더라도 예전에도 다수의 kakao api 오류를 접해 본 입장에서 다수가 사용하게되는 api에서 어이없는 오류가 발생하고 대처가 미흡하다는 점이 실망스럽다는 것이다. 그래서 안쓰고 싶지만 고객이 원하니 그럴수도 없고...</p>
+
+<p>어쨌든 빠르게 수정되기를 바라며 혹시 동일한 문제를 겪는 개발자가 있다면 위의 방법대로 임시 처리라도 하기 바란다.</p>
 </div>
 
 
@@ -196,13 +249,13 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-16T13:16:51+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.16</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-27T14:23:28+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.27</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
 <span class="categories">
   
-    <a class='category' href='/blog/categories/android/'>android</a>
+    <a class='category' href='/blog/categories/js/'>js</a>
   
 </span>
 
@@ -211,7 +264,7 @@
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/10/16/android-spannablestring-concat/" data-via="" data-counturl="http://blog.asamaru.net/2015/10/16/android-spannablestring-concat/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/10/27/kakaotalk-share-link-with-requirejs-error/" data-via="" data-counturl="http://blog.asamaru.net/2015/10/27/kakaotalk-share-link-with-requirejs-error/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -225,10 +278,8 @@
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/10/14/creating-a-vagrant-base-box/" title="Previous Post: Vagrant BASE Box 만들기(CentOS 7)">&laquo; Vagrant BASE Box 만들기(CentOS 7)</a></li>
+            <li class="previous"><a href="/2015/10/26/ansi-to-html/" title="Previous Post: ANSI text를 HTML로 변환하기">&laquo; ANSI text를 HTML로 변환하기</a></li>
             
-            
-            <li class="next"><a href="/2015/10/16/android-verticalcenterspan/" title="Next Post: 안드로이드 세로 중앙정렬 Span(VerticalCenterSpan)">안드로이드 세로 중앙정렬 Span(VerticalCenterSpan) &raquo;</a></li>
             
           </ul>
         
@@ -308,7 +359,7 @@
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/10/27/kakaotalk-share-link-with-requirejs-error/">카카오톡 링크를 requirejs(AMD)와 함께 사용시 발생하는 오류</a>
+    <a class="list-group-item active" href="/2015/10/27/kakaotalk-share-link-with-requirejs-error/">카카오톡 링크를 requirejs(AMD)와 함께 사용시 발생하는 오류</a>
     
     <a class="list-group-item " href="/2015/10/26/ansi-to-html/">ANSI text를 HTML로 변환하기</a>
     
@@ -352,8 +403,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/10/16/android-spannablestring-concat/';
-        var disqus_url = 'http://blog.asamaru.net/2015/10/16/android-spannablestring-concat/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/10/27/kakaotalk-share-link-with-requirejs-error/';
+        var disqus_url = 'http://blog.asamaru.net/2015/10/27/kakaotalk-share-link-with-requirejs-error/';
         var disqus_script = 'embed.js';
       
     (function () {

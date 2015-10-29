@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-10-29T12:57:25+09:00</updated>
+  <updated>2015-10-29T14:38:01+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,23 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[구글앱스 관리자 비밀번호 초기화]]></title>
+    <link href="http://blog.asamaru.net/2015/10/29/google-apps-admin-password-reset/"/>
+    <updated>2015-10-29T14:14:03+09:00</updated>
+    <id>http://blog.asamaru.net/2015/10/29/google-apps-admin-password-reset</id>
+    <content type="html"><![CDATA[<p>얼마 전에 구글앱스의 관리자 비밀번호를 초기화 해야 할 일이 있었다. 지금은 이미 <a href="https://admin.google.com/scanmon.net/VerifyAdminAccountPasswordReset">구글앱스가 유료화</a>되었지만 예전에 50인 이하에 대해서는 무료였다. 그 당시에 내 개인적으로 사용하기 위한 구글앱스와 회사용으로 1개를 만들어 두었었다. 그런데 회사용으로 만들어 두었던 것을 사용하지 않다가 다시 사용하려고 했더니 비밀번호를 알 수가 없었다. 더 정확히는 관리자 아이디도 뭐로 했었는지도 기억이 나지 않았다. 그래서 관리자를 초기화하려고 했으나 도저히 메뉴를 찾을 수가 없었다.</p>
+
+<p>관련된 정보를 한참을 찾아다니다가 겨우 방법을 찾아서 기록해둔다.</p>
+
+<p>방법은 간단하다. 아래의 주소에서 &quot;YOUR_APPS_DOMAIN.COM&quot; 대신에 개설시 사용했던 도메인을 넣고 방문하면 소유주 확인을 위한 &quot;도메인 확인&quot; 화면이 나온다.</p>
+
+<p><code>https://admin.google.com/YOUR_APPS_DOMAIN.COM/VerifyAdminAccountPasswordReset</code></p>
+
+<p>이 화면에서 안내하는대로 따라가면 관리자 비밀번호를 초기화 할 수 있다. 스샷을 넣으려고 하다가 도메인 등을 지우기 귀찮아서 넣지 않았다. 사실 화면도 단순해서 큰 어려움은 없다. 게다가 화면이 언제 바뀔지도 모르고.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[java setChunkedStreamingMode를 php-fpm 서버와 연결할 때 발생하는 문제]]></title>
@@ -1341,6 +1358,14 @@ On Unix-based hosts (e.g. Linux, Solaris, Mac OS X) it is not possible to bind t
 <p>firewalld는 분명 CentOS7의 아주 혁신적인 기능중의 하나이다. 하지만 필자는 본 서적을 집필하면서 인터페이스가 편리 하나 많은 부분에서 부족함을 느꼈다. 특히 소스IP를 명시하는 부분이 명확하지 않다. 방화벽의 기본은 출발지 IP, 프로토콜, 포트 도착지 IP, 프로토콜, 포트를 기본으로 방화벽 규칙을 만들어간다. 하지만, firewalld는 출발지 IP와 목적지 IP에 대한 정의가 명확하지 않다. 리눅스 스킬이 중급 이상이라면 이러한 이유로 firewalld 서비스를 제거하고 예전 iptables 서비스로 돌아가길 권장하고 싶다.</p>
 </blockquote>
 
+<p>사실 &quot;소스IP를 명시하는 부분이 명확하지 않다.&quot; 라는 부분은 글쓴이의 정확한 의도를 알 수 없어 단언하기는 힘들지만 틀린 부분이 있을 수 있다고 생각한다. firewalld를 사용하더라도 소스 IP를 지정할 수 없는 것은 아니다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>firewall-cmd --permanent --zone<span class="o">=</span>public --add-rich-rule<span class="o">=</span><span class="s1">&#39;rule family=&quot;ipv4&quot; source address=&quot;1.2.3.4/32&quot; port protocol=&quot;tcp&quot; port=&quot;80&quot; accept&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>위 명령에서 보는 것과 같이 <code>rich-rule</code>를 사용해서 소스 IP를 지정할 수 있다. 그리고 지정된 내역을 보는 방법은 <code>firewall-cmd</code>을 사용하면 되지만 개인적으로는 <code>cat /etc/firewalld/zones/public.xml</code>를 사용해서 확인하는게 더 편한 것 같다. 사실은 아직 <code>firewall-cmd</code>를 능숙하게 사용하지를 못해서 어떻게하면 보기 쉽게 나오는지 잘 모르겠다(몇가지 명령을 시도해 봤는데 내용이 너무 많이 나온다.).</p>
+
 <p>결론적으로 <strong>무조건 firewalld를 사용해야 하는 것은 아니다.</strong> firewalld를 중지시키고 iptables를 설치해서 기존처럼 관리하는 것도 가능하다. 아래의 명령을 실행하면 된다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -2022,119 +2047,6 @@ home 파티션을 구분하지 않고 boot와 swap만 지정하고 나머지 모
 <h2 id="정리">정리</h2>
 
 <p>앞서 설명할때는 고민을 많이 해야 한다고 했는데 글을 적고 보니 너무 간단한 느낌이다. 사실 아주 고성능과 고가용성이 필요한 서버가 아니라면 위의 내용 정도만 생각해줘도 크게 무리는 없다는 생각이다. 자세히 설명하자면 파티션별 사이즈, 파일시스템 하나 하나에 대해서 설명해야 하는데 그러려면 책이 한권이다. 따라서 그 이상이 필요하다면 메뉴얼을 참고하면 관련 사항들을 하나씩 더 찾아보기 바란다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류 해결]]></title>
-    <link href="http://blog.asamaru.net/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/"/>
-    <updated>2015-10-13T16:53:54+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate</id>
-    <content type="html"><![CDATA[<p>안드로이드 Fragment 작업 중에 <code>java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</code> 오류가 발생했다. 상황은 이렇다. Fragment를 가진 Activity에서 새로운 Activity를 띄우고 해당 Activity에서 <code>setResult</code>를 통해 값을 반환했다. 새로운 Activity를 열었던 Activity에서는 <code>protected void onActivityResult(int requestCode, int resultCode, Intent intent)</code>를 통해 값을 전달 받아 새로운 Fragment를 불렀다. 그런데 위 오류가 난다. 아래는 작성했던 코드의 일부를 예시를 위해 수정한 것이다(실행가능한 코드가 아니다).</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
-</span><span class='line'><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
-</span><span class='line'>      <span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
-</span><span class='line'>              <span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
-</span><span class='line'>              <span class="o">.</span><span class="na">commit</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>    <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>관련된 정보를 찾아보니 아래와 같은 문서들이 보였다.</p>
-
-<ul>
-<li><a href="http://binsolb.tistory.com/entry/javalangIllegalStateException-Can-not-perform-this-action-after-onSaveInstanceState">java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</a></li>
-<li><a href="http://www.kmshack.kr/2013/08/fragment-%ED%8C%8C%ED%97%A4%EC%B9%98%EA%B8%B0-3-fragmentmanager-fragmenttransaction%EC%97%90-%EB%8C%80%ED%95%B4%EC%84%9C/">Fragment 파헤치기 – 3. FragmentManager, FragmentTransaction에 대해서</a></li>
-</ul>
-
-<p><strong>간단히 요약하자면 <code>commit()</code> 대신 <code>commitAllowingStateLoss()</code>을 사용하면 된다.</strong> 원인에 대해서는 위의 글들을 참고하면 상세히 설명되어 있다. 그래서 고쳐진 코드는 다음과 같다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
-</span><span class='line'><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
-</span><span class='line'>      <span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
-</span><span class='line'>              <span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
-</span><span class='line'>              <span class="o">.</span><span class="na">commitAllowingStateLoss</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>    <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>안드로이드는 이런 문제들에 대해서 알아서 좀 대응할 수 없는건가? 아쉽다.
-그런데 함수 이름에도 나와 있는 것 처럼 <code>commitAllowingStateLoss()</code>를 사용하면 상태값을 잃을 수 있다.</p>
-
-<p><a href="http://developer.android.com/intl/ko/reference/android/app/FragmentTransaction.html#commitAllowingStateLoss%28%29">FragmentTransaction 메뉴얼</a>에 아래와 같이 나와있다.</p>
-
-<blockquote>
-<p>public abstract int commitAllowingStateLoss ()</p>
-
-<p>Like commit() but allows the commit to be executed after an activity&#39;s state is saved. This is dangerous because the commit can be lost if the activity needs to later be restored from its state, so this should only be used for cases where it is okay for the UI state to change unexpectedly on the user.</p>
-</blockquote>
-
-<p><code>commitAllowingStateLoss()</code>를 사용하지 않고 해결하는 방법은 없을까? 생각해보면 실행되는 시점의 문제이므로 시점을 조금 지연하는 방법을 쓸 수도 있다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
-</span><span class='line'><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">Handler</span> <span class="n">handler_</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Handler</span><span class="o">(</span><span class="n">Looper</span><span class="o">.</span><span class="na">getMainLooper</span><span class="o">());</span>
-</span><span class='line'>        <span class="n">handler_</span><span class="o">.</span><span class="na">postDelayed</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>            <span class="nd">@Override</span>
-</span><span class='line'>            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>                <span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
-</span><span class='line'>                <span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
-</span><span class='line'>                        <span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
-</span><span class='line'>                        <span class="o">.</span><span class="na">commitAllowingStateLoss</span><span class="o">();</span>
-</span><span class='line'>            <span class="o">}</span>
-</span><span class='line'>        <span class="o">},</span> <span class="mi">0</span><span class="o">);</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>    <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>위 코드를 보면 Handler의 <code>postDelayed()</code> 함수를 사용해서 처리시점을 지연시켰다(사실 시간은 0이므로 작업을 잠시 뒤로 미룬것이다). 이렇게 해도 위 오류는 발생하지 않는다.</p>
-
-<p>어떤 방법이 맞는지에 대해서는 아직은 정확히 모르겠다(이렇게하면 상태를 잃어버리는 것과 무관해 지는지 명확하지 않다는 뜻이다). 선택은 자유다.</p>
 ]]></content>
   </entry>
   

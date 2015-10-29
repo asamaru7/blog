@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>PHP를 CLI에서 사용시 ANSI Colors 적용하기 - 이 세상에 하나는 남기고 가자</title>
+  <title>구글앱스 관리자 비밀번호 초기화 - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/10/23/php-cli-ansi-colors/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/10/29/google-apps-admin-password-reset/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/10/23/php-cli-ansi-colors/">
-  <meta property="og:title" content="PHP를 CLI에서 사용시 ANSI Colors 적용하기 - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/10/29/google-apps-admin-password-reset/">
+  <meta property="og:title" content="구글앱스 관리자 비밀번호 초기화 - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -134,7 +134,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-23T20:46:06+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.23</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-29T14:14:03+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.29</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -143,35 +143,22 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        PHP를 CLI에서 사용시 ANSI Colors 적용하기
+        구글앱스 관리자 비밀번호 초기화
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p>php를 CLI(shell 환경)에서 사용시 처리 과정을 확인하기 위한 로그나 결과를 <code>echo</code> 등을 사용해서 출력하는 방법을 사용할 것이다.</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>얼마 전에 구글앱스의 관리자 비밀번호를 초기화 해야 할 일이 있었다. 지금은 이미 <a href="https://admin.google.com/scanmon.net/VerifyAdminAccountPasswordReset">구글앱스가 유료화</a>되었지만 예전에 50인 이하에 대해서는 무료였다. 그 당시에 내 개인적으로 사용하기 위한 구글앱스와 회사용으로 1개를 만들어 두었었다. 그런데 회사용으로 만들어 두었던 것을 사용하지 않다가 다시 사용하려고 했더니 비밀번호를 알 수가 없었다. 더 정확히는 관리자 아이디도 뭐로 했었는지도 기억이 나지 않았다. 그래서 관리자를 초기화하려고 했으나 도저히 메뉴를 찾을 수가 없었다.</p>
 
-<p>보통 shell script 작성시 python이나 bash script를 많이 사용하지만 php 프로그램과 연결된 작업을 해야 하거나 php가 손에 익어서 편할 경우 등 여러가지 이유로 php를 shell에서 사용하는 경우도 많다.</p>
+<p>관련된 정보를 한참을 찾아다니다가 겨우 방법을 찾아서 기록해둔다.</p>
 
-<p>실제로 나는 가급적 프로세스 처리는 bash를 사용하고 간단한 작업은 python으로 하려고 하지만 php가 아무래도 손에 익은지라 조금 복잡한 작업은 php 프로그램과 무관하더라고 php를 사용하는 경우가 많다.</p>
+<p>방법은 간단하다. 아래의 주소에서 &quot;YOUR_APPS_DOMAIN.COM&quot; 대신에 개설시 사용했던 도메인을 넣고 방문하면 소유주 확인을 위한 &quot;도메인 확인&quot; 화면이 나온다.</p>
 
-<p>나는 이런 작업 과정에서 출력되는 내용을 보기 좋게 표현하는 부분이 항상 불만이었다. 몇 줄 안나오는 문제면 상관없지만 다량의 로그가 출력되는 작업시에는 중요한 부분을 조금더 잘 보이게 할 방법이 필요했다. 그래서 여러 줄을 띄우거나 탭을 들여쓰는 등의 방법을 주로 사용했었다.</p>
+<p><code>https://admin.google.com/YOUR_APPS_DOMAIN.COM/VerifyAdminAccountPasswordReset</code></p>
 
-<p>그런데 오늘도 이런 작업을 하던 중에 갑자기 <a href="https://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape code</a> 중 <a href="https://en.wikipedia.org/wiki/ANSI_escape_code#Colors">ANSI Color</a>가 생각났다(왜 이제야 이런 것이 있다는 것을 떠 올렸는지 모르겠다). 직접 구현해도 되겠지만 아무래도 귀찮을 듯해서 검색을 해봤더니 생각보다 많은 자료를 찾을 수 있었다. 역시 사람들은 비슷한 생각을 하나보다.</p>
-
-<p>아래는 이번에 찾은 자료들의 목록이다.</p>
-
-<ul>
-<li><a href="http://www.if-not-true-then-false.com/2010/php-class-for-coloring-php-command-line-cli-scripts-output-php-output-colorizing-using-bash-shell-colors/">PHP CLI Colors – PHP Class Command Line Colors (bash)</a></li>
-<li><a href="https://gist.github.com/superbrothers/3431198">superbrothers/ansi-color.php</a></li>
-<li><a href="http://softkube.com/blog/generating-command-line-colors-with-php">Generating Command Line Colors with PHP</a></li>
-<li><a href="http://blog.ianty.com/php/ansicolor/">PHP port of Term::ANSIColor</a></li>
-</ul>
-
-<p>나는 이 중에서 맨마지막의 <a href="http://blog.ianty.com/php/ansicolor/">PHP port of Term::ANSIColor</a>를 선택했다. 필요에 맞게 아주 약간의 수정을 해서 사용해 봤는데 다양한 형식을 지원해서 나름 만족스럽다.</p>
-
-<p>혹시 php를 CLI에서 사용할 일이 있다면 한번쯤 사용해 보기를 추천한다. 위의 라이브러리들을 굳이 쓰지 않더라도 소스 코드를 조금만 보면 ANSI를 적용하는 방법을 알 수 있으니 보기 좋은 결과물을 원할때 써보기 바란다.</p>
+<p>이 화면에서 안내하는대로 따라가면 관리자 비밀번호를 초기화 할 수 있다. 스샷을 넣으려고 하다가 도메인 등을 지우기 귀찮아서 넣지 않았다. 사실 화면도 단순해서 큰 어려움은 없다. 게다가 화면이 언제 바뀔지도 모르고.</p>
 </div>
 
 
@@ -195,13 +182,13 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-23T20:46:06+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.23</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-29T14:14:03+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.29</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
 <span class="categories">
   
-    <a class='category' href='/blog/categories/php/'>php</a>
+    <a class='category' href='/blog/categories/tip/'>tip</a>
   
 </span>
 
@@ -210,7 +197,7 @@
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/10/23/php-cli-ansi-colors/" data-via="" data-counturl="http://blog.asamaru.net/2015/10/23/php-cli-ansi-colors/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/10/29/google-apps-admin-password-reset/" data-via="" data-counturl="http://blog.asamaru.net/2015/10/29/google-apps-admin-password-reset/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -224,10 +211,8 @@
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/10/22/setting-swift-compiler-flags-in-cocoapods/" title="Previous Post: CocoaPods의 Swift compiler flags(DEBUG) 설정하기">&laquo; CocoaPods의 Swift compiler flags(DEBUG) 설정하기</a></li>
+            <li class="previous"><a href="/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/" title="Previous Post: java setChunkedStreamingMode를 php-fpm 서버와 연결할 때 발생하는 문제">&laquo; java setChunkedStreamingMode를 php-fpm 서버와 연결할 때 발생하는 문제</a></li>
             
-            
-            <li class="next"><a href="/2015/10/26/ansi-to-html/" title="Next Post: ANSI text를 HTML로 변환하기">ANSI text를 HTML로 변환하기 &raquo;</a></li>
             
           </ul>
         
@@ -307,7 +292,7 @@
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/10/29/google-apps-admin-password-reset/">구글앱스 관리자 비밀번호 초기화</a>
+    <a class="list-group-item active" href="/2015/10/29/google-apps-admin-password-reset/">구글앱스 관리자 비밀번호 초기화</a>
     
     <a class="list-group-item " href="/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/">java setChunkedStreamingMode를 php-fpm 서버와 연결할 때 발생하는 문제</a>
     
@@ -315,7 +300,7 @@
     
     <a class="list-group-item " href="/2015/10/26/ansi-to-html/">ANSI text를 HTML로 변환하기</a>
     
-    <a class="list-group-item active" href="/2015/10/23/php-cli-ansi-colors/">PHP를 CLI에서 사용시 ANSI Colors 적용하기</a>
+    <a class="list-group-item " href="/2015/10/23/php-cli-ansi-colors/">PHP를 CLI에서 사용시 ANSI Colors 적용하기</a>
     
   </div>
 </section>
@@ -351,8 +336,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/10/23/php-cli-ansi-colors/';
-        var disqus_url = 'http://blog.asamaru.net/2015/10/23/php-cli-ansi-colors/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/10/29/google-apps-admin-password-reset/';
+        var disqus_url = 'http://blog.asamaru.net/2015/10/29/google-apps-admin-password-reset/';
         var disqus_script = 'embed.js';
       
     (function () {

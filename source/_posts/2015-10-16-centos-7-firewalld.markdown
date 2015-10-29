@@ -41,6 +41,14 @@ CentOS 7부터 방화벽으로 iptables를 사용하지 않고 firewalld를 사�
 >
 > firewalld는 분명 CentOS7의 아주 혁신적인 기능중의 하나이다. 하지만 필자는 본 서적을 집필하면서 인터페이스가 편리 하나 많은 부분에서 부족함을 느꼈다. 특히 소스IP를 명시하는 부분이 명확하지 않다. 방화벽의 기본은 출발지 IP, 프로토콜, 포트 도착지 IP, 프로토콜, 포트를 기본으로 방화벽 규칙을 만들어간다. 하지만, firewalld는 출발지 IP와 목적지 IP에 대한 정의가 명확하지 않다. 리눅스 스킬이 중급 이상이라면 이러한 이유로 firewalld 서비스를 제거하고 예전 iptables 서비스로 돌아가길 권장하고 싶다.
 
+사실 "소스IP를 명시하는 부분이 명확하지 않다." 라는 부분은 글쓴이의 정확한 의도를 알 수 없어 단언하기는 힘들지만 틀린 부분이 있을 수 있다고 생각한다. firewalld를 사용하더라도 소스 IP를 지정할 수 없는 것은 아니다.
+
+```bash
+firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="1.2.3.4/32" port protocol="tcp" port="80" accept'
+```
+
+위 명령에서 보는 것과 같이 `rich-rule`를 사용해서 소스 IP를 지정할 수 있다. 그리고 지정된 내역을 보는 방법은 `firewall-cmd`을 사용하면 되지만 개인적으로는 `cat /etc/firewalld/zones/public.xml`를 사용해서 확인하는게 더 편한 것 같다. 사실은 아직 `firewall-cmd`를 능숙하게 사용하지를 못해서 어떻게하면 보기 쉽게 나오는지 잘 모르겠다(몇가지 명령을 시도해 봤는데 내용이 너무 많이 나온다.).
+
 결론적으로 **무조건 firewalld를 사용해야 하는 것은 아니다.** firewalld를 중지시키고 iptables를 설치해서 기존처럼 관리하는 것도 가능하다. 아래의 명령을 실행하면 된다.
 
 

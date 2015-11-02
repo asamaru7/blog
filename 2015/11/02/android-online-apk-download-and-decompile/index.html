@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Android Gradle 빌드 속도 높이기 - 이 세상에 하나는 남기고 가자</title>
+  <title>android apk download / decompile 하기 - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/09/29/android-gradle-builds-speed-up/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/09/29/android-gradle-builds-speed-up/">
-  <meta property="og:title" content="Android Gradle 빌드 속도 높이기 - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/">
+  <meta property="og:title" content="android apk download / decompile 하기 - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -135,7 +135,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-29T09:26:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.29</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-02T12:27:06+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.02</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -144,131 +144,21 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        Android Gradle 빌드 속도 높이기
+        android apk download / decompile 하기
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 개발을 하면서 여러가지 불만이 있지만 그중에 가장 맘에 들지않는 것 중 하나가 빌드 속도이다. 프로젝트의 규모에 따라 다르겠지만 xcode와의 빌드 시간을 비교하면 전체 빌드의 시간은 비슷한 것 같으나 수시로 하게되는 빌드는 안드로이드 스튜디오가 훨씬 느리게 느껴진다. 안드로이드 개발시 빌드에 사용되는 Gradle은 많은 유연성을 제공하지만 빌드에 많은 프로세스 비용이 든다는 것이 단점이다. 그래서 빌드 속도를 높일 수 있는 방법을 찾아서 적용해 보았다.</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>오늘은 <a href="https://play.google.com/store">Google Play</a>에서 apk 파일을 다운 받는 방법과 apk 파일을 decompile하는 방법을 소개하려고 한다.
+일반적인 상황에서는 apk를 받거나 decompile 할 일은 거의 없다. 하지만 안드로이드 개발을 하다보면 필요해지는 경우가 있다. 나의 경우는 ACRA를 이용해서 서비스 앱에서 crash가 발생하면 오류를 보고하도록 해두고 사용한다. 그런데 proguard를 사용해서 난독화가 되어 있다보니 오류 메시지만 보고는 어디에서 발생한 오류인지 확인할 수 없다. 그래서 서비스 중이 apk를 다운 받아 decompile해서 오류 위치를 파악한다. 배포 전에 apk 파일을 따로 보관해두는 방법도 있으나 귀찮아서 일일이 보관하지 않고 있다. 소스야 Git에서 tagging을 해두기 때문에 해당 버전을 바로 확인할 수 있지만 proguard가 적용되면서 package 등을 모두 바꾸게 되어 있어서 서비스 중인 apk가 따로 필요하다.</p>
 
-<p>그리고 빌드 시간에 크게 영향을 주는 것 중에는 proguard와 multidex가 포함된다. proguard는 코드 최적화/난독화 등을 위한 처리이며 multidex는 65K이상의 메소드를 사용할 경우에 대한 대응책으로 사용되며 자세한 내용은 <a href="https://developer.android.com/intl/ko/tools/building/multidex.html">Building Apps with Over 65K Methods</a>에서 참고하면 된다. 메소드 수가 어떻게하면 65K를 넘나 싶을 수 있지만 금방 넘어선다. 라이브러리를 막 추가하다보면 금방 문제를 만나게 된다(proguard 등을 통해 메소드 수를 줄일 수 있다). 이 글에서도 나와있는 것이지만 빌드 속도 문제를 떠나서도 최대한 multidex를 사용하는 상황을 만들지 않는 것이 좋다. 그리고 나는 proguard를 항상 켜둔 상태도 개발을 하는 편이다. 프로젝트 막판에 proguard를 적용하게되면 proguard로 인한 여러가지 문제를 만날 수 있기 때문에 충돌을 미리 발견하기 위해서다. 하지만 이렇게하다보면 빌드 속도가 너무 떨어진다. 그래서 켰다가 껐다가 하긴하는데 너무 귀찮다.</p>
+<p>본론으로 들어가서 일단 APK 파일을 받으려면 <a href="http://apk-dl.com/">Online Google Play APK Downloader</a>를 사용하면 된다. 사이트에 가서 원하는 앱의 package명을 넣으면 다운 받아진다. 간혹 실패하는 경우가 있으나 다시 시도하면 대부분은 받아진다.</p>
 
-<p>그럼 본격적으로 설정을 시작해보자.</p>
+<p>받아진 apk 파일을 decompile 하려면 <a href="http://www.decompileandroid.com/">Android APK Decompiler</a>를 사용하면 된다. 다운 받은 파일을 업로드하면 잠시 후에 Manifest 파일 정보와 함께 다운로드 링크가 나온다. 다운 받으면 소스가 zip로 압축되어 있으니 압축을 풀어서 보면 된다. 당연히 완벽한 소스로 복구되지는 않는다. 하지만 오류 위치를 파악하거나 하는 경우에는 충분한 소스가 나온다.</p>
 
-<h2 id="1-gradle-properties-파일을-변경">1. gradle.properties 파일을 변경</h2>
-
-<p>프로젝트 Root에 있는 gradle.properties을 편집한다. 기존에 파일이 없다면 추가한다. 여기에는 gradle 빌드 할 때 인수를 설정할 수 있다.
-한가지 더 알려주자면 프로젝트별로 설정하는 것외에도 모든 프로젝트에 설정을 추가할 수도 있다. 해당 파일의 경로는 OSX 기준으로 <code>~/.gradle/gradle.properties</code> 이다. 윈도우나 리눅스도 비슷한 경로에 있을 것으로 생각된다.</p>
-
-<p><strong>gradle.properties</strong></p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-</pre></td><td class='code'><pre><code class='ini'><span class='line'><span class="c1"># Project-wide Gradle settings.</span>
-</span><span class='line'><span class="c1"># IDE (eg Android Studio) users :</span>
-</span><span class='line'><span class="c1"># Settings specified in this file will override any Gradle settings</span>
-</span><span class='line'><span class="c1"># configured through the IDE.</span>
-</span><span class='line'><span class="c1"># For more details on how to configure your build environment visit</span>
-</span><span class='line'><span class="c1"># http : // www.gradle.org/docs/current/userguide/build_environment.html</span>
-</span><span class='line'><span class="c1"># The Gradle daemon aims to improve the startup and execution time of Gradle.</span>
-</span><span class='line'><span class="c1"># When set to true the Gradle daemon is to run the build.</span>
-</span><span class='line'><span class="c1"># TODO : disable daemon on CI, Since Builds should BE clean and Reliable on servers</span>
-</span><span class='line'><span class="na">org.gradle.daemon</span> <span class="o">=</span> <span class="s">true</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># Specifies the JVM arguments used for the daemon process.</span>
-</span><span class='line'><span class="c1"># The setting is particularly useful for tweaking memory settings.</span>
-</span><span class='line'><span class="c1"># Default value : -Xmx10248m -XX : MaxPermSize = 256M</span>
-</span><span class='line'><span class="na">org.gradle.jvmargs</span> <span class="o">=</span> <span class="s">-Xmx2048m -XX : MaxPermSize = 512m -XX + HeapDumpOnOutOfMemoryError -Dfile.encoding = UTF-8</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># When configured, Gradle will run in incubating parallel mode.</span>
-</span><span class='line'><span class="c1"># This option should only be used with decoupled projects. More details, visit</span>
-</span><span class='line'><span class="c1"># http://www.gradle.org/docs/current/userguide/multi_project_builds.html#sec : decoupled_projects</span>
-</span><span class='line'><span class="na">org.gradle.parallel</span> <span class="o">=</span> <span class="s">true</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># Enables new incubating mode that makes Gradle selective when configuring projects.</span>
-</span><span class='line'><span class="c1"># Only relevant projects are configured which results in faster builds for large multi-projects.</span>
-</span><span class='line'><span class="c1"># http://www.gradle.org/docs/current/userguide/multi_project_builds.html #sec : configuration_on_demand</span>
-</span><span class='line'><span class="na">org.gradle.configureondemand</span> <span class="o">=</span> <span class="s">true</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>위 설정에 대한 간략한 설명은 아래와 같다.</p>
-
-<ul>
-<li><strong>org.gradle.daemon</strong> : 데몬 프로세스를 사용할지 여부 설정한다. true 설정시 gradle을 daemon 모드로 실행하여 빌드시 gradle을 다시 실행하는 시간을 줄여준다.</li>
-<li><strong>org.gradle.jvmargs</strong> : 실행시 JVM 인수로 메모리를 설정을 늘려 메모리 부족으로 인한 속도저하를 막는 것이 목적이다. 따라서 적절한 양의 메모리를 할당해 주면 된다.</li>
-<li><strong>org.gradle.parallel</strong> : gradle 병렬 빌드 모드를 설정한다. 여러 프로젝트를 빌드 할 때 효과가 있다.</li>
-<li><strong>org.gradle.configureondemand</strong> : 관련 프로젝트가 있다면 필요한 부분만 빌드 설정한다.</li>
-</ul>
-
-<p>크게 성능이 향상되는 것 같지는 않지만 조금의 성능 향상은 있는 것 같다. 사실 다음에 소개할 gradle 버전 업이 훨씬 체감 성능 향상에 도움을 준다.</p>
-
-<h2 id="2-android-studio-1-3-gradle-2-4-이상-사용">2. Android Studio 1.3 / Gradle 2.4 이상 사용</h2>
-
-<p>Android Studio 1.3 / Gradle 2.4 이상으로 버전업되면서 대폭 성능 향상이 있었다. 실제로 나의 경우엔 상당한 속도 향상이 있었다. 그래도 proguard를 적용하게되면 느리긴 마찬가지긴 하다.
-구글의 설명을 보려면 <a href="https://www.youtube.com/watch?t=502&amp;v=f7ihSQ44WO0">Google I/O 2015 - What&#39;s New in Android Development Tools</a>을 참고하면 된다. 단, 주의할 것은 Android Studio 1.3 이상을 사용한다고 Gradle 2.4 이상을 무조건 사용하는 것은 아니라는 것이다. 신규 프로젝트가 아니어서 그런지 나의 프로젝트에서는 2.2.1을 그대로 사용하고 있었다(File &gt; Project Structure &gt; Project &gt; Gradle version에서 2.4로 변경함으로써 적용할 수 있다).</p>
-
-<h2 id="3-gradle를-오프라인-모드로-변경">3. gradle를 오프라인 모드로 변경</h2>
-
-<p>다른 사람들은 이 방법이 아주 효과적이었다고 하는데 나의 경우는 크게 차이가 나지 않았다(proguard로 인한 속도 저하라서 이 방법에 큰 도움이 되지 않았던 것 같다). 어쨌든 이 설정을 적용하면 gradle에서 매번 최신 버전을 확인하러가는 것을 생략 해 준다. 단, 신규 dependency를 추가하거나 변경하는 경우는 이 설정을 해제해야 한다. 약간은 귀찮을 수 있지만 dependency 변경은 크게 자주 발생하는 경우는 아니므로 문제되지 않을 것으로 생각된다.</p>
-
-<p><img src="/img/2015-09-29-android-gradle-builds-speed-up-1.png" alt="Offline work">
-Android Studio&gt; Preferences&gt; Gradle 의 Offline work에 체크.</p>
-
-<h2 id="4-speeding-up-gradle-builds">4. <a href="http://kevinpelgrims.com/blog/2015/06/11/speeding-up-your-gradle-builds/">Speeding up Gradle builds</a></h2>
-
-<p><a href="http://kevinpelgrims.com/blog/2015/06/11/speeding-up-your-gradle-builds/">Speeding up Gradle builds</a>에서는 몇가지 방법을 더 안내하고 있다. 간략하게 요약하면 아래와 같다(위의 설명들과 유사한 부분도 많다). 상세한 설명은 위 링크를 참조하기 바란다.</p>
-
-<h3 id="maven-central-vs-jcenter">Maven Central vs. JCenter</h3>
-
-<p>mavenCentral() 대신 jcenter()를 사용해라.</p>
-
-<h3 id="get-the-latest-version-of-gradle">Get the latest version of Gradle</h3>
-
-<p>최신 버전의 Gradle을 사용하라.</p>
-
-<h3 id="gradle-properties">Gradle properties</h3>
-
-<p>아래의 Gradle properties를 적용하라(위의 설명이 더 상세하다).
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ini'><span class='line'><span class="na">org.gradle.parallel</span><span class="o">=</span><span class="s">true</span>
-</span><span class='line'><span class="na">org.gradle.daemon</span><span class="o">=</span><span class="s">true</span>
-</span><span class='line'><span class="na">org.gradle.jvmargs</span><span class="o">=</span><span class="s">-Xms256m -Xmx1024m</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<h3 id="how-to-use-gradle-properties">How to use Gradle properties</h3>
-
-<p>Gradle properties를 프로젝트별로 설정하기보다 전역으로 설정하라.</p>
-
-<h3 id="다중-모듈-빌드">다중 모듈 빌드</h3>
-
-<p>다중 모뮬을 사용하는 경우에 속도 향상 방법이 안내되어 있으니 필요한 경우에 원본글에 가서 참조 바란다.</p>
+<p>물론 위의 사이트들을 사용해야만 가능한 일들은 아니다. apk 다운로드의 경우 별도의 app도 있고 decompile의 경우도 shell에서 직접할 수 있다. 하지만 위 사이트들을 사용하면 간단하게 처리가 가능하니 필요하다면 한번 쯤은 사용해 봐도 좋을 듯하다.</p>
 </div>
 
 
@@ -292,13 +182,13 @@ Android Studio&gt; Preferences&gt; Gradle 의 Offline work에 체크.</p>
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-29T09:26:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.29</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-02T12:27:06+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.02</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
 <span class="categories">
   
-    <a class='category' href='/blog/categories/android/'>android</a>
+    <a class='category' href='/blog/categories/android/'>android</a>, <a class='category' href='/blog/categories/tip/'>tip</a>
   
 </span>
 
@@ -307,7 +197,7 @@ Android Studio&gt; Preferences&gt; Gradle 의 Offline work에 체크.</p>
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/09/29/android-gradle-builds-speed-up/" data-via="" data-counturl="http://blog.asamaru.net/2015/09/29/android-gradle-builds-speed-up/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/" data-via="" data-counturl="http://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -321,10 +211,8 @@ Android Studio&gt; Preferences&gt; Gradle 의 Offline work에 체크.</p>
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/09/25/if-android-theme-parent-doesnt-set-attribute/" title="Previous Post: 안드로이드 테마 정의시 parent를 지정하지 않을 경우 Error: Style Resource definition cycle 발생">&laquo; 안드로이드 테마 정의시 parent를 지정하지 않을 경우 Error: Style Resource definition cycle 발생</a></li>
+            <li class="previous"><a href="/2015/10/29/google-apps-admin-password-reset/" title="Previous Post: 구글앱스 관리자 비밀번호 초기화">&laquo; 구글앱스 관리자 비밀번호 초기화</a></li>
             
-            
-            <li class="next"><a href="/2015/09/30/service-not-available-geocoder-android/" title="Next Post: 안드로이드 Geocoder 사용시 Service not Available 오류">안드로이드 Geocoder 사용시 Service not Available 오류 &raquo;</a></li>
             
           </ul>
         
@@ -404,7 +292,7 @@ Android Studio&gt; Preferences&gt; Gradle 의 Offline work에 체크.</p>
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/11/02/android-online-apk-download-and-decompile/">android apk download / decompile 하기</a>
+    <a class="list-group-item active" href="/2015/11/02/android-online-apk-download-and-decompile/">android apk download / decompile 하기</a>
     
     <a class="list-group-item " href="/2015/10/29/google-apps-admin-password-reset/">구글앱스 관리자 비밀번호 초기화</a>
     
@@ -448,8 +336,8 @@ Android Studio&gt; Preferences&gt; Gradle 의 Offline work에 체크.</p>
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/09/29/android-gradle-builds-speed-up/';
-        var disqus_url = 'http://blog.asamaru.net/2015/09/29/android-gradle-builds-speed-up/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/';
+        var disqus_url = 'http://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/';
         var disqus_script = 'embed.js';
       
     (function () {

@@ -3,7 +3,7 @@ layout: post
 title: "ANSI text를 HTML로 변환하기"
 date: 2015-10-26 14:38:36 +0900
 comments: true
-categories: tip, linux
+categories: ["tip", "linux"]
 ---
 지난 글 [PHP를 CLI에서 사용시 ANSI Colors 적용하기](/2015/10/23/php-cli-ansi-colors/)에서 php cli에서 ANSI를 사용해서 출력하는 것에 대해 설명했었다. 이번엔 ANSI text를 HTML로 변환하는 것에 대해서 설명하려고 한다.
 이게 왜 필요할까? ANSI는 shell에서만 색상이 적용되므로 해당 내용을 text 파일로 저장해서 다른 곳에서 열어보면 ANSI code가 그대로 보이거나 일반 text로 보인다. 따라서 결과물을 색상을 포함해서 다른 곳에 공유하기가 어렵다.

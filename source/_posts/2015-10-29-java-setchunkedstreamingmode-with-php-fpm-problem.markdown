@@ -37,3 +37,5 @@ categories: java
 > * setChunkedStreamingMode(int) : body의 길이를 모를 때 쓴다.
 > * 안그러면 HttpURLConnection은 전송되기전에 완성된 request body를 메모리 buffer에 넣도록 강요된다.
 >   * 이건 heap을 낭비하는 일이고 지연시간을 늘리는 일이다.
+
+첨언 : 방금 ACRA 측의 답변을 받았다. 다행히 나의 요구사항을 수용해서 패치를 완료했단다. [Configuring request length instead of using chunked streaming mode.](https://github.com/ACRA/acra/pull/318)

@@ -36,6 +36,7 @@ Info.plist 파일에 NSAppTransportSecurity 항목을 추가해서 필요한 설
 | &nbsp;&nbsp;&nbsp;&nbsp; NSThirdPartyExceptionAllowsInsecureHTTPLoads | Boolean |
 
 정확하게 설명하자면 두가지 방법이 있다.
+
 * NSAppTransportSecurity > NSAllowsArbitraryLoads를 추가해서 NSAllowsArbitraryLoads 값을 YES로 넣어준다.
   * 앱 내의 모든 네트워크 통신에 대한 제한을 푼다.
 * NSAppTransportSecurity > NSExceptionDomains를 추가하고 세부항목을 설정한다.

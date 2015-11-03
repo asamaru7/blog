@@ -20,7 +20,7 @@ new AlertDialog.Builder(context)
     .show();
 ```
 
-위 소스를 실행 했을 때 BadTokenException 오류가 발생한다면 대부분은 context에 Activity Context를 넣지않고 Application Context를 넣었을 경우다. 이런 경우라면 처음부터 오류가 발생하기 때문에 발견하고 수정하기가 쉽다.
+위 소스를 실행 했을 때 BadTokenException 오류가 발생한다면 대부분은 context에 Activity Context를 넣지 않고 Application Context를 넣었을 경우다. 이와 관련해서 [안드로이드에서 Dialog 사용시 WindowManager$BadTokenException 발생](/2015/09/04/android-dialog-windowmanager-badtokenexception/)이라는 글을 적은 적이 있었다. 이런 경우라면 처음부터 오류가 발생하기 때문에 발견하고 수정하기가 쉽다.
 
 그런데 분명 Activity Context를 넣어주었음에도 불구하고 불특정하게 오류가 발생하는 상황이 있다. 나의 경우는 다음과 같은 상황에서 이 문제가 발생했다.
 

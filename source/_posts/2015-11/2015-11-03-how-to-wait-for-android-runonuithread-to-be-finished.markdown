@@ -82,5 +82,5 @@ wait()와 notify()에 대해서는 [Thread(쓰레드) - 동기화(Synchronized) 
 
 사실 위 방법은 [how to wait for Android runOnUiThread to be finished?](http://stackoverflow.com/a/5996961)에서 참고한 것이다. 이 글을 보면 이 방법 외에도 여러가지 답변이 있다.
 
-이 글은 정확한 이해를 하고 쓴 글이 아니므로 여러가지 문제가 있을 수 있다. 하지만 내가 원하는 문제에 대한 해결법이 되었기 때문에 기록성으로 글을 남겨준다.
+이 글은 정확한 이해를 하고 쓴 글이 아니므로 여러가지 문제가 있을 수 있다. 하지만 내가 원하는 문제에 대한 해결법이 되었기 때문에 기록성으로 글을 남겨둔다.
 결론적으로 notifyDataSetChanged()를 명확히 적용하고 넘어 가야하는 상황에서는 위 방법이 도움이 될 수 있다. 그 외의 경우엔 UIThread의 작업을 굳이 sync 할 필요가 떠오르진 않는다.

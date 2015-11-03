@@ -4,7 +4,7 @@
   <title><![CDATA[Category: ios | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-11-03T15:35:40+09:00</updated>
+  <updated>2015-11-03T20:12:52+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,42 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Swift UIPageViewController에서 UIPageControl 오버랩하기]]></title>
+    <link href="http://blog.asamaru.net/2015/11/03/swift-uipagecontrol-overlap/"/>
+    <updated>2015-11-03T17:12:21+09:00</updated>
+    <id>http://blog.asamaru.net/2015/11/03/swift-uipagecontrol-overlap</id>
+    <content type="html"><![CDATA[<p>UIPageViewController 사용시에 하단에 현재 페이지의 위치를 알려주는 UIPageControl가 별도의 공간을 차지하고 표시된다.</p>
+
+<p><img src="http://i.stack.imgur.com/pUEdh.png" alt="UIPageControl"></p>
+
+<p>이 부분의 공간을 제거하고 내용 페이지의 위에 오버랩하려면 아래와 같이 <code>viewDidLayoutSubviews</code>에 필요한 소스를 추가하면 된다. 기본적으로 UIPageControl는 투명이라 자연스럽게 덮힌다.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">class</span> <span class="nl">PageViewController</span><span class="p">:</span> <span class="bp">UIPageViewController</span> <span class="p">{</span>
+  <span class="kr">override</span> <span class="k">func</span> <span class="n">viewDidLayoutSubviews</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// UIPageControl overlap</span>
+        <span class="k">let</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="n">view</span>
+        <span class="k">let</span> <span class="n">subviews</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">subviews</span>
+        <span class="k">var</span> <span class="nl">sv</span><span class="p">:</span> <span class="bp">UIView</span><span class="o">?</span> <span class="o">=</span> <span class="nb">nil</span>
+        <span class="k">var</span> <span class="nl">pc</span><span class="p">:</span> <span class="bp">UIView</span><span class="o">?</span> <span class="o">=</span> <span class="nb">nil</span>
+        <span class="k">for</span> <span class="nl">t</span><span class="p">:</span> <span class="bp">UIView</span> <span class="k">in</span> <span class="n">subviews</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">isKindOfClass</span><span class="p">(</span><span class="bp">UIScrollView</span><span class="p">))</span> <span class="p">{</span>
+                <span class="n">sv</span> <span class="o">=</span> <span class="n">t</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">isKindOfClass</span><span class="p">(</span><span class="bp">UIPageControl</span><span class="p">))</span> <span class="p">{</span>
+                <span class="n">pc</span> <span class="o">=</span> <span class="n">t</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">sv</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">pc</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">))</span> <span class="p">{</span>
+            <span class="n">sv</span><span class="o">!</span><span class="p">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">bounds</span>
+            <span class="n">v</span><span class="p">.</span><span class="n">bringSubviewToFront</span><span class="p">(</span><span class="n">pc</span><span class="o">!</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="nb">super</span><span class="p">.</span><span class="n">viewDidLayoutSubviews</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Objective-c에서의 처리 방법은 <a href="http://stackoverflow.com/a/24851985">How do I make the bottom bar with dots of a UIPageViewController translucent?</a>를 참고.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Xcode 7.1에서 Google Maps SDK 사용시 빌드가 되지 않는 결함]]></title>
@@ -348,54 +384,6 @@ Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하
 <p>마지막으로 한가지만 더 이야기하겠다. 프로젝트를 열어서 해당 모듈을 사용하려면 당연히 소스에서 <code>import</code>를 해야하는데 처음엔 연결이 되지 않는 것처럼 보일 수 있다. 이 부분은 모듈이 아직 빌드가 되지 않아서 그런 것이니 빌드를 한번 해주고나면 정상적으로 사용이 가능할 것이다.</p>
 
 <p>위에서 Git나 CocoaPods에 대한 설명을 하느라 조금 길어졌지만 이 두가지를 사용할 줄 알고 있다면 설정 과정은 생각보다 아주 간단하다. Android Studio와 비교하면 과정도 거의 유사하다는 것을 알 것이다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[xcode 7 : Alcatraz 와 CocoaPods Xcode plugins]]></title>
-    <link href="http://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/"/>
-    <updated>2015-10-20T20:17:02+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins</id>
-    <content type="html"><![CDATA[<p><a href="/2015/08/28/cocoapods-usage/">CocoaPods 사용법</a>에서 CocoaPods를 설치하고 사용하는 법에 대해 간단하게 안내했었다. 오늘은 이 CocoaPods을 XCode에서 조금이나마 편하게 쓰기 위한 플러그인을 소개 하려고 한다. 덤으로 <a href="http://alcatraz.io/">Alcatraz</a>라고하는 Xcode용 패키지 메니저도 함께 소개한다.</p>
-
-<p>우선 <a href="http://alcatraz.io/">Alcatraz</a> 부터 소개하려고 한다. CocoaPods Xcode plugins을 직접 설치하는 방법도 있으나 Alcatraz를 사용하면 더 쉽게 할 수 있기 때문이다.</p>
-
-<h2 id="alcatraz">Alcatraz</h2>
-
-<p>공식 사이트에는 <strong>The package manager for Xcode</strong> 라고 소개하고 있다. 말그대로 Xcode를 위한 패키지 매니저로 여러가지 플러그인, Color 테마, 템플릿들을 바로 설치할 수 있도록 도와준다.</p>
-
-<h3 id="설치">설치</h3>
-
-<p>공식 사이트에 안내되어 있는대로 아래의 명령을 실행하는 것으로 설치가 완료된다.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>curl -fsSL https://raw.githubusercontent.com/supermarin/Alcatraz/deploy/Scripts/install.sh <span class="p">|</span> sh
-</code></pre></div>
-<p>설치후 Xcode는 재시작 해주면 아래와 같은 화면이 나온다.</p>
-
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-1.png" alt="Alcatraz"></p>
-
-<p>설치한 플러그인을 load 할 것인지 물어본다. 당연히 &quot;Load Bundle&quot;을 해주면 이제부터 사용 가능하다. Xcode의 Window 메뉴에 보면 아래와 같이 &quot;Package Manager&quot;라는 메뉴가 추가되어 있다.</p>
-
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-2.png" alt="Alcatraz"></p>
-
-<h2 id="cocoapods-xcode-plugins-설치">CocoaPods Xcode plugins 설치</h2>
-
-<p>Alcatraz에서 바로 설치 가능한 CocoaPods 플러그인은 현재 2가지가 있는 것으로 보이는데 그 중 <a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a>를 먼저 설치해 보자. 사이트에 보면 설치 방법이 나와 있는데 당연히 Alcatraz를 통해 설치하는 것이 쉽다.</p>
-
-<p>&quot;Window &gt; Package Manager&quot; 메뉴를 실행하면 아래와 같은 화면이 나온다. 여기서 cocoapods로 검색하면 두가지의 플러그인이 보인다.</p>
-
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-3.png" alt="Alcatraz"></p>
-
-<p>이 중에서 위에 CocoaPods를 먼저 설치해 보자. 그냥 &quot;INSTALL&quot;이라고 되어 있는 버튼을 누르면 설치가 완료된다. 그리고 Xcode를 재시작하면 다시 아래와 같은 화면이 나온다. 당연히 &quot;Load Bundle&quot;을 선택한다.</p>
-
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-4.png" alt="Alcatraz"></p>
-
-<p>이제는 플러그인이 설치가 완료되었기 때문에 &quot;Product &gt; CocoaPods&quot; 메뉴를 볼 수 있다. 이 메뉴를 열어보면 아래와 같은 화면이 나온다. 여기서 유의할 점은 GEM_PATH를 자신의 환경에 맞게 바꿔야 한다는 점이다. 기본은 &quot;/usr/bin&quot;인 것 같은데 나의 경우는 &quot;/usr/local/bin&quot;에 있어서 지정을 했다. 경로를 모른다면 <code>which pod</code>라는 명령을 shell에서 실행해보면 확인 할 수 있다.</p>
-
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-5.png" alt="Alcatraz"></p>
-
-<p>다음은 <a href="https://github.com/Galeas/CocoaPodUI">CocoaPodUI</a> 플러그인이다. 설치 과정은 위의 플러그인 설치 과정과 동일하다. 그런데 문제는 현재 시점에서 확인해보니 정상적인 설치가 되지 않는다. Xcode 7과의 호환성 문제인지 플러그인은 정상 설치가 된 것으로 나오는데 설치 경로에 가보면 폴더가 비어 있다. 스샷만 보면 이 플러그인이 기능이 더 다양해 보이는데 사용을 해보지 못해 아쉽다.</p>
-
-<p>하지만 <a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a>만 사용하더라도 기존 보다는 편하다(굳이 따로 shell을 열지 않아도 되니).</p>
 ]]></content>
   </entry>
   

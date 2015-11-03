@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Swift 2 : 'lastPathComponent' is unavailable: Use lastPathComponent on NSURL instead. 오류 해결 - 이 세상에 하나는 남기고 가자</title>
+  <title>Swift UIPageViewController에서 UIPageControl 오버랩하기 - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/11/03/swift-uipagecontrol-overlap/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/">
-  <meta property="og:title" content="Swift 2 : 'lastPathComponent' is unavailable: Use lastPathComponent &hellip; - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/11/03/swift-uipagecontrol-overlap/">
+  <meta property="og:title" content="Swift UIPageViewController에서 UIPageControl 오버랩하기 - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -135,7 +135,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T13:14:55+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-03T17:12:21+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.03</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -144,19 +144,18 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        Swift 2 : 'lastPathComponent' is unavailable: Use lastPathComponent on NSURL instead. 오류 해결
+        Swift UIPageViewController에서 UIPageControl 오버랩하기
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p><a href="/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/">Swift 2 : Binary operator &#39;|&#39; cannot be applied to two &#39;UIViewAutoresizing&#39; operands 오류 해결</a>에 이어 Swift 2로 넘어가면서 만난 또 다른 오류.</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>UIPageViewController 사용시에 하단에 현재 페이지의 위치를 알려주는 UIPageControl가 별도의 공간을 차지하고 표시된다.</p>
 
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>'lastPathComponent' is unavailable: Use lastPathComponent on NSURL instead.</span></code></pre></td></tr></table></div></figure>
+<p><img src="http://i.stack.imgur.com/pUEdh.png" alt="UIPageControl"></p>
 
-<p>관련해서 찾아보니 <a href="https://forums.developer.apple.com/thread/13580">No more stringByAppendingPathComponent in Xcode 7 beta 5?</a>라는 글이 있었다. 내용을 보니 해당 함수가 없어져서 다른 방법으로 수정해야 한다는 것. 내용중 <a href="https://forums.developer.apple.com/people/tieferbegabt">tieferbegabt</a>라는 사람이 간단히 해결할 수 있는 코드를 올려 놓았다.</p>
+<p>이 부분의 공간을 제거하고 내용 페이지의 위에 오버랩하려면 아래와 같이 <code>viewDidLayoutSubviews</code>에 필요한 소스를 추가하면 된다. 기본적으로 UIPageControl는 투명이라 자연스럽게 덮힌다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -179,72 +178,30 @@
 <span class='line-number'>19</span>
 <span class='line-number'>20</span>
 <span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">extension</span> <span class="n">String</span> <span class="p">{</span>
-</span><span class='line'>    <span class="k">var</span> <span class="nl">lastPathComponent</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
-</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">lastPathComponent</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">var</span> <span class="nl">pathExtension</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
-</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">pathExtension</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">var</span> <span class="nl">stringByDeletingLastPathComponent</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
-</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingLastPathComponent</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">var</span> <span class="nl">stringByDeletingPathExtension</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
-</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingPathExtension</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">var</span> <span class="nl">pathComponents</span><span class="p">:</span> <span class="p">[</span><span class="n">String</span><span class="p">]</span> <span class="p">{</span>
-</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">pathComponents</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">func</span> <span class="n">stringByAppendingPathComponent</span><span class="p">(</span><span class="nl">path</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">String</span> <span class="p">{</span>
-</span><span class='line'>        <span class="k">let</span> <span class="n">nsSt</span> <span class="o">=</span> <span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span>
-</span><span class='line'>        <span class="k">return</span> <span class="n">nsSt</span><span class="p">.</span><span class="n">stringByAppendingPathComponent</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="k">func</span> <span class="n">stringByAppendingPathExtension</span><span class="p">(</span><span class="nl">ext</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">String</span><span class="o">?</span> <span class="p">{</span>
-</span><span class='line'>        <span class="k">let</span> <span class="n">nsSt</span> <span class="o">=</span> <span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span>
-</span><span class='line'>        <span class="k">return</span> <span class="n">nsSt</span><span class="p">.</span><span class="n">stringByAppendingPathExtension</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
-</span><span class='line'>    <span class="p">}</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">class</span> <span class="nl">PageViewController</span><span class="p">:</span> <span class="bp">UIPageViewController</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kr">override</span> <span class="k">func</span> <span class="n">viewDidLayoutSubviews</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>      <span class="c1">// UIPageControl overlap</span>
+</span><span class='line'>      <span class="k">let</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="n">view</span>
+</span><span class='line'>      <span class="k">let</span> <span class="n">subviews</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">subviews</span>
+</span><span class='line'>      <span class="k">var</span> <span class="nl">sv</span><span class="p">:</span> <span class="bp">UIView</span><span class="o">?</span> <span class="o">=</span> <span class="nb">nil</span>
+</span><span class='line'>      <span class="k">var</span> <span class="nl">pc</span><span class="p">:</span> <span class="bp">UIView</span><span class="o">?</span> <span class="o">=</span> <span class="nb">nil</span>
+</span><span class='line'>      <span class="k">for</span> <span class="nl">t</span><span class="p">:</span> <span class="bp">UIView</span> <span class="k">in</span> <span class="n">subviews</span> <span class="p">{</span>
+</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">isKindOfClass</span><span class="p">(</span><span class="bp">UIScrollView</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>              <span class="n">sv</span> <span class="o">=</span> <span class="n">t</span>
+</span><span class='line'>          <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">isKindOfClass</span><span class="p">(</span><span class="bp">UIPageControl</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>              <span class="n">pc</span> <span class="o">=</span> <span class="n">t</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>      <span class="k">if</span> <span class="p">((</span><span class="n">sv</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">pc</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">))</span> <span class="p">{</span>
+</span><span class='line'>          <span class="n">sv</span><span class="o">!</span><span class="p">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">bounds</span>
+</span><span class='line'>          <span class="n">v</span><span class="p">.</span><span class="n">bringSubviewToFront</span><span class="p">(</span><span class="n">pc</span><span class="o">!</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>      <span class="nb">super</span><span class="p">.</span><span class="n">viewDidLayoutSubviews</span><span class="p">()</span>
+</span><span class='line'>  <span class="p">}</span>
 </span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>Objective-C의 category나 swift의 extension은 개인적으로 정말 좋은 기능이라고 생각한다. 하지만 위의 코드는 임시로 사용하고 가급적 위 코드의 내용을 참고해서 오류가 나는 부분을 직접 변경하는 것을 권장하고 싶다. 어짜피 나중에는 애플에서 권장하는대로 코딩을 해야할테니 정확한 방법을 익히도록 처리하는 것이 좋다는 얘기다.</p>
-
-<p>아래는 내가 사용한 코드의 일부를 예시로 남긴다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="c1">// before</span>
-</span><span class='line'><span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">file</span><span class="p">.</span><span class="n">lastPathComponent</span><span class="p">.</span><span class="n">stringByDeletingPathExtension</span>
-</span><span class='line'><span class="c1">// after</span>
-</span><span class='line'><span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="p">((</span><span class="n">file</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">lastPathComponent</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingPathExtension</span>
-</span></code></pre></td></tr></table></div></figure>
+<p>Objective-c에서의 처리 방법은 <a href="http://stackoverflow.com/a/24851985">How do I make the bottom bar with dots of a UIPageViewController translucent?</a>를 참고.</p>
 </div>
 
 
@@ -268,13 +225,13 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T13:14:55+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-03T17:12:21+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.03</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
 <span class="categories">
   
-    <a class='category' href='/blog/categories/ios/'>ios</a>, <a class='category' href='/blog/categories/swift/'>swift</a>
+    <a class='category' href='/blog/categories/ios/'>ios</a>
   
 </span>
 
@@ -283,7 +240,7 @@
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/" data-via="" data-counturl="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/11/03/swift-uipagecontrol-overlap/" data-via="" data-counturl="http://blog.asamaru.net/2015/11/03/swift-uipagecontrol-overlap/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -297,10 +254,8 @@
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/" title="Previous Post: Swift 2 : Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands 오류 해결">&laquo; Swift 2 : Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands 오류 해결</a></li>
+            <li class="previous"><a href="/2015/11/03/how-to-wait-for-android-runonuithread-to-be-finished/" title="Previous Post: Android에서 runOnUiThread 작업이 종료 될 때까지 대기하기">&laquo; Android에서 runOnUiThread 작업이 종료 될 때까지 대기하기</a></li>
             
-            
-            <li class="next"><a href="/2015/10/05/google-play-services-and-dex-method-limits/" title="Next Post: Google Play services 와 DEX method limits 문제">Google Play services 와 DEX method limits 문제 &raquo;</a></li>
             
           </ul>
         
@@ -380,7 +335,7 @@
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/11/03/swift-uipagecontrol-overlap/">Swift UIPageViewController에서 UIPageControl 오버랩하기</a>
+    <a class="list-group-item active" href="/2015/11/03/swift-uipagecontrol-overlap/">Swift UIPageViewController에서 UIPageControl 오버랩하기</a>
     
     <a class="list-group-item " href="/2015/11/03/how-to-wait-for-android-runonuithread-to-be-finished/">Android에서 runOnUiThread 작업이 종료 될 때까지 대기하기</a>
     
@@ -424,8 +379,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/';
-        var disqus_url = 'http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/11/03/swift-uipagecontrol-overlap/';
+        var disqus_url = 'http://blog.asamaru.net/2015/11/03/swift-uipagecontrol-overlap/';
         var disqus_script = 'embed.js';
       
     (function () {

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-11-03T14:57:54+09:00</updated>
+  <updated>2015-11-03T15:35:40+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,136 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Android에서 runOnUiThread 작업이 종료 될 때까지 대기하기]]></title>
+    <link href="http://blog.asamaru.net/2015/11/03/how-to-wait-for-android-runonuithread-to-be-finished/"/>
+    <updated>2015-11-03T15:04:46+09:00</updated>
+    <id>http://blog.asamaru.net/2015/11/03/how-to-wait-for-android-runonuithread-to-be-finished</id>
+    <content type="html"><![CDATA[<p>아래에서 설명하고자 하는 내용을 뭐라고 표현 해야할지 몰라서 &quot;Android에서 runOnUiThread 작업이 종료 될 때까지 대기하기&quot;라고 글 제목을 정했다.
+내용을 요약하자면 thread에서 wait()과 notify()를 이용해서 runOnUiThread 작업이 종료될 때까지 대기하도록 하는 것이다. 쉽게 말해서 runOnUiThread는 main thread에서 처리되므로 비동기로 처리되게 되는데 필요한 작업이 완료되기 전까지 다른 처리를 대기시키는 것이다. 이렇게 설명하는 것도 정확한 설명은 아니다. 그냥 내가 하고자 했던 의도를 설명하고자 한 것이다. 따라서 정확한 의미와는 차이가 있다.</p>
+
+<p>설명하기 어려워 이리저리 이야기 했는데 그냥 내가 하고자 했던 상황을 설명하는게 이해에 도움이 될 것 같다.</p>
+
+<blockquote>
+<p>PagerAdapter를 사용하는 상황에서 <code>java.lang.IllegalStateException: The application&#39;s PagerAdapter changed the adapter&#39;s contents without calling PagerAdapter#notifyDataSetChanged!</code> 오류가 발생한다. 이 문제가 발생하는 원인은 notifyDataSetChanged 호출 후 적용되기 전에 PagerAdapter의 데이터가 변경되었기 때문이다.</p>
+</blockquote>
+
+<p>보통의 경우 위의 상황이 자주 발생하지는 않는다. 나의 경우엔 PagerAdapter의 데이터가 UI에서 버튼 터치에 의해서 변경되는 상황이다. 상황을 조금 더 자세히 설명해야 할 것 같다.</p>
+
+<ul>
+<li>화면 상에 버튼 A, B가 있다.</li>
+<li>A 버튼을 누르면 A 데이터 목록을 서버에서 가져와 PagerAdapter에 적용한다.</li>
+<li><p>B 버튼을 누르면 B 데이터 목록을 서버에서 가져와 PagerAdapter에 적용한다.</p></li>
+<li><p>A 버튼이 눌려진 후 서버에서 데이터를 가져와 PagerAdapter에 반영하고 notifyDataSetChanged()를 runOnUiThread 내부에서 호출했다. runOnUiThread 내부에서 호출하는 이유는 데이터의 변경시 UI가 변경되는 부분들이 있어서 main thread 오류를 막기 위해서 이다.</p></li>
+<li><p>notifyDataSetChanged()가 적용되기 전에 버튼 B가 눌려지고 데이터를 가져와 PagerAdapter에 반영되었다.</p></li>
+<li><p>notifyDataSetChanged()가 적용되면서 데이터의 변경을 감지하고 <code>java.lang.IllegalStateException: The application&#39;s PagerAdapter changed the adapter&#39;s contents without calling PagerAdapter#notifyDataSetChanged!</code> 오류가 발생한다.</p></li>
+</ul>
+
+<p>설명이 되었을런지 모르겠다. 앞서 말한 것과 같이 자주 발생하는 상황은 아니나 A, B 버튼을 번갈아 빠르게 터치하면 오류를 재현할 수 있다. 소스 코드를 올리면 더 이해가 쉬울 수 있는데 작업중인 소스들이 모두 섞여 있어 구분해서 남기는게 힘들어서 말로 설명했다.</p>
+
+<p>일단 기존 소스와 해결된 소스부터 보자. 당연히 동작하는 소스는 아니다. 하지만 무엇을 하고 있는지를 확인하는데는 충분할 것으로 본다.</p>
+
+<p><strong>오류가 발생하던 소스</strong>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">PreviewPagerAdapterBase</span><span class="o">&lt;</span><span class="n">T</span> <span class="kd">extends</span> <span class="n">DataItem</span><span class="o">&gt;</span> <span class="kd">extends</span> <span class="n">PagerAdapter</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">final</span> <span class="n">Runnable</span> <span class="n">notifyDataSetChangedRunnalbe</span> <span class="o">=</span> <span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setItems</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">items</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">super</span><span class="o">.</span><span class="na">setItems</span><span class="o">(</span><span class="n">items</span><span class="o">);&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">div</span> <span class="n">class</span><span class="o">=</span><span class="s">&quot;highlight&quot;</span><span class="o">&gt;&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span> <span class="n">class</span><span class="o">=</span><span class="s">&quot;language-text&quot;</span> <span class="n">data</span><span class="o">-</span><span class="n">lang</span><span class="o">=</span><span class="s">&quot;text&quot;</span><span class="o">&gt;</span><span class="n">Helper</span><span class="o">.</span><span class="na">runOnUiThread</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">notifyDataSetChanged</span><span class="o">();</span>
+</span><span class='line'>        <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">this</span><span class="o">.</span><span class="na">notify</span><span class="o">();</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">});</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;&lt;/</span><span class="n">div</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p><strong>수정된 소스</strong>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">PreviewPagerAdapterBase</span><span class="o">&lt;</span><span class="n">T</span> <span class="kd">extends</span> <span class="n">DataItem</span><span class="o">&gt;</span> <span class="kd">extends</span> <span class="n">PagerAdapter</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">final</span> <span class="n">Runnable</span> <span class="n">notifyDataSetChangedRunnalbe</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="nd">@Override</span>
+</span><span class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">notifyDataSetChanged</span><span class="o">();</span>
+</span><span class='line'>            <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>                <span class="k">this</span><span class="o">.</span><span class="na">notify</span><span class="o">();</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">};&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">setItems</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">items</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">super</span><span class="o">.</span><span class="na">setItems</span><span class="o">(</span><span class="n">items</span><span class="o">);&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">div</span> <span class="n">class</span><span class="o">=</span><span class="s">&quot;highlight&quot;</span><span class="o">&gt;&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span> <span class="n">class</span><span class="o">=</span><span class="s">&quot;language-text&quot;</span> <span class="n">data</span><span class="o">-</span><span class="n">lang</span><span class="o">=</span><span class="s">&quot;text&quot;</span><span class="o">&gt;</span><span class="kd">synchronized</span> <span class="o">(</span><span class="n">notifyDataSetChangedRunnalbe</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">Helper</span><span class="o">.</span><span class="na">runOnUiThread</span><span class="o">(</span><span class="n">notifyDataSetChangedRunnalbe</span><span class="o">);</span>
+</span><span class='line'>  <span class="k">try</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">notifyDataSetChangedRunnalbe</span><span class="o">.</span><span class="na">wait</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="k">return</span> <span class="n">hasFirstItem</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;&lt;/</span><span class="n">div</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>중요한 부분은 notifyDataSetChangedRunnalbe로 synchronized 처리하고 Runnable을 wait()한 다음 처리가 완료된 후 notify() 하는 것이다. 그리고 wait() 호출시 try 처리하고 있는데 InterruptedException이 발생할 수 있기 때문이다. 실제로 위에서 설명한 오류가 발생하는 상황에서는 InterruptedException이 대신 발생하는 것을 확인했다. 하지만 무시되어도 되는 상황이며 catch되었기 때문에 앱이 죽는 것은 막을 수 있다.</p>
+
+<p>wait()와 notify()에 대해서는 <a href="http://warmz.tistory.com/370">Thread(쓰레드) - 동기화(Synchronized) / wait()와 notify()</a>를 참고하면 된다.</p>
+
+<p>사실 위 방법은 <a href="http://stackoverflow.com/a/5996961">how to wait for Android runOnUiThread to be finished?</a>에서 참고한 것이다. 이 글을 보면 이 방법 외에도 여러가지 답변이 있다.</p>
+
+<p>이 글은 정확한 이해를 하고 쓴 글이 아니므로 여러가지 문제가 있을 수 있다. 하지만 내가 원하는 문제에 대한 해결법이 되었기 때문에 기록성으로 글을 남겨준다.
+결론적으로 notifyDataSetChanged()를 명확히 적용하고 넘어 가야하는 상황에서는 위 방법이 도움이 될 수 있다. 그 외의 경우엔 UIThread의 작업을 굳이 sync 할 필요가 떠오르진 않는다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[android.view.WindowManager$BadTokenException: Unable to add window 오류]]></title>
@@ -748,140 +878,6 @@ Jan 31st, 2014 6:09 pm<br>
 
 <p>매번 생각하는 것이지만 이런 부분들은 안드로이드에서 알아서 처리해주면 안되는걸까? 사실 조금 이해가 안된다. 개발자가 모두 알아서 하도록 한다는 것이. 물론 대응 방법이 상황에 따라 다를 수 있으니 일원화하는 것이 정답은 아닐 수 있다. 하지만 별다른 지정을 하지 않는다면 앱을 그냥 죽이는 것 보다는 기본적인 안내라도 보여주는 것이 낫지 않느냐는 말이다.</p>
 ]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[안드로이드 세로 중앙정렬 Span(VerticalCenterSpan)]]></title>
-    <link href="http://blog.asamaru.net/2015/10/16/android-verticalcenterspan/"/>
-    <updated>2015-10-16T13:37:07+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/16/android-verticalcenterspan</id>
-    <content type="html"><![CDATA[<p>SpannableString을 사용하던 중에 사이즈가 다른 두 단어를 세로로 중앙 정렬해야 할 일이 생겼다. 그런데 찾아보니 그런 Span은 없고 비슷한 기능이 있는 것들도 BASELINE 또는 BOTTOM으로만 정렬이 가능했다. 그래서 간단하게 Span 클래스를 하나 만들었다. 단, 주의할 것은 multi line은 지원하지 않는다는 것이다(내가 당장 필요하지 않아서 기능을 구현하지 않았다).</p>
-
-<p>```java VerticalCenterSpan.java<br>
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.text.style.ReplacementSpan;</p>
-
-<p>public class VerticalCenterSpan extends ReplacementSpan {
-    public VerticalCenterSpan() {
-    }</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">@Override
-public void draw(Canvas canvas, CharSequence text, int start, int end, float x, int top, int y, int bottom, Paint paint) {
-    int yPos = (int) ((canvas.getHeight() / 2) - ((paint.descent() + paint.ascent()) / 2));
-    canvas.drawText(text, start, end, x, yPos, paint);
-}
-
-@Override
-public int getSize(Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
-    return Math.round(paint.measureText(text, start, end));
-}
-</code></pre></div>
-<p>}</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">그런데 사용시에 유의할 점이 있다. 다른 Span과 함께 적용시에 일부는 적용되지 않을 수 있다는 것이다. 예를 들어 아래의 예를 보자(아래 소스는 이해를 위해 부분만 넣어둔 것이다).
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">AbsoluteSizeSpan</span><span class="o">(</span><span class="mi">12</span><span class="o">,</span> <span class="kc">true</span><span class="o">),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</span><span class='line'><span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">ForegroundColorSpan</span><span class="o">(</span><span class="n">ContextCompat</span><span class="o">.</span><span class="na">getColor</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">R</span><span class="o">.</span><span class="na">color</span><span class="o">.</span><span class="na">newColor</span><span class="o">)),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</span><span class='line'><span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">VerticalCenterSpan</span><span class="o">(),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;&lt;/</span><span class="n">div</span><span class="o">&gt;</span>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">위</span> <span class="n">소스는</span> <span class="n">글자</span> <span class="n">크기와</span> <span class="n">색상을</span> <span class="n">바꾼</span> <span class="n">후</span> <span class="n">세로</span> <span class="n">중앙정렬을</span> <span class="n">하기</span> <span class="n">위한</span> <span class="n">코드다</span><span class="o">.</span> <span class="n">그런데</span> <span class="n">실행해보면</span> <span class="n">색상이</span> <span class="n">적용되지</span> <span class="n">않는다</span><span class="o">.</span> <span class="n">이</span> <span class="n">것과</span> <span class="n">관련해서는</span> <span class="n">정확한</span> <span class="n">이유를</span> <span class="n">확인해보지는</span> <span class="n">못했지만</span> <span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;http://stackoverflow.com/a/28329166&quot;</span><span class="o">&gt;</span><span class="n">ForegroundColorSpan</span> <span class="n">is</span> <span class="n">not</span> <span class="n">applied</span> <span class="n">to</span> <span class="n">ReplacementSpan</span><span class="o">&lt;/</span><span class="n">a</span><span class="o">&gt;</span><span class="n">를</span> <span class="n">보면</span> <span class="n">버그라고</span> <span class="n">추정하는</span> <span class="n">것</span> <span class="n">같다</span><span class="o">.</span> <span class="n">어쨌든</span> <span class="n">색상도</span> <span class="n">함께</span> <span class="n">바꾸어야</span> <span class="n">할</span> <span class="n">경우를</span> <span class="n">위해</span> <span class="n">조금</span> <span class="n">변경한</span> <span class="n">소스는</span> <span class="n">아래와</span> <span class="n">같다</span><span class="o">.&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="err">```</span><span class="n">java</span> <span class="n">ColorVerticalCenterSpan</span><span class="o">.</span><span class="na">java</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.graphics.Canvas</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.graphics.Paint</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.graphics.RectF</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.text.style.ReplacementSpan</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ColorVerticalCenterSpan</span> <span class="kd">extends</span> <span class="n">ReplacementSpan</span> <span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="n">backgroundColor</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="n">foregroundColor</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'><span class="o">&lt;</span><span class="n">div</span> <span class="n">class</span><span class="o">=</span><span class="s">&quot;highlight&quot;</span><span class="o">&gt;&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span> <span class="n">class</span><span class="o">=</span><span class="s">&quot;language-text&quot;</span> <span class="n">data</span><span class="o">-</span><span class="n">lang</span><span class="o">=</span><span class="s">&quot;text&quot;</span><span class="o">&gt;</span><span class="kd">public</span> <span class="nf">ColorVerticalCenterSpan</span><span class="o">(</span><span class="kt">int</span> <span class="n">foregroundColor</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">foregroundColor</span> <span class="o">=</span> <span class="n">foregroundColor</span><span class="o">;</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="nf">ColorVerticalCenterSpan</span><span class="o">(</span><span class="kt">int</span> <span class="n">foregroundColor</span><span class="o">,</span> <span class="kt">int</span> <span class="n">backgroundColor</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">backgroundColor</span> <span class="o">=</span> <span class="n">backgroundColor</span><span class="o">;</span>
-</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">foregroundColor</span> <span class="o">=</span> <span class="n">foregroundColor</span><span class="o">;</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="nd">@Override</span>
-</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">draw</span><span class="o">(</span><span class="n">Canvas</span> <span class="n">canvas</span><span class="o">,</span> <span class="n">CharSequence</span> <span class="n">text</span><span class="o">,</span> <span class="kt">int</span> <span class="n">start</span><span class="o">,</span> <span class="kt">int</span> <span class="n">end</span><span class="o">,</span> <span class="kt">float</span> <span class="n">x</span><span class="o">,</span> <span class="kt">int</span> <span class="n">top</span><span class="o">,</span> <span class="kt">int</span> <span class="n">y</span><span class="o">,</span> <span class="kt">int</span> <span class="n">bottom</span><span class="o">,</span> <span class="n">Paint</span> <span class="n">paint</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="c1">// Background</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">backgroundColor</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">paint</span><span class="o">.</span><span class="na">setColor</span><span class="o">(</span><span class="n">backgroundColor</span><span class="o">);</span>
-</span><span class='line'>        <span class="n">canvas</span><span class="o">.</span><span class="na">drawRect</span><span class="o">(</span><span class="k">new</span> <span class="nf">RectF</span><span class="o">(</span><span class="n">x</span><span class="o">,</span> <span class="n">top</span><span class="o">,</span> <span class="n">x</span> <span class="o">+</span> <span class="n">paint</span><span class="o">.</span><span class="na">measureText</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">start</span><span class="o">,</span> <span class="n">end</span><span class="o">),</span> <span class="n">bottom</span><span class="o">),</span> <span class="n">paint</span><span class="o">);</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="c1">// Text</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">foregroundColor</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">paint</span><span class="o">.</span><span class="na">setColor</span><span class="o">(</span><span class="n">foregroundColor</span><span class="o">);</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>    <span class="kt">int</span> <span class="n">yPos</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="o">((</span><span class="n">canvas</span><span class="o">.</span><span class="na">getHeight</span><span class="o">()</span> <span class="o">/</span> <span class="mi">2</span><span class="o">)</span> <span class="o">-</span> <span class="o">((</span><span class="n">paint</span><span class="o">.</span><span class="na">descent</span><span class="o">()</span> <span class="o">+</span> <span class="n">paint</span><span class="o">.</span><span class="na">ascent</span><span class="o">())</span> <span class="o">/</span> <span class="mi">2</span><span class="o">));</span>
-</span><span class='line'>    <span class="n">canvas</span><span class="o">.</span><span class="na">drawText</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">start</span><span class="o">,</span> <span class="n">end</span><span class="o">,</span> <span class="n">x</span><span class="o">,</span> <span class="n">yPos</span><span class="o">,</span> <span class="n">paint</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="nd">@Override</span>
-</span><span class='line'><span class="kd">public</span> <span class="kt">int</span> <span class="nf">getSize</span><span class="o">(</span><span class="n">Paint</span> <span class="n">paint</span><span class="o">,</span> <span class="n">CharSequence</span> <span class="n">text</span><span class="o">,</span> <span class="kt">int</span> <span class="n">start</span><span class="o">,</span> <span class="kt">int</span> <span class="n">end</span><span class="o">,</span> <span class="n">Paint</span><span class="o">.</span><span class="na">FontMetricsInt</span> <span class="n">fm</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">return</span> <span class="n">Math</span><span class="o">.</span><span class="na">round</span><span class="o">(</span><span class="n">paint</span><span class="o">.</span><span class="na">measureText</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">start</span><span class="o">,</span> <span class="n">end</span><span class="o">));</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;&lt;/</span><span class="n">div</span><span class="o">&gt;</span>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p>이 코드를 이용해서 아래와 같이 사용하면 원하는 결과를 얻을 수 있다.</p>
-<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">AbsoluteSizeSpan</span><span class="o">(</span><span class="mi">12</span><span class="o">,</span> <span class="kc">true</span><span class="o">),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-<span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">ColorVerticalCenterSpan</span><span class="o">(</span><span class="n">ContextCompat</span><span class="o">.</span><span class="na">getColor</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">R</span><span class="o">.</span><span class="na">color</span><span class="o">.</span><span class="na">newColor</span><span class="o">)),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</code></pre></div>
-<p>아니면 위에 링크한 StackOverflow의 답변처럼 FontColorSpan 클래스를 추가해서 사용하는 방법도 가능하다. 예를들면 아래처럼.</p>
-<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">AbsoluteSizeSpan</span><span class="o">(</span><span class="mi">12</span><span class="o">,</span> <span class="kc">true</span><span class="o">),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-<span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">FontColorSpan</span><span class="o">(</span><span class="n">ContextCompat</span><span class="o">.</span><span class="na">getColor</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">R</span><span class="o">.</span><span class="na">color</span><span class="o">.</span><span class="na">newColor</span><span class="o">)),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-<span class="n">styledText</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">VerticalCenterSpan</span><span class="o">(),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">Spannable</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
-</code></pre></div>]]></content>
   </entry>
   
 </feed>

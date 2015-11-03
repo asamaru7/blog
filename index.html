@@ -139,6 +139,1049 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-03T09:00:30+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.03</time>
+        
+           | <a href="/2015/11/03/android-dot-view-dot-windowmanager/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/11/03/android-dot-view-dot-windowmanager/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/11/03/android-dot-view-dot-windowmanager/" itemprop="url">android.view.WindowManager$BadTokenException: Unable to add window 오류</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드에서 아래와 같은 오류가 나는 경우가 있다.</p>
+
+<p><code>android.view.WindowManager$BadTokenException: Unable to add window -- token android.os.BinderProxy@420d8488 is not valid; is your activity running?</code></p>
+
+<p>대부분은 Dialog를 띄우러고 할 때 발생한다. 소스로 보자면 아래와 같은 경우다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="k">new</span> <span class="n">AlertDialog</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="n">context</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">.</span><span class="na">setTitle</span><span class="o">(</span><span class="s">&quot;알림&quot;</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">.</span><span class="na">setMessage</span><span class="o">(</span><span class="s">&quot;알림 메시지&quot;</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">.</span><span class="na">setNegativeButton</span><span class="o">(</span><span class="s">&quot;취소&quot;</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">.</span><span class="na">show</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>위 소스를 실행 했을 때 BadTokenException 오류가 발생한다면 대부분은 context에 Activity Context를 넣지않고 Application Context를 넣었을 경우다. 이런 경우라면 처음부터 오류가 발생하기 때문에 발견하고 수정하기가 쉽다.</p>
+
+<p>그런데 분명 Activity Context를 넣어주었음에도 불구하고 불특정하게 오류가 발생하는 상황이 있다. 나의 경우는 다음과 같은 상황에서 이 문제가 발생했다.</p>
+
+<p>앱 시작시 splash 화면에서 네트워크 활성 여부를 검사해서 비활성(서버 접속 불가)되어 있다면 알림 Dialog를 띄우고 앱을 종료하도록 했다. 그런데 여기서 불특정하게 오류가 발생하여 앱이 알림 Dialog를 띄우지 못하고 죽어 버리는 현상이 발생했다.</p>
+
+<p>ACRA를 통해 보고된 오류 메시지를 확인하니 위에서 언급했던 오류가 발생하고 있었다. 그래서 원인을 찾기 위해 소스 코드를 확인해 보았으나 아무리 봐도 문제가 될 부분을 찾을 수 없었다. 그래서 구글에서 관련 정보를 찾아보니 <a href="http://stackoverflow.com/a/18665887">“android.view.WindowManager$BadTokenException: Unable to add window” on buider.show()</a>에 원인과 해결 방법이 나와 있었다.</p>
+
+<p>결론은 context의 null 검사 뿐만 아니라  <a href="http://developer.android.com/intl/ko/reference/android/app/Activity.html#isFinishing%28%29">isFinishing()</a>도 함께 검사 해줘야 한다는 것이다.</p>
+
+<p>적용된 코드는 아래와 같다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="k">if</span> <span class="o">((</span><span class="n">context</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(!</span><span class="n">context</span><span class="o">.</span><span class="na">isFinishing</span><span class="o">()))</span> <span class="o">{</span>
+</span><span class='line'>  <span class="k">new</span> <span class="n">AlertDialog</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="n">context</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">.</span><span class="na">setTitle</span><span class="o">(</span><span class="s">&quot;알림&quot;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">.</span><span class="na">setMessage</span><span class="o">(</span><span class="s">&quot;알림 메시지&quot;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">.</span><span class="na">setNegativeButton</span><span class="o">(</span><span class="s">&quot;취소&quot;</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">.</span><span class="na">show</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>사실 이것 만으로 오류가 모두 해결된 것인지는 확인하지 못했다(오류 재현이 너무 힘들다).   하지만 안드로이드에서 발생하는 비슷한 다른 오류들을 감안하면 이것이 원인이 맞을 것이라고 생각한다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-02T20:12:10+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.02</time>
+        
+           | <a href="/2015/11/02/android-spans-a-powerful-concept/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/11/02/android-spans-a-powerful-concept/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/11/02/android-spans-a-powerful-concept/" itemprop="url">[번역중] Android : Spans, a Powerful Concept</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드의 <a href="http://developer.android.com/intl/ru/reference/android/text/Spannable.html">Spannable</a>에 관련된 좋은 글이 있어 번역해 본다.
+사실 부족한 영어 실력으로 번역이라기 보다 내용을 옮겨보는 정도라고 생각하면 될 듯하다(의역이 많다).</p>
+
+<p><strong>게다가 아직은 번역중이다. 시간이 되는대로 조금씩 번역해 나갈 예정이다.</strong></p>
+
+<blockquote>
+<p><a href="http://flavienlaurent.com/blog/2014/01/31/spans/">Spans, a Powerful Concept.</a><br>
+Jan 31st, 2014 6:09 pm<br>
+<a href="https://github.com/flavienlaurent/spans">Github Sample : flavienlaurent/spans</a></p>
+</blockquote>
+
+<p>최근에, 나는 NewStand 앱과 ActionBar icon의 전환 효과에 대해 블로그에 남겼다. Cyril Mottier는 ActionBar의 title에 Spans을 사용하여 fade in/out하는 우아한 방법을 제안했다.</p>
+
+<p>또한, 난 항상 사용 가능한 모든 종류의 Span(ImageSpan, BackgroundColorSpan 등)을 시도하고 싶었다. 그것들은 매우 유용하고 사용이 간단하지만 그것들에 대한 문서나 자세한 정보가 없었다.</p>
+
+<p>그래서 이 문서에는 프레임워크의 Spans으로 무엇을 할 수 있는지 탐색하고, Spans으로 어떠한 새로운 것을 할 수 있는지 보여주고자 한다. <a href="https://github.com/flavienlaurent/spans/raw/master/sample.apk">sample application</a>를 다운받아 설치할 수 있다. 여기에서 <a href="https://github.com/flavienlaurent/spans">source</a>를 확인 할 수 있다.</p>
+
+<h2 id="in-the-framework">In the framework</h2>
+
+<h3 id="hierarchy">HIERARCHY</h3>
+
+<p>Main rules:</p>
+
+<ul>
+<li><p>if a Span affects character-level text formatting, it extends <a href="http://developer.android.com/reference/android/text/style/CharacterStyle.html">CharacterStyle</a>.
+스팬 텍스트 문자 레벨에 영향을 미칠 경우, 상속 을 CharacterStyle .
+범위에는 캐릭터 레벨 텍스트 서식에 영향을, CharacterStyle를 확장 합니다.</p></li>
+<li><p>if a Span affects paragraph-level text formatting, it implements <a href="http://developer.android.com/reference/android/text/style/ParagraphStyle.html">ParagraphStyle</a></p></li>
+<li><p>if a Span modifies the character-level text appearance, it implements <a href="http://developer.android.com/reference/android/text/style/UpdateAppearance.html">UpdateAppearance</a></p></li>
+<li><p>if a Span modifies the character-level text metrics|size, it implements <a href="http://developer.android.com/reference/android/text/style/UpdateLayout.html">UpdateLayout</a></p></li>
+</ul>
+
+<p>It gives us beautiful class diagrams like this.</p>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-1.png" alt="cdcharacterstyle">  </p>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-2.png" alt="cdparagraphstyle">  </p>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-3.png" alt="cdupdateappearance">  </p>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-4.png" alt="cdupdatelayout">  </p>
+
+<p>As it’s a bit complicated so I advise you to use a class visualizer (like <a href="http://www.class-visualizer.net/">this</a>) to fully understand the hierarchy.</p>
+
+<h2 id="how-it-works">How it works?</h2>
+
+<h3 id="layout">LAYOUT</h3>
+
+<p>When you set text on a TextView, it uses the base class <a href="http://developer.android.com/reference/android/text/Layout.html">Layout</a> to manage text rendering.</p>
+
+<p>The Layout class contains a boolean <code>mSpannedText</code>: true when the text is an instance of <a href="http://developer.android.com/reference/android/text/Spanned.html">Spanned</a> (<a href="http://developer.android.com/reference/android/text/SpannableString.html">SpannableString</a> implements <a href="http://developer.android.com/reference/android/text/Spanned.html">Spanned</a>). This class only processes ParagraphStyle Spans.</p>
+
+<p>The <a href="http://developer.android.com/reference/android/text/Layout.html#draw%28android.graphics.Canvas,%20android.graphics.Path,%20android.graphics.Paint,%20int%29">draw</a> method calls 2 others methods:</p>
+
+<ul>
+<li>drawBackground</li>
+</ul>
+
+<p>For each line of text, if there is a <a href="http://developer.android.com/reference/android/text/style/LineBackgroundSpan.html">LineBackgroundSpan</a> for a current line, <a href="http://developer.android.com/reference/android/text/style/LineBackgroundSpan.html#drawBackground%28android.graphics.Canvas,%20android.graphics.Paint,%20int,%20int,%20int,%20int,%20int,%20java.lang.CharSequence,%20int,%20int,%20int%29">LineBackgroundSpan#drawBackground</a> is called.</p>
+
+<ul>
+<li>drawText</li>
+</ul>
+
+<p>For each line of text, it computes <a href="http://developer.android.com/reference/android/text/style/LeadingMarginSpan.html">LeadingMarginSpan</a> and <a href="http://developer.android.com/reference/android/text/style/LeadingMarginSpan.LeadingMarginSpan2.html">LeadingMarginSpan2</a> and calls <a href="http://developer.android.com/reference/android/text/style/LeadingMarginSpan.html#drawLeadingMargin%28android.graphics.Canvas,%20android.graphics.Paint,%20int,%20int,%20int,%20int,%20int,%20java.lang.CharSequence,%20int,%20int,%20boolean,%20android.text.Layout%29">LeadingMarginSpan#drawLeadingMargin</a> when it’s necessary. This is also where <a href="http://developer.android.com/reference/android/text/style/AlignmentSpan.html">AlignmentSpan</a> is used to determine the text alignment. Finally, if the current line is spanned, Layout calls TextLine#draw (a TextLine object is created for each line).</p>
+
+<h3 id="textline">TEXTLINE</h3>
+
+<p><a href="https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/text/TextLine.java">android.text.TextLine</a> documentation says: Represents a line of styled text, for measuring in visual order and for rendering.</p>
+
+<p>TextLine class contains 3 sets of Spans:</p>
+
+<ul>
+<li>MetricAffectingSpan set</li>
+<li>CharacterStyle set</li>
+<li>ReplacementSpan set</li>
+</ul>
+
+<p>The interesting method is TextLine#handleRun. It’s where all Spans are used to render the text. Relative to the type of Span, TextLine calls:</p>
+
+<ul>
+<li><a href="http://developer.android.com/reference/android/text/style/CharacterStyle.html#updateDrawState%28android.text.TextPaint%29">CharacterStyle#updateDrawState</a> to change the TextPaint configuration for MetricAffectingSpan and CharacterStyle Spans.</li>
+<li>TextLine#handleReplacement for ReplacementSpan. It calls <a href="http://developer.android.com/reference/android/text/style/ReplacementSpan.html#getSize%28android.graphics.Paint,%20java.lang.CharSequence,%20int,%20int,%20android.graphics.Paint.FontMetricsInt%29">Replacement#getSize</a> to get the replacement width, update the font metrics if it’s needed and finally call <a href="http://developer.android.com/reference/android/text/style/ReplacementSpan.html#draw%28android.graphics.Canvas,%20java.lang.CharSequence,%20int,%20int,%20float,%20int,%20int,%20int,%20android.graphics.Paint%29">Replacement#draw</a>.</li>
+</ul>
+
+<h3 id="fontmetrics">FONTMETRICS</h3>
+
+<p>If you want to know more about what is font metrics, just look at the following schema:</p>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-5.png" alt="fontmetrics">  </p>
+
+<h2 id="playground">Playground</h2>
+
+<h3 id="bulletspan">BULLETSPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/BulletSpan.html">android.text.style.BulletSpan</a></p>
+
+<p>The BulletSpan affects paragraph-level text formatting. It allows you to put a bullet on paragraph start.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">public BulletSpan (int gapWidth, int color)</span>
+</span><span class='line'><span class="cm">-gapWidth: gap in px between bullet and text</span>
+</span><span class='line'><span class="cm">-color: bullet color (optionnal, default is transparent)</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//create a black BulletSpan with a gap of 15px</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">BulletSpan</span><span class="o">(</span><span class="mi">15</span><span class="o">,</span> <span class="n">Color</span><span class="o">.</span><span class="na">BLACK</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-6.png" alt="BulletSpan">  </p>
+
+<h3 id="quotespan">QUOTESPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/QuoteSpan.html">android.text.style.QuoteSpan</a></p>
+
+<p>The QuoteSpan affects paragraph-level text formatting. It allows you to put a quote vertical line on a paragraph.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">public QuoteSpan (int color)</span>
+</span><span class='line'><span class="cm">-color: quote vertical line color (optionnal, default is Color.BLUE)</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//create a red quote</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">QuoteSpan</span><span class="o">(</span><span class="n">Color</span><span class="o">.</span><span class="na">RED</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-7.png" alt="QuoteSpan">  </p>
+
+<h3 id="alignmentspan-standard">ALIGNMENTSPAN.STANDARD</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/AlignmentSpan.Standard.html">android.text.style.AlignmentSpan.Standard</a></p>
+
+<p>The AlignmentSpan.Standard affects paragraph-level text formatting. It allows you to align (normal, center, opposite) a paragraph.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">public Standard(Layout.Alignment align)</span>
+</span><span class='line'><span class="cm">-align: alignment to set</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//align center a paragraph</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AlignmentSpan</span><span class="o">.</span><span class="na">Standard</span><span class="o">(</span><span class="n">Layout</span><span class="o">.</span><span class="na">Alignment</span><span class="o">.</span><span class="na">ALIGN_CENTER</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-8.png" alt="AlignmentSpan">  </p>
+
+<h3 id="underlinespan">UNDERLINESPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/UnderlineSpan.html">android.text.style.UnderlineSpan</a></p>
+
+<p>The UnderlineSpan affects character-level text formatting. It allows you to underline a character thanks to <a href="http://developer.android.com/reference/android/graphics/Paint.html#setUnderlineText%28boolean%29">Paint#setUnderlineText(true)</a>.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//underline a character</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">UnderlineSpan</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-9.png" alt="UnderlineSpan">  </p>
+
+<h3 id="strikethroughspan">STRIKETHROUGHSPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/StrikethroughSpan.html">android.text.style.StrikethroughSpan</a></p>
+
+<p>The StrikethroughSpan affects character-level text formatting. It allows you to strikethrough a character thanks to <a href="http://developer.android.com/reference/android/graphics/Paint.html#setStrikeThruText%28boolean%29">Paint#setStrikeThruText(true)</a>.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//strikethrough a character</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StrikethroughSpan</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-10.png" alt="StrikethroughSpan">  </p>
+
+<h3 id="subscriptspan">SUBSCRIPTSPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/SubscriptSpan.html">android.text.style.SubscriptSpan</a></p>
+
+<p>The SubscriptSpan affects character-level text formatting. It allows you to subscript a character by reducing the <a href="http://developer.android.com/reference/android/text/TextPaint.html#baselineShift">TextPaint#baselineShift</a> .</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//subscript a character</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SubscriptSpan</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-11.png" alt="SubscriptSpan">  </p>
+
+<h3 id="superscriptspan">SUPERSCRIPTSPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/SuperscriptSpan.html">android.text.style.SuperscriptSpan</a></p>
+
+<p>The SuperscriptSpan affects character-level text formatting. It allows you to superscript a character by increasing the <a href="http://developer.android.com/reference/android/text/TextPaint.html#baselineShift">TextPaint#baselineShift</a> .</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//superscript a character</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SuperscriptSpan</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-12.png" alt="SuperscriptSpan">  </p>
+
+<h3 id="backgroundcolorspan">BACKGROUNDCOLORSPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/BackgroundColorSpan.html">android.text.style.BackgroundColorSpan</a></p>
+
+<p>The BackgroundColorSpan affects character-level text formatting. It allows you to set a background color on a character.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">public BackgroundColorSpan (int color)</span>
+</span><span class='line'><span class="cm">-color: background color</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//set a green background</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">BackgroundColorSpan</span><span class="o">(</span><span class="n">Color</span><span class="o">.</span><span class="na">GREEN</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-13.png" alt="BackgroundColorSpan">  </p>
+
+<h3 id="foregroundcolorspan">FOREGROUNDCOLORSPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/ForegroundColorSpan.html">android.text.style.ForegroundColorSpan</a></p>
+
+<p>The ForegroundColorSpan affects character-level text formatting. It allows you to set a foreground color on a character.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">public ForegroundColorSpan (int color)</span>
+</span><span class='line'><span class="cm">-color: foreground color</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//set a red foreground</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ForegroundColorSpan</span><span class="o">(</span><span class="n">Color</span><span class="o">.</span><span class="na">RED</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-14.png" alt="ForegroundColorSpan">  </p>
+
+<h3 id="imagespan">IMAGESPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/ImageSpan.html">android.text.style.ImageSpan</a></p>
+
+<p>The ImageSpan affects character-level text formatting. It allows you to a character by an image. It’s one of the few span that is well documented so enjoy it!</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//replace a character by pic1_small image</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ImageSpan</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">R</span><span class="o">.</span><span class="na">drawable</span><span class="o">.</span><span class="na">pic1_small</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-15.png" alt="ImageSpan">  </p>
+
+<h3 id="stylespan">STYLESPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/StyleSpan.html">android.text.style.StyleSpan</a></p>
+
+<p>The StyleSpan affects character-level text formatting. It allows you to set a style (bold, italic, normal) on a character.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">public StyleSpan (int style)</span>
+</span><span class='line'><span class="cm">-style: int describing the style (android.graphics.Typeface)</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//set a bold+italic style</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StyleSpan</span><span class="o">(</span><span class="n">Typeface</span><span class="o">.</span><span class="na">BOLD</span> <span class="o">|</span> <span class="n">Typeface</span><span class="o">.</span><span class="na">ITALIC</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-16.png" alt="StyleSpan">  </p>
+
+<h3 id="typefacespan">TYPEFACESPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/TypefaceSpan.html">android.text.style.TypefaceSpan</a></p>
+
+<p>The TypefaceSpan affects character-level text formatting. It allows you to set a font family (monospace, serif etc) on a character.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">public TypefaceSpan (String family)</span>
+</span><span class='line'><span class="cm">-family: a font family</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//set the serif family</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">TypefaceSpan</span><span class="o">(</span><span class="s">&quot;serif&quot;</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-17.png" alt="TypefaceSpan">  </p>
+
+<h3 id="textappearancespan">TEXTAPPEARANCESPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/TextAppearanceSpan.html">android.text.style.TextAppearanceSpan</a></p>
+
+<p>The TextAppearanceSpan affects character-level text formatting. It allows you to set a appearance on a character.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">public  TextAppearanceSpan(Context context, int appearance, int colorList)</span>
+</span><span class='line'><span class="cm">-context: a valid context</span>
+</span><span class='line'><span class="cm">-appearance: text appearance resource (ex: android.R.style.TextAppearance_Small)</span>
+</span><span class='line'><span class="cm">-colorList: a text color resource (ex: android.R.styleable.Theme_textColorPrimary)</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">public TextAppearanceSpan(String family, int style, int size, ColorStateList color, ColorStateList linkColor)</span>
+</span><span class='line'><span class="cm">-family: a font family</span>
+</span><span class='line'><span class="cm">-style: int describing the style (android.graphics.Typeface)</span>
+</span><span class='line'><span class="cm">-size: text size</span>
+</span><span class='line'><span class="cm">-color: a text color</span>
+</span><span class='line'><span class="cm">-linkColor: a link text color</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//set the serif family</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">TextAppearanceSpan</span><span class="o">(</span><span class="k">this</span><span class="cm">/*a context*/</span><span class="o">,</span> <span class="n">R</span><span class="o">.</span><span class="na">style</span><span class="o">.</span><span class="na">SpecialTextAppearance</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>styles.xml
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;SpecialTextAppearance&quot;</span> <span class="na">parent=</span><span class="s">&quot;@android:style/TextAppearance&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:textColor&quot;</span><span class="nt">&gt;</span>@color/color1<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:textColorHighlight&quot;</span><span class="nt">&gt;</span>@color/color2<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:textColorHint&quot;</span><span class="nt">&gt;</span>@color/color3<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:textColorLink&quot;</span><span class="nt">&gt;</span>@color/color4<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:textSize&quot;</span><span class="nt">&gt;</span>28sp<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:textStyle&quot;</span><span class="nt">&gt;</span>italic<span class="nt">&lt;/item&gt;</span>
+</span><span class='line'><span class="nt">&lt;/style&gt;</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-18.png" alt="TextAppearanceSpan">  </p>
+
+<h3 id="absolutesizespan">ABSOLUTESIZESPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/AbsoluteSizeSpan.html">android.text.style.AbsoluteSizeSpan</a></p>
+
+<p>The AbsoluteSizeSpan affects character-level text formatting. It allows you to set an absolute text size on a character.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">public AbsoluteSizeSpan(int size, boolean dip)</span>
+</span><span class='line'><span class="cm">-size: a size</span>
+</span><span class='line'><span class="cm">-dip: false, size is in px; true, size is in dip (optionnal, default false)</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//set text size to 24dp</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">AbsoluteSizeSpan</span><span class="o">(</span><span class="mi">24</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-19.png" alt="AbsoluteSizeSpan">  </p>
+
+<h3 id="relativesizespan">RELATIVESIZESPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/RelativeSizeSpan.html">android.text.style.RelativeSizeSpan</a></p>
+
+<p>The RelativeSizeSpan affects character-level text formatting. It allows you to set an relative text size on a character.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">public RelativeSizeSpan(float proportion)</span>
+</span><span class='line'><span class="cm">-proportion: a proportion of the actual text size</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//set text size 2 times bigger</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">RelativeSizeSpan</span><span class="o">(</span><span class="mf">2.0f</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-20.png" alt="RelativeSizeSpan">  </p>
+
+<h2 id="scalexspan">SCALEXSPAN</h2>
+
+<p><a href="http://developer.android.com/reference/android/text/style/ScaleXSpan.html">android.text.style.ScaleXSpan</a></p>
+
+<p>The ScaleXSpan affects character-level text formatting. It allows you to scale on x a character.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">public ScaleXSpan(float proportion)</span>
+</span><span class='line'><span class="cm">-proportion: a proportion of actual text scale x</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//scale x 3 times bigger</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ScaleXSpan</span><span class="o">(</span><span class="mf">3.0f</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-21.png" alt="ScaleXSpan">  </p>
+
+<h3 id="maskfilterspan">MASKFILTERSPAN</h3>
+
+<p><a href="http://developer.android.com/reference/android/text/style/MaskFilterSpan.html">android.text.style.MaskFilterSpan</a></p>
+
+<p>The MaskFilterSpan affects character-level text formatting. It allows you to set a <a href="http://developer.android.com/reference/android/graphics/MaskFilter.html">android.graphics.MaskFilter</a> on a character.</p>
+
+<p><strong>Warning: BlurMaskFilter is not supported with hardware acceleration.</strong></p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">public MaskFilterSpan(MaskFilter filter)</span>
+</span><span class='line'><span class="cm">-filter: a filter to apply</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//Blur a character</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">MaskFilterSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">BlurMaskFilter</span><span class="o">(</span><span class="n">density</span><span class="o">*</span><span class="mi">2</span><span class="o">,</span> <span class="n">BlurMaskFilter</span><span class="o">.</span><span class="na">Blur</span><span class="o">.</span><span class="na">NORMAL</span><span class="o">));</span>
+</span><span class='line'><span class="c1">//Emboss a character</span>
+</span><span class='line'><span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">MaskFilterSpan</span><span class="o">(</span><span class="k">new</span> <span class="nf">EmbossMaskFilter</span><span class="o">(</span><span class="k">new</span> <span class="kt">float</span><span class="o">[]</span> <span class="o">{</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">1</span> <span class="o">},</span> <span class="mf">0.4f</span><span class="o">,</span> <span class="mi">6</span><span class="o">,</span> <span class="mf">3.5f</span><span class="o">));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><strong>BlurMaskFilter</strong></p>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-22.png" alt="MaskFilterSpan">  </p>
+
+<p><strong>EmbossMaskFilter with a blue ForegroundColorSpan and a bold StyleSpan</strong></p>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-23.png" alt="MaskFilterSpan">  </p>
+
+<h2 id="pushing-spans-to-the-next-level">Pushing Spans to the next level</h2>
+
+<h3 id="animate-the-foreground-color">ANIMATE THE FOREGROUND COLOR</h3>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-24.gif" alt="AnimateSpan">  </p>
+
+<p>ForegroundColorSpan is read-only. It means that you can’t change the foreground color after instanciation. So, the first thing to do is to code a MutableForegroundColorSpan.</p>
+
+<p>MutableForegroundColorSpan.java
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MutableForegroundColorSpan</span> <span class="kd">extends</span> <span class="n">ForegroundColorSpan</span> <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="n">mAlpha</span> <span class="o">=</span> <span class="mi">255</span><span class="o">;</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="n">mForegroundColor</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="nf">MutableForegroundColorSpan</span><span class="o">(</span><span class="kt">int</span> <span class="n">alpha</span><span class="o">,</span> <span class="kt">int</span> <span class="n">color</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="kd">super</span><span class="o">(</span><span class="n">color</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">mAlpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">mForegroundColor</span> <span class="o">=</span> <span class="n">color</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="nf">MutableForegroundColorSpan</span><span class="o">(</span><span class="n">Parcel</span> <span class="n">src</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="kd">super</span><span class="o">(</span><span class="n">src</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">mForegroundColor</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="na">readInt</span><span class="o">();</span>
+</span><span class='line'>        <span class="n">mAlpha</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="na">readInt</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">writeToParcel</span><span class="o">(</span><span class="n">Parcel</span> <span class="n">dest</span><span class="o">,</span> <span class="kt">int</span> <span class="n">flags</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="kd">super</span><span class="o">.</span><span class="na">writeToParcel</span><span class="o">(</span><span class="n">dest</span><span class="o">,</span> <span class="n">flags</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">dest</span><span class="o">.</span><span class="na">writeInt</span><span class="o">(</span><span class="n">mForegroundColor</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">dest</span><span class="o">.</span><span class="na">writeFloat</span><span class="o">(</span><span class="n">mAlpha</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">updateDrawState</span><span class="o">(</span><span class="n">TextPaint</span> <span class="n">ds</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">ds</span><span class="o">.</span><span class="na">setColor</span><span class="o">(</span><span class="n">getForegroundColor</span><span class="o">());</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * @param alpha from 0 to 255</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setAlpha</span><span class="o">(</span><span class="kt">int</span> <span class="n">alpha</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">mAlpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setForegroundColor</span><span class="o">(</span><span class="kt">int</span> <span class="n">foregroundColor</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">mForegroundColor</span> <span class="o">=</span> <span class="n">foregroundColor</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">float</span> <span class="nf">getAlpha</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">mAlpha</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getForegroundColor</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">Color</span><span class="o">.</span><span class="na">argb</span><span class="o">(</span><span class="n">mAlpha</span><span class="o">,</span> <span class="n">Color</span><span class="o">.</span><span class="na">red</span><span class="o">(</span><span class="n">mForegroundColor</span><span class="o">),</span> <span class="n">Color</span><span class="o">.</span><span class="na">green</span><span class="o">(</span><span class="n">mForegroundColor</span><span class="o">),</span> <span class="n">Color</span><span class="o">.</span><span class="na">blue</span><span class="o">(</span><span class="n">mForegroundColor</span><span class="o">));</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>Now, we can change alpha or foreground color on the same instance. But when you set those properties, it doesn’t refresh the View: you have to do this manually by re-setting the SpannableString.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">MutableForegroundColorSpan</span> <span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">MutableForegroundColorSpan</span><span class="o">(</span><span class="mi">255</span><span class="o">,</span> <span class="n">Color</span><span class="o">.</span><span class="na">BLACK</span><span class="o">);</span>
+</span><span class='line'><span class="n">spannableString</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="n">span</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">text</span><span class="o">.</span><span class="na">length</span><span class="o">(),</span> <span class="n">Spanned</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
+</span><span class='line'><span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">spannableString</span><span class="o">);</span>
+</span><span class='line'><span class="c1">//here the text is black and fully opaque</span>
+</span><span class='line'><span class="n">span</span><span class="o">.</span><span class="na">setAlpha</span><span class="o">(</span><span class="mi">100</span><span class="o">);</span>
+</span><span class='line'><span class="n">span</span><span class="o">.</span><span class="na">setForegroundColor</span><span class="o">(</span><span class="n">Color</span><span class="o">.</span><span class="na">RED</span><span class="o">);</span>
+</span><span class='line'><span class="c1">//here the text hasn&#39;t changed.</span>
+</span><span class='line'><span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">spannableString</span><span class="o">);</span>
+</span><span class='line'><span class="c1">//finally, the text is red and translucent</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Now, we want to animate the foreground color. We use a custom <a href="http://developer.android.com/reference/android/util/Property.html">android.util.Property</a>.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">Property</span><span class="o">&lt;</span><span class="n">MutableForegroundColorSpan</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">MUTABLE_FOREGROUND_COLOR_SPAN_FC_PROPERTY</span> <span class="o">=</span>
+</span><span class='line'><span class="k">new</span> <span class="n">Property</span><span class="o">&lt;</span><span class="n">MutableForegroundColorSpan</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;(</span><span class="n">Integer</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">&quot;MUTABLE_FOREGROUND_COLOR_SPAN_FC_PROPERTY&quot;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">set</span><span class="o">(</span><span class="n">MutableForegroundColorSpan</span> <span class="n">span</span><span class="o">,</span> <span class="n">Integer</span> <span class="n">value</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">span</span><span class="o">.</span><span class="na">setForegroundColor</span><span class="o">(</span><span class="n">value</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="n">Integer</span> <span class="nf">get</span><span class="o">(</span><span class="n">MutableForegroundColorSpan</span> <span class="n">span</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">span</span><span class="o">.</span><span class="na">getForegroundColor</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">};</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Finally, we animate the custom property with an <a href="http://developer.android.com/reference/android/animation/ObjectAnimator.html">ObjectAnimator</a>. Don’t forget to refresh the View on update.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">MutableForegroundColorSpan</span> <span class="n">span</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">MutableForegroundColorSpan</span><span class="o">(</span><span class="mi">255</span><span class="o">,</span> <span class="n">Color</span><span class="o">.</span><span class="na">BLACK</span><span class="o">);</span>
+</span><span class='line'><span class="n">mSpannableString</span><span class="o">.</span><span class="na">setSpan</span><span class="o">(</span><span class="n">span</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">text</span><span class="o">.</span><span class="na">length</span><span class="o">(),</span> <span class="n">Spanned</span><span class="o">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="o">);</span>
+</span><span class='line'><span class="n">ObjectAnimator</span> <span class="n">objectAnimator</span> <span class="o">=</span> <span class="n">ObjectAnimator</span><span class="o">.</span><span class="na">ofInt</span><span class="o">(</span><span class="n">span</span><span class="o">,</span> <span class="n">MUTABLE_FOREGROUND_COLOR_SPAN_FC_PROPERTY</span><span class="o">,</span> <span class="n">Color</span><span class="o">.</span><span class="na">BLACK</span><span class="o">,</span> <span class="n">Color</span><span class="o">.</span><span class="na">RED</span><span class="o">);</span>
+</span><span class='line'><span class="n">objectAnimator</span><span class="o">.</span><span class="na">setEvaluator</span><span class="o">(</span><span class="k">new</span> <span class="nf">ArgbEvaluator</span><span class="o">());</span>
+</span><span class='line'><span class="n">objectAnimator</span><span class="o">.</span><span class="na">addUpdateListener</span><span class="o">(</span><span class="k">new</span> <span class="n">ValueAnimator</span><span class="o">.</span><span class="na">AnimatorUpdateListener</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onAnimationUpdate</span><span class="o">(</span><span class="n">ValueAnimator</span> <span class="n">animation</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="c1">//refresh</span>
+</span><span class='line'>        <span class="n">mText</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">mSpannableString</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">});</span>
+</span><span class='line'><span class="n">objectAnimator</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h2 id="actionbar-‘fireworks’">ACTIONBAR ‘FIREWORKS’</h2>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-25.gif" alt="FIREWORKS">  </p>
+
+<p>The ‘fireworks’ animation is to make letter fade in randomly. First, cut the text into multiple spans (for example, one span by character) and fade in spans after spans. Using the previously introduced MutableForegroundColorSpan, we are going to create a special object representing a group of span. And for each call to setAlpha on the group, we randomly set the alpha for each span.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">FireworksSpanGroup</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="kt">float</span> <span class="n">mAlpha</span><span class="o">;</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">MutableForegroundColorSpan</span><span class="o">&gt;</span> <span class="n">mSpans</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">private</span> <span class="nf">FireworksSpanGroup</span><span class="o">(</span><span class="kt">float</span> <span class="n">alpha</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">mAlpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">mSpans</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">MutableForegroundColorSpan</span><span class="o">&gt;();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">addSpan</span><span class="o">(</span><span class="n">MutableForegroundColorSpan</span> <span class="n">span</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">span</span><span class="o">.</span><span class="na">setAlpha</span><span class="o">((</span><span class="kt">int</span><span class="o">)</span> <span class="o">(</span><span class="n">mAlpha</span> <span class="o">*</span> <span class="mi">255</span><span class="o">));</span>
+</span><span class='line'>        <span class="n">mSpans</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">span</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Collections</span><span class="o">.</span><span class="na">shuffle</span><span class="o">(</span><span class="n">mSpans</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setAlpha</span><span class="o">(</span><span class="kt">float</span> <span class="n">alpha</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="n">mSpans</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+</span><span class='line'>        <span class="kt">float</span> <span class="n">total</span> <span class="o">=</span> <span class="mf">1.0f</span> <span class="o">*</span> <span class="n">size</span> <span class="o">*</span> <span class="n">alpha</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">size</span><span class="o">;</span> <span class="n">index</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">MutableForegroundColorSpan</span> <span class="n">span</span> <span class="o">=</span> <span class="n">mSpans</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">index</span><span class="o">);</span>
+</span><span class='line'>            <span class="k">if</span><span class="o">(</span><span class="n">total</span> <span class="o">&gt;=</span> <span class="mf">1.0f</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>                <span class="n">span</span><span class="o">.</span><span class="na">setAlpha</span><span class="o">(</span><span class="mi">255</span><span class="o">);</span>
+</span><span class='line'>                <span class="n">total</span> <span class="o">-=</span> <span class="mf">1.0f</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>                <span class="n">span</span><span class="o">.</span><span class="na">setAlpha</span><span class="o">((</span><span class="kt">int</span><span class="o">)</span> <span class="o">(</span><span class="n">total</span> <span class="o">*</span> <span class="mi">255</span><span class="o">));</span>
+</span><span class='line'>                <span class="n">total</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">float</span> <span class="nf">getAlpha</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="n">mAlpha</span><span class="o">;</span> <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>We create a custom property to animate the alpha of a FireworksSpanGroup.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">Property</span><span class="o">&lt;</span><span class="n">FireworksSpanGroup</span><span class="o">,</span> <span class="n">Float</span><span class="o">&gt;</span> <span class="n">FIREWORKS_GROUP_PROGRESS_PROPERTY</span> <span class="o">=</span>
+</span><span class='line'><span class="k">new</span> <span class="n">Property</span><span class="o">&lt;</span><span class="n">FireworksSpanGroup</span><span class="o">,</span> <span class="n">Float</span><span class="o">&gt;(</span><span class="n">Float</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">&quot;FIREWORKS_GROUP_PROGRESS_PROPERTY&quot;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">set</span><span class="o">(</span><span class="n">FireworksSpanGroup</span> <span class="n">spanGroup</span><span class="o">,</span> <span class="n">Float</span> <span class="n">value</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">spanGroup</span><span class="o">.</span><span class="na">setProgress</span><span class="o">(</span><span class="n">value</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="n">Float</span> <span class="nf">get</span><span class="o">(</span><span class="n">FireworksSpanGroup</span> <span class="n">spanGroup</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">spanGroup</span><span class="o">.</span><span class="na">getProgress</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">};</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Finally, we create the group and animate it with an ObjectAnimator.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">final</span> <span class="n">FireworksSpanGroup</span> <span class="n">spanGroup</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">FireworksSpanGroup</span><span class="o">();</span>
+</span><span class='line'><span class="c1">//init the group with multiple spans</span>
+</span><span class='line'><span class="c1">//spanGroup.addSpan(span);</span>
+</span><span class='line'><span class="c1">//set spans on the ActionBar spannable title</span>
+</span><span class='line'><span class="c1">//mActionBarTitleSpannableString.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);</span>
+</span><span class='line'><span class="n">spanGroup</span><span class="o">.</span><span class="na">init</span><span class="o">();</span>
+</span><span class='line'><span class="n">ObjectAnimator</span> <span class="n">objectAnimator</span> <span class="o">=</span> <span class="n">ObjectAnimator</span><span class="o">.</span><span class="na">ofFloat</span><span class="o">(</span><span class="n">spanGroup</span><span class="o">,</span> <span class="n">FIREWORKS_GROUP_PROGRESS_PROPERTY</span><span class="o">,</span> <span class="mf">0.0f</span><span class="o">,</span> <span class="mf">1.0f</span><span class="o">);</span>
+</span><span class='line'><span class="n">objectAnimator</span><span class="o">.</span><span class="na">addUpdateListener</span><span class="o">(</span><span class="k">new</span> <span class="n">ValueAnimator</span><span class="o">.</span><span class="na">AnimatorUpdateListener</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onAnimationUpdate</span><span class="o">(</span><span class="n">ValueAnimator</span> <span class="n">animation</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="c1">//refresh the ActionBar title</span>
+</span><span class='line'>        <span class="n">setTitle</span><span class="o">(</span><span class="n">mActionBarTitleSpannableString</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">});</span>
+</span><span class='line'><span class="n">objectAnimator</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h2 id="draw-with-your-own-span">DRAW WITH YOUR OWN SPAN</h2>
+
+<p>In this section, we are going to see a way to draw via a custom Span. This opens interesting perspectives for text customization.</p>
+
+<p>First, we have to create a custom Span that extends the abstract class <a href="http://developer.android.com/reference/android/text/style/ReplacementSpan.html">ReplacementSpan</a>.</p>
+
+<p>If you only want to draw a custom background, you can implements <a href="http://developer.android.com/reference/android/text/style/LineBackgroundSpan.html">LineBackgroundSpan</a> which is at paragraph-level.</p>
+
+<p>We have to implement 2 methods:</p>
+
+<ul>
+<li><a href="http://developer.android.com/reference/android/text/style/ReplacementSpan.html#getSize%28android.graphics.Paint,%20java.lang.CharSequence,%20int,%20int,%20android.graphics.Paint.FontMetricsInt%29">getSize</a>: this method returns the new with of your replacement.</li>
+</ul>
+
+<p>text: text managed by the Span</p>
+
+<p>start: start index of text</p>
+
+<p>end: end index of text</p>
+
+<p>fm: font metrics, can be null</p>
+
+<ul>
+<li><a href="http://developer.android.com/reference/android/text/style/ReplacementSpan.html#draw%28android.graphics.Canvas,%20java.lang.CharSequence,%20int,%20int,%20float,%20int,%20int,%20int,%20android.graphics.Paint%29">draw</a>: it’s here you can draw with the Canvas.</li>
+</ul>
+
+<p>x: x-coordinate where to draw the text</p>
+
+<p>top: top of the line</p>
+
+<p>y: the baseline</p>
+
+<p>bottom: bottom of the line</p>
+
+<p>Let’s see an example where we draw a blue rectangle around the text.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">int</span> <span class="nf">getSize</span><span class="o">(</span><span class="n">Paint</span> <span class="n">paint</span><span class="o">,</span> <span class="n">CharSequence</span> <span class="n">text</span><span class="o">,</span> <span class="kt">int</span> <span class="n">start</span><span class="o">,</span> <span class="kt">int</span> <span class="n">end</span><span class="o">,</span> <span class="n">Paint</span><span class="o">.</span><span class="na">FontMetricsInt</span> <span class="n">fm</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="c1">//return text with relative to the Paint</span>
+</span><span class='line'>    <span class="n">mWidth</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="n">paint</span><span class="o">.</span><span class="na">measureText</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">start</span><span class="o">,</span> <span class="n">end</span><span class="o">);</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">mWidth</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">draw</span><span class="o">(</span><span class="n">Canvas</span> <span class="n">canvas</span><span class="o">,</span> <span class="n">CharSequence</span> <span class="n">text</span><span class="o">,</span> <span class="kt">int</span> <span class="n">start</span><span class="o">,</span> <span class="kt">int</span> <span class="n">end</span><span class="o">,</span> <span class="kt">float</span> <span class="n">x</span><span class="o">,</span> <span class="kt">int</span> <span class="n">top</span><span class="o">,</span> <span class="kt">int</span> <span class="n">y</span><span class="o">,</span> <span class="kt">int</span> <span class="n">bottom</span><span class="o">,</span> <span class="n">Paint</span> <span class="n">paint</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="c1">//draw the frame with custom Paint</span>
+</span><span class='line'>    <span class="n">canvas</span><span class="o">.</span><span class="na">drawRect</span><span class="o">(</span><span class="n">x</span><span class="o">,</span> <span class="n">top</span><span class="o">,</span> <span class="n">x</span> <span class="o">+</span> <span class="n">mWidth</span><span class="o">,</span> <span class="n">bottom</span><span class="o">,</span> <span class="n">mPaint</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-26.png" alt="DRAW WITH YOUR OWN SPAN">  </p>
+
+<h2 id="bonus">BONUS</h2>
+
+<p>The Sample app contains some examples of pushing Spans to the next level like:</p>
+
+<ul>
+<li>Progressive blur</li>
+</ul>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-27.gif" alt="Progressive blur">  </p>
+
+<ul>
+<li>Typewriter</li>
+</ul>
+
+<p><img src="/img/2015-11-02-android-spans-a-powerful-concept-28.gif" alt="Typewriter">  </p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Working on this article, I realised Spans are really powerfull and like Drawables, I think they are not used enough. Text is the main content of an application, it’s everywhere so don’t forget to make it more dynamic and attractive with Spans!</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-02T16:57:18+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.02</time>
         
            | <a href="/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/#disqus_thread" itemprop="discussionUrl"
@@ -741,559 +1784,6 @@
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-21T16:28:03+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.21</time>
-        
-           | <a href="/2015/10/21/swift-2-dot-0-singleton/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/21/swift-2-dot-0-singleton/" itemprop="url">Swift 2.0에서 상속 가능한 Singleton 생성하기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>오늘은 swift에서 Singleton 객체를 생성하는 방법을 설명하고자 한다.</p>
-
-<p>우선 Objective-C에서는 어떻게 생성하는지는 아래를 보면 알 수 있다.</p>
-
-<p>우선 Singleton Class 정의.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='ObjC'><span class='line'><span class="k">@implementation</span> <span class="nc">SingletonCls</span>
-</span><span class='line'>
-</span><span class='line'><span class="p">+</span> <span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nf">sharedManager</span> <span class="p">{</span>
-</span><span class='line'>    <span class="k">static</span> <span class="n">SingletonCls</span> <span class="o">*</span><span class="n">staticManager</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
-</span><span class='line'>    <span class="k">static</span> <span class="kt">dispatch_once_t</span> <span class="n">onceToken</span><span class="p">;</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">dispatch_once</span><span class="p">(</span><span class="o">&amp;</span><span class="n">onceToken</span><span class="p">,</span> <span class="o">^</span><span class="p">{</span>
-</span><span class='line'>        <span class="n">staticManager</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">self</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
-</span><span class='line'>    <span class="p">});</span>
-</span><span class='line'>    <span class="k">return</span> <span class="n">staticManager</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">@end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>그리고 사용시.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ObjC'><span class='line'><span class="p">[</span><span class="n">SingletonCls</span> <span class="n">sharedManager</span><span class="p">];</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>그럼 Swift에서는 어떻게 하는지를 살펴보자. 사실 아주 간단하다.</p>
-
-<p>Singleton Class 정의.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'>    <span class="k">static</span> <span class="k">let</span> <span class="n">sharedInstance</span> <span class="o">=</span> <span class="n">SingletonCls</span><span class="p">()</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>그리고 사용시.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">SingletonCls</span><span class="p">.</span><span class="n">sharedInstance</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>그런데 오늘 하고자하는 이야기는 이게 아니다. 기본적인 Singleton Class를 정의하는 것은 검색하면 많이 나온다. 하지만 내가 필요했던 것은 상속이 가능한 Swift Singleton Class다. 아래의 예를 보자.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'>  <span class="k">static</span> <span class="k">let</span> <span class="n">sharedInstance</span> <span class="o">=</span> <span class="n">SingletonCls</span><span class="p">()</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">var</span> <span class="nl">X</span><span class="p">:</span><span class="n">Int</span><span class="o">?</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'>  <span class="k">var</span> <span class="nl">Y</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">9</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">let</span> <span class="n">A</span> <span class="o">=</span> <span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">sharedInstance</span><span class="p">;</span>
-</span><span class='line'><span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">);</span>
-</span><span class='line'><span class="n">print</span><span class="p">((</span><span class="n">A</span> <span class="kt">as</span><span class="o">!</span> <span class="n">SingletonClsChild</span><span class="p">).</span><span class="n">Y</span><span class="p">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">test</span><span class="p">.</span><span class="n">SingletonCls</span>
-</span><span class='line'><span class="n">Could</span> <span class="n">not</span> <span class="n">cast</span> <span class="n">value</span> <span class="n">of</span> <span class="n">type</span> <span class="err">&#39;</span><span class="n">test</span><span class="p">.</span><span class="n">SingletonCls</span><span class="err">&#39;</span> <span class="p">(</span><span class="mh">0x10d89d2e0</span><span class="p">)</span> <span class="n">to</span> <span class="err">&#39;</span><span class="n">test</span><span class="p">.</span><span class="n">SingletonClsChild</span><span class="err">&#39;</span> <span class="p">(</span><span class="mh">0x10d89d390</span><span class="p">).</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>위 코드는 실행하면 오류가 난다. <code>SingletonClsChild.sharedInstance</code>의 결과가 <code>SingletonCls</code> 인스턴스이기 때문이다.</p>
-
-<p>우선 이 문제를 해결하기 위한 기본 코드부터 보자. <a href="http://www.scriptscoop.net/t/23f5fc2cdd82/swift-singleton-inheritance.html">Swift: Singleton Inheritance</a>에 나온 코드를 약간 수정했다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'>  <span class="k">static</span> <span class="k">var</span> <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="p">[</span><span class="nl">String</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="p">]()</span>
-</span><span class='line'>  <span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'>      <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>          <span class="k">let</span> <span class="n">classname</span> <span class="o">=</span> <span class="n">NSStringFromClass</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
-</span><span class='line'>          <span class="k">if</span> <span class="p">((</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>              <span class="k">return</span> <span class="p">(</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span><span class="o">!</span>
-</span><span class='line'>          <span class="p">}</span>
-</span><span class='line'>          <span class="k">let</span> <span class="n">singletonObject</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
-</span><span class='line'>          <span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">]</span> <span class="o">=</span> <span class="n">singletonObject</span>
-</span><span class='line'>          <span class="k">return</span> <span class="n">singletonObject</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">SingletonCls</span><span class="p">.</span><span class="n">sharedInstance</span>
-</span><span class='line'><span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">sharedInstance</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>위 코드에서 제시한 방법을 사용하면 상속이 가능한 Singleton Class를 정의할 수 있다. 사실 여기에 약간의 기능이 더 추가되어 있다. 호출하는 Class에 따라 각각의 Instance를 생성해서 보관하는 부분이다. 예를 들어 아래의 코드를 보자.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'>  <span class="k">static</span> <span class="k">var</span> <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="p">[</span><span class="nl">String</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="p">]()</span>
-</span><span class='line'>  <span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'>      <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>          <span class="k">let</span> <span class="n">classname</span> <span class="o">=</span> <span class="n">NSStringFromClass</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
-</span><span class='line'>          <span class="k">if</span> <span class="p">((</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>              <span class="k">return</span> <span class="p">(</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span><span class="o">!</span>
-</span><span class='line'>          <span class="p">}</span>
-</span><span class='line'>          <span class="k">let</span> <span class="n">singletonObject</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
-</span><span class='line'>          <span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">]</span> <span class="o">=</span> <span class="n">singletonObject</span>
-</span><span class='line'>          <span class="k">return</span> <span class="n">singletonObject</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">var</span> <span class="nl">X</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">1</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'>  <span class="k">var</span> <span class="nl">Y</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">9</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">let</span> <span class="n">A</span> <span class="o">=</span> <span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">shareInstance</span><span class="p">;</span>
-</span><span class='line'><span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">.</span><span class="n">X</span><span class="p">);</span>
-</span><span class='line'><span class="n">print</span><span class="p">((</span><span class="n">A</span> <span class="kt">as</span><span class="o">!</span> <span class="n">SingletonClsChild</span><span class="p">).</span><span class="n">Y</span><span class="p">);</span>
-</span><span class='line'><span class="n">A</span><span class="p">.</span><span class="n">X</span> <span class="o">=</span> <span class="mi">2</span>
-</span><span class='line'><span class="k">let</span> <span class="n">B</span> <span class="o">=</span> <span class="n">SingletonCls</span><span class="p">.</span><span class="n">shareInstance</span><span class="p">;</span>
-</span><span class='line'><span class="n">print</span><span class="p">(</span><span class="n">B</span><span class="p">.</span><span class="n">X</span><span class="p">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>결과.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="mi">1</span>
-</span><span class='line'><span class="mi">9</span>
-</span><span class='line'><span class="mi">1</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>결과를 보면 맨 마지막 값이 2가 아닌 1이 나오는 것을 확인 할 수 있다. 이것은 Singleton이 만들어 졌으나 <code>SingletonCls</code>와 <code>SingletonClsChild</code>가 각각 만들어 졌음을 뜻한다.</p>
-
-<p>이런 추가적인 부분을 제외하고 기본적인 형태만 사용하고자 할 경우에는 아래와 같이 하면 된다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'>  <span class="k">static</span> <span class="k">var</span> <span class="nl">_singleton_instance</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="o">?</span>
-</span><span class='line'>  <span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'>      <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="n">_singleton_instance</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>              <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
-</span><span class='line'>          <span class="p">}</span>
-</span><span class='line'>          <span class="k">return</span> <span class="n">_singleton_instance</span><span class="o">!</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">SingletonCls</span><span class="p">.</span><span class="n">sharedInstance</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>위 코드를 기준으로 오류가 나던 코드를 다시 만들어 보자.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'>  <span class="k">static</span> <span class="k">var</span> <span class="nl">_singleton_instance</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="o">?</span>
-</span><span class='line'>  <span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'>      <span class="kr">get</span> <span class="p">{</span>
-</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="n">_singleton_instance</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>              <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
-</span><span class='line'>          <span class="p">}</span>
-</span><span class='line'>          <span class="k">return</span> <span class="n">_singleton_instance</span><span class="o">!</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">var</span> <span class="nl">X</span><span class="p">:</span><span class="n">Int</span><span class="o">?</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">public</span> <span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
-</span><span class='line'>  <span class="k">var</span> <span class="nl">Y</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">9</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">let</span> <span class="n">A</span> <span class="o">=</span> <span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">shareInstance</span><span class="p">;</span>
-</span><span class='line'><span class="n">A</span><span class="p">.</span><span class="n">X</span> <span class="o">=</span> <span class="mi">1</span>
-</span><span class='line'><span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-</span><span class='line'><span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">.</span><span class="n">X</span><span class="p">);</span>
-</span><span class='line'><span class="n">print</span><span class="p">((</span><span class="n">A</span> <span class="kt">as</span><span class="o">!</span> <span class="n">SingletonClsChild</span><span class="p">).</span><span class="n">Y</span><span class="p">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>아래와 같은 결과가 출력된다. 원하던 결과를 얻었다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="n">test</span><span class="p">.</span><span class="n">SingletonClsChild</span>
-</span><span class='line'><span class="n">Optional</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-</span><span class='line'><span class="mi">9</span>
-</span></code></pre></td></tr></table></div></figure>
-</div>
-  
-  
-
-
-        </article>
-      
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-21T11:23:33+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.21</time>
-        
-           | <a href="/2015/10/21/xcode-create-sub-module-using-cocoapods/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/21/xcode-create-sub-module-using-cocoapods/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/21/xcode-create-sub-module-using-cocoapods/" itemprop="url">Xcode에서 CocoaPods를 이용해 sub module 만들기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>이번엔 Xcode로 앱 제작시 Sub Module을 만드는 방법을 설명하고자 한다.</p>
-
-<p>그전에 우선 어떤 경우에 Sub Module을 사용하려고 하는지 부터 이야기를 해야 할 듯하다. 나의 경우는 여러 프로젝트에서 공통적으로 사용 할만한 유틸성 클래스들을 주로 묶어서 별도 모듈을 만들어 사용한다. 이렇게하면 비슷한 작업의 반복을 줄일 수 있고  기능도 통합적으로 관리할 수 있어 유지보수가 편하다. 이것은 예를들어 설명한 것일뿐 여러가지 용도로 사용될 수 있다.</p>
-
-<p>Android Studio의 경우 Module을 추가하고 gradle을 설정함으로써 간단하게 서브 모듈을 만들 수 있다. 그런데 Xcode에서는 그렇게 쉬운 방법을 찾질 못했다. 당연히 방법이 있는데 내가 못 찾은 것일 수 있다. 내가 찾아본 방법은 대부분 Framework 프로젝트를 만들어서 사용할 프로젝트에서 추가해서 사용하는 방법들이었다. 그런데 이 방법들은 초기 설정 과정이 다소 복잡하고 Sub Module의 소스를 수정하려면 따로 build를 해서 넣어야 하는 불편함이 있었다.</p>
-
-<p>그래서 여러가지 글들을 찾아 다니다가 <a href="http://albertodebortoli.github.io/blog/2014/03/11/cocoapods-working-with-internal-pods/">CocoaPods: Working With Internal Pods Without Hassle</a>을 찾았다. 여기서는 <a href="https://cocoapods.org/">CocoaPods</a>를 이용해서 Internal Pods를 만들어 모듈을 적용하는 방법을 설명하고 있다. 내가 찾던 것과 가장 유사한 방법으로 바로 적용해 봤다. 단, 이 글에서 설명하는 것 중 CocoaPods Repository를 설정하는 과정은 필요하지 않아 제외했다(사실 귀찮음이 가장 큰 이유다). 하지만 모듈의 버전을 관리하며 체계적으로 적용할 필요가 있다면 CocoaPods Repository를 만들어 관리하는 것을 권장한다.</p>
-
-<p>본격적으로 설명에 앞서 이 방법을 사용할 때의 장점에 대해 간략히 설명하고자 한다.</p>
-
-<ul>
-<li>Sub Module과 메인 프로젝트를 하나의 Xcode에서 작업 가능하다.</li>
-<li>Sub Module의 소스 변경이 있어도 별도로 빌드할 필요가 없다(메인 프로젝트 빌드에 바로 반용된다).</li>
-<li>Sub Module과 메인 프로젝트의 형상 관리는 각각 적용된다.</li>
-</ul>
-
-<p>이제부터 위 글에서 설명하는 내용을 보고 내가 적용한 방법을 설명하겠다.</p>
-
-<h2 id="환경">환경</h2>
-
-<p>일단 내가 설명하기 위해 작업한 환경은 아래와 같다. 하지만 꼭 아래 환경이 맞춰져야하는 것은 아니다. Xcode의 기능을 직접적으로 사용한다기 보다 <a href="https://cocoapods.org/">CocoaPods</a>에 의해서 대부분 처리되기 때문이다.</p>
-
-<ul>
-<li>OSX 10.11</li>
-<li>Xcode 7</li>
-<li>CocoaPods 0.39.0</li>
-<li>Swift</li>
-<li>iOS 8 (Deploy Target)</li>
-<li>Git</li>
-</ul>
-
-<h2 id="sub-module">Sub Module</h2>
-
-<p>이제부터 본격적으로 Sub Module을 만드는 과정을 살펴보자.</p>
-
-<h3 id="cocoapods-git-설치">CocoaPods / Git 설치</h3>
-
-<p>당연히 이미 설치되어 있다면 다시 설치할 필요는 없다.</p>
-
-<p>CocoaPods 설치는 <a href="/2015/08/28/cocoapods-usage/">CocoaPods 사용법</a>에서 간단히 안내했던 내용이지만 아주 간단하다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span><span class="o">[</span>sudo<span class="o">]</span> gem install cocoapods
-</span><span class='line'><span class="nv">$ </span>pod setup
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Git는 <a href="http://git-scm.com/download">Git Downloads</a>에서 자신의 환경에 맞는 설치 파일을 다운받아 간단히 설치 가능하다. 그리고 Git는 submodule을 사용해서 프로젝트와 Sub Module을 연결하고 함께 형상 관리를 하기 위한 것으로 SVN과 같은 다른 형상 관리 도구를 사용한다면 그것을 그대로 사용해도 된다. 다만 아래의 설명에서 Git 처리 부분을 해당 형상 관리 도구에 맞추어 적용하면 된다(형상 관리를 하지 않겠다면 하지 않아도 된다. 하지만 권장하지는 않는다).</p>
-
-<h3 id="xcode-프로젝트-만들기">Xcode 프로젝트 만들기</h3>
-
-<p>이 부분은 특별히 설정하지 않아도 될 듯하다. 자신의 필요에 맞는 프로젝트를 만들거나 기존의 프로젝트를 그대로 사용해도 무방하다.
-다만 신규로 개설했다면 git repository에 등록하자. 앞서 설명과 마찬가지로 SVN이라면 SVN에 등록해도 된다.
-나의 경우는 <a href="https://gitlab.com/">gitlab.com</a>을 사용중이라 여기에 맞춰 예를들면 아래와 같은 과정을 거친다.</p>
-
-<ul>
-<li>gitlab에서 신규 프로젝트 개설</li>
-<li>생성한 프로젝트를 아래와 같이 git에 연결한다.</li>
-</ul>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span><span class="nb">cd</span> <span class="o">{</span>프로젝트명<span class="o">}</span>
-</span><span class='line'><span class="nv">$ </span>git init
-</span><span class='line'><span class="nv">$ </span>git remote add origin https://gitlab.com/<span class="o">{</span>사용자<span class="o">}</span>/<span class="o">{</span>프로젝트명<span class="o">}</span>.git
-</span><span class='line'><span class="nv">$ </span>git add .
-</span><span class='line'><span class="nv">$ </span>git commit
-</span><span class='line'><span class="nv">$ </span>git push -u origin master
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="sub-module-xcode-프로젝트-만들기">Sub Module Xcode 프로젝트 만들기</h3>
-
-<p>Sub Module로 사용할 프로젝트를 하나 더 생성한다. 나의 경우는 Cocoa Touch Framework로 생성했다. Cocoa Touch Static Library 등의 다른 형식은 적용해보지 않아서 동일하게 적용이 되는지는 모르겠다. 특별한 이유가 없다면 Cocoa Touch Framework로 생성한다.</p>
-
-<p><img src="/img/2015-10-21-xcode-create-sub-module-using-cocoapods-1.png" alt=""></p>
-
-<p>이후 부터는 화면에서 안내하는대로 프로젝트를 개설하면 되므로 자세한 설명은 생략하겠다. 생성을 마쳤다면 이 프로젝트도 &quot;Xcode 프로젝트 만들기&quot; 부분에서 예를 들었던 내용처럼 git에 연결한다.</p>
-
-<h4 id="podspec-생성">podspec 생성</h4>
-
-<p>Sub Module을 만들었다면 CocoaPods을 통해 연결할 수 있도록 podspec을 생성해야 한다.
-Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하고 아래와 같이 내용을 넣어준다. 이 부분도 상황에 따라 내용을 변경해도 상관없다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Pod</span><span class="o">::</span><span class="no">Spec</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">s</span><span class="o">|</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">name</span>     <span class="o">=</span> <span class="s1">&#39;{모듈명}&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">version</span>  <span class="o">=</span> <span class="s1">&#39;1.0.0&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="s1">&#39;MIT&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">summary</span>  <span class="o">=</span> <span class="s1">&#39;{설명}&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">homepage</span> <span class="o">=</span> <span class="s1">&#39;https://gitlab.com/subva/SUBiOSFramework&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">author</span>   <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;{작성자}&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;{작성자}{도메인}&#39;</span> <span class="p">}</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source</span>   <span class="o">=</span> <span class="p">{</span> <span class="ss">:git</span> <span class="o">=&gt;</span> <span class="s1">&#39;{git repository}&#39;</span><span class="p">,</span> <span class="ss">:tag</span> <span class="o">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">version</span> <span class="p">}</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">ios</span><span class="o">.</span><span class="n">deployment_target</span> <span class="o">=</span> <span class="s1">&#39;8.0&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source_files</span> <span class="o">=</span> <span class="s1">&#39;{모듈명}/*.swift&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">requires_arc</span> <span class="o">=</span> <span class="kp">true</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="sub-module-연결">Sub Module 연결</h3>
-
-<p>위 과정을 문제없이 진행했다면 git에 연결된 두개의 프로젝트(메인 프로젝트, Sub Module 프로젝트)를 가지고 있을 것이다. 이제는 본격적으로 둘을 연결하는 과정이다.</p>
-
-<h4 id="git-submodule-추가">git submodule 추가</h4>
-
-<p>메인 프로젝트 폴더로 이동하여 git submodule로 Sub Module을 clone한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span><span class="nb">cd</span> <span class="o">{</span>프로젝트명<span class="o">}</span>
-</span><span class='line'><span class="nv">$ </span>git submodule add https://gitlab.com/<span class="o">{</span>사용자<span class="o">}</span>/<span class="o">{</span>프로젝트명<span class="o">}</span>.git <span class="o">{</span>Sub Module명<span class="o">}</span>
-</span><span class='line'><span class="nv">$ </span>git submodule init
-</span><span class='line'><span class="nv">$ </span>git submodule update
-</span></code></pre></td></tr></table></div></figure>
-
-<h4 id="cocoapods로-sub-module-연결">CocoaPods로 Sub Module 연결</h4>
-
-<p>메인 프로젝트 폴더에 <code>Podfile</code>을 생성하고 아래와 같이 내용을 입력한다. Pods에 대한 설정 내용은 프로젝트에 따라 달라 질 수 있다. 중요한 부분은 <code>use_frameworks!</code>, <code>pod &#39;{Sub Module명}&#39;, :path =&gt; &#39;./{Sub Module명}&#39;</code> 이다. 그리고 platform의 &#39;8.0&#39; 부분도 빠지면 오류가 날 수 있는데 이 부분은 Sub Module의 deploy target에 맞춰져야 한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">source</span> <span class="s1">&#39;https://github.com/CocoaPods/Specs.git&#39;</span>
-</span><span class='line'><span class="n">platform</span> <span class="ss">:ios</span><span class="p">,</span> <span class="s1">&#39;8.0&#39;</span>
-</span><span class='line'><span class="n">use_frameworks!</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">pod</span> <span class="s1">&#39;{Sub Module명}&#39;</span><span class="p">,</span> <span class="ss">:path</span> <span class="o">=&gt;</span> <span class="s1">&#39;./{Sub Module명}&#39;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>파일을 생성했다면 아래의 명령을 실행해서 Pod를 실행한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>pod install
-</span></code></pre></td></tr></table></div></figure>
-
-<h3 id="설정-확인">설정 확인</h3>
-
-<p>이제 정상적으로 연결되었는지 확인하면 된다. CocoaPods을 사용해 봤다면 알겠지만 CocoaPods을 사용 할 때는 xcodeproj가 아닌 xcworkspace로 프로젝트를 열어야 한다. 위 과정이 정상적이었다면 아래와 같이 Pods 영역에 &quot;Development Pods&quot;라는 것이 추가되어 있고 그 안애 추가한 Sub Module이 보일 것이다. 여기까지 확인되었다면 Sub Module 연결 과정은 모두 끝났다.</p>
-
-<p>마지막으로 한가지만 더 이야기하겠다. 프로젝트를 열어서 해당 모듈을 사용하려면 당연히 소스에서 <code>import</code>를 해야하는데 처음엔 연결이 되지 않는 것처럼 보일 수 있다. 이 부분은 모듈이 아직 빌드가 되지 않아서 그런 것이니 빌드를 한번 해주고나면 정상적으로 사용이 가능할 것이다.</p>
-
-<p>위에서 Git나 CocoaPods에 대한 설명을 하느라 조금 길어졌지만 이 두가지를 사용할 줄 알고 있다면 설정 과정은 생각보다 아주 간단하다. Android Studio와 비교하면 과정도 거의 유사하다는 것을 알 것이다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1363,7 +1853,7 @@ Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (31)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (13)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (2)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (7)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (33)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (13)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (2)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (7)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1372,15 +1862,15 @@ Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/11/03/android-dot-view-dot-windowmanager/">android.view.WindowManager$BadTokenException: Unable to add window 오류</a>
+    
+    <a class="list-group-item " href="/2015/11/02/android-spans-a-powerful-concept/">[번역중] Android : Spans, a Powerful Concept</a>
+    
     <a class="list-group-item " href="/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/">Xcode 7.1에서 Google Maps SDK 사용시 빌드가 되지 않는 결함</a>
     
     <a class="list-group-item " href="/2015/11/02/android-online-apk-download-and-decompile/">android apk download / decompile 하기</a>
     
     <a class="list-group-item " href="/2015/10/29/google-apps-admin-password-reset/">구글앱스 관리자 비밀번호 초기화</a>
-    
-    <a class="list-group-item " href="/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/">java setChunkedStreamingMode를 php-fpm 서버와 연결할 때 발생하는 문제</a>
-    
-    <a class="list-group-item " href="/2015/10/27/kakaotalk-share-link-with-requirejs-error/">카카오톡 링크를 requirejs(AMD)와 함께 사용시 발생하는 오류</a>
     
   </div>
 </section>

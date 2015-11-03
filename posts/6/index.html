@@ -139,6 +139,159 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-25T12:10:09+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.25</time>
+        
+           | <a href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/" itemprop="url">Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 앱 개발시 사용하던 <a href="https://github.com/loopj/android-async-http">android-async-http</a>가 최근 1.4.9 버전으로 버전업되었다. 1.4.8 이하 버전을 사용할 경우 이전에 포스팅한 <a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>와 관련된 문제가 있다.</p>
+
+<p>그런데 나는 이 1.4.9 버전을 사용하면서 다른 문제가 생겼다. 빌드에서 오류나 경고는 전혀 나타나지 않지만 URL 호출을 하면 onStart, onProgress까지는 들어오는데 onSuccess, onFailure를 호출해 주지 않았다. 그런데 이 현상이 proguard를 적용할 때만 발생한다는 것이다. 정밀하게 테스트해보지 않아 정확한 원인을 찾지는 못했지만 대략적인 상황을 보면 proguard에 의해 난독화 처리되는 부분이 문제로 보인다(그런데 실제로 내부 소스를 살펴보면 reflection 등을 사용하거나해서 난독화에 영향을 받을 만한 부분을 찾지 못했다).</p>
+
+<p>우선 내가 사용했던 proguard의 설정 중 영향을 줄만한 부분은 다음과 같다. 나머지는 대부분 keep 등의 설정으로 <a href="https://github.com/loopj/android-async-http">android-async-http</a>에 영향을 줄 만한 부분은 없다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>-optimizationpasses 5
+</span><span class='line'>-repackageclasses ''
+</span><span class='line'>-allowaccessmodification
+</span><span class='line'>-overloadaggressively
+</span><span class='line'>-verbose</span></code></pre></td></tr></table></div></figure>
+
+<p>사실 이 문제에 대해서 검색해보면 다른 이야기들이 많다. 대부분 호출이 되지 않는다는 질문을 하는 사람들의 경우는 onSuccess, onFailure의 오버로딩에 관련된 문제이다. 실제로 android-async-http는 ResponseHandler에 따라 여러 개의 onSuccess, onFailure 함수들을 가지고 있다. 이 함수들은 반환되는 데이터의 형태에 따라 다른 함수를 호출해주도록 되어있다. 이 부분은 편리하긴하나 개인적으론 조금 꺼려지는 형태다. 질문이 많이 올라오는 것처럼 반환 형태에 맞는 함수를 구현하는 것을 누락시킬 수 있기 때문이다. 어쨌든 나의 경우는 이에 해당하지 않았다. 확인을 위해 라이브러리 소스를 일부 수정해서 테스트 했으나 그 전단계까지도 들어오지 않았다.</p>
+
+<p>이 문제는 proguard를 적용했을 때만 발생하는 문제였으므로 아래와 같이 proguard에 추가해주면 간단히 해결된다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>-keep class com.loopj.android.http.** { *; }
+</span><span class='line'>-keep interface com.loopj.android.** { *; }</span></code></pre></td></tr></table></div></figure>
+
+<p>그런데 개인적으로 이 해결법은 어떤 것이 문제인지 확인하지도 못했을 뿐아니라 문제를 해결하기 위해 통째로 proguard에서 제외하는 것이 맘에들지 않았다. 그래서 수십번의 빌드를 통해 어느 클래스가 문제를 일으키는지 찾아냈다. 아.. 인간 승리다. 수십여개의 클래스들을 넣어보고 빼보고...</p>
+
+<p>결론은 아래의 코드를 proguard에 추가하면 문제가 해결된다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>-keep class com.loopj.android.http.HttpGet { *; }</span></code></pre></td></tr></table></div></figure>
+
+<p>대충 소스를 보니 HttpGet는 이번에 Apache HTTP 클라이언트가 제거되면서 이를 대체하기 위한 라이브러리를 교체하면서 추가된 클래스로 보인다. 그런데 소스를 봐도 이게 왜 proguard에 영향을 받는지 잘 모르겠지만 위의 코드를 넣음으로써 해결이 되는 것은 확인했다. 더 자세히 코드를 추적해 간다면 원인을 찾을 수 있을지도 모르지만 굳이 거기까지 내가할 필요는 없다고 보고 github에 이슈를 등록하려고 한다. 해당 개발자들이 다음버전에 문제를 해결해 주기를 바라며...</p>
+
+<h2 id="update-2015-10-15">UPDATE - 2015-10-15</h2>
+
+<p>오늘 사용자에게서 오류가 보고 되었다. 문제는 파일업로드가 되지 않는다는 것인데 문제의 원인은 위 글의 내용과 동일하다. 정확히는 안드로이드 버전 문제도 포함된다. 하위 버전의 안드로이드에서는 위의 설정만으로는 해결이 되지 않았던 것이다. 결론은 아래의 내용을 proguard에 대체해서 넣어야 한다는 것. 상황적으로 봤을 때 내가 사용한 범위를 벗어나면 proguard와 충돌하는 부분이 더 있을 수 있을 것 같다(하지만 지금 내가 다 찾기엔 무리이므로 android-async-http 개발자분들에게 넘긴다).</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>-keep class cz.msebera.android.httpclient.HttpResponse { *; }
+</span><span class='line'>-keep class com.loopj.android.http.HttpGet { *; }
+</span><span class='line'>-keep class com.loopj.android.http.HttpDelete { *; }</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-25T10:47:30+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.25</time>
+        
+           | <a href="/2015/09/25/git-tracking-empty-directories/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/25/git-tracking-empty-directories/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/25/git-tracking-empty-directories/" itemprop="url">Git : 빈 디렉토리 추가하기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>기존에는 SVN을 주로 사용하다가 최근 Git를 사용하기 시작했다. 맛보기를 시작한지는 조금 됐는데 본격적으로 사용하려고하니 아직 많이 미숙하다.</p>
+
+<p>오늘은 작업을 하다가 빈 디렉토리를 추가하려고 하니 동작을 하지 않았다. SVN에서는 당연히 추가가 가능했는데 Git에서는 add로 추가해도 new file로 나타나지 않았다.</p>
+
+<p>그래서 찾아보니 원래 Git는 빈 디렉토리는 Tracking 하지 않는다는 글들을 보게되었다. 이런... 불필요한 것을 관리하지 않는 것은 좋지만 log 디렉토리 등과 같이 빈 디렉토리가 추가되어야 할 상황이 있는데 어떻게 하지?</p>
+
+<p>다행히 간단한 방법이 있었다. 사실 간단히 생각하면 아무 파일이나 넣어서 빈 디렉토리가 되지 않으면 되지 않는가? 그래서 많이 사용하는 방법이 .gitignore 또는 .keep 파일을 넣어서 Tracking하는 것이다.</p>
+
+<p>해당 폴더에 가서 아래의 명령으로 .keep 파일을 만들고 add 하면 된다.
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>touch .keep
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>한번에 모든 폴더를 검사해서 .keep 파일 넣기.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>git clean -nd <span class="p">|</span> sed s/<span class="s1">&#39;^Would remove &#39;</span>// <span class="p">|</span> xargs -I<span class="o">{}</span> touch <span class="s2">&quot;{}.keep&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>log 폴더와 같이 정말 빈 디렉토리만 존재하고 내부에 생성되는 파일은 Tracking할 필요가 없을 때는 .gitignore 파일을 만들고 아래의 내용을 넣는다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#ignore all files in this dir...</span>
+</span><span class='line'>*
+</span><span class='line'><span class="c">#... except for this one.</span>
+</span><span class='line'>!.gitignore
+</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-22T19:11:24+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.22</time>
         
            | <a href="/2015/09/22/adding-external-blog-to-naver-blog-search-section/#disqus_thread" itemprop="discussionUrl"
@@ -1362,573 +1515,6 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-18T09:48:32+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.18</time>
-        
-           | <a href="/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/" itemprop="url">AutoCompleteAdapter(ArrayAdapter with Filterable) 사용시 비주기적 오류 발생 해결</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>AppCompatAutoCompleteTextView를 사용하고자 할때 필요한 것이 데이터를 넘겨주는 Adapter이다. 단, 이 Adepter는 <code>extends ListAdapter &amp; Filterable</code> 가 적용되어야 한다. 그래서 보통은 <code>public class StringAutoCompleteAdapter extends ArrayAdapter&lt;String&gt; implements Filterable</code> 형태의 구현을 많이 사용한다. 그리고 대부분의 경우에 AutoCompleteTextView를 사용하는 이유는 검색어 자동완성 등에 사용되고 이 데이터는 서버에서 데이터를 호출해서 적용하도록 한다.</p>
-
-<p>위에 설명한 내용대로 하나의 예시를 보면 아래와 같다(미리 설명하자면 아래의 예제는 잘못된 예제이다. 생각지 못한 오류를 비주기적으로 만나게 된다).</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-<span class='line-number'>70</span>
-<span class='line-number'>71</span>
-<span class='line-number'>72</span>
-<span class='line-number'>73</span>
-<span class='line-number'>74</span>
-<span class='line-number'>75</span>
-<span class='line-number'>76</span>
-<span class='line-number'>77</span>
-<span class='line-number'>78</span>
-<span class='line-number'>79</span>
-<span class='line-number'>80</span>
-<span class='line-number'>81</span>
-<span class='line-number'>82</span>
-<span class='line-number'>83</span>
-<span class='line-number'>84</span>
-<span class='line-number'>85</span>
-<span class='line-number'>86</span>
-<span class='line-number'>87</span>
-<span class='line-number'>88</span>
-<span class='line-number'>89</span>
-<span class='line-number'>90</span>
-<span class='line-number'>91</span>
-<span class='line-number'>92</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">net</span><span class="o">.</span><span class="na">asamaru</span><span class="o">.</span><span class="na">android</span><span class="o">.</span><span class="na">test</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.content.Context</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.widget.ArrayAdapter</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.widget.Filter</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.widget.Filterable</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">com.google.gson.Gson</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">com.google.gson.reflect.TypeToken</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.io.InputStreamReader</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.net.HttpURLConnection</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.net.MalformedURLException</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.net.URL</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.net.URLEncoder</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">StringAutoCompleteAdapter</span> <span class="kd">extends</span> <span class="n">ArrayAdapter</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">Filterable</span> <span class="o">{</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">resultList</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="kd">public</span> <span class="nf">StringAutoCompleteAdapter</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="kt">int</span> <span class="n">textViewResourceId</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="kd">super</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">textViewResourceId</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getCount</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>      <span class="k">return</span> <span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="n">String</span> <span class="nf">getItem</span><span class="o">(</span><span class="kt">int</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="k">if</span> <span class="o">((</span><span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">&gt;=</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>          <span class="k">return</span> <span class="n">resultList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">index</span><span class="o">);</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="n">Filter</span> <span class="nf">getFilter</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>      <span class="k">return</span> <span class="k">new</span> <span class="nf">Filter</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>          <span class="nd">@Override</span>
-</span><span class='line'>          <span class="kd">protected</span> <span class="n">FilterResults</span> <span class="nf">performFiltering</span><span class="o">(</span><span class="n">CharSequence</span> <span class="n">constraint</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>              <span class="n">FilterResults</span> <span class="n">filterResults</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">FilterResults</span><span class="o">();</span>
-</span><span class='line'>              <span class="k">if</span> <span class="o">(</span><span class="n">constraint</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>                  <span class="n">resultList</span> <span class="o">=</span> <span class="n">autocomplete</span><span class="o">(</span><span class="n">constraint</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
-</span><span class='line'>                  <span class="k">if</span> <span class="o">(</span><span class="n">resultList</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>                      <span class="n">filterResults</span><span class="o">.</span><span class="na">values</span> <span class="o">=</span> <span class="n">resultList</span><span class="o">;</span>
-</span><span class='line'>                      <span class="n">filterResults</span><span class="o">.</span><span class="na">count</span> <span class="o">=</span> <span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-</span><span class='line'>                  <span class="o">}</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              <span class="k">return</span> <span class="n">filterResults</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>          <span class="nd">@Override</span>
-</span><span class='line'>          <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">publishResults</span><span class="o">(</span><span class="n">CharSequence</span> <span class="n">constraint</span><span class="o">,</span> <span class="n">FilterResults</span> <span class="n">results</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>              <span class="k">if</span> <span class="o">(</span><span class="n">results</span><span class="o">.</span><span class="na">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>                  <span class="n">notifyDataSetChanged</span><span class="o">();</span>
-</span><span class='line'>              <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</span><span class='line'>                  <span class="n">notifyDataSetInvalidated</span><span class="o">();</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">};</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="kd">public</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="nf">autocomplete</span><span class="o">(</span><span class="n">String</span> <span class="n">input</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="n">HttpURLConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">StringBuilder</span> <span class="n">jsonResults</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StringBuilder</span><span class="o">();</span>
-</span><span class='line'>      <span class="k">try</span> <span class="o">{</span>
-</span><span class='line'>          <span class="n">URL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">URL</span><span class="o">(</span><span class="s">&quot;http://www.abc.com/search/?kwd=&quot;</span> <span class="o">+</span> <span class="n">URLEncoder</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="n">input</span><span class="o">,</span> <span class="s">&quot;utf8&quot;</span><span class="o">));</span>
-</span><span class='line'>          <span class="n">conn</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="n">url</span><span class="o">.</span><span class="na">openConnection</span><span class="o">();</span>
-</span><span class='line'>          <span class="n">InputStreamReader</span> <span class="n">in</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">InputStreamReader</span><span class="o">(</span><span class="n">conn</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">());</span>
-</span><span class='line'>          <span class="kt">int</span> <span class="n">read</span><span class="o">;</span>
-</span><span class='line'>          <span class="kt">char</span><span class="o">[]</span> <span class="n">buff</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[</span><span class="mi">1024</span><span class="o">];</span>
-</span><span class='line'>          <span class="k">while</span> <span class="o">((</span><span class="n">read</span> <span class="o">=</span> <span class="n">in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buff</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>              <span class="n">jsonResults</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">buff</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">read</span><span class="o">);</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">MalformedURLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>          <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-</span><span class='line'>          <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>          <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-</span><span class='line'>          <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
-</span><span class='line'>          <span class="k">if</span> <span class="o">(</span><span class="n">conn</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>              <span class="n">conn</span><span class="o">.</span><span class="na">disconnect</span><span class="o">();</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="k">return</span> <span class="o">(</span><span class="k">new</span> <span class="nf">Gson</span><span class="o">()).</span><span class="na">fromJson</span><span class="o">(</span><span class="n">jsonResults</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="k">new</span> <span class="n">TypeToken</span><span class="o">&lt;</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;()</span> <span class="o">{}.</span><span class="na">getType</span><span class="o">());</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>위의 예제를 보면 얼핏봐서는 문제가 없어 보인다. 실제로 동작도 잘된다. 하지만 아주 낮은 빈도로 Exception이 발생해 앱이 죽는다. 이 문제로 인하여 원인을 찾지못해 고생하는 경우가 많다. 내가 작업하면서 발생했던 오류는 다음과 같다.</p>
-
-<ul>
-<li>The content of the adapter has changed but ListView did not receive a notification.</li>
-<li> java.lang.NullPointerException: Attempt to invoke virtual method &#39;java.lang.String java.lang.Object.toString()&#39; on a null object reference</li>
-</ul>
-
-<p>내부적 동작 코드들을 보면 이 외에도 View의 구성이나 기타 코딩에 따라 다른 오류가 날 수도 있을 것 같다. 하지만 원인은 대부분 아래의 부분 때문이다(정확하게는 저 부분에서 오류가 나는 것이 아니라 저 부분이 들어간 위치 때문에 다른 부분에서 오류가 난다).</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">resultList</span> <span class="o">=</span> <span class="n">autocomplete</span><span class="o">(</span><span class="n">constraint</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이유를 설명하자면 Filter의 performFiltering() 함수는 백그라운드 쓰레드에서 동작하도록 되어 있다. 그런데 이 함수 안에서 Adapter의 데이터를 변경하는 코드가 들어있기 때문에 Adapter가 데이터의 변경을 확인하는 시점과 notify 되는 시점이 엉킬 경우 오류를 내게 된다. 따라서 타이밍에 따라서 오류가 발생하기도 안하기도 하는 것이다(나의 경우는 키워드를 입력하거나 지우는 등의 변경이 빠르게 반복될 때 데이터의 변경이 빈번히 반복되면서 오류가 나타났다). 실제로 오류를 재현하기가 어려울 정도로 잘 안나오는 경우도 있었다.</p>
-
-<p>그럼 잘못된 예제와 오류, 원인을 알아봤으니 정확한 처리 예시를 보자.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-<span class='line-number'>70</span>
-<span class='line-number'>71</span>
-<span class='line-number'>72</span>
-<span class='line-number'>73</span>
-<span class='line-number'>74</span>
-<span class='line-number'>75</span>
-<span class='line-number'>76</span>
-<span class='line-number'>77</span>
-<span class='line-number'>78</span>
-<span class='line-number'>79</span>
-<span class='line-number'>80</span>
-<span class='line-number'>81</span>
-<span class='line-number'>82</span>
-<span class='line-number'>83</span>
-<span class='line-number'>84</span>
-<span class='line-number'>85</span>
-<span class='line-number'>86</span>
-<span class='line-number'>87</span>
-<span class='line-number'>88</span>
-<span class='line-number'>89</span>
-<span class='line-number'>90</span>
-<span class='line-number'>91</span>
-<span class='line-number'>92</span>
-<span class='line-number'>93</span>
-<span class='line-number'>94</span>
-<span class='line-number'>95</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">net</span><span class="o">.</span><span class="na">asamaru</span><span class="o">.</span><span class="na">android</span><span class="o">.</span><span class="na">test</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.content.Context</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.widget.ArrayAdapter</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.widget.Filter</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">android.widget.Filterable</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">com.google.gson.Gson</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">com.google.gson.reflect.TypeToken</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.io.InputStreamReader</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.net.HttpURLConnection</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.net.MalformedURLException</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.net.URL</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.net.URLEncoder</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">StringAutoCompleteAdapter</span> <span class="kd">extends</span> <span class="n">ArrayAdapter</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">Filterable</span> <span class="o">{</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">resultList</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="kd">public</span> <span class="nf">StringAutoCompleteAdapter</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="kt">int</span> <span class="n">textViewResourceId</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="kd">super</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">textViewResourceId</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getCount</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>      <span class="k">return</span> <span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="n">String</span> <span class="nf">getItem</span><span class="o">(</span><span class="kt">int</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="k">if</span> <span class="o">((</span><span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">&gt;=</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>          <span class="k">return</span> <span class="n">resultList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">index</span><span class="o">);</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="n">Filter</span> <span class="nf">getFilter</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>      <span class="k">return</span> <span class="k">new</span> <span class="nf">Filter</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>          <span class="nd">@Override</span>
-</span><span class='line'>          <span class="kd">protected</span> <span class="n">FilterResults</span> <span class="nf">performFiltering</span><span class="o">(</span><span class="n">CharSequence</span> <span class="n">constraint</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>              <span class="n">FilterResults</span> <span class="n">filterResults</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">FilterResults</span><span class="o">();</span>
-</span><span class='line'>              <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">queryResults</span><span class="o">;</span>
-</span><span class='line'>              <span class="k">if</span> <span class="o">((</span><span class="n">constraint</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">constraint</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">))</span> <span class="o">{</span>
-</span><span class='line'>                  <span class="n">queryResults</span> <span class="o">=</span> <span class="n">autocomplete</span><span class="o">(</span><span class="n">constraint</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
-</span><span class='line'>              <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</span><span class='line'>                  <span class="n">queryResults</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              <span class="n">filterResults</span><span class="o">.</span><span class="na">values</span> <span class="o">=</span> <span class="n">queryResults</span><span class="o">;</span>
-</span><span class='line'>              <span class="n">filterResults</span><span class="o">.</span><span class="na">count</span> <span class="o">=</span> <span class="n">queryResults</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-</span><span class='line'>              <span class="k">return</span> <span class="n">filterResults</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>          <span class="nd">@Override</span>
-</span><span class='line'>          <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">publishResults</span><span class="o">(</span><span class="n">CharSequence</span> <span class="n">constraint</span><span class="o">,</span> <span class="n">FilterResults</span> <span class="n">results</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>              <span class="c1">// noinspection unchecked</span>
-</span><span class='line'>              <span class="n">resultList</span> <span class="o">=</span> <span class="o">(</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;)</span> <span class="n">results</span><span class="o">.</span><span class="na">values</span><span class="o">;</span>
-</span><span class='line'>              <span class="k">if</span> <span class="o">(</span><span class="n">results</span><span class="o">.</span><span class="na">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>                  <span class="n">notifyDataSetChanged</span><span class="o">();</span>
-</span><span class='line'>              <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</span><span class='line'>                  <span class="n">notifyDataSetInvalidated</span><span class="o">();</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">};</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="kd">public</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="nf">autocomplete</span><span class="o">(</span><span class="n">String</span> <span class="n">input</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="n">HttpURLConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">StringBuilder</span> <span class="n">jsonResults</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StringBuilder</span><span class="o">();</span>
-</span><span class='line'>      <span class="k">try</span> <span class="o">{</span>
-</span><span class='line'>          <span class="n">URL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">URL</span><span class="o">(</span><span class="s">&quot;http://www.abc.com/search/?kwd=&quot;</span> <span class="o">+</span> <span class="n">URLEncoder</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="n">input</span><span class="o">,</span> <span class="s">&quot;utf8&quot;</span><span class="o">));</span>
-</span><span class='line'>          <span class="n">conn</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="n">url</span><span class="o">.</span><span class="na">openConnection</span><span class="o">();</span>
-</span><span class='line'>          <span class="n">InputStreamReader</span> <span class="n">in</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">InputStreamReader</span><span class="o">(</span><span class="n">conn</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">());</span>
-</span><span class='line'>          <span class="kt">int</span> <span class="n">read</span><span class="o">;</span>
-</span><span class='line'>          <span class="kt">char</span><span class="o">[]</span> <span class="n">buff</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[</span><span class="mi">1024</span><span class="o">];</span>
-</span><span class='line'>          <span class="k">while</span> <span class="o">((</span><span class="n">read</span> <span class="o">=</span> <span class="n">in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buff</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>              <span class="n">jsonResults</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">buff</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">read</span><span class="o">);</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">MalformedURLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>          <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-</span><span class='line'>          <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>          <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-</span><span class='line'>          <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
-</span><span class='line'>          <span class="k">if</span> <span class="o">(</span><span class="n">conn</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>              <span class="n">conn</span><span class="o">.</span><span class="na">disconnect</span><span class="o">();</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="k">return</span> <span class="o">(</span><span class="k">new</span> <span class="nf">Gson</span><span class="o">()).</span><span class="na">fromJson</span><span class="o">(</span><span class="n">jsonResults</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="k">new</span> <span class="n">TypeToken</span><span class="o">&lt;</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;()</span> <span class="o">{}.</span><span class="na">getType</span><span class="o">());</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>주요 변경 지점은 <code>getFilter()</code>이다. 기존에 <code>resultList = autocomplete(constraint.toString());</code> 부분을 통해 미리 Adapter의 데이터를 변경하던 것을 publishResults로 옮긴 것이다. 그리고 검색된 결과가 없더라도 빈 ArrayList를 만들어 넣어준 것이다.
-코드 상으로는 큰 차이가 나지않고 굳이 이렇게 해야하나 싶지만 내부 동작 방식을 보면 이렇게 하지 않으면 앞서 설명한 것과 같이 예기치 못한 상황을 만날 수 있다.</p>
-
-<p><strong>첨언 :</strong></p>
-
-<ul>
-<li>안드로이드는 조금만 잘못써도 오류가 발생하는 이런 경우를 많이 보게 되는데 아위운 점은 정확한 사용법을 제시하는 메뉴얼을 찾기 어렵다는 것이다.</li>
-<li>코드 중간에 보면 <code>// noinspection unchecked</code> 부분이 있는데 크게 중요한 부분은 아니지만 이 부분을 제외하면 warning이 뜬다(안드로이드 스튜디오에서 노란 밑줄). 이 warning을 안드로이드 스튜디오에서 숨기는 역할을 하는 코드다.</li>
-</ul>
-</div>
-  
-  
-
-
-        </article>
-      
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-17T18:45:26+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.17</time>
-        
-           | <a href="/2015/09/17/datetime-from-php-to-java-android/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/17/datetime-from-php-to-java-android/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/17/datetime-from-php-to-java-android/" itemprop="url">PHP의 DateTime을 Java (Android)로 전달하기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 앱을 개발하게되면 많은 경우에 서버와의 데이터 연결이 필요하다. 대부분의 데이터 타입은 이 과정에서 큰 문제를 일으키지 않는다(데이터 타입만 명확히 한다면). 하지만 DateTime은 조금 까다로울 수 있다. 프로그램에서 시간은 TimeZone을 가지고 있기 때문에 이 부분을 명확히 하지 않으면 의도치 않은 시간으로 표시된다. 게다가 형식이 맞지 않는다면 제대로 전달되지 않을 수도 있다.</p>
-
-<blockquote>
-<p>네이버 D2에 있는 <a href="http://d2.naver.com/helloworld/645609">Java의 날짜와 시간 API</a>를 보면 Java에서의 Date 처리가 불편하다는 얘기가 있다.</p>
-</blockquote>
-
-<p>이번 작업에서는 서버는 PHP를 사용하고 있는 상황이었고 클라이언트는 <a href="http://androidannotations.org/">AndroidAnnotations</a>의 <a href="https://github.com/excilys/androidannotations/wiki/Rest-API#rest">Rest-API</a>를 사용했다. 수신 데이터의 파싱은 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>를 사용하는 상황이다. 이 글의 주제에서 벗어나므로 <a href="http://androidannotations.org/">AndroidAnnotations</a>나 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>에 대한 부분은 설명하지 않겠다.</p>
-
-<p>GsonHttpMessageConverter를 사용해서 데이터를 파싱하는 경우 대상이되는 class의 멤버변수의 데이터 타입에 맞추어 데이터를 채워준다. 당연히 전송되는 데이터가 JSON 형식이어야 한다. 다른 데이터 타입의 경우 앞서 설명한 것과 같이 데이터 타입만 맞춰준다면 아주 쉽게 데이터를 받을 수 있다(그것이 이것을 사용하는 주요 목적이다). 그런데 DateTime 타입은 조금 신경을 써줘야 한다.</p>
-
-<p>자 그럼 서버에서 데이터를 보낼 수 있는 방법에 어떤 것이 있을까? 가장 일반적인 방법으로는 timestamp(int), string, Date가 있다. 어떤 것을 쓰더라도 무방하지만 앞서 얘기한 것처럼 GsonHttpMessageConverter를 써서 간단히 데이터를 정확한 형식으로 받는 것이 편리하기 때문에 전송시 데이터 타입을 맞추는 것이 좋다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="c1">// string 타입으로 전송</span>
-</span><span class='line'><span class="nv">$date</span> <span class="o">=</span> <span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">;</span>
-</span><span class='line'><span class="c1">// int 타입으로 전송</span>
-</span><span class='line'><span class="nv">$date</span> <span class="o">=</span> <span class="p">(</span><span class="k">new</span> <span class="nx">\DateTime</span><span class="p">(</span><span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">getTimestamp</span><span class="p">();</span>
-</span><span class='line'><span class="c1">// Date 타입으로 전송</span>
-</span><span class='line'><span class="nv">$date</span> <span class="o">=</span> <span class="p">(</span><span class="k">new</span> <span class="nx">\DateTime</span><span class="p">(</span><span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">setTimeZone</span><span class="p">(</span><span class="k">new</span> <span class="nx">\DateTimeZone</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">format</span><span class="p">(</span><span class="s1">&#39;Y-m-d\TH:i:s\Z&#39;</span><span class="p">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>위의 코드를 보면 PHP에서 전송할 때 넘겨줄 데이터의 예시를 타입별로 제시했다. 앞서 강조했던대로 안드로이드 클라이언트에서 GsonHttpMessageConverter를 이용해 Date 타입으로 바로 받으려면 마지막에 있는 &quot;Date 타입으로 전송&quot; 방식을 사용하면 된다.</p>
-
-<p>해당 부분을 보면 두가지 처리를 해주고 있다. 첫번째로 TimeZone을 설정한 것이고, 두번째로 Date Format을 지정한 것이다. 사실 이 부분들을 잘 몰라서 삽질을 조금 했었다. 처음엔 Date Format을 어떻게 전달해야할지 몰라 해맸다. 제대로 수신을 하지 못했던 것이다. Format을 맞추고 나니 이젠 보낸 시간과 받은 시간이 달랐다. 이 부분은 TimeZone의 문제이므로 TimeZone을 지정해서 해결했다. TimeZone에 사용한 UTC는 <a href="https://ko.wikipedia.org/wiki/%ED%98%91%EC%A0%95_%EC%84%B8%EA%B3%84%EC%8B%9C">협정 세계시</a>라는 뜻이다. 이것과 세트로 format에서 끝에 \Z를 붙여 데이터가 <a href="https://ko.wikipedia.org/wiki/ISO_8601">ISO 8601</a>에 따라 UTC를 따르고 있음을 표시한 것이다.</p>
-
-<p>결론적으로 위의 형식을 사용하면 GSON으로 바로 받아도 정확한 시간을 사용할 수 있다.</p>
-
-<p>사실 위의 경우는 GsonHttpMessageConverter를 사용한다는 상황을 가정한 것으로 이것을 사용하지 않고 직접 데이터를 받아 GSON을 통해 파싱한다면 아래의 방법을 쓸 수도 있다. Format을 보면 알겠지만 UTC Date여야 한다(정확한 시간 처리를 위해). &quot;yyyy-MM-dd HH:mm:ss&quot;이 Format을 쓸 수도 있으나 TimeZone 명시되지 않으므로 시간이 다르게 보일 수 있다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Gson</span> <span class="n">gson</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">GsonBuilder</span><span class="o">().</span><span class="na">setDateFormat</span><span class="o">(</span><span class="s">&quot;yyyy-MM-dd&#39;T&#39;HH:mm:ssZ&quot;</span><span class="o">).</span><span class="na">create</span><span class="o">();</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>아래는 추가적으로 다른 타입으로 수신했을 때 안드로이드 클라이언트에서 Date 타입으로 변환하고자 할때 사용할 수 있는 참고 코드들이다.</p>
-
-<p>** string 타입으로 수신시 **
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="k">try</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">String</span> <span class="n">dateTime</span> <span class="o">=</span> <span class="s">&quot;2015-09-17 10:00:00&quot;</span><span class="o">;</span>
-</span><span class='line'>    <span class="n">SimpleDateFormat</span> <span class="n">dateParser</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SimpleDateFormat</span><span class="o">(</span><span class="s">&quot;yyyy-MM-dd HH:mm:ss&quot;</span><span class="o">,</span> <span class="n">Locale</span><span class="o">.</span><span class="na">KOREA</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">Date</span> <span class="n">date</span> <span class="o">=</span> <span class="n">dateParser</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="n">dateTime</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ParseException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p>** timestamp(int) 타입으로 수신시 **</p>
-
-<p>PHP에서의 TimeStamp는 초단위(s)지만 Java에서는 밀리초(ms) 단위이므로 1000을 곱해서 넣어 주어야 한다.
-그리고 Java에서는 Date가 Deprecated되어 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>를 더 권장한다고 한다. <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Date.html">정확하게는 완전히 Deprecated된 것은 아니고 일부 생성자가 그렇다는 것</a>이지만 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>가 더 다양한 기능을 제공하므로 더 권장된다는 것이다. 자세한 이유는 검색해보면 많이 나온다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">// Calendar 사용</span>
-</span><span class='line'><span class="n">Calendar</span> <span class="n">c</span> <span class="o">=</span> <span class="n">Calendar</span><span class="o">.</span><span class="na">getInstance</span><span class="o">();</span>
-</span><span class='line'><span class="n">c</span><span class="o">.</span><span class="na">setTimeInMillis</span><span class="o">(</span><span class="n">timestamp</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">);</span>
-</span><span class='line'><span class="n">Date</span> <span class="n">date</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">getTime</span><span class="o">();</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// OR</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// Date 사용</span>
-</span><span class='line'><span class="n">Date</span> <span class="n">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Date</span><span class="o">(</span><span class="n">timestamp</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1998,7 +1584,7 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (31)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (13)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (2)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (7)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (33)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (13)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (2)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (7)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -2007,15 +1593,15 @@ IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/11/03/android-dot-view-dot-windowmanager/">android.view.WindowManager$BadTokenException: Unable to add window 오류</a>
+    
+    <a class="list-group-item " href="/2015/11/02/android-spans-a-powerful-concept/">[번역중] Android : Spans, a Powerful Concept</a>
+    
     <a class="list-group-item " href="/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/">Xcode 7.1에서 Google Maps SDK 사용시 빌드가 되지 않는 결함</a>
     
     <a class="list-group-item " href="/2015/11/02/android-online-apk-download-and-decompile/">android apk download / decompile 하기</a>
     
     <a class="list-group-item " href="/2015/10/29/google-apps-admin-password-reset/">구글앱스 관리자 비밀번호 초기화</a>
-    
-    <a class="list-group-item " href="/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/">java setChunkedStreamingMode를 php-fpm 서버와 연결할 때 발생하는 문제</a>
-    
-    <a class="list-group-item " href="/2015/10/27/kakaotalk-share-link-with-requirejs-error/">카카오톡 링크를 requirejs(AMD)와 함께 사용시 발생하는 오류</a>
     
   </div>
 </section>

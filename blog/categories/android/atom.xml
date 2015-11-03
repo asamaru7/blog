@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-11-03T20:21:06+09:00</updated>
+  <updated>2015-11-03T22:22:02+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -211,15 +211,14 @@ Jan 31st, 2014 6:09 pm<br>
 <p>Main rules:</p>
 
 <ul>
-<li><p>if a Span affects character-level text formatting, it extends <a href="http://developer.android.com/reference/android/text/style/CharacterStyle.html">CharacterStyle</a>.
-스팬 텍스트 문자 레벨에 영향을 미칠 경우, 상속 을 CharacterStyle .
-범위에는 캐릭터 레벨 텍스트 서식에 영향을, CharacterStyle를 확장 합니다.</p></li>
-<li><p>if a Span affects paragraph-level text formatting, it implements <a href="http://developer.android.com/reference/android/text/style/ParagraphStyle.html">ParagraphStyle</a></p></li>
-<li><p>if a Span modifies the character-level text appearance, it implements <a href="http://developer.android.com/reference/android/text/style/UpdateAppearance.html">UpdateAppearance</a></p></li>
-<li><p>if a Span modifies the character-level text metrics|size, it implements <a href="http://developer.android.com/reference/android/text/style/UpdateLayout.html">UpdateLayout</a></p></li>
+<li>Span이 텍스트 문자 레벨에 영향을 미칠 경우, <a href="http://developer.android.com/reference/android/text/style/CharacterStyle.html">CharacterStyle</a>를 상속</li>
+<li>Span이 단락 레벨에 영향을 미칠 경우, <a href="http://developer.android.com/reference/android/text/style/ParagraphStyle.html">ParagraphStyle</a>를 상속</li>
+<li>Span이 텍스트 문자 레벨의 외형에 영향을 미칠 경우,
+<a href="http://developer.android.com/reference/android/text/style/UpdateAppearance.html">UpdateAppearance</a>를 상속</li>
+<li>Span이 단락 레벨의 외형에 영향을 미칠 경우, <a href="http://developer.android.com/reference/android/text/style/UpdateLayout.html">UpdateLayout</a>를 상속</li>
 </ul>
 
-<p>It gives us beautiful class diagrams like this.</p>
+<p>그것은 우리를 위해 다음과 같은 클래스 다이어그램을 제공합니다 :</p>
 
 <p><img src="/img/2015-11-02-android-spans-a-powerful-concept-1.png" alt="cdcharacterstyle">  </p>
 
@@ -229,17 +228,18 @@ Jan 31st, 2014 6:09 pm<br>
 
 <p><img src="/img/2015-11-02-android-spans-a-powerful-concept-4.png" alt="cdupdatelayout">  </p>
 
-<p>As it’s a bit complicated so I advise you to use a class visualizer (like <a href="http://www.class-visualizer.net/">this</a>) to fully understand the hierarchy.</p>
+<p>그러나 이것은 조금 복잡하기 때문에 나는 class visualizer (like <a href="http://www.class-visualizer.net/">this</a>)를 사용하길 권한다.</p>
 
 <h2 id="how-it-works">How it works?</h2>
 
 <h3 id="layout">LAYOUT</h3>
 
-<p>When you set text on a TextView, it uses the base class <a href="http://developer.android.com/reference/android/text/Layout.html">Layout</a> to manage text rendering.</p>
+<p>당신이 text를 TextView에 설정하고자 할때, <a href="http://developer.android.com/reference/android/text/Layout.html">Layout</a> base class를 사용하여 텍스트 렌더링을 관리한다.</p>
 
-<p>The Layout class contains a boolean <code>mSpannedText</code>: true when the text is an instance of <a href="http://developer.android.com/reference/android/text/Spanned.html">Spanned</a> (<a href="http://developer.android.com/reference/android/text/SpannableString.html">SpannableString</a> implements <a href="http://developer.android.com/reference/android/text/Spanned.html">Spanned</a>). This class only processes ParagraphStyle Spans.</p>
+<p>Layout Class는 <code>mSpannedText</code>라는 boolean 값을 포함하고 있다: text가 <a href="http://developer.android.com/reference/android/text/Spanned.html">Spanned</a>(<a href="http://developer.android.com/reference/android/text/Spanned.html">Spanned</a>을 구현한 <a href="http://developer.android.com/reference/android/text/SpannableString.html">SpannableString</a>)의 인스턴스라면 true가 된다.
+이 Class는 오직 ParagraphStyle Spans에만 동작한다.</p>
 
-<p>The <a href="http://developer.android.com/reference/android/text/Layout.html#draw%28android.graphics.Canvas,%20android.graphics.Path,%20android.graphics.Paint,%20int%29">draw</a> method calls 2 others methods:</p>
+<p><a href="http://developer.android.com/reference/android/text/Layout.html#draw%28android.graphics.Canvas,%20android.graphics.Path,%20android.graphics.Paint,%20int%29">draw</a> method는 2개의 다른 method들을 호출한다:</p>
 
 <ul>
 <li>drawBackground</li>

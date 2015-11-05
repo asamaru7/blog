@@ -139,6 +139,125 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-27T14:23:28+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.27</time>
+        
+           | <a href="/2015/10/27/kakaotalk-share-link-with-requirejs-error/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/27/kakaotalk-share-link-with-requirejs-error/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/27/kakaotalk-share-link-with-requirejs-error/" itemprop="url">카카오톡 링크를 requirejs(AMD)와 함께 사용시 발생하는 오류</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>어제 고객으로부터 사용중인 페이지에서 카카오톡 링크가 동작하지 않는다는 보고를 받았다.
+확인해 보니 안드로이드 크롬 브라우저에서 <code>탐색이 차단됨: intent:kakaolink://send?appkey=TGIF&amp;appver=1.0&amp;apiver=3.0&amp;linkver=3.5&amp;extras=%7B%2…b.io%22%7D&amp;objs=%5B%5D&amp;forwardable=false#Intent;package=com.kakao.talk;end;</code>라는 오류를 발생시키면서 기능이 정상적으로 동작하지 않았다. 웃긴건 해당 링크를 빠르게 여러번 클릭하면 한번씩 동작한다는 것. 이 문제는 항상 발생한다기 보다 특수한 경우에 발생하는 것으로 보인다.</p>
+
+<p>아래의 코드를 보자. 오류를 kakao에 전달하기 위해 github에 페이지도 하나 만들어 두었다. <a href="https://asamaru7.github.io/requirejs-test/index2.html">https://asamaru7.github.io/requirejs-test/index2.html</a>
+그리고 kakao api가 버전업되면 상황이 달라질 수도 있다. 현재는 v1.0.49다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="o">&lt;!</span><span class="nx">DOCTYPE</span> <span class="nx">html</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="nx">html</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="nx">head</span><span class="o">&gt;</span>
+</span><span class='line'>        <span class="o">&lt;</span><span class="nx">script</span> <span class="nx">data</span><span class="o">-</span><span class="nx">main</span><span class="o">=</span><span class="s2">&quot;app2&quot;</span> <span class="nx">src</span><span class="o">=</span><span class="s2">&quot;lib/require.js&quot;</span><span class="o">&gt;&lt;</span><span class="err">/script&gt;</span>
+</span><span class='line'>        <span class="o">&lt;</span><span class="nx">script</span> <span class="nx">type</span><span class="o">=</span><span class="s2">&quot;text/javascript&quot;</span><span class="o">&gt;</span>
+</span><span class='line'>          <span class="kd">function</span> <span class="nx">test1</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>                <span class="nx">requirejs</span><span class="p">([</span><span class="s2">&quot;kakao&quot;</span><span class="p">],</span> <span class="kd">function</span><span class="p">(</span><span class="nx">Kakao</span><span class="p">,</span> <span class="nx">print</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                  <span class="nx">Kakao</span><span class="p">.</span><span class="nx">init</span><span class="p">(</span><span class="s1">&#39;TGIF&#39;</span><span class="p">);</span>
+</span><span class='line'>                  <span class="nx">Kakao</span><span class="p">.</span><span class="nx">Link</span><span class="p">.</span><span class="nx">sendTalkLink</span><span class="p">({});</span>
+</span><span class='line'>                <span class="p">});</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>        <span class="o">&lt;</span><span class="err">/script&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="err">/head&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="nx">body</span><span class="o">&gt;</span>
+</span><span class='line'>        <span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="err">탐색이</span> <span class="err">차단됨</span> <span class="err">오류</span> <span class="err">테스트</span> <span class="o">:</span> <span class="err">스마트폰에서</span> <span class="err">테스트</span><span class="o">&lt;</span><span class="err">/h1&gt;</span>
+</span><span class='line'>        <span class="o">&lt;</span><span class="nx">button</span> <span class="nx">type</span><span class="o">=</span><span class="s2">&quot;button&quot;</span> <span class="nx">onclick</span><span class="o">=</span><span class="s2">&quot;test1();&quot;</span><span class="o">&gt;</span><span class="nx">KAKAO</span> <span class="nx">link</span><span class="o">&lt;</span><span class="err">/button&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="err">/body&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="err">/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이 코드를 모바일 크롬 브라우저에서 확인하면 위의 오류를 볼 수 있다.
+추정하는 상황은 이렇다. 브라우저에서 팝업창을 열려고 할 경우 사용자의 액션(클릭 이벤트)의 스코프를 벗어나서 <code>window.open</code>을 하려고하면 보안상의 이유로 팝업을 기본적으로 차단한다. 이것 또한 동일한 원인으로 예상된다. requirejs를 통해 kakao js를 호출하고 완료되면 동작을 실행하므로 스코프를 벗어나게 된다. 그렇기에 크롬에서 해당 링크를 차단시켜버리는 것으로 추정하고 있다. 현재로써는 이 문제를 해결하려면 kakao js의 호출과 init을 액션(클릭 이벤트)이 발생하기 이전에 해주는 방법 밖에 없다.</p>
+
+<p>이 부분에 관련한 오류 보고를 개발자 센터에 등록했지만 kakao에서도 어쩔 수 없을 것으로 생각된다.</p>
+
+<p><strong>하지만 정작 하고자 하는 이야기는 지금 부터다.</strong></p>
+
+<p>사실 이 문제를 확인하다가 다른 오류를 만났다. 이와 관련된 오류 보고는 이미 수개월 전에 <a href="https://devtalk.kakao.com/t/amd-requirejs/10948">kakao 개발자 센터에 보고</a>되어 있었다.</p>
+
+<p>요약하자만 이렇다. AMD(requirejs)를 사용해서 Kakao 모듈을 로드하고 나면 그 후 최초로 호출(require)되는 모듈은 <code>Uncaught Error: Mismatched anonymous define() module: function (){return dt}</code> 오류가 나면서 불려지지 않는다. 이를 해결하는 방법은 오류 보고에서 나왔던 것 처럼 dummy 모듈을 kakao 모듈 호출 후 한번 불러주는 것이다. 실제로 효과가 있고 나 또한 이렇게 임시 처리해서 서비스 중이다(찜찜하지만 현재로써는 다른 방법이 없다). 정확하게 이야기하자면 js 호출 시점이 문제가 아니라 init 함수 호출 직후부터 위 문제가 발생한다.</p>
+
+<p>아래는 샘플 코드다. 이대로 넣으면 안되고 어떻게 처리하는지 흐름만 참고하기 바란다. 중요한 포인트는 init 직후 DUMMY 모듈을 한번 호출한다는 것이다. 당연히 DUMMY는 정의되지 않은 모듈이다. 불필요한 js 호출이 싫다면 실제로 dummy를 만들어 두고 호출해도 상관없다. 그리고 아래 코드에서는 kakao js를 호출하는 부분이 빠져있는데 당연히 불러줘야 한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">kakaoApiInit</span> <span class="o">==</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nb">window</span><span class="p">.</span><span class="nx">Kakao</span><span class="p">.</span><span class="nx">init</span><span class="p">(</span><span class="s1">&#39;apikey&#39;</span><span class="p">);</span>
+</span><span class='line'>  <span class="nx">kakaoApiInit</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+</span><span class='line'>  <span class="k">try</span> <span class="p">{</span> <span class="nx">require</span><span class="p">([</span><span class="s1">&#39;DUMMY&#39;</span><span class="p">],</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{});</span> <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{};</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="nb">window</span><span class="p">.</span><span class="nx">Kakao</span><span class="p">.</span><span class="nx">Link</span><span class="p">.</span><span class="nx">sendTalkLink</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p><strong>사실 당황스러운 것은 이런 오류가 발생한다는 것보다 관련된 오류 보고가 수개월 전에 되었음에도 불구하고 아직 해결이되지 않았다는 것이다.</strong> kakao 개발자 측에서는 오류 재현이 되지 않으니 샘플 코드를 올려달라는 것이다. 이미 문제를 제기한 사람이 정확한 상황을 제시 했음에도 불구하고 재현을 하지 못한다니... 의아스럽다.</p>
+
+<p>처음엔 나도 일단은 그냥 이대로 두려고 했다. 하지만 아무래도 찝찝해서 오늘 시간을 내서 kakao에서 원하는 샘플 코드를 친절히(?) 작성해서 오류 보고에 댓글로 추가해 두었다. 앞으로의 kakao의 대응을 지켜보겠지만 사실 이미 실망스럽다. 비단 이번 오류가 아니더라도 예전에도 다수의 kakao api 오류를 접해 본 입장에서 다수가 사용하게되는 api에서 어이없는 오류가 발생하고 대처가 미흡하다는 점이 실망스럽다는 것이다. 그래서 안쓰고 싶지만 고객이 원하니 그럴수도 없고...</p>
+
+<p>어쨌든 빠르게 수정되기를 바라며 혹시 동일한 문제를 겪는 개발자가 있다면 위의 방법대로 임시 처리라도 하기 바란다.</p>
+
+<p><strong>첨언 : 2015/10/30</strong></p>
+
+<p>얼마전 KAKAO로 부터 답변을 받았다. 보내준 샘플을 확인해서 문제가 될만한 부분을 찾았으며 다음번 패치에 수정이 되도록 하겠다고 한다. 다만 &quot;탐색이 차단됨&quot; 문제는 오류 재현이 되지 않아 확인을 못했다고하여 기종과 브라우저 버전 등에 대한 상세 정보를 다시 보냈다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-26T14:38:36+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.26</time>
         
            | <a href="/2015/10/26/ansi-to-html/#disqus_thread" itemprop="discussionUrl"
@@ -1286,189 +1405,6 @@ Xcode에서 Bitcode를 포함한 iOS 앱을 AppStore로 전송하면, AppStore �
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-19T12:24:24+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.19</time>
-        
-           | <a href="/2015/10/19/vagrant-port-forwarding-on-mac/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/19/vagrant-port-forwarding-on-mac/" itemprop="url">Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>Vagrant는 포트 포워딩을 지원한다. VAGRANT DOCS의 <a href="https://docs.vagrantup.com/v2/networking/forwarded_ports.html">FORWARDED PORTS</a> 문서를 보면 설명되어 있다.</p>
-
-<p>간단하게 살펴보자면 아래와 같이 설정할 수 있다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="s2">&quot;forwarded_port&quot;</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8080</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>위 설정의 의미는 host(PC)에 8080 포트로 접근하면 guest(VM)의 80 포트로 포워딩 한다는 뜻이다. 따라서 host에서 <code>localhost:8080</code>로 접속하면 guest의 웹 서버에 접근할 수 있다.</p>
-
-<p>사용할 수 있는 옵션은 아래와 같이 설명되어 있다.</p>
-
-<ul>
-<li>guest (int) - The port on the guest that you want to be exposed on the host. This can be any port.</li>
-<li>guest_ip (string) - The guest IP to bind the forwarded port to. If this is not set, the port will go to the every interface. By default, this is empty.</li>
-<li>host (int) - The port on the host that you want to use to access the port on the guest. This must be greater than port 1024 unless Vagrant is running as root (which is not recommended).</li>
-<li>host_ip (string) - The IP on the host you want to bind the forwarded port to. If not specified, it will be bound to every IP. By default, this is empty.</li>
-<li>protocol (string) - Either &quot;udp&quot; or &quot;tcp&quot;. This specifies the protocol that will be allowed through the forwarded port. By default this is &quot;tcp&quot;.</li>
-</ul>
-
-<p>크게 어려운 부분은 없기 때문에 더욱 자세한 설명은 필요없을 듯 하다.</p>
-
-<p>그런데 여기서 한가지 상황을 생각해보자. <code>localhost:8080</code>로 접속하기는 싫고 <code>localhost</code>로 접속하고 싶다면 어떻게 해야 하나? 위의 설명대로라면 아래와 같이 설정하면 된다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="s2">&quot;forwarded_port&quot;</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">80</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>그런데 위와 같이 설정하면 vagrant 실행시 오류를 만나게 된다. 이와 관련된 정보는 virtualbox 메뉴얼 <a href="https://www.virtualbox.org/manual/ch06.html#nat-limitations">6.3.3. NAT limitations</a>에서 찾을 수 있다.</p>
-
-<blockquote>
-<p>Forwarding host ports &lt; 1024 impossible:
-On Unix-based hosts (e.g. Linux, Solaris, Mac OS X) it is not possible to bind to ports below 1024 from applications that are not run by root. As a result, if you try to configure such a port forwarding, the VM will refuse to start. ipfw deprecated as of mavericks</p>
-</blockquote>
-
-<p>간단히 말하자면 <strong>Unix 계열에서는 1024 이하 포트에 대한 포워딩을 하려면 root 권한이 있어야 한다는 것</strong>.
-그렇다면 해결 방법은 나왔다. 간단하게 vagrant 자체를 root 권한으로 실행하면 된다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo vagrant up
-</span></code></pre></td></tr></table></div></figure>
-
-<p>그런데 이렇게하면 vagrant나 virtualbox가 별개로 실행된다(로그인된 계정이 아닌 root계정에서 실행하게 된다). 따라서 virtualbox를 실행해보아도 해당 VM을 볼 수 없을 것이다. 일단 어디에 있는지 보려면 아래의 명령으로 virtualbox를 실행해보자.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo VirtualBox
-</span></code></pre></td></tr></table></div></figure>
-
-<p>VirtualBox가 따로 실행되면서 추가된 VM도 볼 수 있다.</p>
-
-<p>나는 다른 방법을 찾을 수 없어 얼마전까지 이렇게 사용해 왔다. 그런데 최근에 다시 vagrant를 설정할 일이 생겨 작업을 하면서 다시 찾아봤더니 그 사이에 해결 방법이 나와 있었다. 게다가 더욱 세련된(?) 방법으로.</p>
-
-<ul>
-<li><a href="http://salvatore.garbesi.com/vagrant-port-forwarding-on-mac/">Vagrant Port Forwarding On Mac</a></li>
-<li><a href="https://www.danpurdy.co.uk/web-development/osx-yosemite-port-forwarding-for-vagrant/">OSX Yosemite Port Forwarding for Vagrant</a></li>
-<li><a href="http://www.dmuth.org/node/1404/web-development-port-80-and-443-vagrant">Web Development on Port 80 and 443 in Vagrant</a></li>
-</ul>
-
-<p>여러개의 글을 링크했지만 모두 비슷한 방법이다. 그러나 마지막 글의 경우는 확인이 필요하다. 마지막 글에서 사용하는 ipfw는 요세미티에서 deprecated 되었다는 이야기가 있다. 나머지 두개는 같은 방법인데 간단히 요약하자면 아래와 같다.</p>
-
-<p>우선 vagrant-triggers 플러그인을 설치한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>vagrant plugin install vagrant-triggers
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Vagrantfile에 아래의 내용을 추가한다. 당연히 원하는 포트가 다르다면 조정해서 추가하면 된다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8080</span>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">443</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8443</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">after</span> <span class="o">[</span><span class="ss">:provision</span><span class="p">,</span> <span class="ss">:up</span><span class="p">,</span> <span class="ss">:reload</span><span class="o">]</span> <span class="k">do</span>
-</span><span class='line'>      <span class="nb">system</span><span class="p">(</span><span class="s1">&#39;echo &quot;</span>
-</span><span class='line'><span class="s1">     rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 80 -&gt; 127.0.0.1 port 8080</span>
-</span><span class='line'><span class="s1">     rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 443 -&gt; 127.0.0.1 port 8443</span>
-</span><span class='line'><span class="s1">     &quot; | sudo pfctl -f - &gt; /dev/null 2&gt;&amp;1; echo &quot;==&gt; Fowarding Ports: 80 -&gt; 8080, 443 -&gt; 8443&quot;&#39;</span><span class="p">)</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">after</span> <span class="o">[</span><span class="ss">:halt</span><span class="p">,</span> <span class="ss">:destroy</span><span class="o">]</span> <span class="k">do</span>
-</span><span class='line'>    <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;sudo pfctl -f /etc/pf.conf &gt; /dev/null 2&gt;&amp;1; echo &#39;==&gt; Removing Port Forwarding&#39;&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>한가지 설명을 더 추가 해야할 것 같다. 위 명령은 pf가 enabled 되어 있을 경우만 제대로 동작한다. 하지만 대부분의 경우 pf가 disabled 되어 있을 것이다. <code>pfctl -ef</code>와 같이 <code>e</code> 옵션을 추가해 주면 pf를 강제로 켜서 실행해 준다. 하지만 이 방법은 vagrant가 <code>halt</code>된 후에도 pf가 enabled된 상태를 유지하므로 뭔가 꺼림직하다. 개선 방법은 <code>halt</code>시 <code>d</code> 옵션을 줘서 다시 pfctl을 disabled 상태로 변경하면 된다. 그런데 이렇게하면 반대로 enabled가 기본인 상태였다면 pf를 disabled 상태로 바꿔버리는 결과를 가져온다. 그래서 이 부분을 해결한 스크립트를 아래에 추가한다. 기존 pf의 상태와 무관하게 룰을 추가하고 사용이 끝나면 해당 룰만 제거하는 것이다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8080</span>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">443</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8443</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">after</span> <span class="o">[</span><span class="ss">:provision</span><span class="p">,</span> <span class="ss">:up</span><span class="p">,</span> <span class="ss">:reload</span><span class="o">]</span> <span class="k">do</span>
-</span><span class='line'>      <span class="nb">system</span><span class="p">(</span><span class="s1">&#39;echo &quot;</span>
-</span><span class='line'><span class="s1">     rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 80 -&gt; 127.0.0.1 port 8080</span>
-</span><span class='line'><span class="s1">     rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 443 -&gt; 127.0.0.1 port 8443</span>
-</span><span class='line'><span class="s1">     &quot; | sudo pfctl -Ef - &gt; /dev/null 2&gt; pfctl.token; echo &quot;==&gt; Fowarding Ports: 80 -&gt; 8080, 443 -&gt; 8443&quot;&#39;</span><span class="p">)</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">after</span> <span class="o">[</span><span class="ss">:halt</span><span class="p">,</span> <span class="ss">:destroy</span><span class="o">]</span> <span class="k">do</span>
-</span><span class='line'>  <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;PFCTL_TOKEN=</span><span class="se">\&quot;</span><span class="s2">$(cat pfctl.token |grep Token| awk &#39;{ split($0,numbers,</span><span class="se">\&quot;</span><span class="s2">:</span><span class="se">\&quot;</span><span class="s2">); print numbers[2]; }&#39;| tr -d &#39;[[:space:]]&#39;)</span><span class="se">\&quot;</span><span class="s2">; sudo pfctl -X $PFCTL_TOKEN -f /etc/pf.conf &gt; /dev/null 2&gt;&amp;1; echo </span><span class="se">\&quot;</span><span class="s2">==&gt; Removing Port Forwarding : $PFCTL_TOKEN</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>원리를 간단히 설명하겠다. 우선 pfctl에 있는 옵션 중 <code>E</code> 옵션을 추가했다. 소문자 <code>e</code>와는 다르다.</p>
-
-<ul>
-<li>-e : Enable the packet filter.</li>
-<li>-E : Enable the packet filter and increment the pf enable reference count.</li>
-</ul>
-
-<p><code>E</code>를 사용하면 pf enable reference count를 증가시키고 token을 반환해 준다. 이 토큰을 <code>pfctl.token</code>에 저장해 놨다가 <code>halt</code>시 <code>X</code> 옵션을 통해서 pf에게 disabled 요청을 한다.</p>
-
-<p>이제부터는 80포트와 443 포트가 guest로 포워딩 된다. 이젠 <code>http://127.0.0.1</code>로 접속할 수 있다. 나의 경우엔 DNS에 별도의 도메인을 127.0.0.1로 지정해서 사용중이다. 따라서 <code>http://vagrant.mydomain.com</code>으로 웹 화면을 확인할 수 있다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1538,7 +1474,7 @@ On Unix-based hosts (e.g. Linux, Solaris, Mac OS X) it is not possible to bind t
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (34)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (15)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (7)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (35)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (15)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (7)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1547,6 +1483,8 @@ On Unix-based hosts (e.g. Linux, Solaris, Mac OS X) it is not possible to bind t
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/11/05/android-is-not-translated-in-dot-dot-dot-lint-error/">Android : is not translated in ... Lint Error 해결</a>
+    
     <a class="list-group-item " href="/2015/11/04/xcode-storyboard-with-uiviewcontroller-using-generics/">Xcode 7.1의 StoryBoard에서 UIViewController(using Generics)를 Custom Class로 연결할 때 발생하는 오류</a>
     
     <a class="list-group-item " href="/2015/11/03/swift-uipagecontrol-overlap/">Swift UIPageViewController에서 UIPageControl 오버랩하기</a>
@@ -1554,8 +1492,6 @@ On Unix-based hosts (e.g. Linux, Solaris, Mac OS X) it is not possible to bind t
     <a class="list-group-item " href="/2015/11/03/how-to-wait-for-android-runonuithread-to-be-finished/">Android에서 runOnUiThread 작업이 종료 될 때까지 대기하기</a>
     
     <a class="list-group-item " href="/2015/11/03/android-dot-view-dot-windowmanager/">android.view.WindowManager$BadTokenException: Unable to add window 오류</a>
-    
-    <a class="list-group-item " href="/2015/11/02/android-spans-a-powerful-concept/">[번역중] Android : Spans, a Powerful Concept</a>
     
   </div>
 </section>

@@ -27,15 +27,13 @@ categories: android
 
 Main rules:
 
-* if a Span affects character-level text formatting, it extends [CharacterStyle](http://developer.android.com/reference/android/text/style/CharacterStyle.html).
-스팬 텍스트 문자 레벨에 영향을 미칠 경우, 상속 을 CharacterStyle .
-범위에는 캐릭터 레벨 텍스트 서식에 영향을, CharacterStyle를 확장 합니다.
+* Span이 텍스트 문자 레벨에 영향을 미칠 경우, [CharacterStyle](http://developer.android.com/reference/android/text/style/CharacterStyle.html)를 상속
+* Span이 단락 레벨에 영향을 미칠 경우, [ParagraphStyle](http://developer.android.com/reference/android/text/style/ParagraphStyle.html)를 상속
+* Span이 텍스트 문자 레벨의 외형에 영향을 미칠 경우,
+[UpdateAppearance](http://developer.android.com/reference/android/text/style/UpdateAppearance.html)를 상속
+* Span이 단락 레벨의 외형에 영향을 미칠 경우, [UpdateLayout](http://developer.android.com/reference/android/text/style/UpdateLayout.html)를 상속
 
-* if a Span affects paragraph-level text formatting, it implements [ParagraphStyle](http://developer.android.com/reference/android/text/style/ParagraphStyle.html)
-* if a Span modifies the character-level text appearance, it implements [UpdateAppearance](http://developer.android.com/reference/android/text/style/UpdateAppearance.html)
-* if a Span modifies the character-level text metrics|size, it implements [UpdateLayout](http://developer.android.com/reference/android/text/style/UpdateLayout.html)
-
-It gives us beautiful class diagrams like this.
+그것은 우리를 위해 다음과 같은 클래스 다이어그램을 제공합니다 :
 
 ![cdcharacterstyle](/img/2015-11-02-android-spans-a-powerful-concept-1.png)  
 
@@ -45,17 +43,19 @@ It gives us beautiful class diagrams like this.
 
 ![cdupdatelayout](/img/2015-11-02-android-spans-a-powerful-concept-4.png)  
 
-As it’s a bit complicated so I advise you to use a class visualizer (like [this](http://www.class-visualizer.net/)) to fully understand the hierarchy.
+그러나 이것은 조금 복잡하기 때문에 나는 class visualizer (like [this](http://www.class-visualizer.net/))를 사용하길 권한다.
 
 ## How it works?
 
 ### LAYOUT
 
-When you set text on a TextView, it uses the base class [Layout](http://developer.android.com/reference/android/text/Layout.html) to manage text rendering.
 
-The Layout class contains a boolean `mSpannedText`: true when the text is an instance of [Spanned](http://developer.android.com/reference/android/text/Spanned.html) ([SpannableString](http://developer.android.com/reference/android/text/SpannableString.html) implements [Spanned](http://developer.android.com/reference/android/text/Spanned.html)). This class only processes ParagraphStyle Spans.
+당신이 text를 TextView에 설정하고자 할때, [Layout](http://developer.android.com/reference/android/text/Layout.html) base class를 사용하여 텍스트 렌더링을 관리한다.
 
-The [draw](http://developer.android.com/reference/android/text/Layout.html#draw%28android.graphics.Canvas,%20android.graphics.Path,%20android.graphics.Paint,%20int%29) method calls 2 others methods:
+Layout Class는 `mSpannedText`라는 boolean 값을 포함하고 있다: text가 [Spanned](http://developer.android.com/reference/android/text/Spanned.html)([Spanned](http://developer.android.com/reference/android/text/Spanned.html)을 구현한 [SpannableString](http://developer.android.com/reference/android/text/SpannableString.html))의 인스턴스라면 true가 된다.
+이 Class는 오직 ParagraphStyle Spans에만 동작한다.
+
+[draw](http://developer.android.com/reference/android/text/Layout.html#draw%28android.graphics.Canvas,%20android.graphics.Path,%20android.graphics.Paint,%20int%29) method는 2개의 다른 method들을 호출한다:
 
 * drawBackground
 

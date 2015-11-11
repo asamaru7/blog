@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>iOS 9 : The resource could not be loaded because the App Transport Security policy requires the use of a secure connection 오류 - 이 세상에 하나는 남기고 가자</title>
+  <title>안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환 - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/11/11/from-acra-to-fabric/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/">
-  <meta property="og:title" content="iOS 9 : The resource could not be loaded because the App Transport &hellip; - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/11/11/from-acra-to-fabric/">
+  <meta property="og:title" content="안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환 - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -135,7 +135,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-19T09:24:41+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.19</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-11T20:33:16+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.11</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -144,114 +144,41 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        iOS 9 : The resource could not be loaded because the App Transport Security policy requires the use of a secure connection 오류
+        안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p>iOS 9을 대상으로 개발시 아래와 같은 오류를 만날 수 있다.</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>지난 글 <a href="/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/">ACRA : Please configure &#39;buildConfigClass&#39; in your ACRA config 오류</a>와 <a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>에서 언급했던 것처럼 안드로이드 Crash Report 도구로 ACRA를 사용중이었다.
+ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원인을 찾고 개발자에게 전달해서 개선을 요청할 정도로 나름 애용하려던 도구였는데 오늘 <a href="https://fabric.io">Fabric(Crashlytics)</a>으로 바꿔버렸다.</p>
 
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ERRO AppDelegate[application(_:didFinishLaunchingWithOptions:):32]: Optional(Error Domain=NSURLErrorDomain Code=-1022 "The resource could not be loaded because the App Transport Security policy requires the use of a secure connection." UserInfo={NSUnderlyingError=0x7fddb1cb34b0 {Error Domain=kCFErrorDomainCFNetwork Code=-1022 "(null)"}, NSErrorFailingURLStringKey=http://yourdomain.com/session/get, NSErrorFailingURLKey=http://yourdomain.com/session/get, NSLocalizedDescription=The resource could not be loaded because the App Transport Security policy requires the use of a secure connection.})</span></code></pre></td></tr></table></div></figure>
+<p>사실 처음부터 대체할 목적이 있었던 것은 아니었다. 안드로이드용으로 제작된 앱을 iOS용으로도 제작할 일이 있어 개발을 진행하던 중 안드로이드의 ACRA 같은 도구가 iOS에도 있을 것이라는 생각에 몇가지를 찾아보고 있었다. 그때 눈에 띄는 것이 <a href="https://try.crashlytics.com/">Crashlytics</a> 였다(<a href="https://gist.github.com/rino0601/018c7f22aeb23cf2e2a0">Crashlytics 소개 + Android Studio에서 적용하는 방법</a>).</p>
 
-<p>iOS 9과 OS X 10.11 이후에 App Transport Security 정책이 추가되어 발생하는 오류로 관련된 정보는 <a href="https://developer.apple.com/library/prerelease/ios/technotes/App-Transport-Security-Technote/index.html">App Transport Security Technote</a>에서 자세히 볼 수 있다. 안내에 나와 있듯이 현재 개발중인 기능이라 추후 변경 가능성이 있다고 되어있다.</p>
+<p>그런데 이 Crashlytics라는 서비스를 운영하는 회사가 트위터에 인수가 되었다(<a href="http://besuccess.com/2013/01/28496/">앱 충돌 리포트 서비스 Crashlytics, 트위터에 인수되다</a>). 그래서 조금 더 알아보니 트위터에서 <a href="https://fabric.io">Fabric</a>이라는 것을 새로 내놓았다.</p>
+
+<p><a href="https://fabric.io">Fabric</a>이 무엇인지에 대해서는 트위터 한글 블로그의 &quot;<a href="https://blog.twitter.com/ko/2014/introducing-fabric-kr">패브릭(Fabric)을 소개합니다.</a>&quot;를 보면 잘 설명되어 있다.</p>
 
 <blockquote>
-<p>App Transport Security is a feature that improves the security of connections between an app and web services. The feature consists of default connection requirements that conform to best practices for secure connections. Apps can override this default behavior and turn off transport security.</p>
-
-<p>Transport security is available in iOS 9.0 or later, and in OS X v10.11 and later.</p>
+<p>패브릭(Fabric)은 앱 개발자들이 흔히 직면하는 안정성, 사용자 확보, 수익성, 사용자 인증의 이슈들&gt;을 해결해 줄 세 가지의 모듈형 키트들로 이루어져 있습니다. 패브릭은 크래시리틱스(Crashlytics), 모펍(MoPub), 트위터 등의 서비스를 통합해 개발자들이 더 안정적인 앱을 만들도록 돕습니다. 패브릭은 앱 개발자들이 세계 최고의 모바일 애드 익스체인지(ad exchange)를 통해 수익을 확보할 수 있게 하며, 트위터 로그인 기능과 실시간 콘텐츠 스트림 기능을 통해 더 많은 사용자에 콘텐츠를 전달할 수 있게 하거나 더욱 간단히 사용자를 인증할 수 있도록 해줍니다.</p>
 </blockquote>
 
-<p>해결방법은 아래와 같다.</p>
+<p>나는 우선 최초 목적이었던 iOS를 위한 Crash Report 도구의 설치를 위해 xcode 프로젝트에 <a href="https://fabric.io">Fabric</a>을 추가했다. 설치 과정은 복잡하지는 않으나 몇가지 설정할 부분들이 있어서 자칫 까다로워질 수 있지만 <a href="https://fabric.io">Fabric</a>에서 관련 도구를 워낙에 잘 제공 해줘서 시키는대로 따라만 하면 큰 무리없이 적용할 수 있다. &quot;기회가 되면 설치 과정을 글로 남길까?&quot; 생각했었지만 설치 도구가 워낙 잘되어 있어 &quot;굳이 내가 다시 설명할 필요가 있을까?&quot;라는 생각이다. 그 정도로 잘 되어있다. 다만 기본 설치 후 Debug 모드에서는 로그 수집을 하지 않도록 설정하는 등의 몇가지 안내가 필요한 부분들이 있는데 이건 시간이되면 따로 글을 남기려고 한다. 사실 이 부분도 메뉴얼로 모두 제공되고 있으나 막상 찾으려니 귀찮은 것들이다.</p>
 
-<p>Info.plist 파일에 NSAppTransportSecurity 항목을 추가해서 필요한 설정을 해준다. NSAppTransportSecurity의 구조는 아래와 같다.</p>
+<p>결론적으로는 아주 만족스러웠다. Crash Report가 잘되는 것은 물론이고 Hook을 걸 수 있도록 하는 기능도 제공되고 있어서 기존에 ACRA에서 연결해 두었던 자체 로그 수집기로도 기존처럼 정보를 전달하는 것이 가능했다(정확히 이야기 하자면 기존과 동일한 내용을 전달하는 것은 아니고 오류 발생 이벤트만 전달된다). 그리고 <a href="https://fabric.io">Fabric</a>에는 <a href="https://try.crashlytics.com/">Crashlytics</a> 외에도 <a href="https://answers.io/">Answers</a>라는 모듈도 함께 제공된다(사실 더 많은 것들이 있다). 이 모듈은 구글 어날리틱스 처럼 앱에 대한 이벤트를 수집하여 보고서를 제공해 준다. 결정적으로 이 모든 것이 무료.</p>
 
-<table><thead>
-<tr>
-<th>Key</th>
-<th>Type</th>
-</tr>
-</thead><tbody>
-<tr>
-<td>NSAppTransportSecurity</td>
-<td>Dictionary</td>
-</tr>
-<tr>
-<td>&nbsp; NSAllowsArbitraryLoads</td>
-<td>Boolean</td>
-</tr>
-<tr>
-<td>&nbsp; NSExceptionDomains</td>
-<td>Dictionary</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; &lt;domain-name-for-exception-as-string&gt;</td>
-<td>Dictionary</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSExceptionMinimumTLSVersion</td>
-<td>String</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSExceptionRequiresForwardSecrecy</td>
-<td>Boolean</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSExceptionAllowsInsecureHTTPLoads</td>
-<td>Boolean</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSIncludesSubdomains</td>
-<td>Boolean</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSThirdPartyExceptionMinimumTLSVersion</td>
-<td>String</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSThirdPartyExceptionRequiresForwardSecrecy</td>
-<td>Boolean</td>
-</tr>
-<tr>
-<td>&nbsp;&nbsp;&nbsp;&nbsp; NSThirdPartyExceptionAllowsInsecureHTTPLoads</td>
-<td>Boolean</td>
-</tr>
-</tbody></table>
+<p>그래서 안드로이드용 앱에서도 ACRA를 걷어내고 Fabric을 적용했다. 역시 아주 만족스럽다. ACRA에서 보내주는 무지막지한 Crash 로그 대신 잘 정리된 로그를 확인할 수 있게 되었다.</p>
 
-<p>정확하게 설명하자면 두가지 방법이 있다.</p>
+<p>앞선 설명처럼 <a href="https://fabric.io">Fabric</a>에는 여러가지 모듈들이 있는데 이들 중 일부는 각각 독립적인 서비스를 가지고 있다(<a href="https://try.crashlytics.com/">Crashlytics</a>와 <a href="https://answers.io/">Answers</a> 처럼). 이 부분에 관련해서는 트위터 한글 블로그의 &quot;<a href="https://blog.twitter.com/ko/2014/introducing-fabric-kr">패브릭(Fabric)을 소개합니다.</a>&quot;의 내용 마지막에 아래와 같이 안내 되어있다.</p>
 
-<ul>
-<li>NSAppTransportSecurity &gt; NSAllowsArbitraryLoads를 추가해서 NSAllowsArbitraryLoads 값을 YES로 넣어준다.
+<blockquote>
+<p>패브릭(Fabric)은 트위터만의 작품이 아닙니다. 패브릭(Fabric)이 가능하도록 키트(Kits)들의 관리, 설치, 업데이트에 관여하는 모든 SDK 벤더들이 만들어낸 것이라고 생각합니다. 당신이 SDK를 관리하는 사람이고, 트위터와 함께 일하고 싶다면 패브릭 파트너십 담당(<a href="mailto:partners@fabric.io">partners@fabric.io</a>)에 메일을 보내 주시길 바랍니다. 개발자 여러분들의 연락을 기다리고 있겠습니다.</p>
+</blockquote>
 
-<ul>
-<li>앱 내의 모든 네트워크 통신에 대한 제한을 푼다.</li>
-</ul></li>
-<li>NSAppTransportSecurity &gt; NSExceptionDomains를 추가하고 세부항목을 설정한다.
+<p>따라서 각각의 서비스를 사용해도 무방할 것으로 보인다. 하지만 <a href="https://fabric.io">Fabric</a>을 사용함으로써 통합 관리를 할 수 있으며 설치 과정이 아주 단순해진다.</p>
 
-<ul>
-<li>지정된 도메인의 네트워크 통신에 대한 제한을 푼다.</li>
-<li>NSExceptionMinimumTLSVersion: TLS 최소 버전을 문자열로 입력한다. 아래 값들 중 하나를 넣을 수 있거나 생략할 수 있다.</li>
-<li>TLSv1.0</li>
-<li>TLSv1.1</li>
-<li>TLSv1.2 (생략할 경우의 기본값)</li>
-<li>NSExceptionRequiresForwardSecrecy: forward secrecy 라는 비밀키 암호화 설정이다. 기본으 YES이며 NO를 선택시 사용할 수 있는 ciphers 목록은 아래와 같다.</li>
-<li>TLS_RSA_WITH_AES_256_GCM_SHA384</li>
-<li>TLS_RSA_WITH_AES_128_GCM_SHA256</li>
-<li>TLS_RSA_WITH_AES_256_CBC_SHA256</li>
-<li>TLS_RSA_WITH_AES_256_CBC_SHA</li>
-<li>TLS_RSA_WITH_AES_128_CBC_SHA256</li>
-<li>TLS_RSA_WITH_AES_128_CBC_SHA</li>
-<li>NSExceptionAllowsInsecureHTTPLoads: HTTPS(SSL) 연결이 아니더라도 통신을 허용 것인지에 대한 설정이다. 기본값은 NO이다.</li>
-<li>NSIncludesSubdomains: 이 사이트의 하부도메인들에도 이 설정을 적용할 것인지에 대한 설정이다. 기본값은 NO이다.</li>
-<li>NSThirdPartyExceptionMinimumTLSVersion: 써드파티 TLS 버전을 설정한다.</li>
-<li>NSThirdPartyExceptionRequiresForwardSecrecy: 써드파티 Forward Secrecy 설정이다.</li>
-<li>NSThirdPartyExceptionAllowsInsecureHTTPLoads: 써드파티 HTTPS 연결을 강제를 할 것이지에 대한 설정이다.</li>
-</ul></li>
-</ul>
-
-<p>필요에 따라 방법을 선택하면 된다.</p>
+<p><strong>결론 : Crash Report 도구가 필요하다면, iOS와 Android 모두 한 곳에서 관리하고 싶다면, 사용자 이벤트 로깅도 하고 싶다면, <a href="https://fabric.io">Fabric</a>을 적극 추천하고 싶다.</strong></p>
 </div>
 
 
@@ -275,13 +202,13 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-19T09:24:41+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.19</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-11T20:33:16+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.11</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
 <span class="categories">
   
-    <a class='category' href='/blog/categories/ios/'>ios</a>
+    <a class='category' href='/blog/categories/android/'>android</a>, <a class='category' href='/blog/categories/ios/'>ios</a>, <a class='category' href='/blog/categories/tip/'>tip</a>
   
 </span>
 
@@ -290,7 +217,7 @@
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/" data-via="" data-counturl="http://blog.asamaru.net/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/11/11/from-acra-to-fabric/" data-via="" data-counturl="http://blog.asamaru.net/2015/11/11/from-acra-to-fabric/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -304,10 +231,8 @@
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/10/16/centos-7-firewalld/" title="Previous Post: CentOS 7 firewalld vs iptables">&laquo; CentOS 7 firewalld vs iptables</a></li>
+            <li class="previous"><a href="/2015/11/05/android-is-not-translated-in-dot-dot-dot-lint-error/" title="Previous Post: Android : is not translated in ... Lint Error 해결">&laquo; Android : is not translated in ... Lint Error 해결</a></li>
             
-            
-            <li class="next"><a href="/2015/10/19/vagrant-port-forwarding-on-mac/" title="Next Post: Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용">Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용 &raquo;</a></li>
             
           </ul>
         
@@ -387,7 +312,7 @@
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/11/11/from-acra-to-fabric/">안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환</a>
+    <a class="list-group-item active" href="/2015/11/11/from-acra-to-fabric/">안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환</a>
     
     <a class="list-group-item " href="/2015/11/05/android-is-not-translated-in-dot-dot-dot-lint-error/">Android : is not translated in ... Lint Error 해결</a>
     
@@ -431,8 +356,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/';
-        var disqus_url = 'http://blog.asamaru.net/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/11/11/from-acra-to-fabric/';
+        var disqus_url = 'http://blog.asamaru.net/2015/11/11/from-acra-to-fabric/';
         var disqus_script = 'embed.js';
       
     (function () {

@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-11-11T21:14:32+09:00</updated>
+  <updated>2015-11-16T21:42:28+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,69 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[XCode에서 storyboard 선택시 Crash가 발생할 경우]]></title>
+    <link href="http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/"/>
+    <updated>2015-11-16T20:55:08+09:00</updated>
+    <id>http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard</id>
+    <content type="html"><![CDATA[<p>최근엔 XCode로 작업하는 일이 많아졌다. 안드로이드 개발과 웹 개발도 함께하지만 iOS 작업이 급하다 보니 주로 이 일을 하고 있다.
+XCode는 사용하면 할수록 잘 만들었다는 생각이 든다. 단, 코드 포멧팅 기능이 없다거나 소스 선택이 조금 부자연스럽다거나(이건 적응의 문제일 수 있다) 하는 것처럼 안드로이드 스튜디오에 비해 불편한 부분들이 있긴하다. 하지만 인터페이스 빌더 등의 도구들은 아주 잘 만들어져 있으며 결정적으로 빌드 속도가 무척 빨라서 좋다. 안드로이드 스튜디오도 지난 번에 적었던 <a href="http://blog.asamaru.net/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>에서 설명했던 것처럼 빌드 속도가 다소 개선되었지만 XCode에 비교도 되지 않는다.</p>
+
+<p>인터페이스 빌더의 사용에 대해서는 개발자들 사이에서도 논란이 많다. 개발시 인터페이스 빌더를 사용할 것인가 하드 코딩으로 UI를 개발할 것인가? 둘 다 장단점이 있는 것은 명확하지만 개인적으로는 최대한 인터페이스 빌더를 사용하는 것이 옳다고 생각한다. 스토리보드와 같은 기능을 사용해서 앱 전체의 흐름을 파악하기 쉽도록 개발할 수 있으며 보여질 화면을 바로 보면서 작업하므로 개발 및 유지보수도 용이하다. 다만 인터페이스 빌더의 설정이 코드상에서 보여지지 못하므로 코드를 볼 때 혼란스럽게 보일 수는 있다. 그래서 나는 코드 흐름 상에서 중요한 요소는 인터페이스와 별개로 소스에서도 설정을 해주는 편이다(아주 중요할 경우만).</p>
+
+<p>서론이 길어졌는데 오늘 이야기는 지금 부터다. 나름 선호하는 이 인터페이스 빌더에는 치명적인 약점이 있다. 이건 내가 XCode를 처음 접한 3버전대에서부터 현재의 7버전까지도 완전히 해결되지 않는 문제다. 그 약점은 바로 Crash가 잘 발생한다는 점과 설정이 엉키면 정말 난해한 상황을 만나게 된다는 것이다.</p>
+
+<p>현재까지의 나의 해결법은 해당 부분을 통째로 지우고 새로 설정하는 것이다. 정말 최악의 방법이지만 항상 오랜 시간을 해결해 보려고 애써봐도 결론은 대부분 새로 작성하는 것이었다. 사실 이런 문제가 아주 빈번한 것은 아니지만 한번씩 발생하면 치명적이다(환장한다).</p>
+
+<p>최근에는 작업을 하면서 <a href="https://www.jetbrains.com/objc/">AppCode</a>를 함께 사용하는 편인데 아무래도 jetbrains에서 만들다보니 단축키도 익숙하고 결정적인 코드 포멧팅 기능 때문에...
+어쨌든 AppCode에서도 storyboard를 수정하려고하면 결국 XCode를 띄워준다.</p>
+
+<p>이렇게 개발 도구를 섞어써서 그런건지 내가 뭔가를 잘못했는지는 몰라도 이번에 제대로 일이 벌어졌다. 옛날 같으면 nib파일이 따로 있어서 문제가 발생해도 그 파일만 새로 작업하면 되는데 이번엔 스토리보드로 작업되어 있었는데 그 파일을 선택만 해도 XCode가 죽는 것이다. 도저히 새로 작성한다는 것은 불가능 했다. 아직 개발 초기라 화면이 엄청 많은 것은 아니었지만 그래도 주요 화면들을 다 작성해 둔 상태라 다시 작성하기엔 무리였다.</p>
+
+<p>그래서 인터넷에서 또 다시 해결 방법들을 찾아봤다. 사실 결론을 미리 이야기하자면 나는 아래의 방법들을 모두 시도해 보았으나 성공하지 못했다.  하지만 이 방법들로 효과를 봤다는 사람들이 있어서 기록성으로 한번 남겨두려고 한다.</p>
+
+<p><strong>1. XML로 열기</strong></p>
+
+<ul>
+<li>스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Source Code&quot; 메뉴를 이용해 XML 코드를 편집기에서 연다.</li>
+<li>의미없는 글자를 넣었다가 빼고 저장한다.</li>
+<li>다시 스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Interface Builder - Storyboard&quot;로 다시 연다.</li>
+</ul>
+
+<p><strong>2. Autolayout 기능 끄기</strong></p>
+
+<p>이 Autolayout에 대한 사람들의 이야기가 많았다. Autolayout이 새로 나오면서 많은 문제들이 있었던 것으로 보인다. 이제는 문제가 많이 줄어든 것으로 보이나 혹시나 도움이 될지도 모르겠다.</p>
+
+<ul>
+<li>스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Source Code&quot; 메뉴를 이용해 XML 코드를 편집기에서 연다.<br></li>
+<li><code>useAutolayout=&quot;YES&quot;</code> 부분을 찾아 <code>useAutolayout=&quot;NO&quot;</code>로 변경한다.</li>
+<li>다시 스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Interface Builder - Storyboard&quot;로 다시 연다.</li>
+</ul>
+
+<p><strong>3. xcuserdata 삭제</strong></p>
+
+<ul>
+<li>Xcode를 닫는다.</li>
+<li>.xcodeproj, .xcworkspace 파일을 우클릭하여 &quot;패키지 내용보기&quot;를 선택한다.</li>
+<li>xcuserdata 폴더를 삭제한다.</li>
+</ul>
+
+<p><strong>4. XCode 초기화</strong></p>
+
+<p>이 방법은 XCode 설정을 초기화하는 것으로 권장하지는 않는다. 터미널에서 아래의 명령을 입력한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>defaults delete com.apple.dt.Xcode
+</span></code></pre></td></tr></table></div></figure>
+
+<p><strong>5. 오류 발생 부분 찾아 제거하기</strong></p>
+
+<p>이 방법은 최후의 방법으로 내가 사용한 방법이다. storyboard 파일을 소스 상태(XML)로 열어 scene 단위로 삭제 해본다. 단, 삭제하기 전 원본 백업은 필수. 이렇게 하나씩 제거하면서 XCode에서 파일을 열어 시도해보면서 원인이 되는 scene을 찾는다. 원인이 되는 scene을 찾았다면 부분적으로 코드들을 제거해가면서 정확한 오류 지점을 찾는다. 운이 좋아 부분적 오류였다면 이 방법으로 최소한의 손실로 문제를 해결할 수 있다. 단, 찾을 수 없다면 해당 scene을 통째로 버려야 한다.</p>
+
+<p>결론적으로 명쾌한 답을 주지 못해 미안하지만 나도 아직은 답을 찾지 못했다. 오류가 발생할 때마다 열심히 애플에 오류 보고를 보내고 있지만 당연히 신속한 해결은 없다. 어쨌든 이런 문제를 만나지 않기를 바라며 혹시라도 문제가 발생한다면 위 방법들을 시도해보길 바란다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환]]></title>
@@ -2408,100 +2471,6 @@ Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하
 <p>관련된 내용은 <a href="http://www.androidpub.com/2508286">구글플레이 서비스에 대한 유의점</a>에 설명되어있다. <strong>결론은 <a href="https://developers.google.com/android/guides/overview">Google play services</a>를 사용한다면 해당 서비스가 설치되지 않은 상황에 대한 대응을 해줘야 한다는 것이다.</strong></p>
 
 <p>매번 생각하는 것이지만 이런 부분들은 안드로이드에서 알아서 처리해주면 안되는걸까? 사실 조금 이해가 안된다. 개발자가 모두 알아서 하도록 한다는 것이. 물론 대응 방법이 상황에 따라 다를 수 있으니 일원화하는 것이 정답은 아닐 수 있다. 하지만 별다른 지정을 하지 않는다면 앱을 그냥 죽이는 것 보다는 기본적인 안내라도 보여주는 것이 낫지 않느냐는 말이다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[MFMailComposeViewController without 'No Mail Accounts' messages]]></title>
-    <link href="http://blog.asamaru.net/2015/10/20/mfmailcomposeviewcontroller-without-no-mail-accounts-messages/"/>
-    <updated>2015-10-20T09:47:16+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/20/mfmailcomposeviewcontroller-without-no-mail-accounts-messages</id>
-    <content type="html"><![CDATA[<p>iOS 개발시 앱 내에서 메일 발송폼을 보여주고자 할 때 사용하게 되는 것이 <a href="https://developer.apple.com/library/prerelease/ios/documentation/MessageUI/Reference/MFMailComposeViewController_class/index.html">MFMailComposeViewController</a> 이다. 이 클래스를 swift에서 사용할 경우 대부분 아래와 같이 사용하게 된다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">let</span> <span class="n">mc</span> <span class="o">=</span> <span class="bp">MFMailComposeViewController</span><span class="p">()</span>
-</span><span class='line'><span class="n">mc</span><span class="p">.</span><span class="n">mailComposeDelegate</span> <span class="o">=</span> <span class="nb">self</span>
-</span><span class='line'><span class="n">mc</span><span class="p">.</span><span class="n">setToRecipients</span><span class="p">([</span><span class="n">to</span><span class="p">])</span>
-</span><span class='line'><span class="k">if</span> <span class="p">(</span><span class="n">subject</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">mc</span><span class="p">.</span><span class="n">setSubject</span><span class="p">(</span><span class="n">subject</span><span class="o">!</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="k">if</span> <span class="p">(</span><span class="n">body</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">mc</span><span class="p">.</span><span class="n">setMessageBody</span><span class="p">(</span><span class="n">body</span><span class="o">!</span><span class="p">,</span> <span class="nl">isHTML</span><span class="p">:</span> <span class="nb">false</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="k">if</span> <span class="bp">MFMailComposeViewController</span><span class="p">.</span><span class="n">canSendMail</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">getRootViewController</span><span class="p">()</span><span class="o">?</span><span class="p">.</span><span class="n">presentViewController</span><span class="p">(</span><span class="n">mc</span><span class="p">,</span> <span class="nl">animated</span><span class="p">:</span> <span class="nb">true</span><span class="p">,</span> <span class="nl">completion</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-</span><span class='line'>    <span class="k">let</span> <span class="n">alertView</span> <span class="o">=</span> <span class="n">UIAlertController</span><span class="p">(</span><span class="nl">title</span><span class="p">:</span> <span class="s">&quot;안내&quot;</span><span class="p">,</span> <span class="nl">message</span><span class="p">:</span> <span class="s">&quot;현재 디바이스에서 이메일을 보낼수가 없습니다. 설정에서 이메일 관련 설정을 확인해주세요.&quot;</span><span class="p">,</span> <span class="nl">preferredStyle</span><span class="p">:</span> <span class="p">.</span><span class="n">Alert</span><span class="p">)</span>
-</span><span class='line'>    <span class="n">alertView</span><span class="p">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">UIAlertAction</span><span class="p">(</span><span class="nl">title</span><span class="p">:</span> <span class="s">&quot;Ok&quot;</span><span class="p">,</span> <span class="nl">style</span><span class="p">:</span> <span class="p">.</span><span class="n">Default</span><span class="p">,</span> <span class="nl">handler</span><span class="p">:</span> <span class="nb">nil</span><span class="p">))</span>
-</span><span class='line'>    <span class="n">presentViewController</span><span class="p">(</span><span class="n">alertView</span><span class="p">,</span> <span class="nl">animated</span><span class="p">:</span> <span class="nb">true</span><span class="p">,</span> <span class="nl">completion</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>그런데 위 코드처럼 사용하게 되면 설정된 메일 계정이 없어 메일 발송이 불가능할 경우 &#39;No Mail Accounts&#39; 메시지가 먼저 나오게 된다(쉽게 말해서 메시지가 두개가 뜬다). 그렇다면 &#39;No Mail Accounts&#39; 메시지는 나오지 않게 하고 내가 지정한 메시지가 나오게 하려면 어떻게 해야할까?</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">if</span> <span class="bp">MFMailComposeViewController</span><span class="p">.</span><span class="n">canSendMail</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>    <span class="k">let</span> <span class="n">mc</span> <span class="o">=</span> <span class="bp">MFMailComposeViewController</span><span class="p">()</span>
-</span><span class='line'>    <span class="n">mc</span><span class="p">.</span><span class="n">mailComposeDelegate</span> <span class="o">=</span> <span class="nb">self</span>
-</span><span class='line'>    <span class="n">mc</span><span class="p">.</span><span class="n">setToRecipients</span><span class="p">([</span><span class="n">to</span><span class="p">])</span>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">subject</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>        <span class="n">mc</span><span class="p">.</span><span class="n">setSubject</span><span class="p">(</span><span class="n">subject</span><span class="o">!</span><span class="p">)</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">body</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>        <span class="n">mc</span><span class="p">.</span><span class="n">setMessageBody</span><span class="p">(</span><span class="n">body</span><span class="o">!</span><span class="p">,</span> <span class="nl">isHTML</span><span class="p">:</span> <span class="nb">false</span><span class="p">)</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="n">getRootViewController</span><span class="p">()</span><span class="o">?</span><span class="p">.</span><span class="n">presentViewController</span><span class="p">(</span><span class="n">mc</span><span class="p">,</span> <span class="nl">animated</span><span class="p">:</span> <span class="nb">true</span><span class="p">,</span> <span class="nl">completion</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-</span><span class='line'>    <span class="k">let</span> <span class="n">alertView</span> <span class="o">=</span> <span class="n">UIAlertController</span><span class="p">(</span><span class="nl">title</span><span class="p">:</span> <span class="s">&quot;안내&quot;</span><span class="p">,</span> <span class="nl">message</span><span class="p">:</span> <span class="s">&quot;현재 디바이스에서 이메일을 보낼수가 없습니다. 설정에서 이메일 관련 설정을 확인해주세요.&quot;</span><span class="p">,</span> <span class="nl">preferredStyle</span><span class="p">:</span> <span class="p">.</span><span class="n">Alert</span><span class="p">)</span>
-</span><span class='line'>    <span class="n">alertView</span><span class="p">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">UIAlertAction</span><span class="p">(</span><span class="nl">title</span><span class="p">:</span> <span class="s">&quot;Ok&quot;</span><span class="p">,</span> <span class="nl">style</span><span class="p">:</span> <span class="p">.</span><span class="n">Default</span><span class="p">,</span> <span class="nl">handler</span><span class="p">:</span> <span class="nb">nil</span><span class="p">))</span>
-</span><span class='line'>    <span class="n">presentViewController</span><span class="p">(</span><span class="n">alertView</span><span class="p">,</span> <span class="nl">animated</span><span class="p">:</span> <span class="nb">true</span><span class="p">,</span> <span class="nl">completion</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>위 코드처럼 <code>MFMailComposeViewController.canSendMail()</code> 호출 이후에 <code>MFMailComposeViewController()</code>를 생성하면 &#39;No Mail Accounts&#39; 메시지는 나오지 않고 내가 지정한 메시지가 나타나게된다. 정확한 이유는 확인하지 못했지만 어쨌든 이렇게 하면 된다.</p>
-
-<hr>
-
-<p>그리고 MFMailComposeViewController 이야기가 나온 김에 한가지 문제를 더 알아보자.</p>
-
-<p>MFMailComposeViewController를 사용해서 시뮬레이터에서 실행해보면 이상하게도 아래의 오류가 날 수 있다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="nl">viewServiceDidTerminateWithError</span><span class="p">:</span> <span class="n">Error</span> <span class="n">Domain</span><span class="o">=</span><span class="n">_UIViewServiceInterfaceErrorDomain</span> <span class="n">Code</span><span class="o">=</span><span class="mi">3</span> <span class="s">&quot;(null)&quot;</span> <span class="n">UserInfo</span><span class="o">=</span><span class="p">{</span><span class="n">Message</span><span class="o">=</span><span class="n">Service</span> <span class="n">Connection</span> <span class="n">Interrupted</span><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>우선 <a href="http://stackoverflow.com/questions/25604552/i-have-real-misunderstanding-with-mfmailcomposeviewcontroller-in-swift-ios8-in/25864182#25864182">I have REAL misunderstanding with MFMailComposeViewController in Swift (iOS8) in Simulator</a>를 살펴보자. 이 문제에 대한 설명이 되어 있다.
-여기서는 Obj-C로 설명되어 있긴하지만 swift로 내용을 변경하는 것은 어렵지 않을 것이다. 그런데 문제는 나의 이렇게 해도 해결이 되지 않는다는 것이다. 사실 위 글을 잘 읽어보면 MFMailComposeViewController을 재사용할 경우에 대한 문제로 시뮬레이터에서 발생하는 문제와는 상관이 없다. 그래서 여러곳을 찾아보니 시뮬레이터만 문제가되고 실 기기에서는 해당 오류가 나지 않는다는 이야기들이 있다. 그리고 iOS 8.3에서 해결되었다는 등의 이야기도 있다. 그런데 나는 iOS 9 기준으로 테스트를 해봤지만 해결되지 않았다. <a href="https://forums.developer.apple.com/thread/4415">MailCompositionService quit unexpectedly</a>를 보면 아직도 해결되지 않은 것으로 보인다. 하지만 기기에서만 문제되지 않는다면 나도 일단은 상관없다고 생각한다.</p>
 ]]></content>
   </entry>
   

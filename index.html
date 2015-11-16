@@ -139,6 +139,100 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-16T20:55:08+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.16</time>
+        
+           | <a href="/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/" itemprop="url">XCode에서 storyboard 선택시 Crash가 발생할 경우</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>최근엔 XCode로 작업하는 일이 많아졌다. 안드로이드 개발과 웹 개발도 함께하지만 iOS 작업이 급하다 보니 주로 이 일을 하고 있다.
+XCode는 사용하면 할수록 잘 만들었다는 생각이 든다. 단, 코드 포멧팅 기능이 없다거나 소스 선택이 조금 부자연스럽다거나(이건 적응의 문제일 수 있다) 하는 것처럼 안드로이드 스튜디오에 비해 불편한 부분들이 있긴하다. 하지만 인터페이스 빌더 등의 도구들은 아주 잘 만들어져 있으며 결정적으로 빌드 속도가 무척 빨라서 좋다. 안드로이드 스튜디오도 지난 번에 적었던 <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>에서 설명했던 것처럼 빌드 속도가 다소 개선되었지만 XCode에 비교도 되지 않는다.</p>
+
+<p>인터페이스 빌더의 사용에 대해서는 개발자들 사이에서도 논란이 많다. 개발시 인터페이스 빌더를 사용할 것인가 하드 코딩으로 UI를 개발할 것인가? 둘 다 장단점이 있는 것은 명확하지만 개인적으로는 최대한 인터페이스 빌더를 사용하는 것이 옳다고 생각한다. 스토리보드와 같은 기능을 사용해서 앱 전체의 흐름을 파악하기 쉽도록 개발할 수 있으며 보여질 화면을 바로 보면서 작업하므로 개발 및 유지보수도 용이하다. 다만 인터페이스 빌더의 설정이 코드상에서 보여지지 못하므로 코드를 볼 때 혼란스럽게 보일 수는 있다. 그래서 나는 코드 흐름 상에서 중요한 요소는 인터페이스와 별개로 소스에서도 설정을 해주는 편이다(아주 중요할 경우만).</p>
+
+<p>서론이 길어졌는데 오늘 이야기는 지금 부터다. 나름 선호하는 이 인터페이스 빌더에는 치명적인 약점이 있다. 이건 내가 XCode를 처음 접한 3버전대에서부터 현재의 7버전까지도 완전히 해결되지 않는 문제다. 그 약점은 바로 Crash가 잘 발생한다는 점과 설정이 엉키면 정말 난해한 상황을 만나게 된다는 것이다.</p>
+
+<p>현재까지의 나의 해결법은 해당 부분을 통째로 지우고 새로 설정하는 것이다. 정말 최악의 방법이지만 항상 오랜 시간을 해결해 보려고 애써봐도 결론은 대부분 새로 작성하는 것이었다. 사실 이런 문제가 아주 빈번한 것은 아니지만 한번씩 발생하면 치명적이다(환장한다).</p>
+
+<p>최근에는 작업을 하면서 <a href="https://www.jetbrains.com/objc/">AppCode</a>를 함께 사용하는 편인데 아무래도 jetbrains에서 만들다보니 단축키도 익숙하고 결정적인 코드 포멧팅 기능 때문에...
+어쨌든 AppCode에서도 storyboard를 수정하려고하면 결국 XCode를 띄워준다.</p>
+
+<p>이렇게 개발 도구를 섞어써서 그런건지 내가 뭔가를 잘못했는지는 몰라도 이번에 제대로 일이 벌어졌다. 옛날 같으면 nib파일이 따로 있어서 문제가 발생해도 그 파일만 새로 작업하면 되는데 이번엔 스토리보드로 작업되어 있었는데 그 파일을 선택만 해도 XCode가 죽는 것이다. 도저히 새로 작성한다는 것은 불가능 했다. 아직 개발 초기라 화면이 엄청 많은 것은 아니었지만 그래도 주요 화면들을 다 작성해 둔 상태라 다시 작성하기엔 무리였다.</p>
+
+<p>그래서 인터넷에서 또 다시 해결 방법들을 찾아봤다. 사실 결론을 미리 이야기하자면 나는 아래의 방법들을 모두 시도해 보았으나 성공하지 못했다.  하지만 이 방법들로 효과를 봤다는 사람들이 있어서 기록성으로 한번 남겨두려고 한다.</p>
+
+<p><strong>1. XML로 열기</strong></p>
+
+<ul>
+<li>스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Source Code&quot; 메뉴를 이용해 XML 코드를 편집기에서 연다.</li>
+<li>의미없는 글자를 넣었다가 빼고 저장한다.</li>
+<li>다시 스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Interface Builder - Storyboard&quot;로 다시 연다.</li>
+</ul>
+
+<p><strong>2. Autolayout 기능 끄기</strong></p>
+
+<p>이 Autolayout에 대한 사람들의 이야기가 많았다. Autolayout이 새로 나오면서 많은 문제들이 있었던 것으로 보인다. 이제는 문제가 많이 줄어든 것으로 보이나 혹시나 도움이 될지도 모르겠다.</p>
+
+<ul>
+<li>스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Source Code&quot; 메뉴를 이용해 XML 코드를 편집기에서 연다.<br></li>
+<li><code>useAutolayout=&quot;YES&quot;</code> 부분을 찾아 <code>useAutolayout=&quot;NO&quot;</code>로 변경한다.</li>
+<li>다시 스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Interface Builder - Storyboard&quot;로 다시 연다.</li>
+</ul>
+
+<p><strong>3. xcuserdata 삭제</strong></p>
+
+<ul>
+<li>Xcode를 닫는다.</li>
+<li>.xcodeproj, .xcworkspace 파일을 우클릭하여 &quot;패키지 내용보기&quot;를 선택한다.</li>
+<li>xcuserdata 폴더를 삭제한다.</li>
+</ul>
+
+<p><strong>4. XCode 초기화</strong></p>
+
+<p>이 방법은 XCode 설정을 초기화하는 것으로 권장하지는 않는다. 터미널에서 아래의 명령을 입력한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>defaults delete com.apple.dt.Xcode
+</span></code></pre></td></tr></table></div></figure>
+
+<p><strong>5. 오류 발생 부분 찾아 제거하기</strong></p>
+
+<p>이 방법은 최후의 방법으로 내가 사용한 방법이다. storyboard 파일을 소스 상태(XML)로 열어 scene 단위로 삭제 해본다. 단, 삭제하기 전 원본 백업은 필수. 이렇게 하나씩 제거하면서 XCode에서 파일을 열어 시도해보면서 원인이 되는 scene을 찾는다. 원인이 되는 scene을 찾았다면 부분적으로 코드들을 제거해가면서 정확한 오류 지점을 찾는다. 운이 좋아 부분적 오류였다면 이 방법으로 최소한의 손실로 문제를 해결할 수 있다. 단, 찾을 수 없다면 해당 scene을 통째로 버려야 한다.</p>
+
+<p>결론적으로 명쾌한 답을 주지 못해 미안하지만 나도 아직은 답을 찾지 못했다. 오류가 발생할 때마다 열심히 애플에 오류 보고를 보내고 있지만 당연히 신속한 해결은 없다. 어쨌든 이런 문제를 만나지 않기를 바라며 혹시라도 문제가 발생한다면 위 방법들을 시도해보길 바란다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-11T20:33:16+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.11</time>
         
            | <a href="/2015/11/11/from-acra-to-fabric/#disqus_thread" itemprop="discussionUrl"
@@ -1878,54 +1972,6 @@ Jan 31st, 2014 6:09 pm<br>
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-29T14:14:03+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.29</time>
-        
-           | <a href="/2015/10/29/google-apps-admin-password-reset/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/29/google-apps-admin-password-reset/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/29/google-apps-admin-password-reset/" itemprop="url">구글앱스 관리자 비밀번호 초기화</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>얼마 전에 구글앱스의 관리자 비밀번호를 초기화 해야 할 일이 있었다. 지금은 이미 <a href="https://admin.google.com/scanmon.net/VerifyAdminAccountPasswordReset">구글앱스가 유료화</a>되었지만 예전에 50인 이하에 대해서는 무료였다. 그 당시에 내 개인적으로 사용하기 위한 구글앱스와 회사용으로 1개를 만들어 두었었다. 그런데 회사용으로 만들어 두었던 것을 사용하지 않다가 다시 사용하려고 했더니 비밀번호를 알 수가 없었다. 더 정확히는 관리자 아이디도 뭐로 했었는지도 기억이 나지 않았다. 그래서 관리자를 초기화하려고 했으나 도저히 메뉴를 찾을 수가 없었다.</p>
-
-<p>관련된 정보를 한참을 찾아다니다가 겨우 방법을 찾아서 기록해둔다.</p>
-
-<p>방법은 간단하다. 아래의 주소에서 &quot;YOUR_APPS_DOMAIN.COM&quot; 대신에 개설시 사용했던 도메인을 넣고 방문하면 소유주 확인을 위한 &quot;도메인 확인&quot; 화면이 나온다.</p>
-
-<p><code>https://admin.google.com/YOUR_APPS_DOMAIN.COM/VerifyAdminAccountPasswordReset</code></p>
-
-<p>이 화면에서 안내하는대로 따라가면 관리자 비밀번호를 초기화 할 수 있다. 스샷을 넣으려고 하다가 도메인 등을 지우기 귀찮아서 넣지 않았다. 사실 화면도 단순해서 큰 어려움은 없다. 게다가 화면이 언제 바뀔지도 모르고.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1995,7 +2041,7 @@ Jan 31st, 2014 6:09 pm<br>
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (16)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (17)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -2004,6 +2050,8 @@ Jan 31st, 2014 6:09 pm<br>
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/">XCode에서 storyboard 선택시 Crash가 발생할 경우</a>
+    
     <a class="list-group-item " href="/2015/11/11/from-acra-to-fabric/">안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환</a>
     
     <a class="list-group-item " href="/2015/11/05/android-is-not-translated-in-dot-dot-dot-lint-error/">Android : is not translated in ... Lint Error 해결</a>
@@ -2011,8 +2059,6 @@ Jan 31st, 2014 6:09 pm<br>
     <a class="list-group-item " href="/2015/11/04/xcode-storyboard-with-uiviewcontroller-using-generics/">Xcode 7.1의 StoryBoard에서 UIViewController(using Generics)를 Custom Class로 연결할 때 발생하는 오류</a>
     
     <a class="list-group-item " href="/2015/11/03/swift-uipagecontrol-overlap/">Swift UIPageViewController에서 UIPageControl 오버랩하기</a>
-    
-    <a class="list-group-item " href="/2015/11/03/how-to-wait-for-android-runonuithread-to-be-finished/">Android에서 runOnUiThread 작업이 종료 될 때까지 대기하기</a>
     
   </div>
 </section>

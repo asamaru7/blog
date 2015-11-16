@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Xcode 7.1에서 Google Maps SDK 사용시 빌드가 되지 않는 결함 - 이 세상에 하나는 남기고 가자</title>
+  <title>XCode에서 storyboard 선택시 Crash가 발생할 경우 - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/">
-  <meta property="og:title" content="Xcode 7.1에서 Google Maps SDK 사용시 빌드가 되지 않는 결함 - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/">
+  <meta property="og:title" content="XCode에서 storyboard 선택시 Crash가 발생할 경우 - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -135,7 +135,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-02T16:57:18+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.02</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-16T20:55:08+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.16</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -144,26 +144,68 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        Xcode 7.1에서 Google Maps SDK 사용시 빌드가 되지 않는 결함
+        XCode에서 storyboard 선택시 Crash가 발생할 경우
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p>얼마전 iOS 앱 개발에 사용하던 xcode를 7.1로 업데이트 했다. 그런데 앱에서 사용중이던 Google Maps SDK가 빌드되지 못해 앱을 실행할 수가 없었다. 문제는 header 생성 부분인데 해결 방법을 찾지 못해 다시 7.0을 재설치해서 사용하고 있었다. 그렇게 지내던 중 오늘 갑자기 생각이 나서 다시 확인해 봤다. 다행히 그 사이에 Google에서 update를 내 놓았다. 이 문제가 수정된 버전은 1.10.5 버전이다. 그리고 관련된 issue는 <a href="https://code.google.com/p/gmaps-api-issues/issues/detail?id=8524&amp;can=1&amp;q=Could%20not%20build%20Objective-C%20module&amp;colspec=ID%20Type%20Status%20Introduced%20Fixed%20Summary%20Stars%20ApiType%20Internal">Issue 8524: Bug: Running under Xcode 7 beta 6 with Google Maps SDK results in broken debugging.</a>이다.</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>최근엔 XCode로 작업하는 일이 많아졌다. 안드로이드 개발과 웹 개발도 함께하지만 iOS 작업이 급하다 보니 주로 이 일을 하고 있다.
+XCode는 사용하면 할수록 잘 만들었다는 생각이 든다. 단, 코드 포멧팅 기능이 없다거나 소스 선택이 조금 부자연스럽다거나(이건 적응의 문제일 수 있다) 하는 것처럼 안드로이드 스튜디오에 비해 불편한 부분들이 있긴하다. 하지만 인터페이스 빌더 등의 도구들은 아주 잘 만들어져 있으며 결정적으로 빌드 속도가 무척 빨라서 좋다. 안드로이드 스튜디오도 지난 번에 적었던 <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>에서 설명했던 것처럼 빌드 속도가 다소 개선되었지만 XCode에 비교도 되지 않는다.</p>
 
-<p>오류 메시지는 <code>Include of non-modular header inside framework module &#39;GoogleMaps&#39;</code>이다.</p>
+<p>인터페이스 빌더의 사용에 대해서는 개발자들 사이에서도 논란이 많다. 개발시 인터페이스 빌더를 사용할 것인가 하드 코딩으로 UI를 개발할 것인가? 둘 다 장단점이 있는 것은 명확하지만 개인적으로는 최대한 인터페이스 빌더를 사용하는 것이 옳다고 생각한다. 스토리보드와 같은 기능을 사용해서 앱 전체의 흐름을 파악하기 쉽도록 개발할 수 있으며 보여질 화면을 바로 보면서 작업하므로 개발 및 유지보수도 용이하다. 다만 인터페이스 빌더의 설정이 코드상에서 보여지지 못하므로 코드를 볼 때 혼란스럽게 보일 수는 있다. 그래서 나는 코드 흐름 상에서 중요한 요소는 인터페이스와 별개로 소스에서도 설정을 해주는 편이다(아주 중요할 경우만).</p>
 
-<p>대략 아래의 이미지처럼 오류가 난다(이미지는 캡춰하기 귀찮아 인터넷에 있는 이미지를 가져왔다).</p>
+<p>서론이 길어졌는데 오늘 이야기는 지금 부터다. 나름 선호하는 이 인터페이스 빌더에는 치명적인 약점이 있다. 이건 내가 XCode를 처음 접한 3버전대에서부터 현재의 7버전까지도 완전히 해결되지 않는 문제다. 그 약점은 바로 Crash가 잘 발생한다는 점과 설정이 엉키면 정말 난해한 상황을 만나게 된다는 것이다.</p>
 
-<p><img src="/img/2015-11-02-google-maps-sdk-with-xcode-7-dot-1-bug-1.png" alt="오류"></p>
+<p>현재까지의 나의 해결법은 해당 부분을 통째로 지우고 새로 설정하는 것이다. 정말 최악의 방법이지만 항상 오랜 시간을 해결해 보려고 애써봐도 결론은 대부분 새로 작성하는 것이었다. 사실 이런 문제가 아주 빈번한 것은 아니지만 한번씩 발생하면 치명적이다(환장한다).</p>
 
-<p>혹 xcode 7.1 사용시 이런 오류가 나온다면 Google Maps SDK를 1.10.5 이상으로 업데이트 후 빌드 해보기 바란다.</p>
+<p>최근에는 작업을 하면서 <a href="https://www.jetbrains.com/objc/">AppCode</a>를 함께 사용하는 편인데 아무래도 jetbrains에서 만들다보니 단축키도 익숙하고 결정적인 코드 포멧팅 기능 때문에...
+어쨌든 AppCode에서도 storyboard를 수정하려고하면 결국 XCode를 띄워준다.</p>
 
-<p>이 문제에 대한 원인은 처음 오류를 만났을 때 다른 사람들이 이야기하는 것을 봤었는데 정확한 내용이 기억이 나지 않는다. 대충 기억이 나는 것은 xcode가 7.1로 버전업 되면서 swift 모듈에 header 처리하는 부분이 변경되었다고 했던 것 같은데... 나중에라도 원인을 알게되면 다시 남기도록 하겠다.</p>
+<p>이렇게 개발 도구를 섞어써서 그런건지 내가 뭔가를 잘못했는지는 몰라도 이번에 제대로 일이 벌어졌다. 옛날 같으면 nib파일이 따로 있어서 문제가 발생해도 그 파일만 새로 작업하면 되는데 이번엔 스토리보드로 작업되어 있었는데 그 파일을 선택만 해도 XCode가 죽는 것이다. 도저히 새로 작성한다는 것은 불가능 했다. 아직 개발 초기라 화면이 엄청 많은 것은 아니었지만 그래도 주요 화면들을 다 작성해 둔 상태라 다시 작성하기엔 무리였다.</p>
 
-<p>Apple Developer Forums에서 나온 <a href="https://forums.developer.apple.com/thread/23554">Include of non-modular header inside framework module</a> issue도 있다. 혹시 GoogleMaps가 아닌 모듈에서 동일한 오류가 난다면 참고.</p>
+<p>그래서 인터넷에서 또 다시 해결 방법들을 찾아봤다. 사실 결론을 미리 이야기하자면 나는 아래의 방법들을 모두 시도해 보았으나 성공하지 못했다.  하지만 이 방법들로 효과를 봤다는 사람들이 있어서 기록성으로 한번 남겨두려고 한다.</p>
+
+<p><strong>1. XML로 열기</strong></p>
+
+<ul>
+<li>스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Source Code&quot; 메뉴를 이용해 XML 코드를 편집기에서 연다.</li>
+<li>의미없는 글자를 넣었다가 빼고 저장한다.</li>
+<li>다시 스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Interface Builder - Storyboard&quot;로 다시 연다.</li>
+</ul>
+
+<p><strong>2. Autolayout 기능 끄기</strong></p>
+
+<p>이 Autolayout에 대한 사람들의 이야기가 많았다. Autolayout이 새로 나오면서 많은 문제들이 있었던 것으로 보인다. 이제는 문제가 많이 줄어든 것으로 보이나 혹시나 도움이 될지도 모르겠다.</p>
+
+<ul>
+<li>스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Source Code&quot; 메뉴를 이용해 XML 코드를 편집기에서 연다.<br></li>
+<li><code>useAutolayout=&quot;YES&quot;</code> 부분을 찾아 <code>useAutolayout=&quot;NO&quot;</code>로 변경한다.</li>
+<li>다시 스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Interface Builder - Storyboard&quot;로 다시 연다.</li>
+</ul>
+
+<p><strong>3. xcuserdata 삭제</strong></p>
+
+<ul>
+<li>Xcode를 닫는다.</li>
+<li>.xcodeproj, .xcworkspace 파일을 우클릭하여 &quot;패키지 내용보기&quot;를 선택한다.</li>
+<li>xcuserdata 폴더를 삭제한다.</li>
+</ul>
+
+<p><strong>4. XCode 초기화</strong></p>
+
+<p>이 방법은 XCode 설정을 초기화하는 것으로 권장하지는 않는다. 터미널에서 아래의 명령을 입력한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>defaults delete com.apple.dt.Xcode
+</span></code></pre></td></tr></table></div></figure>
+
+<p><strong>5. 오류 발생 부분 찾아 제거하기</strong></p>
+
+<p>이 방법은 최후의 방법으로 내가 사용한 방법이다. storyboard 파일을 소스 상태(XML)로 열어 scene 단위로 삭제 해본다. 단, 삭제하기 전 원본 백업은 필수. 이렇게 하나씩 제거하면서 XCode에서 파일을 열어 시도해보면서 원인이 되는 scene을 찾는다. 원인이 되는 scene을 찾았다면 부분적으로 코드들을 제거해가면서 정확한 오류 지점을 찾는다. 운이 좋아 부분적 오류였다면 이 방법으로 최소한의 손실로 문제를 해결할 수 있다. 단, 찾을 수 없다면 해당 scene을 통째로 버려야 한다.</p>
+
+<p>결론적으로 명쾌한 답을 주지 못해 미안하지만 나도 아직은 답을 찾지 못했다. 오류가 발생할 때마다 열심히 애플에 오류 보고를 보내고 있지만 당연히 신속한 해결은 없다. 어쨌든 이런 문제를 만나지 않기를 바라며 혹시라도 문제가 발생한다면 위 방법들을 시도해보길 바란다.</p>
 </div>
 
 
@@ -187,7 +229,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-02T16:57:18+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.02</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-16T20:55:08+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.16</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
@@ -202,7 +244,7 @@
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/" data-via="" data-counturl="http://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/" data-via="" data-counturl="http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -216,10 +258,8 @@
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/11/02/android-online-apk-download-and-decompile/" title="Previous Post: android apk download / decompile 하기">&laquo; android apk download / decompile 하기</a></li>
+            <li class="previous"><a href="/2015/11/11/from-acra-to-fabric/" title="Previous Post: 안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환">&laquo; 안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환</a></li>
             
-            
-            <li class="next"><a href="/2015/11/02/android-spans-a-powerful-concept/" title="Next Post: [번역중] Android : Spans, a Powerful Concept">[번역중] Android : Spans, a Powerful Concept &raquo;</a></li>
             
           </ul>
         
@@ -299,7 +339,7 @@
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/">XCode에서 storyboard 선택시 Crash가 발생할 경우</a>
+    <a class="list-group-item active" href="/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/">XCode에서 storyboard 선택시 Crash가 발생할 경우</a>
     
     <a class="list-group-item " href="/2015/11/11/from-acra-to-fabric/">안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환</a>
     
@@ -343,8 +383,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/';
-        var disqus_url = 'http://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/';
+        var disqus_url = 'http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/';
         var disqus_script = 'embed.js';
       
     (function () {

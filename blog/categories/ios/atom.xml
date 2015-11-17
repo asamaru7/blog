@@ -4,7 +4,7 @@
   <title><![CDATA[Category: ios | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-11-16T21:42:28+09:00</updated>
+  <updated>2015-11-17T14:39:07+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,149 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Cocoapods : Sub Module에서 GoogleMaps 의존성 사용시 Transitive dependency 문제 해결]]></title>
+    <link href="http://blog.asamaru.net/2015/11/17/cocoapods-transitive-dependency-with-static-library/"/>
+    <updated>2015-11-17T13:19:25+09:00</updated>
+    <id>http://blog.asamaru.net/2015/11/17/cocoapods-transitive-dependency-with-static-library</id>
+    <content type="html"><![CDATA[<p>지난 글 <a href="/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/">Cocoapods : The &#39;Pods&#39; target has transitive dependencies that include static binaries 오류</a>에서 언급한 transitive dependencies 문제를 해결하는 방법을 설명하려고 한다. 미리 이야기 하지만 사실 아래의 내용은 아주 깔끔하게 해결하는 방법은 아니다. 정확한 해결이 되려면 CocoaPods에서 정식 지원을 해야 해결될 것으로 보인다. 하지만 임시로라도 사용을 해야 한다면 아래의 내용이 도움이 될지도 모르겠다(어쨌든 난 이렇게 사용중이다).</p>
+
+<p>우선 왜 이 문제를 만나게 되었는지 부터 설명하려고 한다.
+지난글에서 설명 했던 것과 같이 Sub Module에서 GoogleMaps에 대한 의존성을 지정 해야하는 상황이 발생했다. 그래서 아래와 같이 <code>podspec</code> 파일을 만들었다.</p>
+
+<p><strong>ModuleName1.podspec</strong>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Pod</span><span class="o">::</span><span class="no">Spec</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">s</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">name</span>     <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;ModuleName&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">version</span>  <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;1.0.0&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;MIT&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">summary</span>  <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;ModuleName Summary&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">homepage</span> <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;https://~&lt;del&gt;&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">author</span>   <span class="o">=</span> <span class="p">{</span> <span class="o">&amp;</span><span class="c1">#39;ㅇㅇㅇ&amp;#39; =&amp;gt; &amp;#39;&lt;a href=&quot;mailto:nobody@nobody.com&quot;&gt;nobody@nobody.com&lt;/a&gt;&amp;#39; }</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source</span>   <span class="o">=</span> <span class="p">{</span> <span class="ss">:git</span> <span class="o">=&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="o">&amp;</span><span class="c1">#39;https://&lt;/del&gt;~/ModuleName.git&amp;#39;, :tag =&amp;gt; s.version }</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">ios</span><span class="o">.</span><span class="n">deployment_target</span> <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;8.0&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source_files</span> <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;Source/ModuleName/&lt;em&gt;.swift&amp;#39;, &amp;#39;ModuleName/&lt;/em&gt;&lt;em&gt;/&lt;/em&gt;.swift&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">requires_arc</span> <span class="o">=</span> <span class="kp">true</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;s.dependency &amp;#39;GoogleMaps&amp;#39;</span>
+</span><span class='line'><span class="sr">end</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>그런데 <code>[!] The &#39;Pods&#39; target has transitive dependencies that include static binaries: (/~~~/Pods/GoogleMaps/Frameworks/GoogleMaps.framework)</code> 오류가 발생한다(<strong>이전 글에서도 언급했지만 항상 발생하는 것이 아니라 Podfile에서 <code>use_frameworks!</code>를 사용할 경우에 발생한다.</strong>). 그래서 <a href="/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/">Cocoapods : The &#39;Pods&#39; target has transitive dependencies that include static binaries 오류</a>에서 언급한 것처럼 <code>pre_install</code>을 사용해서 오류는 제거했다. 하지만 실제 작업을 위해 <code>import GoogleMaps</code>를 하면 모듈을 찾지를 못한다. 여기서 부터 삽질이 시작되었다.</p>
+
+<p>static binaries를 포함하는 모듈이 아닌 경우 부모 프로젝트(Sub Module을 사용하는)에서 해당 의존성이 지정되어 있다면 바로 import해서 사용이 가능하다(부모 프로젝트의 Podfile에 <code>pod &#39;GoogleMaps&#39;</code>가 추가되어 있는 경우). 당연히 부모 프로젝트를 열어서 Sub Module을 수정하고 있는 경우를 말한다. 하지만 이 경우는 그것도 안된다(정확한 이유는 아직 모르겠다. static binaries를 포함하고 있어서 그런 것인지 GoogleMaps 모듈이 use_frameworks을 완전하게 지원하지 않아서 인지 명확하지는 않다). 따라서 어떻게 해서든 의존성을 지정해야 한다.</p>
+
+<p>이를 해결하려고 여러가지 시도를 해봤으나 모두 실패했다. 그래서 다른 프로젝트들은 어떻게 해결했나 싶어 github에서 모듈들을 찾아다니다 <a href="https://github.com/poulpix/PXGoogleDirections">PXGoogleDirections</a>를 발견했다. 내가 원했던 것처럼 CocoaPods 모듈에서 GoogleMaps에 대한 의존성을 지정한 모듈이다(사실 다른 모듈들도 찾았으니 그냥 <code>dependency</code>를 사용하고 있었다. 이 모듈들은 확인해보니 나처럼 <code>use_frameworks!</code>를 사용하는 상황에서는 동일한 문제가 발생한다). 그래서 <a href="https://github.com/poulpix/PXGoogleDirections">PXGoogleDirections</a>의 소스를 조금 둘러보니 GoogleMaps의 소스를 프로젝트 내부에 포함하고 있었다. 사실 이 방법이 외부에서 사용시에는 가장 깔끔한 방법으로 보인다. 하지만 난 이렇게는 하고 싶지 않았다.</p>
+
+<p>그래서 <a href="https://github.com/poulpix/PXGoogleDirections/blob/master/PXGoogleDirections.podspec">PXGoogleDirections.podspec</a>를 참고해서 여러 번의 시도 끝에 나름의 방법을 찾았다.</p>
+
+<p>결론은 <code>podspec</code>파일을 아래와 같이 설정하면 된다. 단, <a href="/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/">Cocoapods : The &#39;Pods&#39; target has transitive dependencies that include static binaries 오류</a>에서 언급한 것처럼 <code>pre_install</code>을 사용해서 오류는 제거해야 한다.</p>
+
+<p><strong>ModuleName1.podspec</strong>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Pod</span><span class="o">::</span><span class="no">Spec</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">s</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">name</span>     <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;ModuleName&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">version</span>  <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;1.0.0&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;MIT&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">summary</span>  <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;ModuleName Summary&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">homepage</span> <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;https://~&lt;del&gt;&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">author</span>   <span class="o">=</span> <span class="p">{</span> <span class="o">&amp;</span><span class="c1">#39;ㅇㅇㅇ&amp;#39; =&amp;gt; &amp;#39;&lt;a href=&quot;mailto:nobody@nobody.com&quot;&gt;nobody@nobody.com&lt;/a&gt;&amp;#39; }</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source</span>   <span class="o">=</span> <span class="p">{</span> <span class="ss">:git</span> <span class="o">=&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="o">&amp;</span><span class="c1">#39;https://&lt;/del&gt;~/ModuleName.git&amp;#39;, :tag =&amp;gt; s.version }</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">ios</span><span class="o">.</span><span class="n">deployment_target</span> <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;8.0&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source_files</span> <span class="o">=</span> <span class="o">&amp;</span><span class="c1">#39;Source/ModuleName/&lt;em&gt;.swift&amp;#39;, &amp;#39;ModuleName/&lt;/em&gt;&lt;em&gt;/&lt;/em&gt;.swift&amp;#39;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">requires_arc</span> <span class="o">=</span> <span class="kp">true</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;s.dependency &amp;#39;GoogleMaps&amp;#39;</span>
+</span><span class='line'><span class="sr">  s.frameworks            = &amp;quot;Accelerate&amp;quot;, &amp;quot;AVFoundation&amp;quot;, &amp;quot;CoreBluetooth&amp;quot;, &amp;quot;CoreData&amp;quot;, &amp;quot;CoreLocation&amp;quot;, &amp;quot;CoreText&amp;quot;, &amp;quot;Foundation&amp;quot;, &amp;quot;GLKit&amp;quot;, &amp;quot;ImageIO&amp;quot;, &amp;quot;OpenGLES&amp;quot;, &amp;quot;QuartzCore&amp;quot;, &amp;quot;Security&amp;quot;, &amp;quot;SystemConfiguration&amp;quot;, &amp;quot;CoreGraphics&amp;quot;, &amp;quot;GoogleMaps&amp;quot;</span>
+</span><span class='line'><span class="sr">  s.resource_bundles      = { &amp;#39;GoogleMaps&amp;#39; =&amp;gt; [&amp;#39;$(PODS_ROOT)/</span><span class="no">GoogleMaps</span><span class="o">/</span><span class="no">Frameworks</span><span class="o">/</span><span class="no">GoogleMaps</span><span class="o">.</span><span class="n">framework</span><span class="o">/</span><span class="no">Resources</span><span class="o">/*.</span><span class="n">bundle</span><span class="o">&amp;</span><span class="c1">#39;] }</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">vendored_frameworks</span>   <span class="o">=</span> <span class="o">&amp;</span><span class="n">quot</span><span class="p">;</span><span class="err">$</span><span class="p">(</span><span class="no">PODS_ROOT</span><span class="p">)</span><span class="o">/</span><span class="no">GoogleMaps</span><span class="o">/</span><span class="no">Frameworks</span><span class="o">/</span><span class="no">GoogleMaps</span><span class="o">.</span><span class="n">framework</span><span class="o">&amp;</span><span class="n">quot</span><span class="p">;</span>
+</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">xcconfig</span>              <span class="o">=</span> <span class="p">{</span> <span class="o">&amp;</span><span class="c1">#39;FRAMEWORK_SEARCH_PATHS&amp;#39; =&amp;gt; &amp;#39;$(PODS_ROOT)/GoogleMaps/Frameworks&amp;#39; }</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>설명하자면 <code>dependency</code>를 통해 의존성을 설정한다. Cocoapods의 특성상 Sub Module의 의존성도 모두 <code>Pods</code>로 통합되어 추가된다(부모 프로젝트에서도 바로 사용 가능하다). 그런데 이렇게만 설정하면 정작 Sub Module에서는 GoogleMaps에 접근할 수 없으므로 관련된 설정을 <code>Pods</code>에 설치된 GoogleMaps에 맞추어준다. <code>frameworks</code>의 경우만 보더라도 GoogleMaps에서 이미 의존성이 다 지정되어 있음에도 불구하고 다시 다 설정해 주어야 한다(<a href="https://github.com/CocoaPods/Specs/blob/master/Specs/GoogleMaps/1.10.5/GoogleMaps.podspec.json">GoogleMaps.podspec.json</a> 참고)</p>
+
+<p>어쨌든 이렇게 하면 문제는 해결된다. 서두에서 언급한 것처럼 내가 봐도 깔끔한 해결 방법은 아니다. 하지만 이런 불편함을 감수하고서라도 Sub Module로 분리하고 싶다면 위 방법을 참고하자. 원리를 보면 GoogleMaps가 아닌 다른 모듈(static binaries를 포함하는)도 동일하게 처리할 수 있다. 그리고 일단 Sub Module로 분리해서 사용하다 보면 CocoaPods에서 개선해줄 것으로 생각한다(관련되 Issue가 다수 존재하므로).</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Cocoapods : The 'Pods' target has transitive dependencies that include static binaries 오류]]></title>
+    <link href="http://blog.asamaru.net/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/"/>
+    <updated>2015-11-17T13:17:38+09:00</updated>
+    <id>http://blog.asamaru.net/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries</id>
+    <content type="html"><![CDATA[<p>iOS용 앱 개발을 하면서 CocoaPods을 사용하고 있다. 그리고 CocoaPods을 이용해서 반복적인 기능의 구현을 Sub Module로 분리하여 프로젝트를 진행하고 있다. Sub Module 분리에 대해서는 <a href="/2015/10/21/xcode-create-sub-module-using-cocoapods/">Xcode에서 CocoaPods를 이용해 sub module 만들기</a>에서 설명 했었다.</p>
+
+<p>이렇게 만든 Sub Module에서 가지는 의존성은 <code>dependency</code> 속성을 이용해서 지정한다. 예를들면 아래와 같다.</p>
+
+<p>```ruby ModuleName.podspec
+Pod::Spec.new do |s|
+  s.name     = &#39;ModuleName&#39;
+  s.version  = &#39;1.0.0&#39;
+  s.license = &#39;MIT&#39;
+  s.summary  = &#39;ModuleName Summary&#39;
+  s.homepage = &#39;https://~<del>&#39;
+  s.author   = { &#39;ㅇㅇㅇ&#39; =&gt; &#39;<a href="mailto:nobody@nobody.com">nobody@nobody.com</a>&#39; }
+  s.source   = { :git =&gt; &#39;https://</del>~/ModuleName.git&#39;, :tag =&gt; s.version }
+  s.ios.deployment_target = &#39;8.0&#39;
+  s.source_files = &#39;Source/ModuleName/<em>.swift&#39;, &#39;ModuleName/</em><em>/</em>.swift&#39;
+  s.requires_arc = true</p>
+
+<p>s.dependency &#39;DependencyModuleName&#39;
+end
+```</p>
+
+<p>그런데 이렇게 설정해서 사용할 경우 CocoaPods에서 아래와 같은 오류가 나는 경우가 있다. <strong>항상 발생하는 것이 아니라 Podfile에서 <code>use_frameworks!</code>를 사용할 경우에 발생한다.</strong></p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">[!] The &#39;Pods&#39; target has transitive dependencies that include static binaries: (/~~~/Pods/DependencyModuleName/Frameworks/DependencyModuleName.framework)
+</code></pre></div>
+<p>대표적으로 GoogleMaps 모듈을 <code>dependency</code>로 사용하면 이 오류를 만나게 된다. 이유를 간단하게 설명하자면 의존성을 지정한 모듈이 static binaries를 포함하고 있기 때문에 발생하는 오류다. 현재 사용중인 CocoaPods의 버전은 0.39.0인데 아직까지 이 상황에 대해서는 지원을 하지 않는 것으로 보인다. 이와 관련하여 <a href="https://github.com/CocoaPods/CocoaPods/issues/2926">Reject installation if a static library is used as a transitive dependency while using frameworks</a>라는 Issue가 진행중이다.</p>
+
+<p>어쨌든 일단 CocoaPods에서 이 오류가 나지 않도록 하는 방법은 다음과 같다. 부모 프로젝트의 Podfile에 아래와 같이 추가 한다.</p>
+
+<p><code>ruby Podfile
+pre_install do |installer|
+    def installer.verify_no_static_framework_transitive_dependencies; end
+end
+</code></p>
+
+<p>관련글 : <a href="https://github.com/CocoaPods/CocoaPods/issues/3289">Prevent Transitive Dependency Errors in Swift Project with Vendored Frameworks</a></p>
+
+<p>pre_install를 이미 사용중이라면 거기에 def 라인만 추가하면 된다.</p>
+
+<p>사실 이 방법은 일단 오류가 나오지 않도록 검사를 하지 않는 것일 뿐 근본적인 해결이 된 것은 아니다. 이와 관련한 해결 방법은 관련성이 있으나 다른 부분을 포함하고 있어 <a href="/2015/11/17/cocoapods-transitive-dependency-with-static-library/">Cocoapods : Sub Module에서 GoogleMaps 의존성 사용시 Transitive dependency 문제 해결</a>에 따로 남긴다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[XCode에서 storyboard 선택시 Crash가 발생할 경우]]></title>
@@ -68,6 +211,8 @@ XCode는 사용하면 할수록 잘 만들었다는 생각이 든다. 단, 코�
 <p><strong>5. 오류 발생 부분 찾아 제거하기</strong></p>
 
 <p>이 방법은 최후의 방법으로 내가 사용한 방법이다. storyboard 파일을 소스 상태(XML)로 열어 scene 단위로 삭제 해본다. 단, 삭제하기 전 원본 백업은 필수. 이렇게 하나씩 제거하면서 XCode에서 파일을 열어 시도해보면서 원인이 되는 scene을 찾는다. 원인이 되는 scene을 찾았다면 부분적으로 코드들을 제거해가면서 정확한 오류 지점을 찾는다. 운이 좋아 부분적 오류였다면 이 방법으로 최소한의 손실로 문제를 해결할 수 있다. 단, 찾을 수 없다면 해당 scene을 통째로 버려야 한다.</p>
+
+<hr>
 
 <p>결론적으로 명쾌한 답을 주지 못해 미안하지만 나도 아직은 답을 찾지 못했다. 오류가 발생할 때마다 열심히 애플에 오류 보고를 보내고 있지만 당연히 신속한 해결은 없다. 어쨌든 이런 문제를 만나지 않기를 바라며 혹시라도 문제가 발생한다면 위 방법들을 시도해보길 바란다.</p>
 ]]></content>
@@ -215,63 +360,6 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
 <p>사실 나는 이 해결 방법을 고심해서 찾았지만 실제로는 적용하지 않았다. 설계 구조를 변경해서 Generics를 제거하는 쪽으로 결정했다. 필히 Generics이 필요한 상황이 아니었기 때문에 굳이 이렇게까지 할 필요는 없다고 생각했기 때문이다.</p>
 
 <p>어쨌든 비슷한 문제를 겪고 있다면 위의 설명을 참고로 해결 방법을 찾길 바란다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Swift UIPageViewController에서 UIPageControl 오버랩하기]]></title>
-    <link href="http://blog.asamaru.net/2015/11/03/swift-uipagecontrol-overlap/"/>
-    <updated>2015-11-03T17:12:21+09:00</updated>
-    <id>http://blog.asamaru.net/2015/11/03/swift-uipagecontrol-overlap</id>
-    <content type="html"><![CDATA[<p>UIPageViewController 사용시에 하단에 현재 페이지의 위치를 알려주는 UIPageControl가 별도의 공간을 차지하고 표시된다.</p>
-
-<p><img src="/img/2015-11-03-swift-uipagecontrol-overlap-1.png" alt="UIPageControl"></p>
-
-<p>이 부분의 공간을 제거하고 내용 페이지의 위에 오버랩하려면 아래와 같이 <code>viewDidLayoutSubviews</code>에 필요한 소스를 추가하면 된다. 기본적으로 UIPageControl는 투명이라 자연스럽게 덮힌다.</p>
-<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">class</span> <span class="nl">PageViewController</span><span class="p">:</span> <span class="bp">UIPageViewController</span> <span class="p">{</span>
-  <span class="kr">override</span> <span class="k">func</span> <span class="n">viewDidLayoutSubviews</span><span class="p">()</span> <span class="p">{</span>
-        <span class="c1">// UIPageControl overlap</span>
-        <span class="k">let</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="n">view</span>
-        <span class="k">let</span> <span class="n">subviews</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">subviews</span>
-        <span class="k">var</span> <span class="nl">sv</span><span class="p">:</span> <span class="bp">UIView</span><span class="o">?</span> <span class="o">=</span> <span class="nb">nil</span>
-        <span class="k">var</span> <span class="nl">pc</span><span class="p">:</span> <span class="bp">UIView</span><span class="o">?</span> <span class="o">=</span> <span class="nb">nil</span>
-        <span class="k">for</span> <span class="nl">t</span><span class="p">:</span> <span class="bp">UIView</span> <span class="k">in</span> <span class="n">subviews</span> <span class="p">{</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">isKindOfClass</span><span class="p">(</span><span class="bp">UIScrollView</span><span class="p">))</span> <span class="p">{</span>
-                <span class="n">sv</span> <span class="o">=</span> <span class="n">t</span>
-            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">isKindOfClass</span><span class="p">(</span><span class="bp">UIPageControl</span><span class="p">))</span> <span class="p">{</span>
-                <span class="n">pc</span> <span class="o">=</span> <span class="n">t</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-        <span class="k">if</span> <span class="p">((</span><span class="n">sv</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">pc</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">))</span> <span class="p">{</span>
-            <span class="n">sv</span><span class="o">!</span><span class="p">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">bounds</span>
-            <span class="n">v</span><span class="p">.</span><span class="n">bringSubviewToFront</span><span class="p">(</span><span class="n">pc</span><span class="o">!</span><span class="p">)</span>
-        <span class="p">}</span>
-        <span class="nb">super</span><span class="p">.</span><span class="n">viewDidLayoutSubviews</span><span class="p">()</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>Objective-c에서의 처리 방법은 <a href="http://stackoverflow.com/a/24851985">How do I make the bottom bar with dots of a UIPageViewController translucent?</a>를 참고.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Xcode 7.1에서 Google Maps SDK 사용시 빌드가 되지 않는 결함]]></title>
-    <link href="http://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/"/>
-    <updated>2015-11-02T16:57:18+09:00</updated>
-    <id>http://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug</id>
-    <content type="html"><![CDATA[<p>얼마전 iOS 앱 개발에 사용하던 xcode를 7.1로 업데이트 했다. 그런데 앱에서 사용중이던 Google Maps SDK가 빌드되지 못해 앱을 실행할 수가 없었다. 문제는 header 생성 부분인데 해결 방법을 찾지 못해 다시 7.0을 재설치해서 사용하고 있었다. 그렇게 지내던 중 오늘 갑자기 생각이 나서 다시 확인해 봤다. 다행히 그 사이에 Google에서 update를 내 놓았다. 이 문제가 수정된 버전은 1.10.5 버전이다. 그리고 관련된 issue는 <a href="https://code.google.com/p/gmaps-api-issues/issues/detail?id=8524&amp;can=1&amp;q=Could%20not%20build%20Objective-C%20module&amp;colspec=ID%20Type%20Status%20Introduced%20Fixed%20Summary%20Stars%20ApiType%20Internal">Issue 8524: Bug: Running under Xcode 7 beta 6 with Google Maps SDK results in broken debugging.</a>이다.</p>
-
-<p>오류 메시지는 <code>Include of non-modular header inside framework module &#39;GoogleMaps&#39;</code>이다.</p>
-
-<p>대략 아래의 이미지처럼 오류가 난다(이미지는 캡춰하기 귀찮아 인터넷에 있는 이미지를 가져왔다).</p>
-
-<p><img src="/img/2015-11-02-google-maps-sdk-with-xcode-7-dot-1-bug-1.png" alt="오류"></p>
-
-<p>혹 xcode 7.1 사용시 이런 오류가 나온다면 Google Maps SDK를 1.10.5 이상으로 업데이트 후 빌드 해보기 바란다.</p>
-
-<p>이 문제에 대한 원인은 처음 오류를 만났을 때 다른 사람들이 이야기하는 것을 봤었는데 정확한 내용이 기억이 나지 않는다. 대충 기억이 나는 것은 xcode가 7.1로 버전업 되면서 swift 모듈에 header 처리하는 부분이 변경되었다고 했던 것 같은데... 나중에라도 원인을 알게되면 다시 남기도록 하겠다.</p>
-
-<p>Apple Developer Forums에서 나온 <a href="https://forums.developer.apple.com/thread/23554">Include of non-modular header inside framework module</a> issue도 있다. 혹시 GoogleMaps가 아닌 모듈에서 동일한 오류가 난다면 참고.</p>
 ]]></content>
   </entry>
   

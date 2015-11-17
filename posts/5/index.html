@@ -139,6 +139,366 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-08T12:04:05+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.08</time>
+        
+           | <a href="/2015/10/08/centos-autofs/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/08/centos-autofs/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/08/centos-autofs/" itemprop="url">CentOS autofs</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><h2 id="설치">설치</h2>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>yum install -y autofs
+</span></code></pre></td></tr></table></div></figure>
+
+<h2 id="설정">설정</h2>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 서버 부팅시 자동 시작</span>
+</span><span class='line'>/sbin/chkconfig --add autofs
+</span><span class='line'>/sbin/chkconfig --level <span class="m">35</span> autofs on
+</span></code></pre></td></tr></table></div></figure>
+
+<h2 id="mount-설정">mount 설정</h2>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi /etc/auto.master
+</span><span class='line'>
+</span><span class='line'>/home/nfsusers   /etc/auto.users --timeout 60
+</span><span class='line'>
+</span><span class='line'>vi /etc/auto.users
+</span><span class='line'>yyj -rw,vers<span class="o">=</span>3,udp,nolock   192.168.11.99:/czdev/vagrant/work/web
+</span><span class='line'>
+</span><span class='line'>service autofs restart
+</span></code></pre></td></tr></table></div></figure>
+
+<h2 id="관리">관리</h2>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 데몬 재시작</span>
+</span><span class='line'>service autofs restart
+</span><span class='line'>
+</span><span class='line'><span class="c"># 상태 확인</span>
+</span><span class='line'>service autofs status
+</span><span class='line'>
+</span><span class='line'><span class="c"># 설정 다시 일기</span>
+</span><span class='line'>service autofs reload
+</span></code></pre></td></tr></table></div></figure>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 동작 로그 보기</span>
+</span><span class='line'>service autofs stop
+</span><span class='line'>automount -f -v
+</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-08T11:44:32+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.08</time>
+        
+           | <a href="/2015/10/08/useful-commands-for-linux/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/08/useful-commands-for-linux/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/08/useful-commands-for-linux/" itemprop="url">리눅스 명령어 모음(Centos 6)</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>아래의 내용은 개인적으로 간혹 사용이 필요한 내용을 기록해 두기 위한 것으로 잘못된 정보일 수 있으니 참고만 하기 바란다.</p>
+
+<h3 id="시스템-로그-삭제">시스템 로그 삭제</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>/etc/init.d/rsyslog restart
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="sl-인증서-apache-시작시-비밀번호-입력-제거">sl 인증서 + apache 시작시 비밀번호 입력 제거</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>openssl rsa -in key.pem -out key.nopw.pem
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="ssh-접속자-강제-로그아웃">ssh 접속자 강제 로그아웃</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 602 : userid</span>
+</span><span class='line'>pkill -KILL -u 602
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="bash-script에서-실행경로-구하기">bash script에서 실행경로 구하기</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> <span class="k">${</span><span class="nv">0</span><span class="p">%/*</span><span class="k">}</span> 2&gt;/dev/null
+</span><span class='line'><span class="nb">echo</span> <span class="nv">$PWD</span>/<span class="k">${</span><span class="nv">0</span><span class="p">##*/</span><span class="k">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="서버-네트워크-상태-확인">서버 네트워크 상태 확인</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>netstat -an<span class="p">|</span>grep <span class="s2">&quot;:80&quot;</span><span class="p">|</span>awk <span class="s1">&#39;/tcp/ {print $6}&#39;</span><span class="p">|</span>sort -nr<span class="p">|</span> uniq -c
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="아파치-동시접속자-수-확인">아파치 동시접속자 수 확인</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>netstat -anp <span class="p">|</span> grep :80 <span class="p">|</span> grep ESTAB <span class="p">|</span> wc -l
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="권한-파일-찾기-바꾸기">권한 파일 찾기 / 바꾸기</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># root 권한 파일 찾기</span>
+</span><span class='line'>find . -uid 0
+</span><span class='line'>
+</span><span class='line'><span class="c"># chown 특정 사용자만 변경</span>
+</span><span class='line'>chown web.usergroup * -R --from<span class="o">=</span>root.root
+</span><span class='line'>chown --from<span class="o">=</span><span class="m">511</span> -R web account/
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="포트-강제로-죽이기">포트 강제로 죽이기</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo fuser -k -n tcp 444
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="실행-결과-숨기기-stdout-stderr">실행 결과 숨기기(stdout, stderr)</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>명력어 &gt; /dev/null 2&gt;<span class="p">&amp;</span>1
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="검색된-파일만-vi-열기">검색된 파일만 vi 열기</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi -p <span class="k">$(</span>find .<span class="p">|</span>grep ModuleLink<span class="p">|</span>grep -v <span class="s1">&#39;.svn&#39;</span><span class="p">|</span>grep -v CZFramework<span class="k">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="내용-일괄변환">내용 일괄변환</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>find . -type f -name *.php -exec perl -pi -e <span class="s1">&#39;s|\\CZ\\CZFramework|\\CZF|g&#39;</span> <span class="o">{}</span> <span class="se">\;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="ssh-비밀번호-없이-접속">ssh 비밀번호 없이 접속</h3>
+
+<h4 id="local">local</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>ssh-keygen -t rsa
+</span><span class='line'><span class="c"># scp /root/.ssh/id_rsa.pub root@[ip]:/root/.ssh/authorized_keys</span>
+</span><span class='line'>ssh-copy-id -i ~/.ssh/id_rsa.pub admin@<span class="o">[</span>ip<span class="o">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h4 id="대상-서버-호스트-의-퍼미션">대상 서버(호스트)의 퍼미션</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="m">750</span> /home/admin/
+</span><span class='line'><span class="m">700</span> /home/admin/.ssh/
+</span><span class='line'><span class="m">600</span> /home/admin/.ssh/authorized_keys
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="배드블럭-검사">배드블럭 검사</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>badblocks -v /dev/sda1
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="프로세스-실행경로-확인">프로세스 실행경로 확인</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 프로세스 정보</span>
+</span><span class='line'>ps ef
+</span><span class='line'>ps aux
+</span><span class='line'>
+</span><span class='line'><span class="c"># 프로세스 트리보기</span>
+</span><span class='line'>pstree -aph
+</span><span class='line'>
+</span><span class='line'><span class="c">#프로세스 상세보기</span>
+</span><span class='line'>lsof -P
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="아파치-모든-페이지-요청시-동일페이지-노출">아파치 :  모든 페이지 요청시 동일페이지 노출</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='apacheconf'><span class='line'><span class="nb">RewriteEngine</span> <span class="k">On</span>
+</span><span class='line'><span class="nb">RewriteRule</span> ^(.*)$ <span class="sx">/target/index.html</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h2 id="mysql-사용자-관리">Mysql 사용자 관리</h2>
+
+<h4 id="패턴">패턴</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="err">디비명</span><span class="p">.</span><span class="err">테이블명</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;접속지 주소&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span> <span class="p">(</span><span class="k">with</span> <span class="k">grant</span> <span class="k">option</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h4 id="권한-생성">권한 생성</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="c1"># 원격지에서 root로 접속하는 경우</span>
+</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="n">root</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span> <span class="k">with</span> <span class="k">grant</span> <span class="k">option</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 모든 컴퓨터에서 모든 디비와 테이블에 접속하도록 허용</span>
+</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 localhost 에서 db1 디비의 table1에 접속하도록 허용</span>
+</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="n">root</span><span class="p">.</span><span class="n">db1</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;localhost&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 111.222.333.444 에서 db1 디비의 모든 테이블에 접속하도록 허용</span>
+</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="n">root</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;111.222.333.444&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 111.222.333.0/24 에서 모든 디비와 테이블에 접속하도록 허용</span>
+</span><span class='line'><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span> <span class="o">@</span><span class="s1">&#39;111.222.333.%&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h4 id="권한-제거">권한 제거</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">revoke</span> <span class="k">all</span> <span class="k">on</span> <span class="err">디비명</span><span class="p">.</span><span class="err">테이블명</span> <span class="k">from</span> <span class="err">사용자</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h4 id="권한-적용">권한 적용</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="c1"># 모든 명령 후에 항상 아래 명령을 실행해야 실제로 적용된다.</span>
+</span><span class='line'><span class="n">flush</span> <span class="n">privileges</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h4 id="connection-상태-확인하기">Connection 상태 확인하기</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">FULL</span> <span class="n">PROCESSLIST</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h4 id="connection-수-확인하기">Connection 수 확인하기</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">STATUS</span> <span class="k">LIKE</span> <span class="s1">&#39;Threads_connected&#39;</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h4 id="동작중인-connection-수-확인하기">동작중인 Connection 수 확인하기</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">STATUS</span> <span class="k">LIKE</span> <span class="s1">&#39;Threads_running&#39;</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h4 id="connection-상태-확인하기">Connection 상태 확인하기</h4>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SHOW</span> <span class="n">FULL</span> <span class="n">PROCESSLIST</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-08T11:41:12+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.08</time>
         
            | <a href="/2015/10/08/change-xcode-project-app-name/#disqus_thread" itemprop="discussionUrl"
@@ -1017,143 +1377,6 @@ By default, AndroidAnnotations try to find the R class by extracting application
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T08:13:08+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
-        
-           | <a href="/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/" itemprop="url">Gradle DSL method not found: 'packageNameSuffix()' 오류 해결</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드에서 빌드시 packageName을 동적으로 변경하기 위해 packageNameSuffix를 사용하는 경우가 있다. 예를들어 배포된 앱과 개발중인 앱을 동시에 사용하기 위해 packageNameSuffix를 사용할 수 있다.</p>
-
-<p>아래의 예시를 보자.</p>
-
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>android {
-</span><span class='line'>    buildTypes {
-</span><span class='line'>        debug {
-</span><span class='line'>            packageNameSuffix '.debug'
-</span><span class='line'>            versionNameSuffix '-debug'
-</span><span class='line'>        }
-</span><span class='line'>    }
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
-
-<p>debug 모드에서 빌드할 경우에는 packageName 뒤에 <code>.debug</code>를 붙이도록 설정한 것이다. 이렇게 함으로써 release와 debug가 packageName이 달라져서 두개의 앱으로 인식되므로 모두를 설치할 수 있다.
-이 방법을 모를때는 매번 앱을 지우고 새로 깔고... 귀찮은 작업을 반복하며 작업을 했었다.</p>
-
-<p>그런데 이렇게 사용하면 아래의 경우를 만날 수 있다.</p>
-
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'> Gradle sync failed: Gradle DSL method not found: 'packageNameSuffix()'
-</span><span class='line'>            Consult IDE log for more details (Help | Show Log)</span></code></pre></td></tr></table></div></figure>
-
-<p>이유는 packageNameSuffix라는 속성이 applicationIdSuffix로 변경되었기 때문이다. 관련 메뉴얼은 <a href="http://tools.android.com/tech-docs/new-build-system/applicationid-vs-packagename">ApplicationId versus PackageName</a>에서 볼 수 있다.</p>
-
-<p>그래서 아래와 같이 수정하면 정상적으로 사용이 가능하다.</p>
-
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>android {
-</span><span class='line'>    buildTypes {
-</span><span class='line'>        debug {
-</span><span class='line'>            applicationIdSuffix '.debug'
-</span><span class='line'>            versionNameSuffix '-debug'
-</span><span class='line'>        }
-</span><span class='line'>    }
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
-</div>
-  
-  
-
-
-        </article>
-      
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-02T08:31:46+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.02</time>
-        
-           | <a href="/2015/10/02/linux-how-to-clear-memory-swap/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/02/linux-how-to-clear-memory-swap/" itemprop="url">리눅스에서 swap 메모리 초기화</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>리눅스에서 swap 메모리를 초기화하는 것은 아주 간단하다.
-일시적 메모리 사용의 증가로 swap을 사용하게될 경우 메모리에 여유가 생겨도 swap 메모리는 자동으로 초기화되지 않는다. 이것을 수동으로 초기화하려면 아래의 명령을 입력하면 된다. 당연히 root 권한에서 실행해야 한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>swapoff -a <span class="o">&amp;&amp;</span> swapon -a
-</span></code></pre></td></tr></table></div></figure>
-
-<p>swapoff 처리에 시간이 조금 오래 걸릴 수 있는데 서버가 멈춘 것은 아니므로 걱정하지 않아도 된다. swap 메모리에서 필요한 부분을 물리 메모리로 옮기는 처리중인 것이다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1223,7 +1446,7 @@ By default, AndroidAnnotations try to find the R class by extracting application
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (17)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (19)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (6)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (5)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1232,15 +1455,15 @@ By default, AndroidAnnotations try to find the R class by extracting application
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/11/17/cocoapods-transitive-dependency-with-static-library/">Cocoapods : Sub Module에서 GoogleMaps 의존성 사용시 Transitive dependency 문제 해결</a>
+    
+    <a class="list-group-item " href="/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/">Cocoapods : The 'Pods' target has transitive dependencies that include static binaries 오류</a>
+    
     <a class="list-group-item " href="/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/">XCode에서 storyboard 선택시 Crash가 발생할 경우</a>
     
     <a class="list-group-item " href="/2015/11/11/from-acra-to-fabric/">안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환</a>
     
     <a class="list-group-item " href="/2015/11/05/android-is-not-translated-in-dot-dot-dot-lint-error/">Android : is not translated in ... Lint Error 해결</a>
-    
-    <a class="list-group-item " href="/2015/11/04/xcode-storyboard-with-uiviewcontroller-using-generics/">Xcode 7.1의 StoryBoard에서 UIViewController(using Generics)를 Custom Class로 연결할 때 발생하는 오류</a>
-    
-    <a class="list-group-item " href="/2015/11/03/swift-uipagecontrol-overlap/">Swift UIPageViewController에서 UIPageControl 오버랩하기</a>
     
   </div>
 </section>

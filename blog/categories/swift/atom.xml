@@ -4,7 +4,7 @@
   <title><![CDATA[Category: swift | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/swift/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-11-18T10:13:11+09:00</updated>
+  <updated>2015-11-24T08:19:51+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,85 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Swift : Async - Background Threads - GCD(Grand Central Dispatch)]]></title>
+    <link href="http://blog.asamaru.net/2015/11/24/swift-background-threads-gcd-grand-central-dispatch/"/>
+    <updated>2015-11-24T07:35:18+09:00</updated>
+    <id>http://blog.asamaru.net/2015/11/24/swift-background-threads-gcd-grand-central-dispatch</id>
+    <content type="html"><![CDATA[<p>오늘은 swift에 비동기 처리에 사용하는 <a href="https://github.com/duemunk/Async">Async</a>라는 라이브러리를 소개하고자 한다. <a href="https://github.com/duemunk/Async">Async</a>는 &quot;Syntactic sugar in Swift for asynchronous dispatches in Grand Central Dispatch&quot;라고 소개되어 있다. <a href="https://github.com/duemunk/Async">Async</a>를 소개하기 전에 swift에서의 기본적인 비동기 처리에 대해 먼저 설명한다.</p>
+
+<p>swift는 비동기(Asynchronous) 처리에 사용하는 <a href="https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/">GCD(Grand Central Dispatch)</a>를 사용할 수 있다. GCD(Grand Central Dispatch)는 C로 구성된 스레드 관리 기술로 iOS4 부터 지원한다. NSThread, NSOperation 보다 쉽게 쉽게 사용할 수 있다.</p>
+
+<p>스레드는 다양한 병렬 작업에 사용하지만 특히 앱 개발시에는 더욱 자주 사용하게 된다. 안드로이드와 iOS는 UI처리 등의 앱의 실행을 main 스레드에서 처리한다. 그런데 이 main 스레드에서 무거운 작업을 하게 된다면 UI의 갱신이 지연되므로 화면의 멈춤 현상이 발생한다. 특히 안드로이드의 경우는 main 스레드에서 네트워크 처리 등을 할 수 없도록 제한이 걸려있다(제한을 풀 수 있으나 ANR 문제 등으로 결국은 사용하지 못하는 것과 같다). 이러한 문제를 해결하기 위해서는 스레드의 사용이 필수다.</p>
+
+<p>그럼 <a href="https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/">GCD(Grand Central Dispatch)</a>에 대해서 알아보자.</p>
+
+<p>GCD는 기본적으로 아래의 queue를 가지고 있다.</p>
+
+<ul>
+<li><p><strong>Main</strong>: tasks execute serially on your application’s main thread</p></li>
+<li><p><strong>Concurrent</strong>: tasks are dequeued in FIFO order, but run concurrently and can finish in any order.</p></li>
+<li><p><strong>Serial</strong>: tasks execute one at a time in FIFO order</p></li>
+</ul>
+
+<p>GCD에 대한 자세한 설명은 워낙에 많으니 자세히 설명하지 않고 간단한 예시만 보여주고자 한다.</p>
+
+<p>일단 swift 이전에 objective-c에서는 아래와 같이 사용한다.</p>
+<div class="highlight"><pre><code class="language-objective-c" data-lang="objective-c"><span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_global_queue</span><span class="p">(</span><span class="n">DISPATCH_QUEUE_PRIORITY_DEFAULT</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">^</span><span class="p">{</span>
+    <span class="c1">// do some task</span>
+    <span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
+        <span class="c1">// update some UI</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>동일한 동작을 swift에서 사용하면 아래와 같다.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">let</span> <span class="n">priority</span> <span class="o">=</span> <span class="n">DISPATCH_QUEUE_PRIORITY_DEFAULT</span>
+<span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_global_queue</span><span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="p">{</span>
+    <span class="c1">// do some task</span>
+    <span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">())</span> <span class="p">{</span>
+        <span class="c1">// update some UI</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>block object의 표현만 차이가 날 뿐 사실상 거의 차이가 없다.</p>
+
+<p>위 코드를 간단히 설명하자면 global queue에서 작업을 수행하고 main queue에서 UI 변경 작업을 하도록 한 코드다.</p>
+
+<p>뭐 크게 사용이 어렵지도 않고 크게 불편하지는 않다. 하지만 이런 과정을 더욱 쉽게 구성할 수 있도록 도와주는 것이 <a href="https://github.com/duemunk/Async">Async</a>다. 상세한 예시는 해당 사이트를 방문하면 다양하게 소개하고 있다.</p>
+
+<p>그 중에서 Async의 장점을 잘 보여주는 예시를 하나 소개한다.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">let</span> <span class="n">seconds</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">Async</span><span class="p">.</span><span class="n">main</span><span class="p">(</span><span class="nl">after</span><span class="p">:</span> <span class="n">seconds</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">println</span><span class="p">(</span><span class="s">&quot;Is called after 0.5 seconds&quot;</span><span class="p">)</span>
+<span class="p">}.</span><span class="n">background</span><span class="p">(</span><span class="nl">after</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">println</span><span class="p">(</span><span class="s">&quot;At least 0.4 seconds after previous block, and 0.9 after Async code is called&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>&quot;Is called after 0.5 seconds&quot; 메시지를 main 스레드에서 0.5초 뒤에 출력한 후 0.4초 뒤 background 스레드에서 &quot;At least 0.4 seconds after previous block, and 0.9 after Async code is called&quot;를 출력하는 예시다. 이 예시를 보면 알 수 있듯이 <a href="https://github.com/duemunk/Async">Async</a>는 chaining을 지원하며 스레드를 작업 완료에 따라 순차적으로 실행 할 수 있도록 도와준다.</p>
+
+<p>스레드 작업을 취소하는 예시 하나만 더 아래에 소개한다.</p>
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="c1">// Cancel blocks not yet dispatched</span>
+<span class="k">let</span> <span class="n">block1</span> <span class="o">=</span> <span class="n">Async</span><span class="p">.</span><span class="n">background</span> <span class="p">{</span>
+    <span class="c1">// Heavy work</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mf">0.</span><span class="p">.</span><span class="mf">.1000</span> <span class="p">{</span>
+        <span class="n">println</span><span class="p">(</span><span class="s">&quot;A \(i)&quot;</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="k">let</span> <span class="n">block2</span> <span class="o">=</span> <span class="n">block1</span><span class="p">.</span><span class="n">background</span> <span class="p">{</span>
+    <span class="n">println</span><span class="p">(</span><span class="s">&quot;B – shouldn&#39;t be reached, since cancelled&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="n">Async</span><span class="p">.</span><span class="n">main</span> <span class="p">{</span>
+    <span class="c1">// Cancel async to allow block1 to begin</span>
+    <span class="n">block1</span><span class="p">.</span><span class="n">cancel</span><span class="p">()</span> <span class="c1">// First block is _not_ cancelled</span>
+    <span class="n">block2</span><span class="p">.</span><span class="n">cancel</span><span class="p">()</span> <span class="c1">// Second block _is_ cancelled</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>위에서 소개한 것처럼 <a href="https://github.com/duemunk/Async">Async</a>는 swift에서의 thread 작업을 아주 쉽게 할 수 있도록 도와준다.</p>
+
+<p>한가지 라이브러리를 더 소개하자면 위 라이브러리와는 성격이 조금 다르지만 안드로이드의 AsyncTask 같은 작업이 필요하다면 <a href="https://github.com/ReactKit/SwiftTask">SwiftTask</a>를 참고해보면 도움이 될 것 같다. <a href="https://github.com/ReactKit/SwiftTask">SwiftTask</a>는 &quot;Promise + progress + pause + cancel + retry for Swift.&quot;라고 소개하고 있다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[CocoaPods의 Swift compiler flags(DEBUG) 설정하기]]></title>
@@ -415,36 +494,6 @@ assertion 안에서의 호출로 랩핑된다. 따라서 만일 실제로 에러
 <span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">file</span><span class="p">.</span><span class="n">lastPathComponent</span><span class="p">.</span><span class="n">stringByDeletingPathExtension</span>
 <span class="c1">// after</span>
 <span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="p">((</span><span class="n">file</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">lastPathComponent</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingPathExtension</span>
-</code></pre></div>]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Swift 2 : Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands 오류 해결]]></title>
-    <link href="http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/"/>
-    <updated>2015-10-05T12:44:59+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands</id>
-    <content type="html"><![CDATA[<p>이번에 iOS 작업중 Swift 2로 변경을 하면서 아래와 같은 오류를 만났다.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">Binary operator &#39;|&#39; cannot be applied to two &#39;UIViewAutoresizing&#39; operands
-</code></pre></div>
-<p>사실 이 부분말고도 여러가지 오류가 나왔지만 기본적으로 swift 버전업을 도와주는 헬프 기능 등을 통해 어느 정도는 쉽게 고칠 수 있었다.</p>
-
-<p>어쨌든 이 오류는 아래의 코드를 보면 해결 방법을 바로 알 수 있다.</p>
-<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="k">let</span> <span class="n">view</span> <span class="o">=</span> <span class="bp">UIView</span><span class="p">(</span><span class="nl">frame</span><span class="p">:</span> <span class="bp">CGRect</span><span class="p">(</span><span class="nl">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nl">y</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nl">width</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="nl">height</span><span class="p">:</span> <span class="mi">100</span><span class="p">))</span>
-<span class="n">addSubview</span><span class="p">(</span><span class="n">view</span><span class="p">)</span>
-<span class="c1">// Swift 2.0 미만</span>
-<span class="n">view</span><span class="p">.</span><span class="n">autoresizingMask</span> <span class="o">=</span> <span class="n">UIViewAutoresizing</span><span class="p">.</span><span class="n">FlexibleWidth</span> <span class="o">|</span> <span class="n">UIViewAutoresizing</span><span class="p">.</span><span class="n">FlexibleHeight</span>
-<span class="c1">// Swift 2.0 이상</span>
-<span class="n">view</span><span class="p">.</span><span class="n">autoresizingMask</span> <span class="o">=</span> <span class="p">[.</span><span class="n">FlexibleWidth</span><span class="p">,</span> <span class="p">.</span><span class="n">FlexibleHeight</span><span class="p">]</span>
-</code></pre></div>
-<p>이와 유사하게 UIUserNotificationType의 경우도 아래와 같이 수정이 필요하다.</p>
-<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span class="c1">// Swift 2.0 미만</span>
-<span class="k">let</span> <span class="n">settings</span> <span class="o">=</span> <span class="n">UIUserNotificationSettings</span><span class="p">(</span><span class="nl">forTypes</span><span class="p">:</span> <span class="n">UIUserNotificationType</span><span class="p">.</span><span class="n">Alert</span> <span class="o">|</span> <span class="n">UIUserNotificationType</span><span class="p">.</span><span class="n">Badge</span><span class="p">,</span> <span class="nl">categories</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-<span class="c1">// Swift 2.0 이상</span>
-<span class="k">let</span> <span class="n">settings</span> <span class="o">=</span> <span class="n">UIUserNotificationSettings</span><span class="p">(</span><span class="nl">forTypes</span><span class="p">:</span> <span class="p">[.</span><span class="n">Alert</span><span class="p">,</span> <span class="p">.</span><span class="n">Badge</span><span class="p">],</span> <span class="nl">categories</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-<span class="bp">UIApplication</span><span class="p">.</span><span class="n">sharedApplication</span><span class="p">().</span><span class="n">registerUserNotificationSettings</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">settings</span><span class="p">.</span><span class="n">types</span><span class="p">.</span><span class="n">contains</span><span class="p">(.</span><span class="n">Badge</span><span class="p">)</span> <span class="p">{</span>
-    <span class="c1">// whatever</span>
-<span class="p">}</span>
 </code></pre></div>]]></content>
   </entry>
   

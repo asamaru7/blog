@@ -5,6 +5,8 @@ date: 2015-11-17 13:19:25 +0900
 comments: true
 categories: ios
 ---
+**아래에 설명한 방법을 사용시 런타임시에 문제가 될 수 있어 다른 방법을 찾고 있는 중이니 참고만 하길 바란다.**
+
 지난 글 [Cocoapods : The 'Pods' target has transitive dependencies that include static binaries 오류](/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/)에서 언급한 transitive dependencies 문제를 해결하는 방법을 설명하려고 한다. 미리 이야기 하지만 사실 아래의 내용은 아주 깔끔하게 해결하는 방법은 아니다. 정확한 해결이 되려면 CocoaPods에서 정식 지원을 해야 해결될 것으로 보인다. 하지만 임시로라도 사용을 해야 한다면 아래의 내용이 도움이 될지도 모르겠다(어쨌든 난 이렇게 사용중이다).
 
 우선 왜 이 문제를 만나게 되었는지 부터 설명하려고 한다.

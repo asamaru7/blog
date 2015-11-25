@@ -4,7 +4,7 @@
   <title><![CDATA[Category: php | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/php/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-11-24T08:19:51+09:00</updated>
+  <updated>2015-11-25T21:15:11+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,126 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[protobuf (Protocol Buffers)를 PHP에서 사용하기]]></title>
+    <link href="http://blog.asamaru.net/2015/11/25/protobuf-protocol-buffers/"/>
+    <updated>2015-11-25T19:53:52+09:00</updated>
+    <id>http://blog.asamaru.net/2015/11/25/protobuf-protocol-buffers</id>
+    <content type="html"><![CDATA[<p><a href="https://developers.google.com/protocol-buffers/">Protocol Buffers</a>는 무엇일까?
+공식 사이트에서 아래와 같이 설명하고 있다.</p>
+
+<blockquote>
+<p>Protocol buffers are a language-neutral, platform-neutral extensible mechanism for serializing structured data.</p>
+</blockquote>
+
+<p>간단히 말하면 언어와 플랫폼에 중립적이며 확장 가능한 구조화된 데이터 직렬화 도구라고 할 수 있겠다. XML과 유사하지만 더 작고, 더 빠르며, 더 단순하다고 소개하고 있다.</p>
+
+<p>이번 글에서는 <a href="https://developers.google.com/protocol-buffers/">Protocol Buffers</a> 자체에 대한 연구가 목적이 아니므로 참고할 만한 글을 아래에 소개하는 것으로 자세한 설명을 대체한다.</p>
+
+<ul>
+<li><p><a href="https://developers.google.com/protocol-buffers/docs/overview">Protocol Buffers Developer Guide</a></p></li>
+<li><p><a href="https://github.com/eishay/jvm-serializers/wiki">Benchmark comparing serialization libraries on the JVM</a></p></li>
+<li><p><a href="http://www.cgcii.co.kr/index.php?document_srl=2017&amp;mid=board_eLHH13">Tips - C++, C#, protobuf, JSON직렬화 성능 얼마나 차이날까?</a></p></li>
+<li><p><a href="http://egloos.zum.com/javawork/v/2720889">Google Protocol Buffers 기본 사용법</a></p></li>
+<li><p><a href="http://knight76.tistory.com/1366">구글 프로토콜 버퍼 (Google Protocl Buffer)</a></p></li>
+</ul>
+
+<hr>
+
+<p>본론으로 들어가자면 이번에 개인적인 작업을 하는 과정에서 <a href="https://developers.google.com/protocol-buffers/">Protocol Buffers</a>를 사용할 일이 생겼다. 정확히 이야기하자면 Google Play를 대상으로 몇가지 실험을 하고 있다. 그런데 이 작업을 하다보니 Google Play 서버와 통신을 하려면 <a href="https://developers.google.com/protocol-buffers/">Protocol Buffers</a>를 사용 해야만 했다. <a href="https://developers.google.com/protocol-buffers/">Protocol Buffers</a>가 너무 길어서 이하에서는 그냥 PB라고 하겠다.</p>
+
+<p>이번 작업에 필요한 몇가지 요소들을 지원하는 오픈소스 라이브러리들이 몇가지 있었으나 개발이 오래동안 멈춰진 것들이 대부분이라 기존 오픈소스들을 참고해서 직접 구현하기로 했다(사실 이 부분이 나의 최대 실수다. 생각보다 작업이 만만치 않아 시간을 많이 소요했다). 기존 오픈소스들은 java와 python, ruby로 구성된 것이 많았다. 그런데 나는 PHP로 구성하고 싶었다. 지금 생각하면 왜 그런 결정을 했는지 모르겠다. python이야 아직 익숙치 않아 패스하더라도 java로 작업하면 생각보다 빠르게 작업이 완료될 수 있었는데... 이야기가 갑자기 옆으로 샜는데 다시 본론으로...</p>
+
+<p>어쨌든 PHP로 PB를 사용하는 것부터 시작해야 했다. 그런데 PB는 기본적으로 C++, JAVA, PYTHON을 지원한다. PHP를 공식 지원하지 않으므로 지원 라이브러리부터 찾아야 한다.</p>
+
+<p>아래의 사이트들을 참고하자. 이 외에도 찾아보면 여러가지가 있다.</p>
+
+<ul>
+<li><a href="http://stuporglue.org/using-google-protcol-buffers-with-php-and-protoc-gen-php/">Using Google Protcol Buffers with PHP and protoc-gen-php</a></li>
+<li><a href="http://phptrends.com/dig_in/protobuf">Php Trends.com : protobuf</a></li>
+</ul>
+
+<p>PHP에서 PB를 사용하는 오픈소스 중 그런대로 가장 이름이 알려진 프로젝트는 <a href="https://github.com/drslump/Protobuf-PHP">drslump/Protobuf-PHP</a> 였다(주관적인 생각이다). 그런데 설치 과정과 사용법이 간단하게 설명되어 있었지만 실제로는 그리 간단하지 않았다. 그래서 일단 접어두고 다른 라이브러리들도 하나씩 테스트 했다. 두서없이 작업하다보니 일일이 기록을 남기지 못했다. 잘 정리해 두었다면 비교에 도움이 되었을텐데 그 당시에는 정신이 없었다. 생각대로 되지 않아 닥치는대로 막 적용을 해보고 있었던지라.</p>
+
+<p>결국 현재는 <a href="https://github.com/chobie/protoc-gen-php">chobie/protoc-gen-php</a>로 정착했다. 사실 이 라이브러리도 문제가 많긴하다. php에 모듈을 별도 설치해야하고 기타 의존 라이브러리도 설치해야 한다(간단하게 사용하려고 php를 선택한 것인데). 그리고 이 라이브러리는 <a href="https://pecl.php.net/package/protocolbuffers">PECL:protocolbuffers</a>에 등록되어 있어서 PECL을 사용해 설치도 가능하다. 하지만 나는 직접 설치했다. 이 라이브러리가 업데이트가 된지 오래되서 오류가 있는 부분을 몇가지 수정해서 사용하게 되면서 모듈을 그대로 사용할 수 없었다.</p>
+
+<p>아래는 사용에 필요한 모듈들을 설치하는 과정을 bash shell로 작성해 둔 것이다. 실제 사용시에는 자신의 환경에 맞춰서 사용하면 된다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c">#!/bin/bash</span>
+
+su -c <span class="s2">&quot;yum install -y php56w-mbstring php56w-bcmath&quot;</span>
+
+<span class="c"># protobuf 설치</span>
+<span class="c"># https://github.com/chobie/protoc-gen-php</span>
+su -c <span class="s2">&quot;yum install -y protobuf-compiler&quot;</span>
+
+<span class="c"># https://github.com/chobie/php-protocolbuffers</span>
+<span class="nb">cd </span>libs/bin/
+git clone https://github.com/chobie/php-protocolbuffers.git
+<span class="nb">cd </span>php-protocolbuffers
+su -c <span class="s2">&quot;yum install -y php56w-devel&quot;</span>
+phpize
+./configure
+make
+su -c <span class="s2">&quot;make install ; echo \&quot;extension=protocolbuffers.so\&quot; &gt;&gt; /etc/php.ini&quot;</span>
+</code></pre></div>
+<p>아래는 composer.json 설정 부분이다.</p>
+<div class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&quot;require&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;asamaru7/protoc-gen-php&quot;</span><span class="p">:</span> <span class="s2">&quot;~0.1.1&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>갑자기 모듈명이 asamaru7로 변경된 것에 유의하자. <a href="https://github.com/chobie/protoc-gen-php">chobie/protoc-gen-php</a>의 fork 프로젝트에서 변경 부분을 내가 따로 fork한 프로젝트에 merge하고 내가 필요한 부분을 수정해서 <a href="https://packagist.org/packages/asamaru7/protoc-gen-php">Packagist</a>에 등록했다.</p>
+
+<p>다음으로 proto 파일로 실제 php 파일을 만드는 과정이다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">protoc <span class="se">\</span>
+    --plugin<span class="o">=</span>protoc-gen-php<span class="o">=</span><span class="s1">&#39;../vendor/asamaru7/protoc-gen-php/bin/protoc-gen-php&#39;</span> <span class="se">\</span>
+    --proto_path<span class="o">=</span><span class="s1">&#39;/home/web/google-checkin/libs/protobuf/&#39;</span> <span class="se">\</span>
+    --php_out<span class="o">=</span><span class="s1">&#39;:../Class/Protobuf&#39;</span> <span class="se">\</span>
+    <span class="s1">&#39;/home/web/project/libs/protobuf/logs.proto&#39;</span>
+</code></pre></div>
+<p>이상하게 <code>--proto_path</code>를 사용함에도 full path를 지정해만 정상적으로 생성이 된다. 자주 사용할 부분이 아니므로 일단 패스했다.</p>
+
+<p>마지막으로 php에서의 사용.</p>
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="x">$ch = curl_init();</span>
+<span class="x">curl_setopt($ch, CURLOPT_URL, &quot;https://android.clients.google.com/~~&quot;);</span>
+<span class="x">curl_setopt($ch, CURLOPT_HEADER, 0);</span>
+<span class="x">curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);</span>
+<span class="x">curl_setopt($ch, CURLOPT_POST, 1);</span>
+<span class="x">curl_setopt($ch, CURLOPT_POSTFIELDS, $request-&gt;serializeToString());</span>
+<span class="x">curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);</span>
+<span class="x">curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);</span>
+<span class="x">curl_setopt($ch, CURLOPT_HTTPHEADER, [</span>
+<span class="x">    &quot;Content-type: application/x-protobuffer&quot;</span>
+<span class="x">]);</span>
+<span class="x">$content = curl_exec($ch);</span>
+<span class="x">curl_close($ch);</span>
+</code></pre></div>
+<p><code>$request-&gt;serializeToString()</code> 이 부분이 중요한 부분이다. <code>$request</code>는 protoc에 의해 생성된 class의 인스턴스다. 전송시에는 <code>serializeToString()</code>를 사용해서 직렬화하는 것이다.</p>
+
+<p>다음은 수신시.</p>
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="x">$response = \Response::parseFromString($content);</span>
+</code></pre></div>
+<p><code>parseFromString()</code>를 사용해서 수신된 PB 직렬화 데이터를 역직렬화 할 수 있다.</p>
+
+<hr>
+
+<p>그런데 가급적 PHP에서는 PB를 사용하지 말자. &quot;이제까지 사용 방법을 설명해놓고 이게 무슨 말이야?&quot;라고 생각할 수 있는데 이유를 설명하겠다.</p>
+
+<p>이번에 설명한 라이브러리뿐 아니라 <a href="https://github.com/drslump/Protobuf-PHP">drslump/Protobuf-PHP</a> 외에도 테스트한 모든 라이브러리가 group type을 지원하지 않는다. PB v2에서 deprecated 된 type이긴 하지만 Google Play에서는 group type을 사용하고 있었다. 다행히 내가 하고자하는 부분에서는 group이 필요없어서 proto 파일에서 제거하고 작업했지만 group type을 사용하게 되면 오류가 난다. 내가 테스트 해보지 못한 라이브러리에서 지원하는 것이 있을지는 모르겠지만 내가 본 것은 없다. 또한 int의 길이 문제과 같이 데이터 타입에 대한 처리에 신경을 써줘야하는 부분들이 있다.</p>
+
+<p>pure php로 만들어진 라이브러리가 아닌 이상 어짜피 외부 모듈의 설치가 필요하니 아예 이 부분을 python이나 java로 처리하는게 나을지도 모른다. 게다가 pure php로 제작된 모듈은 성능 상의 문제에 대한 이야기도 있다(어짜피 나의 경우는 성능은 중요하지 않은 경우이지만).</p>
+
+<p>그 외에도 작업중에 PB 때문에 고생한 것을 생각하면... 정말 권하고 싶지 않다. 사실 내가 사용을 잘못해서 그런 것일 수 있지만... 어쨌든 JSON 등에 비해 PHP에서의 이득은 없는 것 같다.</p>
+
+<p>그럼에도 나의 경우처럼 상대 서버가 PB를 사용해서 어쩔 수 없다면 위 글을 참고하길 바란다.</p>
+
+<hr>
+
+<p>이번 작업에 대해서는 자세히 설명하고자 하면 너무 길어져서 중간중간 필요한 부분만 적었다. 그러다 보니 &quot;이게 무슨 말인가?&quot;라는 생각이 들 수 있는데 양해 바란다. 이해가 안되는 부분은 질문한다면 따로 설명하도록 하겠다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[PHP를 CLI에서 사용시 ANSI Colors 적용하기]]></title>
@@ -272,154 +392,6 @@ try {
 
 <ul>
 <li><a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a></li>
-</ul>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()]]></title>
-    <link href="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/"/>
-    <updated>2015-09-14T20:12:59+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein</id>
-    <content type="html"><![CDATA[<p>php 프로그램 개발중 문자열의 유사도를 계산해야 할 일이 생겼다. 그래서 찾다보니 php 내장 함수에 해당 기능이 이미 구현되어 있었다. 비슷한 함수가 몇가지 존재하고 있어서 조금 더 자세히 알아 보았다.</p>
-
-<h2 id="levenshtein-함수"><a href="http://php.net/manual/en/function.levenshtein.php">levenshtein()</a> 함수</h2>
-
-<p>위키피디아에 <a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein distance</a>에 대한 상세한 설명이 나와있다.</p>
-
-<p><a href="http://php.net/manual/en/function.levenshtein.php">php 메뉴얼의 설명</a>에 따르면 Levenshtein distance는 문자열1을 문자열2로 변환하는데 필요한 최소한의 치환, 추가, 삭제의 횟수를 나타낸다고 되어 있다. 이 알고리즘의 시간복잡도는 <code>O(m*n)</code>이며, 여기서 m과 n은 str1, str2의 각각의 길이다. 비슷한 함수인 <a href="http://php.net/manual/en/function.similar-text.php">similar_text()</a>가 가지는 시간 복잡도 <code>O(max(n,m)**3)</code>에 비해서는 덜하지만 그래도 비싼 처리 비용이 든다.</p>
-
-<p>함수의 기본형 사용시 위의 설명대로 변환에 필요한 최소한의 치환, 추가, 삭제의 횟수를 계산하지만 추가 인자를 사용하면 각 변환에 필요한 비용을 지정할 수 있다. 이것은 더 일반적이고 적용성이 높지만 효율적이지 못하다.</p>
-
-<h3 id="기본-사용법">기본 사용법</h3>
-<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="x">int levenshtein ( string $str1 , string $str2 )</span>
-</code></pre></div>
-<h3 id="확장-사용법">확장 사용법</h3>
-<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="x">int levenshtein ( string $str1 , string $str2 , int $cost_ins , int $cost_rep , int $cost_del )</span>
-</code></pre></div>
-<h3 id="함수-인자">함수 인자</h3>
-
-<h4 id="str1">str1</h4>
-
-<p>Levenshtein distance를 계산할 문자열1</p>
-
-<h4 id="str2">str2</h4>
-
-<p>Levenshtein distance를 계산할 문자열2</p>
-
-<h4 id="cost_ins">cost_ins</h4>
-
-<p>문자 추가 비용(가중치)</p>
-
-<h4 id="cost_rep">cost_rep</h4>
-
-<p>문자 치환 비용(가중치)</p>
-
-<h4 id="cost_del">cost_del</h4>
-
-<p>문자 삭제 비용(가중치)</p>
-
-<h3 id="반환값">반환값</h3>
-
-<p>두 문자열의 Levenshtein-Distance 반환한다. 단, 입력된 두 문자열 중 하나라도 255 글자를 넘는다면 -1을 반환한다.</p>
-
-<h3 id="예시">예시</h3>
-
-<p>메뉴얼에 나와 있는 예시 중 UTF-8 인코딩에 관련된 문제와 해결방법이 나와있어서 그 예시를 제시한다.</p>
-<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
-<span class="k">echo</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;votre&#39;</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;nôtre&#39;</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-
-<span class="c1">// 결과</span>
-<span class="c1">// 1</span>
-<span class="c1">// 2</span>
-</code></pre></div>
-<p>위의 결과를 보면 의아할 수 있다. 분명 두 예시 모두에서 글자가 하나씩 다르므로 결과가 1과 1이 나올 것이라고 예상되지만 결과는 1과 2가 나왔다. 이유는 UTF-8문자열 때문이다. 이를 개선하는 함수의 예시는 다음과 같다.</p>
-<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
-<span class="c1">// Convert an UTF-8 encoded string to a single-byte string suitable for</span>
-<span class="c1">// functions such as levenshtein.</span>
-<span class="c1">//</span>
-<span class="c1">// The function simply uses (and updates) a tailored dynamic encoding</span>
-<span class="c1">// (in/out map parameter) where non-ascii characters are remapped to</span>
-<span class="c1">// the range [128-255] in order of appearance.</span>
-<span class="c1">//</span>
-<span class="c1">// Thus it supports up to 128 different multibyte code points max over</span>
-<span class="c1">// the whole set of strings sharing this encoding.</span>
-<span class="c1">//</span>
-<span class="k">function</span> <span class="nf">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="o">&amp;</span><span class="nv">$map</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="c1">// find all multibyte characters (cf. utf-8 encoding specs)</span>
-    <span class="nv">$matches</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">preg_match_all</span><span class="p">(</span><span class="s1">&#39;/[\xC0-\xF7][\x80-\xBF]+/&#39;</span><span class="p">,</span> <span class="nv">$str</span><span class="p">,</span> <span class="nv">$matches</span><span class="p">))</span>
-        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span> <span class="c1">// plain ascii string</span>
-
-    <span class="c1">// update the encoding map with the characters not already met</span>
-    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">as</span> <span class="nv">$mbc</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]))</span>
-            <span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">128</span> <span class="o">+</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$map</span><span class="p">));</span>
-
-    <span class="c1">// finally remap non-ascii characters</span>
-    <span class="k">return</span> <span class="nb">strtr</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$map</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="c1">// Didactic example showing the usage of the previous conversion function but,</span>
-<span class="c1">// for better performance, in a real application with a single input string</span>
-<span class="c1">// matched against many strings from a database, you will probably want to</span>
-<span class="c1">// pre-encode the input only once.</span>
-<span class="c1">//</span>
-<span class="k">function</span> <span class="nf">levenshtein_utf8</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="nv">$charMap</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
-    <span class="nv">$s1</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
-    <span class="nv">$s2</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s2</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
-
-    <span class="k">return</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="cp">?&gt;</span><span class="x"></span>
-</code></pre></div>
-<p>위의 함수를 이용해서 처음 예시를 다시 실행해보자.</p>
-<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
-<span class="k">function</span> <span class="nf">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="o">&amp;</span><span class="nv">$map</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="nv">$matches</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">preg_match_all</span><span class="p">(</span><span class="s1">&#39;/[\xC0-\xF7][\x80-\xBF]+/&#39;</span><span class="p">,</span> <span class="nv">$str</span><span class="p">,</span> <span class="nv">$matches</span><span class="p">))</span>
-        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span> <span class="c1">// plain ascii string</span>
-
-    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">as</span> <span class="nv">$mbc</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]))</span>
-            <span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">128</span> <span class="o">+</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$map</span><span class="p">));</span>
-
-    <span class="k">return</span> <span class="nb">strtr</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$map</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="k">function</span> <span class="nf">levenshtein_utf8</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="nv">$charMap</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
-    <span class="nv">$s1</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
-    <span class="nv">$s2</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s2</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
-
-    <span class="k">return</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="k">echo</span> <span class="nx">levenshtein_utf8</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;votre&#39;</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nx">levenshtein_utf8</span><span class="p">(</span><span class="s1">&#39;notre&#39;</span><span class="p">,</span> <span class="s1">&#39;nôtre&#39;</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-
-<span class="c1">// 결과</span>
-<span class="c1">// 1</span>
-<span class="c1">// 1</span>
-</code></pre></div>
-<p>결과는 개선되어 1과 1이 나온다. 하지만 정확한 값이 필요한 것이 아니라면 개선된 함수말고 기본 함수를 써도 무방하다. 일반적으로 사용할 때는 가장 비슷한 문자열을 찾는 등에 사용할테니 인코딩에 따른 값차이는 크게 의미를 가지지 않는다. 게다가 처리 비용도 더 많이 든다.</p>
-
-<h3 id="유사함수">유사함수</h3>
-
-<p>비슷한 역할을 하는 함수에 대해 알고 싶다면 아래의 포스팅을 참고하자.</p>
-
-<ul>
-<li><a href="/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/">PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()</a></li>
 </ul>
 ]]></content>
   </entry>

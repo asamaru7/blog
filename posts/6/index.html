@@ -139,6 +139,139 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T13:14:55+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
+        
+           | <a href="/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/" itemprop="url">Swift 2 : 'lastPathComponent' is unavailable: Use lastPathComponent on NSURL instead. 오류 해결</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p><a href="/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/">Swift 2 : Binary operator &#39;|&#39; cannot be applied to two &#39;UIViewAutoresizing&#39; operands 오류 해결</a>에 이어 Swift 2로 넘어가면서 만난 또 다른 오류.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>'lastPathComponent' is unavailable: Use lastPathComponent on NSURL instead.</span></code></pre></td></tr></table></div></figure>
+
+<p>관련해서 찾아보니 <a href="https://forums.developer.apple.com/thread/13580">No more stringByAppendingPathComponent in Xcode 7 beta 5?</a>라는 글이 있었다. 내용을 보니 해당 함수가 없어져서 다른 방법으로 수정해야 한다는 것. 내용중 <a href="https://forums.developer.apple.com/people/tieferbegabt">tieferbegabt</a>라는 사람이 간단히 해결할 수 있는 코드를 올려 놓았다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">extension</span> <span class="n">String</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">var</span> <span class="nl">lastPathComponent</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
+</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">lastPathComponent</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">var</span> <span class="nl">pathExtension</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
+</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">pathExtension</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">var</span> <span class="nl">stringByDeletingLastPathComponent</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
+</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingLastPathComponent</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">var</span> <span class="nl">stringByDeletingPathExtension</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
+</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingPathExtension</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">var</span> <span class="nl">pathComponents</span><span class="p">:</span> <span class="p">[</span><span class="n">String</span><span class="p">]</span> <span class="p">{</span>
+</span><span class='line'>        <span class="kr">get</span> <span class="p">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">pathComponents</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">func</span> <span class="n">stringByAppendingPathComponent</span><span class="p">(</span><span class="nl">path</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">String</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">let</span> <span class="n">nsSt</span> <span class="o">=</span> <span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">nsSt</span><span class="p">.</span><span class="n">stringByAppendingPathComponent</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">func</span> <span class="n">stringByAppendingPathExtension</span><span class="p">(</span><span class="nl">ext</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">String</span><span class="o">?</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">let</span> <span class="n">nsSt</span> <span class="o">=</span> <span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">nsSt</span><span class="p">.</span><span class="n">stringByAppendingPathExtension</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>Objective-C의 category나 swift의 extension은 개인적으로 정말 좋은 기능이라고 생각한다. 하지만 위의 코드는 임시로 사용하고 가급적 위 코드의 내용을 참고해서 오류가 나는 부분을 직접 변경하는 것을 권장하고 싶다. 어짜피 나중에는 애플에서 권장하는대로 코딩을 해야할테니 정확한 방법을 익히도록 처리하는 것이 좋다는 얘기다.</p>
+
+<p>아래는 내가 사용한 코드의 일부를 예시로 남긴다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="c1">// before</span>
+</span><span class='line'><span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">file</span><span class="p">.</span><span class="n">lastPathComponent</span><span class="p">.</span><span class="n">stringByDeletingPathExtension</span>
+</span><span class='line'><span class="c1">// after</span>
+</span><span class='line'><span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="p">((</span><span class="n">file</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">lastPathComponent</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingPathExtension</span>
+</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T12:44:59+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
         
            | <a href="/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/#disqus_thread" itemprop="discussionUrl"
@@ -1217,72 +1350,6 @@ Android Studio&gt; Preferences&gt; Gradle 의 Offline work에 체크.</p>
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-25T13:47:37+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.25</time>
-        
-           | <a href="/2015/09/25/android-6-apache-http-client-removal/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/25/android-6-apache-http-client-removal/" itemprop="url">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>지난 포스팅 <a href="/2015/08/28/android-getcolor-getdrawable-deprecated/">Android 6(API 23)의 getColor() deprecated 대응 + getDrawable() deprecated</a>에서 잠깐 언급했던 <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a>에 대해 이야기하고자 한다.</p>
-
-<p>우선 안드로이드에 안내하고 있는 원문은 아래와 같다.</p>
-
-<ul>
-<li>영문 : <a href="https://developer.android.com/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP Client Removal</a></li>
-<li>한글 : <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a></li>
-</ul>
-
-<p>한글 문서의 내용은 아래와 같다.</p>
-
-<blockquote>
-<p>Apache HTTP 클라이언트에 대한 지원을 제거합니다. 앱이 이 클라이언트를 사용하고 Android 2.3(API 레벨 9) 이상을 대상으로 하는 경우, HttpURLConnection 클래스를 대신 사용하세요. 이는 투명한 압축과 응답 캐싱을 통해 네트워크 사용량을 줄이고 전력 소모를 최소화하기 때문에 API가 더 효율적입니다. Apache HTTP API를 계속 사용하려면 우선 다음과 같은 컴파일-시간 종속성을 build.gradle 파일에서 선언해야 합니다.
-<code>gradle
-android {
-    useLibrary &#39;org.apache.http.legacy&#39;
-}
-</code></p>
-</blockquote>
-
-<p>이 부분이 제거되면서 문제가 되는 부분은 위의 안내와 같이 gradle에 임시 코드를 넣음으로써 해결이 가능하다. 하지만 제거 과정이 여러가지 문제를 일으켰다. 사실 안드로이드에서는 해당 기능을 Deprecated하고 대체  기능의 사용을 권장하고 있었으나 이를 사용하는 오픈소스 라이브러리들이 미리 대응을 하지 않았던 것이 문제가 되었다. 나의 경우는 <a href="https://github.com/ACRA/acra">ACRA</a>와 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>가 해당 기능을 사용해서 구현되어 있어서 <code>org.apache.http.legacy</code>를 통해 급한 문제들은 해결했었다.</p>
-
-<p>현재 기준으로 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>는 1.4.9로 버전업 되면서 Http에 관련된 부분을 대체 라이브러리로 교체함으로써 문제가 해결되었고 <a href="https://github.com/ACRA/acra">ACRA</a>의 경우는 4.6.2로 버전 기준으로 처리가 되었다고 어디서 본것 같았는데 실제로는 빌드 과정에서 오류가 발생했다. 그래서 다시 알아보니 4.7.0 버전에서 HtttpUrlConnection를 사용함으로써 Android M (6.0)을 정식 지원한다고 안내되어 있다. 하지만 아직 RC2로 정식 버전업이 되지 않았다. 나의 경우는 조금만 더 기다리면 useLibrary &#39;org.apache.http.legacy&#39;를 사용하지 않아도 될 것으로 예상된다.</p>
-
-<p>사실 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>도 현재 버전에서는 문제가 있다. 공식 사이트에서는 해당 현상에 대한 이야기는 없으나 나의 경우엔 proguard 적용시 완료 callback이 호출되지 않는 문제가 있었다. 관련해서는 <a href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/">Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결</a>에 별도로 포스팅한다.</p>
-
-<p>어쨌든 이 문제는 시간이 지나면서 오픈 소스들이 대응을 시작하면 대부분 해결될 것으로 생각된다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1299,7 +1366,11 @@ android {
   
     <aside class="sidebar col-md-3">
       
-        <section class="panel panel-default">
+        <section>
+  <h1>About Me</h1>
+  <p>asamaru@asamaru.net</p>
+</section>
+<section class="panel panel-default">
 	<style>
 		#google_translate_country { text-align:center; padding-top:5px; }
 		#google_translate_element > div { text-align:center; padding:5px 0; }
@@ -1352,7 +1423,7 @@ android {
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (9)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (8)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (10)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1361,6 +1432,8 @@ android {
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/11/25/protobuf-protocol-buffers/">protobuf (Protocol Buffers)를 PHP에서 사용하기</a>
+    
     <a class="list-group-item " href="/2015/11/24/swift-background-threads-gcd-grand-central-dispatch/">Swift : Async - Background Threads - GCD(Grand Central Dispatch)</a>
     
     <a class="list-group-item " href="/2015/11/17/octopress-error-pygments-cant-parse-unknown-language/">Octopress : pygments cant parse unknown language: </p> 오류</a>
@@ -1368,8 +1441,6 @@ android {
     <a class="list-group-item " href="/2015/11/17/cocoapods-transitive-dependency-with-static-library/">Cocoapods : Sub Module에서 GoogleMaps 의존성 사용시 Transitive dependency 문제 해결</a>
     
     <a class="list-group-item " href="/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/">Cocoapods : The 'Pods' target has transitive dependencies that include static binaries 오류</a>
-    
-    <a class="list-group-item " href="/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/">XCode에서 storyboard 선택시 Crash가 발생할 경우</a>
     
   </div>
 </section>

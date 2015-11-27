@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "[번역중] Android : Spans, a Powerful Concept"
+title: "Android : Spans, a Powerful Concept"
 date: 2015-11-02 20:12:10 +0900
 comments: true
 categories: android
@@ -8,8 +8,6 @@ categories: android
 
 안드로이드의 [Spannable](http://developer.android.com/intl/ru/reference/android/text/Spannable.html)에 관련된 좋은 글이 있어 번역해 본다.
 사실 부족한 영어 실력으로 번역이라기 보다 내용을 옮겨보는 정도라고 생각하면 될 듯하다(의역이 많다).
-
-**게다가 아직은 번역중이다. 시간이 되는대로 조금씩 번역해 나갈 예정이다.**
 
 > [Spans, a Powerful Concept.](http://flavienlaurent.com/blog/2014/01/31/spans/)  
 > Jan 31st, 2014 6:09 pm  
@@ -49,7 +47,6 @@ Main rules:
 
 ### LAYOUT
 
-
 당신이 text를 TextView에 설정하고자 할때, [Layout](http://developer.android.com/reference/android/text/Layout.html) base class를 사용하여 텍스트 렌더링을 관리한다.
 
 Layout Class는 `mSpannedText`라는 boolean 값을 포함하고 있다: text가 [Spanned](http://developer.android.com/reference/android/text/Spanned.html)([Spanned](http://developer.android.com/reference/android/text/Spanned.html)을 구현한 [SpannableString](http://developer.android.com/reference/android/text/SpannableString.html))의 인스턴스라면 true가 된다.
@@ -59,30 +56,30 @@ Layout Class는 `mSpannedText`라는 boolean 값을 포함하고 있다: text가
 
 * drawBackground
 
-For each line of text, if there is a [LineBackgroundSpan](http://developer.android.com/reference/android/text/style/LineBackgroundSpan.html) for a current line, [LineBackgroundSpan#drawBackground](http://developer.android.com/reference/android/text/style/LineBackgroundSpan.html#drawBackground%28android.graphics.Canvas,%20android.graphics.Paint,%20int,%20int,%20int,%20int,%20int,%20java.lang.CharSequence,%20int,%20int,%20int%29) is called.
+텍스트의 각 행에 대해, 현재 행에  [LineBackgroundSpan](http://developer.android.com/reference/android/text/style/LineBackgroundSpan.html)가 있는 경우, [LineBackgroundSpan#drawBackground](http://developer.android.com/reference/android/text/style/LineBackgroundSpan.html#drawBackground%28android.graphics.Canvas,%20android.graphics.Paint,%20int,%20int,%20int,%20int,%20int,%20java.lang.CharSequence,%20int,%20int,%20int%29)가 호출된다.
 
 * drawText
 
-For each line of text, it computes [LeadingMarginSpan](http://developer.android.com/reference/android/text/style/LeadingMarginSpan.html) and [LeadingMarginSpan2](http://developer.android.com/reference/android/text/style/LeadingMarginSpan.LeadingMarginSpan2.html) and calls [LeadingMarginSpan#drawLeadingMargin](http://developer.android.com/reference/android/text/style/LeadingMarginSpan.html#drawLeadingMargin%28android.graphics.Canvas,%20android.graphics.Paint,%20int,%20int,%20int,%20int,%20int,%20java.lang.CharSequence,%20int,%20int,%20boolean,%20android.text.Layout%29) when it’s necessary. This is also where [AlignmentSpan](http://developer.android.com/reference/android/text/style/AlignmentSpan.html) is used to determine the text alignment. Finally, if the current line is spanned, Layout calls TextLine#draw (a TextLine object is created for each line).
+텍스트의 각 행에 대해, [LeadingMarginSpan](http://developer.android.com/reference/android/text/style/LeadingMarginSpan.html)과 [LeadingMarginSpan2](http://developer.android.com/reference/android/text/style/LeadingMarginSpan.LeadingMarginSpan2.html)를 계산하고 필요하다면 [LeadingMarginSpan#drawLeadingMargin](http://developer.android.com/reference/android/text/style/LeadingMarginSpan.html#drawLeadingMargin%28android.graphics.Canvas,%20android.graphics.Paint,%20int,%20int,%20int,%20int,%20int,%20java.lang.CharSequence,%20int,%20int,%20boolean,%20android.text.Layout%29)를 호출한다. 이것은 또한 [AlignmentSpan](http://developer.android.com/reference/android/text/style/AlignmentSpan.html)를 텍스트 맞춤을 결정 하는 데 사용 된다. 마지막으로, 현재 행이 스팬인 경우, 레이아웃은 TextLine#draw(텍스트 라인 개체가 각 행에 대해 생성된다)을 호출 한다.
 
 ### TEXTLINE
 
-[android.text.TextLine](https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/text/TextLine.java) documentation says: Represents a line of styled text, for measuring in visual order and for rendering.
+문서에서는 [android.text.TextLine](https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/text/TextLine.java) 다음과 같이 설명한다: 시각적 순서의 측정과 렌더링을 위한 스타일 텍스트 행을 나타낸다.
 
-TextLine class contains 3 sets of Spans:
+TextLine 클래스는 3세트의 Spans을 포함한다:
 
 * MetricAffectingSpan set
 * CharacterStyle set
 * ReplacementSpan set
 
-The interesting method is TextLine#handleRun. It’s where all Spans are used to render the text. Relative to the type of Span, TextLine calls:
+흥미로운 메소드는 TextLine#handleRun이다. 그것은 모든 스팬이 텍스트를 렌더링하는데 사용된다. 스팬의 유형을 기준으로 TextLine은 아래의 함수를 호출한다:
 
 * [CharacterStyle#updateDrawState](http://developer.android.com/reference/android/text/style/CharacterStyle.html#updateDrawState%28android.text.TextPaint%29) to change the TextPaint configuration for MetricAffectingSpan and CharacterStyle Spans.
 * TextLine#handleReplacement for ReplacementSpan. It calls [Replacement#getSize](http://developer.android.com/reference/android/text/style/ReplacementSpan.html#getSize%28android.graphics.Paint,%20java.lang.CharSequence,%20int,%20int,%20android.graphics.Paint.FontMetricsInt%29) to get the replacement width, update the font metrics if it’s needed and finally call [Replacement#draw](http://developer.android.com/reference/android/text/style/ReplacementSpan.html#draw%28android.graphics.Canvas,%20java.lang.CharSequence,%20int,%20int,%20float,%20int,%20int,%20int,%20android.graphics.Paint%29).
 
 ### FONTMETRICS
 
-If you want to know more about what is font metrics, just look at the following schema:
+폰트 메트릭에 대해 더 알고 싶다면 다음의 그림을 보자:
 
 ![fontmetrics](/img/2015-11-02-android-spans-a-powerful-concept-5.png)  
 
@@ -93,6 +90,8 @@ If you want to know more about what is font metrics, just look at the following 
 [android.text.style.BulletSpan](http://developer.android.com/reference/android/text/style/BulletSpan.html)
 
 The BulletSpan affects paragraph-level text formatting. It allows you to put a bullet on paragraph start.
+
+BulletSpan은 텍스트 단락 수준 서식에 영향을 준다. 그것은 단락 시작에 bullet을 넣을 수 있도록 해준다.
 
 ```java
 /*
@@ -110,7 +109,7 @@ span = new BulletSpan(15, Color.BLACK);
 ### QUOTESPAN
 [android.text.style.QuoteSpan](http://developer.android.com/reference/android/text/style/QuoteSpan.html)
 
-The QuoteSpan affects paragraph-level text formatting. It allows you to put a quote vertical line on a paragraph.
+QuoteSpan은 텍스트 단락 수준 서식에 영향을 준다. 그것은 당신이 단락에 인용 수직선을 넣을 수 있도록 해준다.
 
 ```java
 /*
@@ -128,7 +127,8 @@ span = new QuoteSpan(Color.RED);
 
 [android.text.style.AlignmentSpan.Standard](http://developer.android.com/reference/android/text/style/AlignmentSpan.Standard.html)
 
-The AlignmentSpan.Standard affects paragraph-level text formatting. It allows you to align (normal, center, opposite) a paragraph.
+AlignmentSpan.Standard은 텍스트 단락 수준 서식에 영향을 준다. 그것은 문단을 정렬(일반, 중앙, 반대) 할 수 있도록 해준다.
+그것은 정렬 수 있습니다 (정상, 센터, 반대)는 단락.
 
 ```java
 /*
@@ -145,7 +145,7 @@ span = new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER);
 ### UNDERLINESPAN
 [android.text.style.UnderlineSpan](http://developer.android.com/reference/android/text/style/UnderlineSpan.html)
 
-The UnderlineSpan affects character-level text formatting. It allows you to underline a character thanks to [Paint#setUnderlineText(true)](http://developer.android.com/reference/android/graphics/Paint.html#setUnderlineText%28boolean%29).
+UnderlineSpan은 텍스트 글자 수준 서식에 영향을 준다. 그것은 [Paint#setUnderlineText(true)](http://developer.android.com/reference/android/graphics/Paint.html#setUnderlineText%28boolean%29)을 통해 문자에 밑줄을 넣을 수 있도록 해준다.
 
 ```java
 //underline a character
@@ -158,7 +158,7 @@ span = new UnderlineSpan();
 
 [android.text.style.StrikethroughSpan](http://developer.android.com/reference/android/text/style/StrikethroughSpan.html)
 
-The StrikethroughSpan affects character-level text formatting. It allows you to strikethrough a character thanks to [Paint#setStrikeThruText(true)](http://developer.android.com/reference/android/graphics/Paint.html#setStrikeThruText%28boolean%29).
+StrikethroughSpan 은 텍스트 글자 수준 서식에 영향을 준다. 그것은  [Paint#setStrikeThruText(true)](http://developer.android.com/reference/android/graphics/Paint.html#setStrikeThruText%28boolean%29)을 통해 문자에 취소선을 넣을 수 있도록 해준다.
 
 ```java
 //strikethrough a character
@@ -170,7 +170,7 @@ span = new StrikethroughSpan();
 ### SUBSCRIPTSPAN
 [android.text.style.SubscriptSpan](http://developer.android.com/reference/android/text/style/SubscriptSpan.html)
 
-The SubscriptSpan affects character-level text formatting. It allows you to subscript a character by reducing the [TextPaint#baselineShift](http://developer.android.com/reference/android/text/TextPaint.html#baselineShift) .
+SubscriptSpan은 텍스트 글자 수준 서식에 영향을 준다. 그것은  [TextPaint#baselineShift](http://developer.android.com/reference/android/text/TextPaint.html#baselineShift)를 감소시켜 아래 첨자 문자를 넣을 수 있도록 해준다.
 
 ```java
 //subscript a character
@@ -183,7 +183,7 @@ span = new SubscriptSpan();
 
 [android.text.style.SuperscriptSpan](http://developer.android.com/reference/android/text/style/SuperscriptSpan.html)
 
-The SuperscriptSpan affects character-level text formatting. It allows you to superscript a character by increasing the [TextPaint#baselineShift](http://developer.android.com/reference/android/text/TextPaint.html#baselineShift) .
+SuperscriptSpan은 텍스트 글자 수준 서식에 영향을 준다. 그것은  [TextPaint#baselineShift](http://developer.android.com/reference/android/text/TextPaint.html#baselineShift)를 증가시켜 위 첨자 문자를 넣을 수 있도록 해준다.
 
 ```java
 //superscript a character
@@ -196,7 +196,7 @@ span = new SuperscriptSpan();
 
 [android.text.style.BackgroundColorSpan](http://developer.android.com/reference/android/text/style/BackgroundColorSpan.html)
 
-The BackgroundColorSpan affects character-level text formatting. It allows you to set a background color on a character.
+BackgroundColorSpan은 텍스트 글자 수준 서식에 영향을 준다. 그것은 문자의 배경색을 넣을 수 있도록 해준다.
 
 ```java
 /*
@@ -214,7 +214,7 @@ span = new BackgroundColorSpan(Color.GREEN);
 
 [android.text.style.ForegroundColorSpan](http://developer.android.com/reference/android/text/style/ForegroundColorSpan.html)
 
-The ForegroundColorSpan affects character-level text formatting. It allows you to set a foreground color on a character.
+ForegroundColorSpan은 텍스트 글자 수준 서식에 영향을 준다. 그것은 문자의 글자색을 넣을 수 있도록 해준다.
 
 ```java
 /*
@@ -232,7 +232,7 @@ span = new ForegroundColorSpan(Color.RED);
 
 [android.text.style.ImageSpan](http://developer.android.com/reference/android/text/style/ImageSpan.html)
 
-The ImageSpan affects character-level text formatting. It allows you to a character by an image. It’s one of the few span that is well documented so enjoy it!
+ImageSpan은 텍스트 글자 수준 서식에 영향을 준다. 그것은 이미지를 글자처럼 넣을 수 있도록 해준다. 그것은 문서화를 잘 할 수 있도록 해주는 몇 안되는 스팬 중 하나다.
 
 ```java
 //replace a character by pic1_small image
@@ -245,7 +245,7 @@ span = new ImageSpan(this, R.drawable.pic1_small);
 
 [android.text.style.StyleSpan](http://developer.android.com/reference/android/text/style/StyleSpan.html)
 
-The StyleSpan affects character-level text formatting. It allows you to set a style (bold, italic, normal) on a character.
+StyleSpan은 텍스트 글자 수준 서식에 영향을 준다. 그것은 글자에 스타일(bold, italic, normal)을 넣을 수 있도록 해준다.
 
 ```java
 /*
@@ -263,7 +263,7 @@ span = new StyleSpan(Typeface.BOLD | Typeface.ITALIC);
 
 [android.text.style.TypefaceSpan](http://developer.android.com/reference/android/text/style/TypefaceSpan.html)
 
-The TypefaceSpan affects character-level text formatting. It allows you to set a font family (monospace, serif etc) on a character.
+TypefaceSpan은 텍스트 글자 수준 서식에 영향을 준다. 그것의 글자의 폰트 패밀리(monospace, serif etc)를 지정할 수 있도록 해준다.
 
 ```java
 /*
@@ -281,7 +281,7 @@ span = new TypefaceSpan("serif");
 
 [android.text.style.TextAppearanceSpan](http://developer.android.com/reference/android/text/style/TextAppearanceSpan.html)
 
-The TextAppearanceSpan affects character-level text formatting. It allows you to set a appearance on a character.
+TextAppearanceSpan은 텍스트 글자 수준 서식에 영향을 준다. 그것은 글자의 appearance를 지정할 수 있도록 해준다.
 
 ```java
 /*
@@ -320,7 +320,7 @@ styles.xml
 
 [android.text.style.AbsoluteSizeSpan](http://developer.android.com/reference/android/text/style/AbsoluteSizeSpan.html)
 
-The AbsoluteSizeSpan affects character-level text formatting. It allows you to set an absolute text size on a character.
+AbsoluteSizeSpan은 텍스트 글자 수준 서식에 영향을 준다. 그것은 글자의 절대 크기를 지정할 수 있도록 해준다.
 
 ```java
 /*
@@ -339,7 +339,7 @@ span = new AbsoluteSizeSpan(24, true);
 
 [android.text.style.RelativeSizeSpan](http://developer.android.com/reference/android/text/style/RelativeSizeSpan.html)
 
-The RelativeSizeSpan affects character-level text formatting. It allows you to set an relative text size on a character.
+RelativeSizeSpan은 텍스트 글자 수준 서식에 영향을 준다. 그것은 글자의 상대 크기를 지정할 수 있도록 해준다.
 
 ```java
 /*
@@ -357,7 +357,7 @@ span = new RelativeSizeSpan(2.0f);
 
 [android.text.style.ScaleXSpan](http://developer.android.com/reference/android/text/style/ScaleXSpan.html)
 
-The ScaleXSpan affects character-level text formatting. It allows you to scale on x a character.
+ScaleXSpan은 텍스트 글자 수준 서식에 영향을 준다. 그것은 글자의 x 축 방향에 설정된 배율을 지정할 수 있도록 해준다.
 
 ```java
 /*
@@ -375,9 +375,9 @@ span = new ScaleXSpan(3.0f);
 
 [android.text.style.MaskFilterSpan](http://developer.android.com/reference/android/text/style/MaskFilterSpan.html)
 
-The MaskFilterSpan affects character-level text formatting. It allows you to set a [android.graphics.MaskFilter](http://developer.android.com/reference/android/graphics/MaskFilter.html) on a character.
+MaskFilterSpan은 텍스트 글자 수준 서식에 영향을 준다. 그것은 글자에  [android.graphics.MaskFilter](http://developer.android.com/reference/android/graphics/MaskFilter.html)를 설정할 수 있도록 해준다.
 
-**Warning: BlurMaskFilter is not supported with hardware acceleration.**
+**주의: BlurMaskFilter 는 hardware acceleration을 지원하지 않는다.**
 
 ```java
 /*
@@ -395,17 +395,17 @@ span = new MaskFilterSpan(new EmbossMaskFilter(new float[] { 1, 1, 1 }, 0.4f, 6,
 
 ![MaskFilterSpan](/img/2015-11-02-android-spans-a-powerful-concept-22.png)  
 
-**EmbossMaskFilter with a blue ForegroundColorSpan and a bold StyleSpan**
+**EmbossMaskFilter와 함께 blue ForegroundColorSpan과 bold StyleSpan**
 
 ![MaskFilterSpan](/img/2015-11-02-android-spans-a-powerful-concept-23.png)  
 
-## Pushing Spans to the next level
+## 고급 스팬(Pushing Spans to the next level)
 
-### ANIMATE THE FOREGROUND COLOR
+### 글자색(FOREGROUND COLOR) 애니메이션
 
 ![AnimateSpan](/img/2015-11-02-android-spans-a-powerful-concept-24.gif)  
 
-ForegroundColorSpan is read-only. It means that you can’t change the foreground color after instanciation. So, the first thing to do is to code a MutableForegroundColorSpan.
+ForegroundColorSpan은 읽기 전용이다. 그것은 인스턴스화된 후에는 글자색을 변경할 수 없다는 뜻이다. 따라서 처음으로 할 일은 MutableForegroundColorSpan을 작성하는 것이다.
 
 MutableForegroundColorSpan.java
 ```java
@@ -459,7 +459,7 @@ public class MutableForegroundColorSpan extends ForegroundColorSpan {
 }
 ```
 
-Now, we can change alpha or foreground color on the same instance. But when you set those properties, it doesn’t refresh the View: you have to do this manually by re-setting the SpannableString.
+이제 우리는 같은 인스턴스에서 투명도 또는 글자색을 변경할 수 있다. 그러나 그 속성을 설정할 때 그것은 View를 갱신하지 않는다: 직접 SpannableString을 다시 설정해 주어야 한다.
 
 ```java
 MutableForegroundColorSpan span = new MutableForegroundColorSpan(255, Color.BLACK);
@@ -473,7 +473,7 @@ textView.setText(spannableString);
 //finally, the text is red and translucent
 ```
 
-Now, we want to animate the foreground color. We use a custom [android.util.Property](http://developer.android.com/reference/android/util/Property.html).
+이제 우리는 글자색을 애니메이션하기를 원한다. 우리는  [android.util.Property](http://developer.android.com/reference/android/util/Property.html)를 사용하여 커스텀 해야 한다.
 
 ```java
 private static final Property<MutableForegroundColorSpan, Integer> MUTABLE_FOREGROUND_COLOR_SPAN_FC_PROPERTY =
@@ -491,7 +491,7 @@ new Property<MutableForegroundColorSpan, Integer>(Integer.class, "MUTABLE_FOREGR
 };
 ```
 
-Finally, we animate the custom property with an [ObjectAnimator](http://developer.android.com/reference/android/animation/ObjectAnimator.html). Don’t forget to refresh the View on update.
+마지막으로 우리는 [ObjectAnimator](http://developer.android.com/reference/android/animation/ObjectAnimator.html)를 이용하여 custom property를 애니메이션 한다. View를 갱신하는 것을 잊지마라.
 
 ```java
 MutableForegroundColorSpan span = new MutableForegroundColorSpan(255, Color.BLACK);
@@ -512,7 +512,7 @@ objectAnimator.start();
 
 ![FIREWORKS](/img/2015-11-02-android-spans-a-powerful-concept-25.gif)  
 
-The ‘fireworks’ animation is to make letter fade in randomly. First, cut the text into multiple spans (for example, one span by character) and fade in spans after spans. Using the previously introduced MutableForegroundColorSpan, we are going to create a special object representing a group of span. And for each call to setAlpha on the group, we randomly set the alpha for each span.
+‘fireworks’ 애니메이션은 무작위를 글자를 fade 하도록 한다. 먼저 글자를 다수의 Span으로 분리하여(예를 들어, 글자 단위로 하나의 스팬을 생성) 스팬을 적용하고 fade 한다. 앞서 소개한 MutableForegroundColorSpan을 사용하여, 스팬 그룹을 표현하기 위한 특별한 객체를 만들 것이다. 그리고 그룹에 setAlpha 호출할 때마다, 우리는 무작위로 각 범위에 대한 투명도를 설정한다.
 
 ```java
 private static final class FireworksSpanGroup {
@@ -553,7 +553,7 @@ private static final class FireworksSpanGroup {
 }
 ```
 
-We create a custom property to animate the alpha of a FireworksSpanGroup.
+우리는 FireworksSpanGroup의 알파 애니메이션에 사용자 정의 속성을 만든다.
 
 ```java
 private static final Property<FireworksSpanGroup, Float> FIREWORKS_GROUP_PROGRESS_PROPERTY =
@@ -571,7 +571,7 @@ new Property<FireworksSpanGroup, Float>(Float.class, "FIREWORKS_GROUP_PROGRESS_P
 };
 ```
 
-Finally, we create the group and animate it with an ObjectAnimator.
+마지막으로, 우리는 그룹을 만들고 ObjectAnimator으로 애니메이션 한다.
 
 ```java
 final FireworksSpanGroup spanGroup = new FireworksSpanGroup();
@@ -591,37 +591,37 @@ objectAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 objectAnimator.start();
 ```
 
-## DRAW WITH YOUR OWN SPAN
+## 나만의 스팬으로 그리기(DRAW WITH YOUR OWN SPAN)
 
-In this section, we are going to see a way to draw via a custom Span. This opens interesting perspectives for text customization.
+이 섹션에서는 사용자 정의 스팬을 통해 그리는 방법을 설명 할 것이다. 이것은 텍스트 사용자 정의에 대한 흥미로운 관점을 열어줄 것이다.
 
-First, we have to create a custom Span that extends the abstract class [ReplacementSpan](http://developer.android.com/reference/android/text/style/ReplacementSpan.html).
+첫째, 우리는 추상 클래스 [ReplacementSpan](http://developer.android.com/reference/android/text/style/ReplacementSpan.html)을 확장하는 커스텀 스팬을 만들어야 한다.
 
-If you only want to draw a custom background, you can implements [LineBackgroundSpan](http://developer.android.com/reference/android/text/style/LineBackgroundSpan.html) which is at paragraph-level.
+당신이 오직 custom background를 그리기만 원하는 경우, 텍스트 단락 수준 서식인 [LineBackgroundSpan](http://developer.android.com/reference/android/text/style/LineBackgroundSpan.html)을 구현할 수 있다.
 
-We have to implement 2 methods:
+우리는 2개의 methods를 구현해야 한다:
 
-* [getSize](http://developer.android.com/reference/android/text/style/ReplacementSpan.html#getSize%28android.graphics.Paint,%20java.lang.CharSequence,%20int,%20int,%20android.graphics.Paint.FontMetricsInt%29): this method returns the new with of your replacement.
+* [getSize](http://developer.android.com/reference/android/text/style/ReplacementSpan.html#getSize%28android.graphics.Paint,%20java.lang.CharSequence,%20int,%20int,%20android.graphics.Paint.FontMetricsInt%29): 이 method는 당신이 변경한 새로운 크기를 반환한다.
 
-text: text managed by the Span
+text: 스팬에서 관리하는 문자열
 
-start: start index of text
+start: 문자열의 시작 위치
 
-end: end index of text
+end: 문자열의 종료 위치
 
-fm: font metrics, can be null
+fm: font metrics(null을 넣을 수 있다)
 
-* [draw](http://developer.android.com/reference/android/text/style/ReplacementSpan.html#draw%28android.graphics.Canvas,%20java.lang.CharSequence,%20int,%20int,%20float,%20int,%20int,%20int,%20android.graphics.Paint%29): it’s here you can draw with the Canvas.
+* [draw](http://developer.android.com/reference/android/text/style/ReplacementSpan.html#draw%28android.graphics.Canvas,%20java.lang.CharSequence,%20int,%20int,%20float,%20int,%20int,%20int,%20android.graphics.Paint%29): 당신이 Canvas를 이용해 그릴 수 있는 곳이다.
 
-x: x-coordinate where to draw the text
+x: 문자열이 draw 될 좌표(x-coordinate)
 
-top: top of the line
+top: 라인의 top
 
-y: the baseline
+y: baseline
 
-bottom: bottom of the line
+bottom: 라인의 bottom
 
-Let’s see an example where we draw a blue rectangle around the text.
+텍스트를 둘러싸는 파란 사각형을 그리는 예제를 보자.
 
 ```java
 @Override
@@ -642,7 +642,7 @@ public void draw(Canvas canvas, CharSequence text, int start, int end, float x, 
 
 ## BONUS
 
-The Sample app contains some examples of pushing Spans to the next level like:
+샘플 앱에는 아래와 같은 예시가 포함되어 있다:
 
 * Progressive blur
 
@@ -652,6 +652,10 @@ The Sample app contains some examples of pushing Spans to the next level like:
 
 ![Typewriter](/img/2015-11-02-android-spans-a-powerful-concept-28.gif)  
 
-## Conclusion
+## 결론
 
-Working on this article, I realised Spans are really powerfull and like Drawables, I think they are not used enough. Text is the main content of an application, it’s everywhere so don’t forget to make it more dynamic and attractive with Spans!
+이 문서에서 작업, 나는 스팬 정말 강력하고 드로어 블 Drawable들처럼, 나는 그들이 충분히 사용하지 않는 생각을 깨달았다. 텍스트 응용 프로그램의 주요 내용, 그것은 사방 그래서 스팬과 더 역동적이고 매력적으로 만들 것을 잊지 마세요있다!
+
+이 문서 작업, 깨달았다 범위는 정말 강력 하 고 Drawables, 같은 그들이 생각 하지 충분히 사용. 텍스트는 응용 프로그램의 주요 내용, 그것은 어디에 나 그래서 더 역동적이 고 매력적인 걸쳐 그것을 확인 하는 것을 잊지 마세요!
+
+이 문서를 작성하면서 스팬은 정말 강력하지만 그들은 Drawables처럼 충분히 사용하지 않는다는 것을 깨달았다. 텍스트는 어플리케이션의 메인 콘텐츠다. 그것은 어디에나 있다. 그러니 텍스트를 스팬을 통해 역동적이고 매력적으로 만들 수 있다는 것을 잊지마라!

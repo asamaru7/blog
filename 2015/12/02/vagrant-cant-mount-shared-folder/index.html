@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Nginx(stable / mainline) 설치 - CentOS 6.5 / 7 - 이 세상에 하나는 남기고 가자</title>
+  <title>VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우 - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/12/02/vagrant-cant-mount-shared-folder/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/">
-  <meta property="og:title" content="Nginx(stable / mainline) 설치 - CentOS 6.5 / 7 - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/12/02/vagrant-cant-mount-shared-folder/">
+  <meta property="og:title" content="VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우 - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -135,7 +135,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-27T15:49:16+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.27</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-02T19:39:43+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.02</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -144,95 +144,60 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        Nginx(stable / mainline) 설치 - CentOS 6.5 / 7
+        VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p><a href="http://nginx.org/">Nginx</a>는 <a href="https://ko.wikipedia.org/wiki/Nginx">위키피디아</a>에서 아래와 같이 설명하고 있다.</p>
-
-<blockquote>
-<p>Nginx(엔진 x라 읽는다)는 웹 서버 소프트웨어로, 가벼움과 높은 성능을 목표로 한다. 웹 서버, 리버스 프록시 및 메일 프록시 기능을 가진다.</p>
-
-<p>Netcraft의 2011년 1월 웹서버 설문조사에 따르면, nginx는 전체 도메인에서 4번째(7.50%)로 많이 쓰이는 웹서버이며, 활성화된 웹 사이트에 대한 통계에서도 역시 4번째(8.23%)로 많이 사용된다[1].</p>
-
-<p>Nginx는 요청에 응답하기 위해 비동기 이벤트 기반 구조를 가진다. 이것은 아파치 HTTP 서버의 스레드/프로세스 기반 구조를 가지는 것과는 대조적이다. 이러한 구조는 서버에 많은 부하가 생길 경우의 성능을 예측하기 쉽게 해준다.</p>
-</blockquote>
-
-<p>기존에는 Apache를 사용하고 있었다. Apache의 다양한 기능 때문이라기 보다는 익숙함 때문이었다. 그런데 예전부터 <a href="http://nginx.org/">Nginx</a>에 대한 사람들의 평가(Apache의 튜닝 상태에 따라 다른 결과를 보이기도 한다)를 볼 때마다 언젠가는 갈아타야지 싶었는데 최근에야 이 생각을 실천하게 되었다. 그레서 <a href="http://nginx.org/">Nginx</a>를 설치하는 과정을 정리하고자 한다.</p>
-
-<hr>
-
-<p>CentOS에서 Nginx의 설치는 크게 소스를 컴파일해서 설치하는 방법과 YUM을 통해 설치하는 방법이 있다. Nginx의 경우 Apache와 다르게 모듈을 추가할 경우엔 무조건 소스 설치를 해야한다(모듈을 포함시켜 컴파일 해야 한다). 따라서 mod_pagespeed나 pagespeed 등을 사용하고자 하는 경우에는 소스 설치를 해야 한다. 오늘은 YUM 설치를 기준으로 설명하고자 하니 모듈을 추가해서 설치하는 방법은 아래의 링크들을 참고하자.</p>
-
-<ul>
-<li><a href="http://www.nginxtips.com/how-to-install-mod_security-on-nginx/">How to install Mod_Security on Nginx</a>
-<a href="https://developers.google.com/speed/pagespeed/module/build_ngx_pagespeed_from_source">Build ngx_pagespeed From Source</a></li>
-<li><a href="http://d2.naver.com/helloworld/192785">NGINX 모듈 제작하기</a></li>
-</ul>
-
-<p>사실 기본적인 설치는 <a href="https://www.nginx.com/resources/wiki/start/topics/tutorials/install/">공식 메뉴얼</a>에 아주 잘 설명되어 있고 간단하다. 내용을 옮겨 적자면 아래와 같다.</p>
-
-<p><code>/etc/yum.repos.d/nginx.repo</code> 파일을 생성해서 아래의 내용을 넣는다.</p>
-
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[nginx]
-</span><span class='line'>name=nginx repo
-</span><span class='line'>baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
-</span><span class='line'>gpgcheck=0
-</span><span class='line'>enabled=1</span></code></pre></td></tr></table></div></figure>
-
-<p>그리고는 아래와 같이 yum 으로 설치한다.</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>vagrant를 사용하면서 로컬과 가상 머신 사이의 파일 전달을 간단히 하려면 synced_folder를 사용하면 된다. 설정도 아주 간단하다. <code>Vagrantfile</code>에 아래의 내용을 추가하면 된다. 당연히 설정값은 자신의 상황에 맞게 지정하면 된다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo yum install nginx
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>config.vm.synced_folder <span class="s2">&quot;/local/vagrant/share&quot;</span>, <span class="s2">&quot;/vagrant&quot;</span>, owner: <span class="s2">&quot;web&quot;</span>, group: <span class="s2">&quot;usergroup&quot;</span>, mount_options: <span class="o">[</span><span class="s2">&quot;dmode=777,fmode=777&quot;</span><span class="o">]</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>혹시 EPEL을 이용해서 설치하고 싶다면 <code>/etc/yum.repos.d/nginx.repo</code> 파일을 생성할 필요없이 아래와 같이하면 된다.</p>
+<p>사실 synced_folder의 단점은 퍼미션에 있다. 나의 경우는 osx 환경에서 centos 가상 머신을 사용하는 상황이라 퍼미션을 유지한 상태로 폴더를 연결하고 싶으나 그렇게는 되지 않는다. 그래서 나는 synced_folder는 파일 전달용으로 사용하고 작업 소스 폴더 등은 NFS를 이용해서 로컬과 가상 머신을 연결한다. 그렇게하면 퍼미션도 유지할 수 있기 때문에 관련 작업시 편하다. 이와 관련해서는 오늘 이야기하고자 하는 부분이 아니므로 일단 넘어가기로 한다.</p>
 
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo yum install epel-release
-</span><span class='line'>sudo yum install nginx
-</span></code></pre></td></tr></table></div></figure>
-
-<p>끝이다. 정말 간단하다. 설명할 것도 없다. 하지만 사실 이 글을 적는 이유는 이제부터다.</p>
-
-<p>Nginx는 기본적으로 두가지 버전이 존재한다. stable 버전과 mainline 버전이다. 사실상 최신 버전은 mainline 이다. 2015-11-27일 기준으로 stable은 nginx-1.8.0, mainline은 1.9.7이다. 말그대로 stable 버전이 안정 버전이므로 사용이 권장되기는 하나 mainline도 불안정한 것은 아니다.</p>
-
-<p><a href="http://serverfault.com/a/715126">What’s the difference between the “mainline” and “stable” branches of nginx?</a>의 설명대로라면 mainline을 더 권장한다. stable 버전이라고 버그가 없는 것이 아니며 버그 패치는 mainline에 먼저 된다는 이유 때문이다.</p>
-
-<p>그래서 나는 mainline으로 설치하기로 했다. 설치 방법은 위의 stable과 별반 다르지 않으나 repository의 url만 차이가 난다.</p>
-
-<p><code>/etc/yum.repos.d/nginx.repo</code> 파일을 생성해서 아래의 내용을 넣는다.</p>
+<p>사실 나도 이렇게 잘 사용하고 있었는데 얼마 전부터 아래와 같은 오류가 나면서 정상적으로 연결이 되지 않았다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>nginx<span class="o">]</span>
-</span><span class='line'><span class="nv">name</span><span class="o">=</span>nginx repo
-</span><span class='line'><span class="nv">baseurl</span><span class="o">=</span>http://nginx.org/packages/mainline/centos/<span class="se">\$</span>releasever/<span class="se">\$</span>basearch/
-</span><span class='line'><span class="nv">gpgcheck</span><span class="o">=</span>0
-</span><span class='line'><span class="nv">enabled</span><span class="o">=</span>1
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>default: /vagrant <span class="o">=</span>&gt; /local/vagrant/share
+</span><span class='line'>Failed to mount folders in Linux guest. This is usually because
+</span><span class='line'>the <span class="s2">&quot;vboxsf&quot;</span> file system is not available. Please verify that
+</span><span class='line'>the guest additions are properly installed in the guest and
+</span><span class='line'>can work properly. The <span class="nb">command </span>attempted was:
+</span><span class='line'>
+</span><span class='line'>mount -t vboxsf -o <span class="nv">uid</span><span class="o">=</span><span class="sb">`</span>id -u web<span class="sb">`</span>,gid<span class="o">=</span><span class="sb">`</span>getent group usergroup <span class="p">|</span> cut -d: -f3<span class="sb">`</span>,dmode<span class="o">=</span>777,fmode<span class="o">=</span><span class="m">777</span> vagrant /vagrant
+</span><span class='line'>mount -t vboxsf -o <span class="nv">uid</span><span class="o">=</span><span class="sb">`</span>id -u web<span class="sb">`</span>,gid<span class="o">=</span><span class="sb">`</span>id -g usergroup<span class="sb">`</span>,dmode<span class="o">=</span>777,fmode<span class="o">=</span><span class="m">777</span> vagrant /vagrant
 </span></code></pre></td></tr></table></div></figure>
 
-<p>그리고는 아래와 같이 yum 으로 설치한다.</p>
+<p>synced_folder의 경우 주로 사용하는 작업용 폴더가 아니라서 일단 무시하고 사용하고 있었는데 vagrant up 할 때마다 오류가 보여서 해결하기로 했다.</p>
+
+<p>기존에는 아무 문제가 없었다. 그래서 가만히 생각해보니 얼마전 VirtualBox를 버전업 했다는 사실이 떠올랐다. 그래서 확인해보니 이 부분이 문제를 일으키는 원인이 맞았다. synced_folder의 경우 vboxsf를 사용하는데 VirtualBox가 버전업 되면서 호환이 되지 않았던 것이다(4.3.30 -&gt; 5.0.10). 간단히 생각하면 VBoxGuestAdditions을 다시 설치해주면 된다. 그런데 이렇게 하려니 가상 머신마다 일일이 작업을 해야하기 때문에 귀찮다.</p>
+
+<p>그래서 조금 찾아보니 <a href="https://github.com/mitchellh/vagrant/issues/3341">Vagrant can&#39;t mount shared folder in VirtualBox 4.3.10</a>에 해결 방법이 있었다.</p>
+
+<p>간단히 요약하면 <code>vagrant-vbguest</code> 플러그인을 설치하면 vagrant up 시에 알아서 GuestAdditions을 다시 설치해 준다. 우선 <code>vagrant-vbguest</code> 플러그인을 설치하려면 local에서 아래와 같이 실행한다(osx 기준이다).</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo yum install nginx
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>vagrant plugin install vagrant-vbguest
+</span><span class='line'>
+</span><span class='line'>Installing the <span class="s1">&#39;vagrant-vbguest&#39;</span> plugin. This can take a few minutes...
+</span><span class='line'>Installed the plugin <span class="s1">&#39;vagrant-vbguest (0.11.0)&#39;</span>!
 </span></code></pre></td></tr></table></div></figure>
 
-<p>이것 또한 아주 간단하다. 약간의 부가 작업을 포함해서 bash shell 스크립트를 하나 만들어 뒀다.</p>
-
-<p>nginx.install.sh</p>
+<p>그리고 다시 vagrant up을 하면 아래와 같이 다시 설치하는 모습을 볼 수 있다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -281,68 +246,86 @@
 <span class='line-number'>45</span>
 <span class='line-number'>46</span>
 <span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/bash</span>
-</span><span class='line'><span class="k">function</span> printTitle <span class="o">{</span>
-</span><span class='line'>    <span class="nb">echo</span> -e <span class="s2">&quot;\e[1;97m=======================================\e[0m&quot;</span>
-</span><span class='line'>    <span class="nb">echo</span> -e <span class="s2">&quot;\e[1;97m* $1\e[0m&quot;</span>
-</span><span class='line'>    <span class="nb">echo</span> -e <span class="s2">&quot;\e[1;97m=======================================\e[0m&quot;</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">function</span> printJob <span class="o">{</span>
-</span><span class='line'>    <span class="nb">echo</span> -e <span class="s2">&quot;\e[94m* $1\e[0m&quot;</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">function</span> printSubJob <span class="o">{</span>
-</span><span class='line'>    <span class="nb">echo</span> -e <span class="s2">&quot;\e[96m\t$1\e[0m&quot;</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>printTitle <span class="s2">&quot;Nginx 설치&quot;</span>
-</span><span class='line'>
-</span><span class='line'>printJob <span class="s2">&quot;httpd.service 종료&quot;</span>
-</span><span class='line'>systemctl stop httpd.service
-</span><span class='line'>
-</span><span class='line'>printJob <span class="s2">&quot;httpd.service 제거&quot;</span>
-</span><span class='line'>yum remove -y httpd
-</span><span class='line'>systemctl disable httpd.service
-</span><span class='line'>
-</span><span class='line'>printJob <span class="s2">&quot;Nginx 설치&quot;</span>
-</span><span class='line'><span class="k">if</span> <span class="o">[</span> ! -e /etc/yum.repos.d/nginx.repo <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-</span><span class='line'>    printSubJob <span class="s2">&quot;nginx repository 추가&quot;</span>
-</span><span class='line'>    <span class="nb">echo</span> <span class="s2">&quot;[nginx]&quot;</span> &gt; /etc/yum.repos.d/nginx.repo
-</span><span class='line'>    <span class="nb">echo</span> <span class="s2">&quot;name=nginx repo&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
-</span><span class='line'>    <span class="nb">echo</span> <span class="s2">&quot;baseurl=http://nginx.org/packages/mainline/centos/\$releasever/\$basearch/&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
-</span><span class='line'>    <span class="c">#echo &quot;baseurl=http://nginx.org/packages/centos/\$releasever/\$basearch/&quot; &gt;&gt; /etc/yum.repos.d/nginx.repo</span>
-</span><span class='line'>    <span class="nb">echo</span> <span class="s2">&quot;gpgcheck=0&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
-</span><span class='line'>    <span class="nb">echo</span> <span class="s2">&quot;enabled=1&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
-</span><span class='line'><span class="k">fi</span>
-</span><span class='line'>
-</span><span class='line'>printSubJob <span class="s2">&quot;nginx package 설치&quot;</span>
-</span><span class='line'>yum install -y nginx
-</span><span class='line'>
-</span><span class='line'>printJob <span class="s2">&quot;Nginx 서비스 활성&quot;</span>
-</span><span class='line'>systemctl <span class="nb">enable </span>nginx.service
-</span><span class='line'>
-</span><span class='line'>printJob <span class="s2">&quot;Nginx 서비스 시작&quot;</span>
-</span><span class='line'>systemctl start nginx.service
-</span><span class='line'>
-</span><span class='line'>printJob <span class="s2">&quot;방화벽 설정&quot;</span>
-</span><span class='line'><span class="k">if</span> <span class="o">[</span> <span class="sb">`</span>firewall-cmd --zone<span class="o">=</span>public --list-all<span class="p">|</span>grep <span class="s2">&quot;services&quot;</span><span class="p">|</span>grep <span class="s2">&quot;http&quot;</span> <span class="p">|</span> wc -l<span class="sb">`</span> -eq <span class="m">0</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-</span><span class='line'>    printSubJob <span class="s2">&quot;http/https 개방&quot;</span>
-</span><span class='line'>    firewall-cmd --permanent --zone<span class="o">=</span>public --add-service<span class="o">=</span>http
-</span><span class='line'>    firewall-cmd --permanent --zone<span class="o">=</span>public --add-service<span class="o">=</span>https
-</span><span class='line'>
-</span><span class='line'>    printSubJob <span class="s2">&quot;방화벽 rule reload&quot;</span>
-</span><span class='line'>    firewall-cmd --reload
-</span><span class='line'><span class="k">fi</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">==</span>&gt; default: Machine booted and ready!
+</span><span class='line'>No installation found.
+</span><span class='line'>Loaded plugins: fastestmirror
+</span><span class='line'>Loading mirror speeds from cached hostfile
+</span><span class='line'> * base: data.nicehosting.co.kr
+</span><span class='line'> * epel: mirror.premi.st
+</span><span class='line'> * extras: data.nicehosting.co.kr
+</span><span class='line'> * updates: data.nicehosting.co.kr
+</span><span class='line'> * webtatic: sp.repo.webtatic.com
+</span><span class='line'>Package kernel-devel-3.10.0-229.20.1.el7.x86_64 already installed and latest version
+</span><span class='line'>Package gcc-4.8.3-9.el7.x86_64 already installed and latest version
+</span><span class='line'>Package 1:make-3.82-21.el7.x86_64 already installed and latest version
+</span><span class='line'>Package 4:perl-5.16.3-285.el7.x86_64 already installed and latest version
+</span><span class='line'>Package bzip2-1.0.6-12.el7.x86_64 already installed and latest version
+</span><span class='line'>Nothing to <span class="k">do</span>
+</span><span class='line'>Copy iso file /Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso into the box /tmp/VBoxGuestAdditions.iso
+</span><span class='line'>mount: /dev/loop0 is write-protected, mounting <span class="nb">read</span>-only
+</span><span class='line'>Installing Virtualbox Guest Additions 5.0.10 - guest version is unknown
+</span><span class='line'>Verifying archive integrity... All good.
+</span><span class='line'>Uncompressing VirtualBox 5.0.10 Guest Additions <span class="k">for</span> Linux............
+</span><span class='line'>VirtualBox Guest Additions installer
+</span><span class='line'>Removing installed version 4.3.30 of VirtualBox Guest Additions...
+</span><span class='line'>Copying additional installer modules ...
+</span><span class='line'>Installing additional modules ...
+</span><span class='line'>Removing existing VirtualBox non-DKMS kernel modules<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Building the VirtualBox Guest Additions kernel modules
+</span><span class='line'>Building the main Guest Additions module<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Building the shared folder support module<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Building the OpenGL support module<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Doing non-kernel setup of the Guest Additions<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Starting the VirtualBox Guest Additions <span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Installing the Window System drivers
+</span><span class='line'>Could not find the X.Org or XFree86 Window System, skipping.
+</span><span class='line'>An error occurred during installation of VirtualBox Guest Additions 5.0.10. Some functionality may not work as intended.
+</span><span class='line'>In most cases it is OK that the <span class="s2">&quot;Window System drivers&quot;</span> installation failed.
+</span><span class='line'>Got different reports about installed GuestAdditions version:
+</span><span class='line'>Virtualbox on your host claims:   5.0.10 r104061
+</span><span class='line'>VBoxService inside the vm claims: 5.0.10
+</span><span class='line'>Going on, assuming VBoxService is correct...
+</span><span class='line'>Got different reports about installed GuestAdditions version:
+</span><span class='line'>Virtualbox on your host claims:   5.0.10 r104061
+</span><span class='line'>VBoxService inside the vm claims: 5.0.10
+</span><span class='line'>Going on, assuming VBoxService is correct...
+</span><span class='line'><span class="o">==</span>&gt; default: Checking <span class="k">for</span> guest additions in VM...
+</span><span class='line'><span class="o">==</span>&gt; default: Configuring and enabling network interfaces...
+</span><span class='line'><span class="o">==</span>&gt; default: Mounting shared folders...
+</span><span class='line'>    default: /vagrant <span class="o">=</span>&gt; /Volumes/Data/subdev/vagrant/share
 </span></code></pre></td></tr></table></div></figure>
 
-<p>위 소스는 CentOS 7에서 firewalld를 사용하는 것을 기준으로 만들어진 것이니 참고하기 바란다. 그리고 원래 내가 사용하는 소스에서 불필요한 부분을 제거하고 넣은 것이라 <code>print***</code> 함수 같은 부분이 잘못 되었을 수 있는데 오류가 난다면 관련 부분을 모두 제거하면 된다.</p>
+<p>자.. 그러면 해피앤딩일까? 아니다. 나의 경우는 여기서 끝나지 않았다. <a href="https://github.com/mitchellh/vagrant/issues/3341">Vagrant can&#39;t mount shared folder in VirtualBox 4.3.10</a>에서도 나와 있는 것처럼 <code>sudo ln -s /opt/VBoxGuestAdditions-4.3.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</code> 와 같은 작업을 해주어야 한다. 여기서 이 명령을 그대로 사용하면 안된다. 나의 경우는 VirtualBox가 5.0.10이므로 <code>sudo ln -s /opt/VBoxGuestAdditions-5.0.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</code>라고 해야한다. 그런데 여기서도 문제가 있다. 나의 경우는 최초 설치가 아니라 이미 사용중이었으므로 <code>/usr/lib/VBoxGuestAdditions</code> 파일이 이미 존재하고 이 파일은 <code>/opt/VBoxGuestAdditions-4.3.30/lib/VBoxGuestAdditions</code>의 심볼릭 링크다. 그래서 아래와 같이 처리해 주어야 한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo su -
+</span><span class='line'><span class="nv">$ </span>rm -f /usr/lib/VBoxGuestAdditions
+</span><span class='line'><span class="nv">$ </span>ln -s /opt/VBoxGuestAdditions-5.0.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions
+</span><span class='line'>
+</span><span class='line'><span class="nv">$ </span><span class="nb">export </span><span class="nv">MAKE</span><span class="o">=</span><span class="s1">&#39;/usr/bin/gmake -i&#39;</span>
+</span><span class='line'><span class="nv">$ </span>/opt/VBoxGuestAdditions-5.0.10/init/vboxadd setup
+</span><span class='line'><span class="nv">$ </span><span class="nb">unset </span>MAKE
+</span><span class='line'>
+</span><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>vboxadd.service
+</span></code></pre></td></tr></table></div></figure>
+
+<p>보면 알겠지만 기존 파일을 지우고 재설치한 VBoxGuestAdditions을 연결하고 재설치 한다. 그리고 서비스로 등록. 단, 여기서 유의할 점은 위 과정은 CentOS 7 기준이라는 것이다. 따라서 상황에 따라 <code>systemctl</code>에 관련된 부분을 수정해야 한다. 예를들어 CentOS 6.5의 경우라면 마지막 라인 대신 아래의 명령을 사용해야 한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>chkconfig --add vboxadd
+</span><span class='line'><span class="nv">$ </span>chkconfig vboxadd on
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이제 다 되었다. 기존처럼 synced_folder를 사용할 수 있다. 요약하자면 이렇다. VirtualBox의 버전업을 한 후 vboxsf가 정상 동작하지 않는다면 VBoxGuestAdditions를 재설치 해야한다.</p>
 </div>
 
 
@@ -366,13 +349,13 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-27T15:49:16+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.27</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-02T19:39:43+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.02</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
 <span class="categories">
   
-    <a class='category' href='/blog/categories/linux/'>linux</a>
+    <a class='category' href='/blog/categories/vagrant/'>vagrant</a>
   
 </span>
 
@@ -381,7 +364,7 @@
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/" data-via="" data-counturl="http://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/12/02/vagrant-cant-mount-shared-folder/" data-via="" data-counturl="http://blog.asamaru.net/2015/12/02/vagrant-cant-mount-shared-folder/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -395,10 +378,8 @@
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/11/25/protobuf-protocol-buffers/" title="Previous Post: protobuf (Protocol Buffers)를 PHP에서 사용하기">&laquo; protobuf (Protocol Buffers)를 PHP에서 사용하기</a></li>
+            <li class="previous"><a href="/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/" title="Previous Post: Nginx(stable / mainline) 설치 - CentOS 6.5 / 7">&laquo; Nginx(stable / mainline) 설치 - CentOS 6.5 / 7</a></li>
             
-            
-            <li class="next"><a href="/2015/12/02/vagrant-cant-mount-shared-folder/" title="Next Post: VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우 &raquo;</a></li>
             
           </ul>
         
@@ -481,9 +462,9 @@
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/12/02/vagrant-cant-mount-shared-folder/">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a>
+    <a class="list-group-item active" href="/2015/12/02/vagrant-cant-mount-shared-folder/">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a>
     
-    <a class="list-group-item active" href="/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/">Nginx(stable / mainline) 설치 - CentOS 6.5 / 7</a>
+    <a class="list-group-item " href="/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/">Nginx(stable / mainline) 설치 - CentOS 6.5 / 7</a>
     
     <a class="list-group-item " href="/2015/11/25/protobuf-protocol-buffers/">protobuf (Protocol Buffers)를 PHP에서 사용하기</a>
     
@@ -525,8 +506,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/';
-        var disqus_url = 'http://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/12/02/vagrant-cant-mount-shared-folder/';
+        var disqus_url = 'http://blog.asamaru.net/2015/12/02/vagrant-cant-mount-shared-folder/';
         var disqus_script = 'embed.js';
       
     (function () {

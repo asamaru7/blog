@@ -139,6 +139,220 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-02T19:39:43+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.02</time>
+        
+           | <a href="/2015/12/02/vagrant-cant-mount-shared-folder/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/12/02/vagrant-cant-mount-shared-folder/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/12/02/vagrant-cant-mount-shared-folder/" itemprop="url">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>vagrant를 사용하면서 로컬과 가상 머신 사이의 파일 전달을 간단히 하려면 synced_folder를 사용하면 된다. 설정도 아주 간단하다. <code>Vagrantfile</code>에 아래의 내용을 추가하면 된다. 당연히 설정값은 자신의 상황에 맞게 지정하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>config.vm.synced_folder <span class="s2">&quot;/local/vagrant/share&quot;</span>, <span class="s2">&quot;/vagrant&quot;</span>, owner: <span class="s2">&quot;web&quot;</span>, group: <span class="s2">&quot;usergroup&quot;</span>, mount_options: <span class="o">[</span><span class="s2">&quot;dmode=777,fmode=777&quot;</span><span class="o">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>사실 synced_folder의 단점은 퍼미션에 있다. 나의 경우는 osx 환경에서 centos 가상 머신을 사용하는 상황이라 퍼미션을 유지한 상태로 폴더를 연결하고 싶으나 그렇게는 되지 않는다. 그래서 나는 synced_folder는 파일 전달용으로 사용하고 작업 소스 폴더 등은 NFS를 이용해서 로컬과 가상 머신을 연결한다. 그렇게하면 퍼미션도 유지할 수 있기 때문에 관련 작업시 편하다. 이와 관련해서는 오늘 이야기하고자 하는 부분이 아니므로 일단 넘어가기로 한다.</p>
+
+<p>사실 나도 이렇게 잘 사용하고 있었는데 얼마 전부터 아래와 같은 오류가 나면서 정상적으로 연결이 되지 않았다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>default: /vagrant <span class="o">=</span>&gt; /local/vagrant/share
+</span><span class='line'>Failed to mount folders in Linux guest. This is usually because
+</span><span class='line'>the <span class="s2">&quot;vboxsf&quot;</span> file system is not available. Please verify that
+</span><span class='line'>the guest additions are properly installed in the guest and
+</span><span class='line'>can work properly. The <span class="nb">command </span>attempted was:
+</span><span class='line'>
+</span><span class='line'>mount -t vboxsf -o <span class="nv">uid</span><span class="o">=</span><span class="sb">`</span>id -u web<span class="sb">`</span>,gid<span class="o">=</span><span class="sb">`</span>getent group usergroup <span class="p">|</span> cut -d: -f3<span class="sb">`</span>,dmode<span class="o">=</span>777,fmode<span class="o">=</span><span class="m">777</span> vagrant /vagrant
+</span><span class='line'>mount -t vboxsf -o <span class="nv">uid</span><span class="o">=</span><span class="sb">`</span>id -u web<span class="sb">`</span>,gid<span class="o">=</span><span class="sb">`</span>id -g usergroup<span class="sb">`</span>,dmode<span class="o">=</span>777,fmode<span class="o">=</span><span class="m">777</span> vagrant /vagrant
+</span></code></pre></td></tr></table></div></figure>
+
+<p>synced_folder의 경우 주로 사용하는 작업용 폴더가 아니라서 일단 무시하고 사용하고 있었는데 vagrant up 할 때마다 오류가 보여서 해결하기로 했다.</p>
+
+<p>기존에는 아무 문제가 없었다. 그래서 가만히 생각해보니 얼마전 VirtualBox를 버전업 했다는 사실이 떠올랐다. 그래서 확인해보니 이 부분이 문제를 일으키는 원인이 맞았다. synced_folder의 경우 vboxsf를 사용하는데 VirtualBox가 버전업 되면서 호환이 되지 않았던 것이다(4.3.30 -&gt; 5.0.10). 간단히 생각하면 VBoxGuestAdditions을 다시 설치해주면 된다. 그런데 이렇게 하려니 가상 머신마다 일일이 작업을 해야하기 때문에 귀찮다.</p>
+
+<p>그래서 조금 찾아보니 <a href="https://github.com/mitchellh/vagrant/issues/3341">Vagrant can&#39;t mount shared folder in VirtualBox 4.3.10</a>에 해결 방법이 있었다.</p>
+
+<p>간단히 요약하면 <code>vagrant-vbguest</code> 플러그인을 설치하면 vagrant up 시에 알아서 GuestAdditions을 다시 설치해 준다. 우선 <code>vagrant-vbguest</code> 플러그인을 설치하려면 local에서 아래와 같이 실행한다(osx 기준이다).</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>vagrant plugin install vagrant-vbguest
+</span><span class='line'>
+</span><span class='line'>Installing the <span class="s1">&#39;vagrant-vbguest&#39;</span> plugin. This can take a few minutes...
+</span><span class='line'>Installed the plugin <span class="s1">&#39;vagrant-vbguest (0.11.0)&#39;</span>!
+</span></code></pre></td></tr></table></div></figure>
+
+<p>그리고 다시 vagrant up을 하면 아래와 같이 다시 설치하는 모습을 볼 수 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">==</span>&gt; default: Machine booted and ready!
+</span><span class='line'>No installation found.
+</span><span class='line'>Loaded plugins: fastestmirror
+</span><span class='line'>Loading mirror speeds from cached hostfile
+</span><span class='line'> * base: data.nicehosting.co.kr
+</span><span class='line'> * epel: mirror.premi.st
+</span><span class='line'> * extras: data.nicehosting.co.kr
+</span><span class='line'> * updates: data.nicehosting.co.kr
+</span><span class='line'> * webtatic: sp.repo.webtatic.com
+</span><span class='line'>Package kernel-devel-3.10.0-229.20.1.el7.x86_64 already installed and latest version
+</span><span class='line'>Package gcc-4.8.3-9.el7.x86_64 already installed and latest version
+</span><span class='line'>Package 1:make-3.82-21.el7.x86_64 already installed and latest version
+</span><span class='line'>Package 4:perl-5.16.3-285.el7.x86_64 already installed and latest version
+</span><span class='line'>Package bzip2-1.0.6-12.el7.x86_64 already installed and latest version
+</span><span class='line'>Nothing to <span class="k">do</span>
+</span><span class='line'>Copy iso file /Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso into the box /tmp/VBoxGuestAdditions.iso
+</span><span class='line'>mount: /dev/loop0 is write-protected, mounting <span class="nb">read</span>-only
+</span><span class='line'>Installing Virtualbox Guest Additions 5.0.10 - guest version is unknown
+</span><span class='line'>Verifying archive integrity... All good.
+</span><span class='line'>Uncompressing VirtualBox 5.0.10 Guest Additions <span class="k">for</span> Linux............
+</span><span class='line'>VirtualBox Guest Additions installer
+</span><span class='line'>Removing installed version 4.3.30 of VirtualBox Guest Additions...
+</span><span class='line'>Copying additional installer modules ...
+</span><span class='line'>Installing additional modules ...
+</span><span class='line'>Removing existing VirtualBox non-DKMS kernel modules<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Building the VirtualBox Guest Additions kernel modules
+</span><span class='line'>Building the main Guest Additions module<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Building the shared folder support module<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Building the OpenGL support module<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Doing non-kernel setup of the Guest Additions<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Starting the VirtualBox Guest Additions <span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Installing the Window System drivers
+</span><span class='line'>Could not find the X.Org or XFree86 Window System, skipping.
+</span><span class='line'>An error occurred during installation of VirtualBox Guest Additions 5.0.10. Some functionality may not work as intended.
+</span><span class='line'>In most cases it is OK that the <span class="s2">&quot;Window System drivers&quot;</span> installation failed.
+</span><span class='line'>Got different reports about installed GuestAdditions version:
+</span><span class='line'>Virtualbox on your host claims:   5.0.10 r104061
+</span><span class='line'>VBoxService inside the vm claims: 5.0.10
+</span><span class='line'>Going on, assuming VBoxService is correct...
+</span><span class='line'>Got different reports about installed GuestAdditions version:
+</span><span class='line'>Virtualbox on your host claims:   5.0.10 r104061
+</span><span class='line'>VBoxService inside the vm claims: 5.0.10
+</span><span class='line'>Going on, assuming VBoxService is correct...
+</span><span class='line'><span class="o">==</span>&gt; default: Checking <span class="k">for</span> guest additions in VM...
+</span><span class='line'><span class="o">==</span>&gt; default: Configuring and enabling network interfaces...
+</span><span class='line'><span class="o">==</span>&gt; default: Mounting shared folders...
+</span><span class='line'>    default: /vagrant <span class="o">=</span>&gt; /Volumes/Data/subdev/vagrant/share
+</span></code></pre></td></tr></table></div></figure>
+
+<p>자.. 그러면 해피앤딩일까? 아니다. 나의 경우는 여기서 끝나지 않았다. <a href="https://github.com/mitchellh/vagrant/issues/3341">Vagrant can&#39;t mount shared folder in VirtualBox 4.3.10</a>에서도 나와 있는 것처럼 <code>sudo ln -s /opt/VBoxGuestAdditions-4.3.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</code> 와 같은 작업을 해주어야 한다. 여기서 이 명령을 그대로 사용하면 안된다. 나의 경우는 VirtualBox가 5.0.10이므로 <code>sudo ln -s /opt/VBoxGuestAdditions-5.0.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</code>라고 해야한다. 그런데 여기서도 문제가 있다. 나의 경우는 최초 설치가 아니라 이미 사용중이었으므로 <code>/usr/lib/VBoxGuestAdditions</code> 파일이 이미 존재하고 이 파일은 <code>/opt/VBoxGuestAdditions-4.3.30/lib/VBoxGuestAdditions</code>의 심볼릭 링크다. 그래서 아래와 같이 처리해 주어야 한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo su -
+</span><span class='line'><span class="nv">$ </span>rm -f /usr/lib/VBoxGuestAdditions
+</span><span class='line'><span class="nv">$ </span>ln -s /opt/VBoxGuestAdditions-5.0.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions
+</span><span class='line'>
+</span><span class='line'><span class="nv">$ </span><span class="nb">export </span><span class="nv">MAKE</span><span class="o">=</span><span class="s1">&#39;/usr/bin/gmake -i&#39;</span>
+</span><span class='line'><span class="nv">$ </span>/opt/VBoxGuestAdditions-5.0.10/init/vboxadd setup
+</span><span class='line'><span class="nv">$ </span><span class="nb">unset </span>MAKE
+</span><span class='line'>
+</span><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>vboxadd.service
+</span></code></pre></td></tr></table></div></figure>
+
+<p>보면 알겠지만 기존 파일을 지우고 재설치한 VBoxGuestAdditions을 연결하고 재설치 한다. 그리고 서비스로 등록. 단, 여기서 유의할 점은 위 과정은 CentOS 7 기준이라는 것이다. 따라서 상황에 따라 <code>systemctl</code>에 관련된 부분을 수정해야 한다. 예를들어 CentOS 6.5의 경우라면 마지막 라인 대신 아래의 명령을 사용해야 한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>chkconfig --add vboxadd
+</span><span class='line'><span class="nv">$ </span>chkconfig vboxadd on
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이제 다 되었다. 기존처럼 synced_folder를 사용할 수 있다. 요약하자면 이렇다. VirtualBox의 버전업을 한 후 vboxsf가 정상 동작하지 않는다면 VBoxGuestAdditions를 재설치 해야한다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-27T15:49:16+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.27</time>
         
            | <a href="/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/#disqus_thread" itemprop="discussionUrl"
@@ -1266,192 +1480,6 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-04T20:46:51+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.04</time>
-        
-           | <a href="/2015/11/04/xcode-storyboard-with-uiviewcontroller-using-generics/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/11/04/xcode-storyboard-with-uiviewcontroller-using-generics/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/11/04/xcode-storyboard-with-uiviewcontroller-using-generics/" itemprop="url">Xcode 7.1의 StoryBoard에서 UIViewController(using Generics)를 Custom Class로 연결할 때 발생하는 오류</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>현재 xcode의 최신 버전은 7.1이다. 이 버전에서(이하 버전은 확인하지 못했다) 스토리보드와 <a href="https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/Generics.html">Generics</a>를 사용한 UIViewController를 연결하는 부분에서 버그가 있다. 버그는 인터페이스 빌더에서 찾지 못하는 문제와 강제 추가시 <code>Unknown class &lt;MyClass&gt; in Interface Builder file</code> 오류를 발생시키는 것이다. 자세한 내용은 아래에 설명하겠다.</p>
-
-<p>일단 <a href="https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/Generics.html">Generics</a>가 어떤 것인지 정보를 더 얻고 싶다면 <a href="http://minsone.github.io/mac/ios/swift-generics-summary/">Swift - Generics 정리</a>를 참고하자.</p>
-
-<p>항상 이런 글을 쓰려고하면 상황을 설명하기가 어렵다. 그렇다고 설명없이 코드만 적어놓으면 어떻게 사용되는지를 알 수 없으니 일단 최선을 다해 보겠다.</p>
-
-<p>UIPageViewController를 사용하고자 하는 상황을 가정하고 설명한다.</p>
-
-<ol>
-<li>스토리보드에서 &quot;Page View Controller&quot;를 추가했다.</li>
-<li>그 다음에 해야할 작업은 UIPageViewController class를 하나 추가한다.</li>
-<li>추가한 class를 인터페이스 빌더에서 Custom Class로 연결한다.</li>
-</ol>
-
-<p>위 상황의 결과가 아래의 이미지다. UIPageViewController class로 PageViewController라는 class를 추가한 것이다.</p>
-
-<p><img src="/img/2015-11/04-xcode-storyboard-with-uiviewcontroller-using-generics-1.png" alt="xcode"></p>
-
-<p>비교를 위해 소스도 추가 한다. 사실 볼 것도 없다. 내부 기능은 설명에 필요하지 않아 모두 제거 했다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">import</span> <span class="n">UIKit</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nl">PageViewController</span><span class="p">:</span> <span class="bp">UIPageViewController</span> <span class="p">{</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이 상황에서 빌드하고 실행하면 아무런 문제가 없다. 당연하다. 가장 일반적인 상황이니까.</p>
-
-<p>이제부터가 내가 버그라고 주장하는 부분의 시작이다. 아래의 코드를 보자.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">import</span> <span class="n">UIKit</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nl">PageViewController</span><span class="p">:</span> <span class="bp">UIPageViewController</span> <span class="p">{</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nl">PageViewControllerChild</span><span class="p">:</span> <span class="n">PageViewController</span> <span class="p">{</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="n">PageViewControllerT</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;:</span> <span class="bp">UIPageViewController</span> <span class="p">{</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nl">PageViewControllerTChild</span><span class="p">:</span> <span class="n">PageViewControllerT</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="p">{</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>3개의 class를 추가했다. 하지만 여전히 아무런 기능은 없다. 이 상황에서 위의 이미지와 동일한 상황을 캡춰한 것이 아래 이미지다.</p>
-
-<p><img src="/img/2015-11/04-xcode-storyboard-with-uiviewcontroller-using-generics-2.png" alt="xcode"></p>
-
-<p>비교가 되는가? 달라진 점은 우측의 Custom Class 영역의 Class에서 선택할 수 있는 대상 Class 목록이다.
-그런데 위의 소스를 자세히 보고 이 이미지를 봤다면 뭔가 이상함을 느낄 것이다.</p>
-
-<p><strong>바로 <code>PageViewControllerTChild</code>가 목록에 없다는 것이다.</strong> 내가 캡춰를 잘못한 것이 아니다. 실제로 나타나지 않는다.</p>
-
-<p>그렇다면 이게 내가 말하고자 하는 버그인가? 아니다. 그냥 목록에만 나오지 않는 것이라면 조금 귀찮을 뿐 문제되지는 않는다.
-자 이제 다시 테스트 해보자. 목록에는 없지만 실제로 class는 존재하므로 강제로 타이핑해서 <code>PageViewControllerTChild</code>를 집어 넣자.
-다시 빌드하고 실행. 그런데 기존과 다르게 오류가 난다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mo">04</span> <span class="mi">21</span><span class="o">:</span><span class="mi">08</span><span class="o">:</span><span class="mf">24.886</span> <span class="n">Test</span><span class="p">[</span><span class="mi">32048</span><span class="o">:</span><span class="mi">90982</span><span class="p">]</span> <span class="n">Unknown</span> <span class="k">class</span> <span class="n">_TtC4Test24PageViewControllerTChild</span> <span class="k">in</span> <span class="n">Interface</span> <span class="n">Builder</span> <span class="n">file</span><span class="p">.</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>앱을 죽이지는 않으나 해당 View가 아무것도 나오지 않는다.
-오류의 내용은 인터페이스 빌더에서 알 수 없는 <code>_TtC4Test24PageViewControllerTChild</code> class에 접근 한다는 것.
-이상한 일이다. 분명 해당 class는 존재한다. 오류에 나온 <code>_TtC4Test24PageViewControllerTChild</code>과 이름은 다르지만 분명 같은 class에 접근하려는 것이다.
-이 문제가 바로 내가 버그라고 이야기하는 부분이다.</p>
-
-<p>요약하자면 다음과 같다. <strong>Generics를 사용하는 UIViewController는 인터페이스 빌더에 연결되지 않는다.</strong></p>
-
-<p>이 문제 하나로 인해 인터페이스 빌더와 스토리보드를 다 걷어내거나 이것만 따로 처리하기는 싫다.
-자.. 이제부터 그럼 해결을 해보자. 해결을 위해서는 원인을 알아야 한다.</p>
-
-<p>중요한 내용은 <a href="http://stackoverflow.com/a/1725893">“Unknown class <MyClass> in Interface Builder file” error at runtime</a>에 설명되어 있다.
-이 글은 내가 말하는 Generics와 관련된 상황이 아닌 조금 더 일반적인 상황에 대한 것으로 약간의 차이가 있다. 하지만 거의 유사하므로 해결에 도움을 얻을 수 있었다.
-게다가 기본적인 설명은 Objective-C 기준으로 되어있고 swift의 경우는 <code>init(coder aDecoder: NSCoder)</code>를 추가하는 것으로 설명하고 있지만 이 것은 위 문제를 해결하는 것에는 도움이 되지 않는다.
-어쨌든 이 글의 결론을 이야기 하자면 이렇다. 인터페이스 빌더에서 해당 class를 제대로 찾지 못하고 있기 때문에 linking이 제대로 되지 못하고 있다는 것이다.
-따라서 해당 class에 직접 접근하는 코드를 넣어주어야 한다는 것이다. 그래서 이 글에서는 불필요한 함수 하나를 추가하고 사용 전에 강제로 호출함으로써 문제를 해결할 수 있다고 되어 있다.</p>
-
-<p>위 글에서 설명한 것을 기초로 해결을 위한 코드는 다음과 같다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="p">@</span><span class="n">UIApplicationMain</span>
-</span><span class='line'><span class="k">class</span> <span class="nl">AppDelegate</span><span class="p">:</span> <span class="bp">UIResponder</span><span class="p">,</span> <span class="bp">UIApplicationDelegate</span> <span class="p">{</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">var</span> <span class="nl">window</span><span class="p">:</span> <span class="bp">UIWindow</span><span class="o">?</span>
-</span><span class='line'><span class="c1">//   let x = PageViewControllerTChild.description()</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="kr">override</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>      <span class="nb">super</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="n">PageViewControllerTChild</span><span class="p">.</span><span class="n">description</span><span class="p">()</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">func</span> <span class="n">application</span><span class="p">(</span><span class="nl">application</span><span class="p">:</span> <span class="bp">UIApplication</span><span class="p">,</span> <span class="n">didFinishLaunchingWithOptions</span> <span class="nl">launchOptions</span><span class="p">:</span> <span class="p">[</span><span class="nl">NSObject</span><span class="p">:</span> <span class="n">AnyObject</span><span class="p">]</span><span class="o">?</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bool</span> <span class="p">{</span>
-</span><span class='line'>      <span class="c1">// Override point for customization after application launch.</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//       PageViewControllerTChild.description()</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="k">return</span> <span class="nb">true</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p><strong>해결 방법은 AppDelegate의 <code>init()</code> 내부에서 <code>PageViewControllerTChild</code>의 함수를 하나 호출한다.</strong></p>
-
-<p>호출하는 함수는 어떠한 것이라도 상관없다. 하지만 호출 시점은 아주 중요하다. 호출 시점은 해당 화면이 보여지기 전(초기화 전) 이어야 한다.
-위 코드는 시작 화면으로 사용한 화면을 대상으로 하고 있기 때문에 <code>init()</code>에 추가 했다. 하지만 시작 화면이 아니라면 <code>func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -&gt; Bool</code>에 추가되어도 상관없다. 하지만 어짜피 특별한 기능을 수행할 것이 아니므로 <code>init()</code>에 넣어주는게 속 편할 것이다. 앞서 설명과 같이 어떻게 넣을 수 있는지를 설명하기 위해서 비슷한 코드가 여러군데 있다(대신 주석으로 제외시켜 둔 것이다).</p>
-
-<p>사실 나는 이 해결 방법을 고심해서 찾았지만 실제로는 적용하지 않았다. 설계 구조를 변경해서 Generics를 제거하는 쪽으로 결정했다. 필히 Generics이 필요한 상황이 아니었기 때문에 굳이 이렇게까지 할 필요는 없다고 생각했기 때문이다.</p>
-
-<p>어쨌든 비슷한 문제를 겪고 있다면 위의 설명을 참고로 해결 방법을 찾길 바란다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1524,7 +1552,7 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (9)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (10)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (2)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (9)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (10)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (3)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1533,6 +1561,8 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/12/02/vagrant-cant-mount-shared-folder/">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a>
+    
     <a class="list-group-item " href="/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/">Nginx(stable / mainline) 설치 - CentOS 6.5 / 7</a>
     
     <a class="list-group-item " href="/2015/11/25/protobuf-protocol-buffers/">protobuf (Protocol Buffers)를 PHP에서 사용하기</a>
@@ -1540,8 +1570,6 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
     <a class="list-group-item " href="/2015/11/24/swift-background-threads-gcd-grand-central-dispatch/">Swift : Async - Background Threads - GCD(Grand Central Dispatch)</a>
     
     <a class="list-group-item " href="/2015/11/17/octopress-error-pygments-cant-parse-unknown-language/">Octopress : pygments cant parse unknown language: </p> 오류</a>
-    
-    <a class="list-group-item " href="/2015/11/17/cocoapods-transitive-dependency-with-static-library/">Cocoapods : Sub Module에서 GoogleMaps 의존성 사용시 Transitive dependency 문제 해결</a>
     
   </div>
 </section>

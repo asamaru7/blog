@@ -4,7 +4,7 @@
   <title><![CDATA[Category: vagrant | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/vagrant/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-11-27T16:22:56+09:00</updated>
+  <updated>2015-12-02T20:34:28+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,106 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우]]></title>
+    <link href="http://blog.asamaru.net/2015/12/02/vagrant-cant-mount-shared-folder/"/>
+    <updated>2015-12-02T19:39:43+09:00</updated>
+    <id>http://blog.asamaru.net/2015/12/02/vagrant-cant-mount-shared-folder</id>
+    <content type="html"><![CDATA[<p>vagrant를 사용하면서 로컬과 가상 머신 사이의 파일 전달을 간단히 하려면 synced_folder를 사용하면 된다. 설정도 아주 간단하다. <code>Vagrantfile</code>에 아래의 내용을 추가하면 된다. 당연히 설정값은 자신의 상황에 맞게 지정하면 된다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">config.vm.synced_folder <span class="s2">&quot;/local/vagrant/share&quot;</span>, <span class="s2">&quot;/vagrant&quot;</span>, owner: <span class="s2">&quot;web&quot;</span>, group: <span class="s2">&quot;usergroup&quot;</span>, mount_options: <span class="o">[</span><span class="s2">&quot;dmode=777,fmode=777&quot;</span><span class="o">]</span>
+</code></pre></div>
+<p>사실 synced_folder의 단점은 퍼미션에 있다. 나의 경우는 osx 환경에서 centos 가상 머신을 사용하는 상황이라 퍼미션을 유지한 상태로 폴더를 연결하고 싶으나 그렇게는 되지 않는다. 그래서 나는 synced_folder는 파일 전달용으로 사용하고 작업 소스 폴더 등은 NFS를 이용해서 로컬과 가상 머신을 연결한다. 그렇게하면 퍼미션도 유지할 수 있기 때문에 관련 작업시 편하다. 이와 관련해서는 오늘 이야기하고자 하는 부분이 아니므로 일단 넘어가기로 한다.</p>
+
+<p>사실 나도 이렇게 잘 사용하고 있었는데 얼마 전부터 아래와 같은 오류가 나면서 정상적으로 연결이 되지 않았다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">default: /vagrant <span class="o">=</span>&gt; /local/vagrant/share
+Failed to mount folders in Linux guest. This is usually because
+the <span class="s2">&quot;vboxsf&quot;</span> file system is not available. Please verify that
+the guest additions are properly installed in the guest and
+can work properly. The <span class="nb">command </span>attempted was:
+
+mount -t vboxsf -o <span class="nv">uid</span><span class="o">=</span><span class="sb">`</span>id -u web<span class="sb">`</span>,gid<span class="o">=</span><span class="sb">`</span>getent group usergroup <span class="p">|</span> cut -d: -f3<span class="sb">`</span>,dmode<span class="o">=</span>777,fmode<span class="o">=</span><span class="m">777</span> vagrant /vagrant
+mount -t vboxsf -o <span class="nv">uid</span><span class="o">=</span><span class="sb">`</span>id -u web<span class="sb">`</span>,gid<span class="o">=</span><span class="sb">`</span>id -g usergroup<span class="sb">`</span>,dmode<span class="o">=</span>777,fmode<span class="o">=</span><span class="m">777</span> vagrant /vagrant
+</code></pre></div>
+<p>synced_folder의 경우 주로 사용하는 작업용 폴더가 아니라서 일단 무시하고 사용하고 있었는데 vagrant up 할 때마다 오류가 보여서 해결하기로 했다.</p>
+
+<p>기존에는 아무 문제가 없었다. 그래서 가만히 생각해보니 얼마전 VirtualBox를 버전업 했다는 사실이 떠올랐다. 그래서 확인해보니 이 부분이 문제를 일으키는 원인이 맞았다. synced_folder의 경우 vboxsf를 사용하는데 VirtualBox가 버전업 되면서 호환이 되지 않았던 것이다(4.3.30 -&gt; 5.0.10). 간단히 생각하면 VBoxGuestAdditions을 다시 설치해주면 된다. 그런데 이렇게 하려니 가상 머신마다 일일이 작업을 해야하기 때문에 귀찮다.</p>
+
+<p>그래서 조금 찾아보니 <a href="https://github.com/mitchellh/vagrant/issues/3341">Vagrant can&#39;t mount shared folder in VirtualBox 4.3.10</a>에 해결 방법이 있었다.</p>
+
+<p>간단히 요약하면 <code>vagrant-vbguest</code> 플러그인을 설치하면 vagrant up 시에 알아서 GuestAdditions을 다시 설치해 준다. 우선 <code>vagrant-vbguest</code> 플러그인을 설치하려면 local에서 아래와 같이 실행한다(osx 기준이다).</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>vagrant plugin install vagrant-vbguest
+
+Installing the <span class="s1">&#39;vagrant-vbguest&#39;</span> plugin. This can take a few minutes...
+Installed the plugin <span class="s1">&#39;vagrant-vbguest (0.11.0)&#39;</span>!
+</code></pre></div>
+<p>그리고 다시 vagrant up을 하면 아래와 같이 다시 설치하는 모습을 볼 수 있다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="o">==</span>&gt; default: Machine booted and ready!
+No installation found.
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: data.nicehosting.co.kr
+ * epel: mirror.premi.st
+ * extras: data.nicehosting.co.kr
+ * updates: data.nicehosting.co.kr
+ * webtatic: sp.repo.webtatic.com
+Package kernel-devel-3.10.0-229.20.1.el7.x86_64 already installed and latest version
+Package gcc-4.8.3-9.el7.x86_64 already installed and latest version
+Package 1:make-3.82-21.el7.x86_64 already installed and latest version
+Package 4:perl-5.16.3-285.el7.x86_64 already installed and latest version
+Package bzip2-1.0.6-12.el7.x86_64 already installed and latest version
+Nothing to <span class="k">do</span>
+Copy iso file /Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso into the box /tmp/VBoxGuestAdditions.iso
+mount: /dev/loop0 is write-protected, mounting <span class="nb">read</span>-only
+Installing Virtualbox Guest Additions 5.0.10 - guest version is unknown
+Verifying archive integrity... All good.
+Uncompressing VirtualBox 5.0.10 Guest Additions <span class="k">for</span> Linux............
+VirtualBox Guest Additions installer
+Removing installed version 4.3.30 of VirtualBox Guest Additions...
+Copying additional installer modules ...
+Installing additional modules ...
+Removing existing VirtualBox non-DKMS kernel modules<span class="o">[</span>  OK  <span class="o">]</span>
+Building the VirtualBox Guest Additions kernel modules
+Building the main Guest Additions module<span class="o">[</span>  OK  <span class="o">]</span>
+Building the shared folder support module<span class="o">[</span>  OK  <span class="o">]</span>
+Building the OpenGL support module<span class="o">[</span>  OK  <span class="o">]</span>
+Doing non-kernel setup of the Guest Additions<span class="o">[</span>  OK  <span class="o">]</span>
+Starting the VirtualBox Guest Additions <span class="o">[</span>  OK  <span class="o">]</span>
+Installing the Window System drivers
+Could not find the X.Org or XFree86 Window System, skipping.
+An error occurred during installation of VirtualBox Guest Additions 5.0.10. Some functionality may not work as intended.
+In most cases it is OK that the <span class="s2">&quot;Window System drivers&quot;</span> installation failed.
+Got different reports about installed GuestAdditions version:
+Virtualbox on your host claims:   5.0.10 r104061
+VBoxService inside the vm claims: 5.0.10
+Going on, assuming VBoxService is correct...
+Got different reports about installed GuestAdditions version:
+Virtualbox on your host claims:   5.0.10 r104061
+VBoxService inside the vm claims: 5.0.10
+Going on, assuming VBoxService is correct...
+<span class="o">==</span>&gt; default: Checking <span class="k">for</span> guest additions in VM...
+<span class="o">==</span>&gt; default: Configuring and enabling network interfaces...
+<span class="o">==</span>&gt; default: Mounting shared folders...
+    default: /vagrant <span class="o">=</span>&gt; /Volumes/Data/subdev/vagrant/share
+</code></pre></div>
+<p>자.. 그러면 해피앤딩일까? 아니다. 나의 경우는 여기서 끝나지 않았다. <a href="https://github.com/mitchellh/vagrant/issues/3341">Vagrant can&#39;t mount shared folder in VirtualBox 4.3.10</a>에서도 나와 있는 것처럼 <code>sudo ln -s /opt/VBoxGuestAdditions-4.3.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</code> 와 같은 작업을 해주어야 한다. 여기서 이 명령을 그대로 사용하면 안된다. 나의 경우는 VirtualBox가 5.0.10이므로 <code>sudo ln -s /opt/VBoxGuestAdditions-5.0.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</code>라고 해야한다. 그런데 여기서도 문제가 있다. 나의 경우는 최초 설치가 아니라 이미 사용중이었으므로 <code>/usr/lib/VBoxGuestAdditions</code> 파일이 이미 존재하고 이 파일은 <code>/opt/VBoxGuestAdditions-4.3.30/lib/VBoxGuestAdditions</code>의 심볼릭 링크다. 그래서 아래와 같이 처리해 주어야 한다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>sudo su -
+<span class="nv">$ </span>rm -f /usr/lib/VBoxGuestAdditions
+<span class="nv">$ </span>ln -s /opt/VBoxGuestAdditions-5.0.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions
+
+<span class="nv">$ </span><span class="nb">export </span><span class="nv">MAKE</span><span class="o">=</span><span class="s1">&#39;/usr/bin/gmake -i&#39;</span>
+<span class="nv">$ </span>/opt/VBoxGuestAdditions-5.0.10/init/vboxadd setup
+<span class="nv">$ </span><span class="nb">unset </span>MAKE
+
+<span class="nv">$ </span>systemctl <span class="nb">enable </span>vboxadd.service
+</code></pre></div>
+<p>보면 알겠지만 기존 파일을 지우고 재설치한 VBoxGuestAdditions을 연결하고 재설치 한다. 그리고 서비스로 등록. 단, 여기서 유의할 점은 위 과정은 CentOS 7 기준이라는 것이다. 따라서 상황에 따라 <code>systemctl</code>에 관련된 부분을 수정해야 한다. 예를들어 CentOS 6.5의 경우라면 마지막 라인 대신 아래의 명령을 사용해야 한다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>chkconfig --add vboxadd
+<span class="nv">$ </span>chkconfig vboxadd on
+</code></pre></div>
+<p>이제 다 되었다. 기존처럼 synced_folder를 사용할 수 있다. 요약하자면 이렇다. VirtualBox의 버전업을 한 후 vboxsf가 정상 동작하지 않는다면 VBoxGuestAdditions를 재설치 해야한다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용]]></title>

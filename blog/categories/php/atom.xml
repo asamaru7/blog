@@ -4,7 +4,7 @@
   <title><![CDATA[Category: php | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/php/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-12-02T20:34:28+09:00</updated>
+  <updated>2015-12-02T21:57:11+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,30 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[selinux + PHP : Session Permission denied 오류]]></title>
+    <link href="http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/"/>
+    <updated>2015-12-02T12:53:59+09:00</updated>
+    <id>http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error</id>
+    <content type="html"><![CDATA[<p>서버를 새로 세팅하면서 CentOS 7에서 selinux와 함께 PHP 5.6을 설치했다. 기존에는 selinux를 사용하지 않도록 했었는데 이번에는 사용하도록 설정해서 설치를 완료했다. 그런데 세션을 사용하려고 <code>session_start();</code>를 하면 아래와 유사한 오류가 발생했다.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">FastCGI sent in stderr: &quot;PHP message: PHP Warning: session_start(): open(/var/lib/php/session/sess_sk456vdemnp391spiv3i622i96, O_RDWR) failed: Permission denied
+</code></pre></div>
+<p>당연히 원인은 selinux이다. selinux가 적용된 상태라면 아무리 777 권한을 부여해도 접근을 할 수 없다. 그 해결법은 <a href="http://stackoverflow.com/a/33030627">(nginx/selinux) Permission denied error for sessions but files are created</a>에 잘 설명되어 있다.</p>
+
+<p>결과적으로 아래의 방법을 통해 문제를 해결할 수 있다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>mkdir /var/lib/php/session
+<span class="nv">$ </span>mkdir /var/lib/php/wsdlcache
+<span class="nv">$ </span>chmod <span class="m">777</span> /var/lib/php/session /var/lib/php/wsdlcache
+
+<span class="nv">$ </span>restorecon -v <span class="s2">&quot;/var/lib/php/session&quot;</span>
+<span class="nv">$ </span>semanage fcontext -a -t httpd_sys_rw_content_t /var/lib/php/session
+<span class="nv">$ </span>restorecon -v <span class="s2">&quot;/var/lib/php/wsdlcache&quot;</span>
+<span class="nv">$ </span>semanage fcontext -a -t httpd_sys_rw_content_t /var/lib/php/wsdlcache
+</code></pre></div>
+<p>mkdir과 chmod는 필요 없을 수 있다. 나의 경우는 아예 폴더도 만들어져 있지 않아서 폴더를 생성하고 권한도 함께 지정했다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[protobuf (Protocol Buffers)를 PHP에서 사용하기]]></title>
@@ -299,100 +323,6 @@ try {
 <p>게대가 한글을 영어 발음으로 변환하는 오픈소스들도 찾아보니 있다.(<a href="https://metacpan.org/pod/Lingua::KO::Munja">https://metacpan.org/pod/Lingua::KO::Munja</a>)</p>
 
 <p>추후에 기회가 된다면 직접 구현 해봐야겠다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()]]></title>
-    <link href="http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/"/>
-    <updated>2015-09-14T20:13:22+09:00</updated>
-    <id>http://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text</id>
-    <content type="html"><![CDATA[<p>앞선 포스팅 <a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a>에서 levenshtein() 함수에 대해 알아보았다. 이번엔 이와 유사한 함수인 similar_text()에 대해 알아보고자 한다.</p>
-
-<h2 id="similar_text-함수"><a href="http://php.net/manual/en/function.similar-text.php">similar_text()</a> 함수</h2>
-
-<p><a href="http://php.net/manual/en/function.similar-text.php">php 메뉴얼의 설명</a>에 따르면 similar_text() 함수는 두 문자열의 유사도를 계산한다고 되어 있다.</p>
-
-<p>두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World&#39;s Best Algorithms by Oliver (ISBN 0-131-00413-1) 에서 설명되어 있다. 이 구현은 pseudo code와 다르게 스택은 아니지만, 재귀 호출이므로 전체 프로세스의 속도에 영향을 줄 수 있다. 이 계산 알고리즘은 시간복잡도 <code>O(N**3)</code>를 가지며 여기서 N은 두 문자열 중 긴 문자열의 길이를 뜻한다.</p>
-
-<p>문자열의 길이에 따라 성능이 극도로 떨어질 수 있으므로 가급적 짧은 문장의 비교에 사용하는 것이 좋다. 메뉴얼에서 paul은 20000자 이상에서만 성능에 문제가 있었다고는 하나 시간복잡도를 보더라도 긴 문자열은 자제하는게 좋겠다.</p>
-
-<h3 id="기본-사용법">기본 사용법</h3>
-<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="x">int similar_text ( string $first , string $second [, float &amp;$percent ] )</span>
-</code></pre></div>
-<h3 id="함수-인자">함수 인자</h3>
-
-<h4 id="first">first</h4>
-
-<p>첫번째 문자열</p>
-
-<h4 id="second">second</h4>
-
-<p>두번째 문자열</p>
-
-<h4 id="percent">percent</h4>
-
-<p>reference로 넘겨져야하는 세번째 인자는 similar_text() 함수의 계산 결과인 문서 유사도를 퍼센트(%)로 제공해 준다.</p>
-
-<h3 id="반환값">반환값</h3>
-
-<p>두 문자열에서 매칭되는 문자수를 반환한다.</p>
-
-<h3 id="예시">예시</h3>
-
-<p>이 함수는 몇가지 특성을 가지고 있으므로 메뉴얼에 안내되어 있는 아래의 예시들을 통해 차이를 알고 사용해야 한다.</p>
-
-<h4 id="인자의-입력-순서에-따라-결과가-달라진다">인자의 입력 순서에 따라 결과가 달라진다.</h4>
-<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
-<span class="nv">$var_1</span> <span class="o">=</span> <span class="s1">&#39;PHP IS GREAT&#39;</span><span class="p">;</span>
-<span class="nv">$var_2</span> <span class="o">=</span> <span class="s1">&#39;WITH MYSQL&#39;</span><span class="p">;</span>
-
-<span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var_1</span><span class="p">,</span> <span class="nv">$var_2</span><span class="p">,</span> <span class="nv">$percent</span><span class="p">);</span>
-
-<span class="k">echo</span> <span class="nv">$percent</span><span class="p">;</span>
-<span class="c1">// 27.272727272727</span>
-
-<span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var_2</span><span class="p">,</span> <span class="nv">$var_1</span><span class="p">,</span> <span class="nv">$percent</span><span class="p">);</span>
-
-<span class="k">echo</span> <span class="nv">$percent</span><span class="p">;</span>
-<span class="c1">// 18.181818181818</span>
-</code></pre></div>
-<h4 id="공백은-비교에서-제외된다-그렇다고-trim이-되거나-문자열-내-공백이-제거되고-비교하는-것은-아니다">공백은 비교에서 제외된다.(그렇다고 trim이 되거나 문자열 내 공백이 제거되고 비교하는 것은 아니다.)</h4>
-<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nv">$sim</span><span class="p">;</span>
-<span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">&quot;ab c&quot;</span><span class="p">,</span> <span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nv">$sim</span><span class="p">;</span>
-<span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">&quot; abc&quot;</span><span class="p">,</span> <span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nv">$sim</span><span class="p">;</span>
-<span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-
-<span class="c1">// 결과</span>
-<span class="c1">// 0 -&gt; 0</span>
-<span class="c1">// 3 -&gt; 85.714285714286</span>
-<span class="c1">// 3 -&gt; 85.714285714286</span>
-</code></pre></div>
-<h4 id="대소문자를-구분한다">대소문자를 구분한다.</h4>
-<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
-<span class="nv">$var1</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span><span class="p">;</span>
-<span class="nv">$var2</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span><span class="p">;</span>
-<span class="nv">$var3</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span><span class="p">;</span>
-
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var1</span><span class="p">,</span> <span class="nv">$var2</span><span class="p">);</span>  <span class="c1">// 5</span>
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var1</span><span class="p">,</span> <span class="nv">$var3</span><span class="p">);</span>  <span class="c1">// 4</span>
-</code></pre></div>
-<h3 id="유사함수">유사함수</h3>
-
-<p>비슷한 역할을 하는 함수에 대해 알고 싶다면 아래의 포스팅을 참고하자.</p>
-
-<ul>
-<li><a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a></li>
-</ul>
 ]]></content>
   </entry>
   

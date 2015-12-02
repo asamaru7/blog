@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-12-02T20:34:28+09:00</updated>
+  <updated>2015-12-02T21:57:11+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,39 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Nginx : 414 Request-URI Too Large 오류]]></title>
+    <link href="http://blog.asamaru.net/2015/12/02/nginx-414-request-uri-too-large/"/>
+    <updated>2015-12-02T16:17:54+09:00</updated>
+    <id>http://blog.asamaru.net/2015/12/02/nginx-414-request-uri-too-large</id>
+    <content type="html"><![CDATA[<p>Nginx를 사용하는 중에 아주 긴 URL의 요청이 들어올 경우 <code>414 Request-URI Too Large</code> 오류가 나는 경우가 있다. 이는 말 그대로 URL 요청이 제한된 길이보다 길기 때문에 오류가 발생하는 것이다. 일반적인 웹 서버들은 8kb를 최대 길이로 설정되어 있는 것이 보통이다. 실제로 Nginx의 경우도 기본은 8kb이다. 하지만 URL의 길이는 서버에서 받아주는 길이도 관련이 있지만 웹 브라우저에서도 제한이 있다. 예를들어 오래된 브라우저들은 2kb 가량의 제한이 있다. 하지만 최신 브라우저들은 8kb로 제한하는 것으로 알고 있다.</p>
+
+<p>하지만 나의 경우는 이 값을 1kb로 설정해 둔 상태로 조금 긴 Url에서 해당 오류가 발생했다. 그래서 2kb로 늘려 두었다.</p>
+
+<p>그러면 Nginx에서는 이 값을 어떻게 조정할 수 있을까? 바로 <a href="http://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers">large_client_header_buffers</a>를 사용하면 된다. 예를들면 아래와 같이 사용한다(디폴트 값을 예시로 넣었다).</p>
+<div class="highlight"><pre><code class="language-nginx" data-lang="nginx"><span class="k">http</span> <span class="p">{</span>
+  <span class="kn">large_client_header_buffers</span> <span class="mi">4</span> <span class="mi">8k</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><div class="highlight"><pre><code class="language-nginx" data-lang="nginx"><span class="k">http</span> <span class="p">{</span>
+  <span class="kn">server</span> <span class="p">{</span>
+    <span class="kn">large_client_header_buffers</span> <span class="mi">4</span> <span class="mi">8k</span><span class="p">;</span>    
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><a href="http://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers">공식 메뉴얼</a>에는 아래와 같이 설명되어 있다.</p>
+
+<blockquote>
+<p>Syntax: large_client_header_buffers number size;
+Default: large_client_header_buffers 4 8k;
+Context: http, server</p>
+</blockquote>
+
+<p>Sets the maximum number and size of buffers used for reading large client request header. A request line cannot exceed the size of one buffer, or the 414 (Request-URI Too Large) error is returned to the client. A request header field cannot exceed the size of one buffer as well, or the 400 (Bad Request) error is returned to the client. Buffers are allocated only on demand. By default, the buffer size is equal to 8K bytes. If after the end of request processing a connection is transitioned into the keep-alive state, these buffers are released.</p>
+
+<p>여기서 조금 애매한 부분이 number 값인데 명확히 어떤 역할인지를 아직 잘 모르겠다. 찾아보니 number * size가 최대 사이즈라고 하는데 테스트 해보니 그건 아닌 것 같다(number가 2이고 size가 1k인 상황에서 1024자를 넘어가니 414 오류가 발생했다).</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Nginx(stable / mainline) 설치 - CentOS 6.5 / 7]]></title>
@@ -368,82 +401,6 @@ Redirecting to /bin/systemctl restart  sshd.service
 <div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>yum update -y
 </code></pre></div>
 <p>이것으로 가장 기본적인 설치까지 완료되었다. 말그대로 초기세팅만 했은니 사용을 위해서는 여러가지 작업을 따로 해야한다. 이 부분은 용도에 따라 달라질 수 있으니 상황에 맞게 작업하면 된다. 다만 여기서는 길어져서 설명하진 않지만 방화벽 설정, ssh 설정 등 사용을 위한 기본적인 설정은 하는게 좋다. 이와 관련해서는 따로 포스팅하도록 하겠다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Centos 7 설치시 파티셔닝]]></title>
-    <link href="http://blog.asamaru.net/2015/10/14/centos-7-install-partitioning/"/>
-    <updated>2015-10-14T11:44:41+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/14/centos-7-install-partitioning</id>
-    <content type="html"><![CDATA[<p>Linux 설치 과정에서 고민되는 것 중 하나가 파티션닝이다. 크게 중요하지 않은 상황이라면 자동으로 설정해주는 것을 그대로 사용하는 것이 편하긴하다. 설치 후에도 파티션을 변경할 수 있는 경우도 있으나 일반적으로 Linux를 서버로 사용하는 경우 동적으로 변경하는 상황은 흔치 않기 때문에 처음 설치시 신중하게 설정하는 것이 좋다.</p>
-
-<p>파티셔닝은 서버의 사용 용도 등에 따라 파티션별 파일시스템의 종류와 용량이 많은 차이를 보일 수 있으므로 참고만 하고 자신이 직접 고민을 해보는 것이 좋을 것이다.</p>
-
-<p>아래의 내용은 <a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Installation_Guide/sect-disk-partitioning-setup-x86.html#sect-custom-partitioning-x86">RED HAT ENTERPRISE LINUX 7 Installation Guide : Manual Partitioning</a>을 기준으로 정리하고자 한다(CentOS 7 기준이지만 대부분의 Linux에서도 비슷할 것이다). 따라서 자세한 내용을 보려면 해당 문서를 자세히 읽어보기를 권한다(아래는 간단하게 필요한 부분만 발췌헤서 간단히 개인적인 의견을 적은 것이다).</p>
-
-<h2 id="파티션의-분할">파티션의 분할</h2>
-
-<p>&#39;6.13.4.5. Recommended Partitioning Scheme&#39;에서 권장하는 파티션 분할은 아래와 같다.</p>
-
-<ul>
-<li>/boot partition - recommended size at least 500 MB</li>
-<li>/ (root) partition - recommended size of 10 GB</li>
-<li>/home partition - recommended size at least 1 GB</li>
-<li>swap partition - recommended size at least 1 GB</li>
-</ul>
-
-<p>위의 파티셔닝은 말그대로 그냥 권장일뿐 상황에 따라서 바뀔 수 있다. 예를들어 나는 간단한 서버인 경우
-home 파티션을 구분하지 않고 boot와 swap만 지정하고 나머지 모두를 /에 할달해서 사용한다(관리 편의상).</p>
-
-<p>그런데 swap은 사람들마다 용량에 대한 의견에 차이가 많은 파티션 중 하나다. 우선 참고할만한 글은 아래와 같다.</p>
-
-<ul>
-<li><a href="http://zetawiki.com/wiki/%EB%A6%AC%EB%88%85%EC%8A%A4_%EC%8A%A4%EC%99%91%EB%A9%94%EB%AA%A8%EB%A6%AC_%ED%81%AC%EA%B8%B0_%EA%B6%8C%EA%B3%A0">리눅스 스왑메모리 크기 권고
-</a></li>
-<li><a href="https://www.centos.org/docs/5/html/Deployment_Guide-en-US/ch-swapspace.html">CentOS 5 Documentation : Swap Space</a></li>
-<li><a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Installation_Guide/sect-disk-partitioning-setup-x86.html#sect-custom-partitioning-x86">RED HAT ENTERPRISE LINUX 7 Installation Guide : Manual Partitioning</a> 중 &#39;6.13.4.5. Recommended Partitioning Scheme&#39;</li>
-</ul>
-
-<p>아래는 RED HAT ENTERPRISE LINUX 7 Installation Guide에 안내된 내용을 가져온 것이다. 일반적인 상황이라면 아래의 기준치를 참고해서 정하면된다. 하지만 서비스를 위한 서버라면 일반적으로 swap 자체가 사용되는 상황을 최대한 없애야 하기 때문에 swap 용량을 많이 책정할 이유는 없다.</p>
-
-<table><thead>
-<tr>
-<th>Amount of RAM in the system</th>
-<th>Recommended swap space</th>
-<th>Recommended swap space if allowing for hibernation</th>
-</tr>
-</thead><tbody>
-<tr>
-<td>less than 2 GB</td>
-<td>2 times the amount of RAM</td>
-<td>3 times the amount of RAM</td>
-</tr>
-<tr>
-<td>2 GB - 8 GB</td>
-<td>Equal to the amount of RAM</td>
-<td>2 times the amount of RAM</td>
-</tr>
-<tr>
-<td>8 GB - 64 GB</td>
-<td>0.5 times the amount of RAM</td>
-<td>1.5 times the amount of RAM</td>
-</tr>
-<tr>
-<td>more than 64 GB</td>
-<td>workload dependent</td>
-<td>hibernation not recommended</td>
-</tr>
-</tbody></table>
-
-<h2 id="파일시스템의-선택">파일시스템의 선택</h2>
-
-<p>CentOS 7은 기본 파일시스템으로 xfs를 사용한다(CentOS 6의 경우 ext4가 기본 파일시스템 이었다). xfs는 데비안 계열의 배포판에서 오래전부터 기본 파일시스템으로 사용하던 것으로 대용량 파일을 지원하며 오랜시간 타 리눅스 배포판에서 사용되면서 안정성이 입증되었다고 판단한 것으로 보인다. 다른 파일시스템도 지원하므로 선택은 자유다. 자세한 내용은 메뉴얼에도 나와있고 찾아보면 많은 자료를 쉽게 찾을 수 있다.
-나의 경우는 파일시스템의 경우 특별한 이유가 있지 않는한 해당 OS에서 기본으로 사용하는 파일시스템을 사용한다.</p>
-
-<h2 id="정리">정리</h2>
-
-<p>앞서 설명할때는 고민을 많이 해야 한다고 했는데 글을 적고 보니 너무 간단한 느낌이다. 사실 아주 고성능과 고가용성이 필요한 서버가 아니라면 위의 내용 정도만 생각해줘도 크게 무리는 없다는 생각이다. 자세히 설명하자면 파티션별 사이즈, 파일시스템 하나 하나에 대해서 설명해야 하는데 그러려면 책이 한권이다. 따라서 그 이상이 필요하다면 메뉴얼을 참고하면 관련 사항들을 하나씩 더 찾아보기 바란다.</p>
 ]]></content>
   </entry>
   

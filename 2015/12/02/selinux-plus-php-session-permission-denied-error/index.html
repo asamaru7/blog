@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>안드로이드 View.isLaidOut / View.post - 이 세상에 하나는 남기고 가자</title>
+  <title>selinux + PHP : Session Permission denied 오류 - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/">
-  <meta property="og:title" content="안드로이드 View.isLaidOut / View.post - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/">
+  <meta property="og:title" content="selinux + PHP : Session Permission denied 오류 - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -135,7 +135,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-04T10:12:29+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.04</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-02T12:53:59+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.02</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -144,47 +144,21 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        안드로이드 View.isLaidOut / View.post
+        selinux + PHP : Session Permission denied 오류
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 View는 isLaidOut이라는 함수를 가지고 있다. 단, API 19(KITKAT)부터 사용가능하다. 사실 그 이하의 기기에서도 다른 방법을 통해서 사용가능하다. 아주 간단히. 이 부분은 나중에 다시 설명하겠다.</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>서버를 새로 세팅하면서 CentOS 7에서 selinux와 함께 PHP 5.6을 설치했다. 기존에는 selinux를 사용하지 않도록 했었는데 이번에는 사용하도록 설정해서 설치를 완료했다. 그런데 세션을 사용하려고 <code>session_start();</code>를 하면 아래와 유사한 오류가 발생했다.</p>
 
-<p>우선 isLaidOut 함수에 대해 안드로이드 메뉴얼에는 다음과 같이 나와있다.</p>
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>FastCGI sent in stderr: "PHP message: PHP Warning: session_start(): open(/var/lib/php/session/sess_sk456vdemnp391spiv3i622i96, O_RDWR) failed: Permission denied</span></code></pre></td></tr></table></div></figure>
 
-<blockquote>
-<p>public boolean isLaidOut ()</p>
+<p>당연히 원인은 selinux이다. selinux가 적용된 상태라면 아무리 777 권한을 부여해도 접근을 할 수 없다. 그 해결법은 <a href="http://stackoverflow.com/a/33030627">(nginx/selinux) Permission denied error for sessions but files are created</a>에 잘 설명되어 있다.</p>
 
-<p>Added in API level 19</p>
-
-<p>Returns true if this view has been through at least one layout since it was last attached to or detached from a window.</p>
-</blockquote>
-
-<p>쉽게 말해서 &quot;해당 View가 layout이 그려졌는가?&quot;를 반환하는 함수다.</p>
-
-<p>다음은 post 함수에 대한 안드로이드 메뉴얼이다.</p>
-
-<blockquote>
-<p>public boolean post (Runnable action)</p>
-
-<p>Added in API level 1</p>
-
-<p>Causes the Runnable to be added to the message queue. The runnable will be run on the user interface thread.</p>
-</blockquote>
-
-<p>Runnalbe을 넘겨 받아 UIThread에서 실행시켜준다고 한다.</p>
-
-<p>그래서 어디에 써먹을 수 있나?
-한가지 예를들어 보자면 TextView의 getLineCount()의 반환값 문제를 해결할 수 있다.</p>
-
-<p>구글에서 &quot;<a href="https://www.google.co.kr/search?q=isLaidOut&amp;gws_rd=ssl#newwindow=1&amp;safe=off&amp;q=textview+getlinecount">textview getlinecount</a>&quot;로 검색하면 많이 나오는 것 중 하나가 &quot;textview.getLineCount always 0 in android&quot;라는 질문이다.</p>
-
-<p>textview의 getLineCount()를 요청하면 항상 0이 나오는 문제가 있다는 얘기인데, 이런 문제의 원인은 getLineCount() 함수가 TextView가 그려진 후 그 상황에 맞는 라인수를 반환한다는 것이다. 따라서 그려지기 전에는 항상 0을 반환한다.</p>
-
-<p>그럼 이 문제를 isLaidOut을 써서 해결해보자.</p>
+<p>결과적으로 아래의 방법을 통해 문제를 해결할 수 있다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -194,80 +168,17 @@
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">TextView</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>mkdir /var/lib/php/session
+</span><span class='line'><span class="nv">$ </span>mkdir /var/lib/php/wsdlcache
+</span><span class='line'><span class="nv">$ </span>chmod <span class="m">777</span> /var/lib/php/session /var/lib/php/wsdlcache
 </span><span class='line'>
-</span><span class='line'><span class="o">...</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;test message&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="k">if</span> <span class="o">(</span><span class="n">textView</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">())</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">textView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
-</span><span class='line'><span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</span><span class='line'>    <span class="kd">final</span> <span class="n">TextView</span> <span class="n">postTextView</span> <span class="o">=</span> <span class="n">textView</span><span class="o">;</span>
-</span><span class='line'>    <span class="n">textView</span><span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>        <span class="nd">@Override</span>
-</span><span class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>            <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">postTextView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>    <span class="o">});</span>
-</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="nv">$ </span>restorecon -v <span class="s2">&quot;/var/lib/php/session&quot;</span>
+</span><span class='line'><span class="nv">$ </span>semanage fcontext -a -t httpd_sys_rw_content_t /var/lib/php/session
+</span><span class='line'><span class="nv">$ </span>restorecon -v <span class="s2">&quot;/var/lib/php/wsdlcache&quot;</span>
+</span><span class='line'><span class="nv">$ </span>semanage fcontext -a -t httpd_sys_rw_content_t /var/lib/php/wsdlcache
 </span></code></pre></td></tr></table></div></figure>
 
-<p>여러가지 상황이 있을 수 있다. 위의 예시와 다르게 layout xml에서 TextView가 정의될 수도 있고.
-중요한 것은 TextView가 그려지기 전에 getLineCount() 함수를 사용하려는 것이다.</p>
-
-<p>그런데 여기서도 한계는 있다. 값을 가져오는 부분이 비동기 방식이 된다는 것이다. 이를 해결하기 위해서는 다른 방법이 필요하다. 하지만 여기서는 isLaidOut에 대한 설명을 하고자 하는 것이므로 다음으로 넘긴다. 사실 찾아보면 여러가지 방법들이 제시되어 있는데 아주 깔끔한 방법은 현재로써는 찾기 힘들다.</p>
-
-<p>위의 TextView 사례는 말그대로 예시일뿐 isLaidOut에 대한 활용 범위는 아주 다양할 수 있다.</p>
-
-<p>마지막으로 isLaidOut을 API 19 이하에서 사용할 수 있는 방법은 다음의 예시를 참고하자.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">TextView</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">...</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;test message&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="k">if</span> <span class="o">(</span><span class="n">ViewCompat</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">(</span><span class="n">textView</span><span class="o">))</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">textView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
-</span><span class='line'><span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</span><span class='line'>    <span class="kd">final</span> <span class="n">TextView</span> <span class="n">postTextView</span> <span class="o">=</span> <span class="n">textView</span><span class="o">;</span>
-</span><span class='line'>    <span class="n">textView</span><span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>        <span class="nd">@Override</span>
-</span><span class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>            <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">postTextView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>    <span class="o">});</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>중요한 부분은 ViewCompat을 사용한다는 부분이다. 아주 간단한 방법으로 사용할 수 있으므로 하위 버전을 지원해야 한다하더라도 사용할 수 있다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ViewCompat</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">(</span><span class="n">textView</span><span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
+<p>mkdir과 chmod는 필요 없을 수 있다. 나의 경우는 아예 폴더도 만들어져 있지 않아서 폴더를 생성하고 권한도 함께 지정했다.</p>
 </div>
 
 
@@ -291,13 +202,13 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-04T10:12:29+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.04</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-02T12:53:59+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.02</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
 <span class="categories">
   
-    <a class='category' href='/blog/categories/android/'>android</a>
+    <a class='category' href='/blog/categories/php/'>php</a>
   
 </span>
 
@@ -306,7 +217,7 @@
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/" data-via="" data-counturl="http://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/" data-via="" data-counturl="http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -320,10 +231,10 @@
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/09/03/android-http-ping/" title="Previous Post: 안드로이드에서 android.os.NetworkOnMainThreadException을 발생시키지 않고 HTTP Ping 보내기">&laquo; 안드로이드에서 android.os.NetworkOnMainThreadException을 발생시키지 않고 HTTP Ping 보내기</a></li>
+            <li class="previous"><a href="/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/" title="Previous Post: Nginx(stable / mainline) 설치 - CentOS 6.5 / 7">&laquo; Nginx(stable / mainline) 설치 - CentOS 6.5 / 7</a></li>
             
             
-            <li class="next"><a href="/2015/09/04/android-dialog-windowmanager-badtokenexception/" title="Next Post: 안드로이드에서 Dialog 사용시 WindowManager$BadTokenException 발생">안드로이드에서 Dialog 사용시 WindowManager$BadTokenException 발생 &raquo;</a></li>
+            <li class="next"><a href="/2015/12/02/nginx-414-request-uri-too-large/" title="Next Post: Nginx : 414 Request-URI Too Large 오류">Nginx : 414 Request-URI Too Large 오류 &raquo;</a></li>
             
           </ul>
         
@@ -410,7 +321,7 @@
     
     <a class="list-group-item " href="/2015/12/02/nginx-414-request-uri-too-large/">Nginx : 414 Request-URI Too Large 오류</a>
     
-    <a class="list-group-item " href="/2015/12/02/selinux-plus-php-session-permission-denied-error/">selinux + PHP : Session Permission denied 오류</a>
+    <a class="list-group-item active" href="/2015/12/02/selinux-plus-php-session-permission-denied-error/">selinux + PHP : Session Permission denied 오류</a>
     
     <a class="list-group-item " href="/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/">Nginx(stable / mainline) 설치 - CentOS 6.5 / 7</a>
     
@@ -450,8 +361,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/';
-        var disqus_url = 'http://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/';
+        var disqus_url = 'http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/';
         var disqus_script = 'embed.js';
       
     (function () {

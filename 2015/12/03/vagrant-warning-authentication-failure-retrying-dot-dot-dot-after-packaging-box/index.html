@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>ACRA : Please configure 'buildConfigClass' in your ACRA config 오류 - 이 세상에 하나는 남기고 가자</title>
+  <title>Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법 - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/">
-  <meta property="og:title" content="ACRA : Please configure 'buildConfigClass' in your ACRA config 오류 - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">
+  <meta property="og:title" content="Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying &hellip; - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -135,7 +135,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-01T19:48:09+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.01</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-03T20:35:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.03</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -144,35 +144,16 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        ACRA : Please configure 'buildConfigClass' in your ACRA config 오류
+        Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p><a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a> 포스트에서 언급했던 것처럼 개발 중인 앱에서 Crash Report를 위해 <a href="https://github.com/ACRA/acra">ACRA</a>를 사용중이다. 아직 4.7.0으로 정식 버전업이 되지는 않았지만 4.7.0 RC1 버전이 maven에 올려져 있어서 적용해 보았다.
-사실은 미리 적용할 예정은 없었으나 <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>와 관련하여 Gradle을 2.4로 버전업 하면서 release 빌드 시에 다른 오류(setLatestEventInfo 함수가 제거됨)가 나타나서 어쩔 수 없이 버전업을 해야했다.</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>vagrant를 사용하면서 직접 box를 만들 경우가 자주 발생하지는 않는다. 하지만 환경 구성을 위해 간혹 작업을 하게되는데 작업 과정에 문제가 생기는 경우가 간혹 있다. 이번에 CentOS 7 환경을 구성하면서 vagrant로 테스트를 진행했었다. 최초 설치 상태로 box를 만들어두고 환경을 구성해보고 문제가 있으면 초기 box로 다시 구성하는 식으로 작업을 했다. 그런데 이번엔 작업을 하면서 이전에 발생하지 않았던 문제가 발생했다.</p>
 
-<p>그런데 버전업을하고 나서 Crash 테스트를 하는 도중 또 다른 오류를 만났다. 기존에도 오류가 나고 있었는지 버전업 후의 문제인지는 확실치는 않다. 안드로이드 작업은 끝없는 오류 해결의 연속인 듯하다. 오류는 아래와 같다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">E</span><span class="o">/</span><span class="nl">ACRA:</span> <span class="n">Not</span> <span class="n">adding</span> <span class="n">buildConfig</span> <span class="n">to</span> <span class="n">log</span><span class="o">.</span> <span class="n">Class</span> <span class="n">Not</span> <span class="n">found</span> <span class="o">:</span> <span class="n">net</span><span class="o">.</span><span class="na">yourdomain</span><span class="o">.</span><span class="na">BuildConfig</span><span class="o">.</span> <span class="n">Please</span> <span class="n">configure</span> <span class="err">&#39;</span><span class="n">buildConfigClass</span><span class="err">&#39;</span> <span class="n">in</span> <span class="n">your</span> <span class="n">ACRA</span> <span class="n">config</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>우선 ACRA를 초기화하는 코드를 살펴보자. 당연하지만 실제 적용코드가 아닌 부분적으로 정리된 코드다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ACRAConfiguration</span> <span class="n">config</span> <span class="o">=</span> <span class="n">ACRA</span><span class="o">.</span><span class="na">getNewDefaultConfig</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="na">setFormUri</span><span class="o">(</span><span class="s">&quot;http://dev.yourdomain.net/AppCrash&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="n">ACRA</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span> <span class="c1">// The following line triggers the initialization of ACRA</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>@ReportsCrashes 어노테이션을 사용하지 않고 동적으로 초기화시켜주는 코드다. 실제로 Crash를 발생시키면 위에서 보여준 오류가 난다. 사실 이 문제는 원인을 확인한 결과 Proguard가 적용되었을 때만 오류가 발생한다. 아래의 ACRA 소스 코드의 일부를 보자.</p>
-
-<p><strong><a href="https://github.com/ACRA/acra/blob/master/src/main/java/org/acra/collector/CrashReportDataFactory.java">CrashReportDataFactory.java</a></strong></p>
+<p>이전글 <a href="/2015/10/14/creating-a-vagrant-base-box/">Vagrant BASE Box 만들기(CentOS 7)</a>에서 설명했던 것처럼 box 생성 전에 분명 ssh 관련 처리를 해 주었음에도 불구하고 만들어진 box를 사용해서 <code>vagrant up</code>을 하게되면 아래와 같은 결과가 계속 나왔다(여러번 box를 다시 만들어 봤음에도 불구하고).</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -190,54 +171,149 @@
 <span class='line-number'>14</span>
 <span class='line-number'>15</span>
 <span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">getBuildConfigClass</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">ClassNotFoundException</span> <span class="o">{</span>
-</span><span class='line'>    <span class="kd">final</span> <span class="n">Class</span> <span class="n">configuredBuildConfig</span> <span class="o">=</span> <span class="n">ACRA</span><span class="o">.</span><span class="na">getConfig</span><span class="o">().</span><span class="na">buildConfigClass</span><span class="o">();</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">((</span><span class="n">configuredBuildConfig</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">configuredBuildConfig</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">Object</span><span class="o">.</span><span class="na">class</span><span class="o">))</span> <span class="o">{</span>
-</span><span class='line'>        <span class="c1">// If set via annotations or programatically then it will have a real value,</span>
-</span><span class='line'>        <span class="c1">// otherwise it will be Object.class (annotation default) or null (explicit programmatic).</span>
-</span><span class='line'>        <span class="k">return</span> <span class="n">configuredBuildConfig</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>vagrant up
+</span><span class='line'>Bringing machine <span class="s1">&#39;default&#39;</span> up with <span class="s1">&#39;virtualbox&#39;</span> provider...
+</span><span class='line'><span class="o">==</span>&gt; default: Importing base box <span class="s1">&#39;centos7-dev-1&#39;</span>...
+</span><span class='line'><span class="o">==</span>&gt; default: Matching MAC address <span class="k">for</span> NAT networking...
+</span><span class='line'><span class="o">==</span>&gt; default: Setting the name of the VM: <span class="nv">dev7_default_1449141471748_10760</span>
+</span><span class='line'><span class="o">==</span>&gt; default: Clearing any previously <span class="nb">set </span>network interfaces...
+</span><span class='line'><span class="o">==</span>&gt; default: Preparing network interfaces based on configuration...
+</span><span class='line'>    default: Adapter 1: nat
+</span><span class='line'>    default: Adapter 2: <span class="nv">hostonly</span>
+</span><span class='line'><span class="o">==</span>&gt; default: Forwarding ports...
+</span><span class='line'>    default: <span class="nv">80</span> <span class="o">=</span>&gt; <span class="m">8080</span> <span class="o">(</span>adapter 1<span class="o">)</span>
+</span><span class='line'>    default: <span class="nv">22</span> <span class="o">=</span>&gt; <span class="m">2222</span> <span class="o">(</span>adapter 1<span class="o">)</span>
+</span><span class='line'><span class="o">==</span>&gt; default: Running <span class="s1">&#39;pre-boot&#39;</span> VM customizations...
+</span><span class='line'><span class="o">==</span>&gt; default: Booting VM...
+</span><span class='line'><span class="o">==</span>&gt; default: Waiting <span class="k">for</span> machine to boot. This may take a few minutes...
+</span><span class='line'>    default: SSH address: 127.0.0.1:2222
+</span><span class='line'>    default: SSH username: vagrant
+</span><span class='line'>    default: SSH auth method: private key
+</span><span class='line'>    default: Warning: Connection timeout. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>Timed out <span class="k">while</span> waiting <span class="k">for</span> the machine to boot. This means that
+</span><span class='line'>Vagrant was unable to communicate with the guest machine within
+</span><span class='line'>the configured <span class="o">(</span><span class="s2">&quot;config.vm.boot_timeout&quot;</span> value<span class="o">)</span> <span class="nb">time </span>period.
 </span><span class='line'>
-</span><span class='line'>    <span class="kd">final</span> <span class="n">String</span> <span class="n">className</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getPackage</span><span class="o">().</span><span class="na">getName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;.BuildConfig&quot;</span><span class="o">;</span>
-</span><span class='line'>    <span class="k">try</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">return</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="n">className</span><span class="o">);</span>
-</span><span class='line'>    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ClassNotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">ACRA</span><span class="o">.</span><span class="na">log</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">LOG_TAG</span><span class="o">,</span> <span class="s">&quot;Not adding buildConfig to log. Class Not found : &quot;</span> <span class="o">+</span> <span class="n">className</span> <span class="o">+</span> <span class="s">&quot;. Please configure &#39;buildConfigClass&#39; in your ACRA config&quot;</span><span class="o">);</span>
-</span><span class='line'>        <span class="k">throw</span> <span class="n">e</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
+</span><span class='line'>If you look above, you should be able to see the error<span class="o">(</span>s<span class="o">)</span> that
+</span><span class='line'>Vagrant had when attempting to connect to the machine. These errors
+</span><span class='line'>are usually good hints as to what may be wrong.
+</span><span class='line'>
+</span><span class='line'>If you<span class="s1">&#39;re using a custom box, make sure that networking is properly</span>
+</span><span class='line'><span class="s1">working and you&#39;</span>re able to connect to the machine. It is a common
+</span><span class='line'>problem that networking isn<span class="err">&#39;</span>t setup properly in these boxes.
+</span><span class='line'>Verify that authentication configurations are also setup properly,
+</span><span class='line'>as well.
+</span><span class='line'>
+</span><span class='line'>If the box appears to be booting properly, you may want to increase
+</span><span class='line'>the timeout <span class="o">(</span><span class="s2">&quot;config.vm.boot_timeout&quot;</span><span class="o">)</span> value.
 </span></code></pre></td></tr></table></div></figure>
 
-<p><code>final String className = context.getClass().getPackage().getName() + &quot;.BuildConfig&quot;;</code> 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
-해결을 위한 아래의 코드를 보자.</p>
+<p>ssh 인증에 실패하면서 계속 시도하다가 결국 그냥 종료되어 버린다. 사실 가상 머신이 종료된 것은 아니다. ssh로 직접 접속하면 접속은 된다. 이 문제가 발생한 것은 이전이지만 당장 다른 작업들이 급해서 그냥 아래의 방법을 통해 사용중이었다.</p>
+
+<p><strong>Vagrantfile 에 아래의 내용을 추가한다.</strong></p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">ACRAConfiguration</span> <span class="n">config</span> <span class="o">=</span> <span class="n">ACRA</span><span class="o">.</span><span class="na">getNewDefaultConfig</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="na">setBuildConfigClass</span><span class="o">(</span><span class="n">BuildConfig</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="na">setFormUri</span><span class="o">(</span><span class="s">&quot;http://dev.yourdomain.net/AppCrash&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="n">ACRA</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span> <span class="c1">// The following line triggers the initialization of ACRA</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">ssh</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="s2">&quot;vagrant&quot;</span>
+</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">ssh</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="s2">&quot;vagrant&quot;</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p><code>config.setBuildConfigClass(BuildConfig.class);</code> 이 부분을 추가했다. ACRA 코드에서 보듯이 setBuildConfigClass로 직접 BuildConfig를 넘겨주면 패키지명으로 찾지 않는다. 따라서 Proguard가 적용되어도 문제가 없다.</p>
+<p>이 방법은 ssh key를 사용하지 않고 아이디/비밀번호를 입력하는 방식으로 ssh 접속하는 것이다. 사실 이렇게하면 문제는 해결된다. 어짜피 비밀번호에 대한 보안이 중요한 상황도 아니므로 그냥 사용해도 무방하다. 그런데 그냥 사용하기에는 찜찜했다. 특별히 권장하거나 일반적인 방법이 아닌데다가 기존에는 굳이 이렇게하지 않아도 잘 동작하고 있었기 때문이다.</p>
 
-<hr>
+<p>그래서 오늘 많은 검색과 여러가지 방법을 시도한 끝에 해결 방법을 찾았다. 결론은 box 내부에서 처리하는 과정에 문제가 아니라 내 PC의 문제로 보인다. 해결 방법은 다음과 같다.</p>
 
-<p>이 오류는 이것으로 해결이 가능하다. 하지만 나는 지금 다른 문제로 다시 고군분투 중이다.
-오류 발생시 HTTP/POST를 통해 오류 관련 정보를 전송하도록 사용중이었다. 그런데 앞서 이야기 한것과 같이 이번에 버전업이 되면서 HTTP 접속 관련 부분이 변경되었다. 여기에 문제가 있다.</p>
+<p><strong>Vagrantfile 에 아래의 내용을 추가한다.</strong></p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">...</span>
-</span><span class='line'><span class="n">urlConnection</span><span class="o">.</span><span class="na">setChunkedStreamingMode</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
-</span><span class='line'><span class="o">...</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">ssh</span><span class="o">.</span><span class="n">insert_key</span> <span class="o">=</span> <span class="kp">false</span>
 </span></code></pre></td></tr></table></div></figure>
 
-<p>위 부분은 ACRA에서 HTTP 전송시 사용하는 HttpRequest.java 의 일부분이다. <code>setChunkedStreamingMode</code>에 대해서는 여기서 설명하기엔 너무 길고 간단히 요약하자면 chunked 상태로 데이터가 전송된다.
-그런데 이 상태로 전송되면 현재 내가 사용하고 있는 서버에서 POST 값이 모두 비어 있다. request의 body가 수신되지 못하는 것이다. 이 부분은 나의 환경인 php-fpm가 proxy로 연결되어 있는 것과 관련이 있는 것으로 보인다. 이 부분에 대해서는 여러가지로 시도해 보았으나 해결이 되지 않았고 일단은 몇개의 클래스를 재정의해서 문제를 막아 놓았다. 그리고 관련해서는 ACRA에 Issue로 등록해 두었다. 개선이 될런지는 미지수인데 안된다면 앞으로 사용상에 걸림돌이 될 것 같다. 이 부분에 관련된 해결책이 나온다면 다시 포스팅을 하도록 하겠다.</p>
+<p>아마도 내가 vagrant를 자주 변경하고 실험하는 사이에 뭔가 설정이 꼬인 것 같다. 이 옵션을 해결되는 것으로 볼 때 내 컴퓨터에 잘못된 키가 저장되어 있고 <code>vagrant up</code> 과정에서 가상 머신에 key를 변경해 버려서 위 문제가 발생했던 것으로 보인다.</p>
+
+<p>config.ssh.insert_key는 <a href="https://docs.vagrantup.com/v2/vagrantfile/ssh_settings.html">메뉴얼</a>에 아래와 같이 설명되어 있다.</p>
+
+<blockquote>
+<p>config.ssh.insert_key - If true, Vagrant will automatically insert an keypair to use for SSH, replacing the default Vagrant&#39;s insecure key inside the machine &gt; if detected. By default, this is true.</p>
+
+<p>This only has an effect if you don&#39;t already use private keys for authentication or if you are relying on the default insecure key. If you don&#39;t have to take care about security in your project and want to keep using the default insecure key, set this to false.</p>
+</blockquote>
+
+<p>검색을 하다보니 이 두가지 방법 외에도 여러가지 방법이 제안되는 것으로 보아 다른 문제로 인해 이런 현상이 나타나는 경우도 있는 것 같다. 어쨌든 위와 같은 문제를 겪는다면 제시한 2가지 방법도 한번 적용해 보면 도움이 될 것으로 생각한다.</p>
 </div>
 
 
@@ -261,13 +337,13 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-01T19:48:09+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.01</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-03T20:35:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.03</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
 <span class="categories">
   
-    <a class='category' href='/blog/categories/android/'>android</a>
+    <a class='category' href='/blog/categories/vagrant/'>vagrant</a>
   
 </span>
 
@@ -276,7 +352,7 @@
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/" data-via="" data-counturl="http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/" data-via="" data-counturl="http://blog.asamaru.net/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -290,10 +366,8 @@
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/09/30/loan-calculator/" title="Previous Post: 필요해서 만든 대출 이자 계산기">&laquo; 필요해서 만든 대출 이자 계산기</a></li>
+            <li class="previous"><a href="/2015/12/02/vagrant-cant-mount-shared-folder/" title="Previous Post: VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우">&laquo; VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a></li>
             
-            
-            <li class="next"><a href="/2015/10/02/linux-how-to-clear-memory-swap/" title="Next Post: 리눅스에서 swap 메모리 초기화">리눅스에서 swap 메모리 초기화 &raquo;</a></li>
             
           </ul>
         
@@ -376,7 +450,7 @@
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법</a>
+    <a class="list-group-item active" href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법</a>
     
     <a class="list-group-item " href="/2015/12/02/vagrant-cant-mount-shared-folder/">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a>
     
@@ -420,8 +494,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/';
-        var disqus_url = 'http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/';
+        var disqus_url = 'http://blog.asamaru.net/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/';
         var disqus_script = 'embed.js';
       
     (function () {

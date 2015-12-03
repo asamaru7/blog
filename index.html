@@ -139,6 +139,208 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-03T20:35:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.03</time>
+        
+           | <a href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/" itemprop="url">Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>vagrant를 사용하면서 직접 box를 만들 경우가 자주 발생하지는 않는다. 하지만 환경 구성을 위해 간혹 작업을 하게되는데 작업 과정에 문제가 생기는 경우가 간혹 있다. 이번에 CentOS 7 환경을 구성하면서 vagrant로 테스트를 진행했었다. 최초 설치 상태로 box를 만들어두고 환경을 구성해보고 문제가 있으면 초기 box로 다시 구성하는 식으로 작업을 했다. 그런데 이번엔 작업을 하면서 이전에 발생하지 않았던 문제가 발생했다.</p>
+
+<p>이전글 <a href="/2015/10/14/creating-a-vagrant-base-box/">Vagrant BASE Box 만들기(CentOS 7)</a>에서 설명했던 것처럼 box 생성 전에 분명 ssh 관련 처리를 해 주었음에도 불구하고 만들어진 box를 사용해서 <code>vagrant up</code>을 하게되면 아래와 같은 결과가 계속 나왔다(여러번 box를 다시 만들어 봤음에도 불구하고).</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>vagrant up
+</span><span class='line'>Bringing machine <span class="s1">&#39;default&#39;</span> up with <span class="s1">&#39;virtualbox&#39;</span> provider...
+</span><span class='line'><span class="o">==</span>&gt; default: Importing base box <span class="s1">&#39;centos7-dev-1&#39;</span>...
+</span><span class='line'><span class="o">==</span>&gt; default: Matching MAC address <span class="k">for</span> NAT networking...
+</span><span class='line'><span class="o">==</span>&gt; default: Setting the name of the VM: <span class="nv">dev7_default_1449141471748_10760</span>
+</span><span class='line'><span class="o">==</span>&gt; default: Clearing any previously <span class="nb">set </span>network interfaces...
+</span><span class='line'><span class="o">==</span>&gt; default: Preparing network interfaces based on configuration...
+</span><span class='line'>    default: Adapter 1: nat
+</span><span class='line'>    default: Adapter 2: <span class="nv">hostonly</span>
+</span><span class='line'><span class="o">==</span>&gt; default: Forwarding ports...
+</span><span class='line'>    default: <span class="nv">80</span> <span class="o">=</span>&gt; <span class="m">8080</span> <span class="o">(</span>adapter 1<span class="o">)</span>
+</span><span class='line'>    default: <span class="nv">22</span> <span class="o">=</span>&gt; <span class="m">2222</span> <span class="o">(</span>adapter 1<span class="o">)</span>
+</span><span class='line'><span class="o">==</span>&gt; default: Running <span class="s1">&#39;pre-boot&#39;</span> VM customizations...
+</span><span class='line'><span class="o">==</span>&gt; default: Booting VM...
+</span><span class='line'><span class="o">==</span>&gt; default: Waiting <span class="k">for</span> machine to boot. This may take a few minutes...
+</span><span class='line'>    default: SSH address: 127.0.0.1:2222
+</span><span class='line'>    default: SSH username: vagrant
+</span><span class='line'>    default: SSH auth method: private key
+</span><span class='line'>    default: Warning: Connection timeout. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>    default: Warning: Authentication failure. Retrying...
+</span><span class='line'>Timed out <span class="k">while</span> waiting <span class="k">for</span> the machine to boot. This means that
+</span><span class='line'>Vagrant was unable to communicate with the guest machine within
+</span><span class='line'>the configured <span class="o">(</span><span class="s2">&quot;config.vm.boot_timeout&quot;</span> value<span class="o">)</span> <span class="nb">time </span>period.
+</span><span class='line'>
+</span><span class='line'>If you look above, you should be able to see the error<span class="o">(</span>s<span class="o">)</span> that
+</span><span class='line'>Vagrant had when attempting to connect to the machine. These errors
+</span><span class='line'>are usually good hints as to what may be wrong.
+</span><span class='line'>
+</span><span class='line'>If you<span class="s1">&#39;re using a custom box, make sure that networking is properly</span>
+</span><span class='line'><span class="s1">working and you&#39;</span>re able to connect to the machine. It is a common
+</span><span class='line'>problem that networking isn<span class="err">&#39;</span>t setup properly in these boxes.
+</span><span class='line'>Verify that authentication configurations are also setup properly,
+</span><span class='line'>as well.
+</span><span class='line'>
+</span><span class='line'>If the box appears to be booting properly, you may want to increase
+</span><span class='line'>the timeout <span class="o">(</span><span class="s2">&quot;config.vm.boot_timeout&quot;</span><span class="o">)</span> value.
+</span></code></pre></td></tr></table></div></figure>
+
+<p>ssh 인증에 실패하면서 계속 시도하다가 결국 그냥 종료되어 버린다. 사실 가상 머신이 종료된 것은 아니다. ssh로 직접 접속하면 접속은 된다. 이 문제가 발생한 것은 이전이지만 당장 다른 작업들이 급해서 그냥 아래의 방법을 통해 사용중이었다.</p>
+
+<p><strong>Vagrantfile 에 아래의 내용을 추가한다.</strong></p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">ssh</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="s2">&quot;vagrant&quot;</span>
+</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">ssh</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="s2">&quot;vagrant&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이 방법은 ssh key를 사용하지 않고 아이디/비밀번호를 입력하는 방식으로 ssh 접속하는 것이다. 사실 이렇게하면 문제는 해결된다. 어짜피 비밀번호에 대한 보안이 중요한 상황도 아니므로 그냥 사용해도 무방하다. 그런데 그냥 사용하기에는 찜찜했다. 특별히 권장하거나 일반적인 방법이 아닌데다가 기존에는 굳이 이렇게하지 않아도 잘 동작하고 있었기 때문이다.</p>
+
+<p>그래서 오늘 많은 검색과 여러가지 방법을 시도한 끝에 해결 방법을 찾았다. 결론은 box 내부에서 처리하는 과정에 문제가 아니라 내 PC의 문제로 보인다. 해결 방법은 다음과 같다.</p>
+
+<p><strong>Vagrantfile 에 아래의 내용을 추가한다.</strong></p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">ssh</span><span class="o">.</span><span class="n">insert_key</span> <span class="o">=</span> <span class="kp">false</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>아마도 내가 vagrant를 자주 변경하고 실험하는 사이에 뭔가 설정이 꼬인 것 같다. 이 옵션을 해결되는 것으로 볼 때 내 컴퓨터에 잘못된 키가 저장되어 있고 <code>vagrant up</code> 과정에서 가상 머신에 key를 변경해 버려서 위 문제가 발생했던 것으로 보인다.</p>
+
+<p>config.ssh.insert_key는 <a href="https://docs.vagrantup.com/v2/vagrantfile/ssh_settings.html">메뉴얼</a>에 아래와 같이 설명되어 있다.</p>
+
+<blockquote>
+<p>config.ssh.insert_key - If true, Vagrant will automatically insert an keypair to use for SSH, replacing the default Vagrant&#39;s insecure key inside the machine &gt; if detected. By default, this is true.</p>
+
+<p>This only has an effect if you don&#39;t already use private keys for authentication or if you are relying on the default insecure key. If you don&#39;t have to take care about security in your project and want to keep using the default insecure key, set this to false.</p>
+</blockquote>
+
+<p>검색을 하다보니 이 두가지 방법 외에도 여러가지 방법이 제안되는 것으로 보아 다른 문제로 인해 이런 현상이 나타나는 경우도 있는 것 같다. 어쨌든 위와 같은 문제를 겪는다면 제시한 2가지 방법도 한번 적용해 보면 도움이 될 것으로 생각한다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-02T19:39:43+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.02</time>
         
            | <a href="/2015/12/02/vagrant-cant-mount-shared-folder/#disqus_thread" itemprop="discussionUrl"
@@ -1324,102 +1526,6 @@ Context: http, server</p>
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-16T20:55:08+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.16</time>
-        
-           | <a href="/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/" itemprop="url">XCode에서 storyboard 선택시 Crash가 발생할 경우</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>최근엔 XCode로 작업하는 일이 많아졌다. 안드로이드 개발과 웹 개발도 함께하지만 iOS 작업이 급하다 보니 주로 이 일을 하고 있다.
-XCode는 사용하면 할수록 잘 만들었다는 생각이 든다. 단, 코드 포멧팅 기능이 없다거나 소스 선택이 조금 부자연스럽다거나(이건 적응의 문제일 수 있다) 하는 것처럼 안드로이드 스튜디오에 비해 불편한 부분들이 있긴하다. 하지만 인터페이스 빌더 등의 도구들은 아주 잘 만들어져 있으며 결정적으로 빌드 속도가 무척 빨라서 좋다. 안드로이드 스튜디오도 지난 번에 적었던 <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>에서 설명했던 것처럼 빌드 속도가 다소 개선되었지만 XCode에 비교도 되지 않는다.</p>
-
-<p>인터페이스 빌더의 사용에 대해서는 개발자들 사이에서도 논란이 많다. 개발시 인터페이스 빌더를 사용할 것인가 하드 코딩으로 UI를 개발할 것인가? 둘 다 장단점이 있는 것은 명확하지만 개인적으로는 최대한 인터페이스 빌더를 사용하는 것이 옳다고 생각한다. 스토리보드와 같은 기능을 사용해서 앱 전체의 흐름을 파악하기 쉽도록 개발할 수 있으며 보여질 화면을 바로 보면서 작업하므로 개발 및 유지보수도 용이하다. 다만 인터페이스 빌더의 설정이 코드상에서 보여지지 못하므로 코드를 볼 때 혼란스럽게 보일 수는 있다. 그래서 나는 코드 흐름 상에서 중요한 요소는 인터페이스와 별개로 소스에서도 설정을 해주는 편이다(아주 중요할 경우만).</p>
-
-<p>서론이 길어졌는데 오늘 이야기는 지금 부터다. 나름 선호하는 이 인터페이스 빌더에는 치명적인 약점이 있다. 이건 내가 XCode를 처음 접한 3버전대에서부터 현재의 7버전까지도 완전히 해결되지 않는 문제다. 그 약점은 바로 Crash가 잘 발생한다는 점과 설정이 엉키면 정말 난해한 상황을 만나게 된다는 것이다.</p>
-
-<p>현재까지의 나의 해결법은 해당 부분을 통째로 지우고 새로 설정하는 것이다. 정말 최악의 방법이지만 항상 오랜 시간을 해결해 보려고 애써봐도 결론은 대부분 새로 작성하는 것이었다. 사실 이런 문제가 아주 빈번한 것은 아니지만 한번씩 발생하면 치명적이다(환장한다).</p>
-
-<p>최근에는 작업을 하면서 <a href="https://www.jetbrains.com/objc/">AppCode</a>를 함께 사용하는 편인데 아무래도 jetbrains에서 만들다보니 단축키도 익숙하고 결정적인 코드 포멧팅 기능 때문에...
-어쨌든 AppCode에서도 storyboard를 수정하려고하면 결국 XCode를 띄워준다.</p>
-
-<p>이렇게 개발 도구를 섞어써서 그런건지 내가 뭔가를 잘못했는지는 몰라도 이번에 제대로 일이 벌어졌다. 옛날 같으면 nib파일이 따로 있어서 문제가 발생해도 그 파일만 새로 작업하면 되는데 이번엔 스토리보드로 작업되어 있었는데 그 파일을 선택만 해도 XCode가 죽는 것이다. 도저히 새로 작성한다는 것은 불가능 했다. 아직 개발 초기라 화면이 엄청 많은 것은 아니었지만 그래도 주요 화면들을 다 작성해 둔 상태라 다시 작성하기엔 무리였다.</p>
-
-<p>그래서 인터넷에서 또 다시 해결 방법들을 찾아봤다. 사실 결론을 미리 이야기하자면 나는 아래의 방법들을 모두 시도해 보았으나 성공하지 못했다.  하지만 이 방법들로 효과를 봤다는 사람들이 있어서 기록성으로 한번 남겨두려고 한다.</p>
-
-<p><strong>1. XML로 열기</strong></p>
-
-<ul>
-<li>스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Source Code&quot; 메뉴를 이용해 XML 코드를 편집기에서 연다.</li>
-<li>의미없는 글자를 넣었다가 빼고 저장한다.</li>
-<li>다시 스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Interface Builder - Storyboard&quot;로 다시 연다.</li>
-</ul>
-
-<p><strong>2. Autolayout 기능 끄기</strong></p>
-
-<p>이 Autolayout에 대한 사람들의 이야기가 많았다. Autolayout이 새로 나오면서 많은 문제들이 있었던 것으로 보인다. 이제는 문제가 많이 줄어든 것으로 보이나 혹시나 도움이 될지도 모르겠다.</p>
-
-<ul>
-<li>스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Source Code&quot; 메뉴를 이용해 XML 코드를 편집기에서 연다.<br></li>
-<li><code>useAutolayout=&quot;YES&quot;</code> 부분을 찾아 <code>useAutolayout=&quot;NO&quot;</code>로 변경한다.</li>
-<li>다시 스토리보드 파일을 오른쪽 클릭해서 &quot;Open As&quot; &gt; &quot;Interface Builder - Storyboard&quot;로 다시 연다.</li>
-</ul>
-
-<p><strong>3. xcuserdata 삭제</strong></p>
-
-<ul>
-<li>Xcode를 닫는다.</li>
-<li>.xcodeproj, .xcworkspace 파일을 우클릭하여 &quot;패키지 내용보기&quot;를 선택한다.</li>
-<li>xcuserdata 폴더를 삭제한다.</li>
-</ul>
-
-<p><strong>4. XCode 초기화</strong></p>
-
-<p>이 방법은 XCode 설정을 초기화하는 것으로 권장하지는 않는다. 터미널에서 아래의 명령을 입력한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>defaults delete com.apple.dt.Xcode
-</span></code></pre></td></tr></table></div></figure>
-
-<p><strong>5. 오류 발생 부분 찾아 제거하기</strong></p>
-
-<p>이 방법은 최후의 방법으로 내가 사용한 방법이다. storyboard 파일을 소스 상태(XML)로 열어 scene 단위로 삭제 해본다. 단, 삭제하기 전 원본 백업은 필수. 이렇게 하나씩 제거하면서 XCode에서 파일을 열어 시도해보면서 원인이 되는 scene을 찾는다. 원인이 되는 scene을 찾았다면 부분적으로 코드들을 제거해가면서 정확한 오류 지점을 찾는다. 운이 좋아 부분적 오류였다면 이 방법으로 최소한의 손실로 문제를 해결할 수 있다. 단, 찾을 수 없다면 해당 scene을 통째로 버려야 한다.</p>
-
-<hr>
-
-<p>결론적으로 명쾌한 답을 주지 못해 미안하지만 나도 아직은 답을 찾지 못했다. 오류가 발생할 때마다 열심히 애플에 오류 보고를 보내고 있지만 당연히 신속한 해결은 없다. 어쨌든 이런 문제를 만나지 않기를 바라며 혹시라도 문제가 발생한다면 위 방법들을 시도해보길 바란다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1492,7 +1598,7 @@ XCode는 사용하면 할수록 잘 만들었다는 생각이 든다. 단, 코�
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (10)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (3)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (10)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1501,6 +1607,8 @@ XCode는 사용하면 할수록 잘 만들었다는 생각이 든다. 단, 코�
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법</a>
+    
     <a class="list-group-item " href="/2015/12/02/vagrant-cant-mount-shared-folder/">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a>
     
     <a class="list-group-item " href="/2015/12/02/nginx-414-request-uri-too-large/">Nginx : 414 Request-URI Too Large 오류</a>
@@ -1508,8 +1616,6 @@ XCode는 사용하면 할수록 잘 만들었다는 생각이 든다. 단, 코�
     <a class="list-group-item " href="/2015/12/02/selinux-plus-php-session-permission-denied-error/">selinux + PHP : Session Permission denied 오류</a>
     
     <a class="list-group-item " href="/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/">Nginx(stable / mainline) 설치 - CentOS 6.5 / 7</a>
-    
-    <a class="list-group-item " href="/2015/11/25/protobuf-protocol-buffers/">protobuf (Protocol Buffers)를 PHP에서 사용하기</a>
     
   </div>
 </section>

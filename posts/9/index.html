@@ -139,6 +139,69 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-16T18:09:56+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.16</time>
+        
+           | <a href="/2015/09/16/check-for-equality-on-a-mysql-float-field/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/16/check-for-equality-on-a-mysql-float-field/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/16/check-for-equality-on-a-mysql-float-field/" itemprop="url">MySql에서 folat 필드 동일값 비교</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>이번에 작업하면서 mysql의 float 필드를 사용할 일이 있었다. 사실 오랜기간동안 mysql을 사용해 오면서 float 필드를 사용해 본 적이 많지 않았고 float 필드를 범위 검사가 아닌 동일값 검사를 할일이 없었다.</p>
+
+<p>이번 작업에서는 float 필드의 동일값 검사를 하면서 당연히 아래와 같이 query를 만들면 될 줄 알았다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">TABLE1</span> <span class="k">WHERE</span> <span class="n">FloatField</span> <span class="o">=</span> <span class="mi">10</span><span class="p">.</span><span class="mi">1</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>그런데 분명 동일한 값이 있음에도 불구하고 검색된 결과가 없었다. 처음엔 어의가 없었다. 당연히 동일한 값이 있는데 왜 검색이 되지 않을까?
+그래서 구글에서 검색을 해보니 float 필드는 &quot;=&quot;을 이용한 동일값 검사를 할 수 없었다. 아래는 float 필드의 동일값 검사를 하는 예시다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='mysql'><span class='line'><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">TABLE1</span> <span class="k">WHERE</span> <span class="nf">ABS</span><span class="p">(</span><span class="n">FloatField</span> <span class="o">-</span> <span class="mi">10</span><span class="p">.</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>아.. 이런 웬 해괴망측한 방법이란 말인가? 사실 여러글에서 보면 문자열로 Casting(변환)해서 검사하는 방법 등도 있었다. 그리고 주의할 사항은 <code>1e-6</code>값을 정하는 부분이다. 소숫점의 길이에 따라 값을 어느 정도 조정해야 하는 듯 하다. 소숫점 2자리 기준에서 <code>1e-6</code> 적용시 같은 값으로 인식하지 않았다. 그래서 <code>1e-4</code>를 적용했었다. 어짜피 2자리까지 값이니 충분한 오차 한계긴하다.</p>
+
+<p>MySql 사이트에서 보면 <a href="https://dev.mysql.com/doc/refman/5.0/en/problems-with-float.html">B.5.5.8 Problems with Floating-Point Values</a> 이라는 글이 있다.</p>
+
+<p>첫줄에 설명된 것과 같이 mysql에서는 부동 소수점을 정확한 값으로 저장하지 않기 때문에 내부적으로 나타내는 값이 동일하지 않을 수 있다고 되어 있다.</p>
+
+<p>원인은 설명되어 있지만 사실 왜 이래야만 하는 것인지 이해는 잘되지 않는다. 원래 부동 소수점에 대한 문제는 여러 프로그램에서 있는 문제이긴하나 mysql에서도 이 문제가 있을 줄은 생각하지 못했다.</p>
+
+<p>어쨌든 보다 다양한 예시와 설명은 위에 링크한 mysql 메뉴얼을 참고하면 된다. 아니면 부동소숫점이 아닌 고정소숫점 타입을 사용해도 된다. <a href="http://www.mysqlkorea.com/sub.html?mcode=manual&amp;scode=01&amp;m_no=21681&amp;cat1=11&amp;cat2=332&amp;cat3=0&amp;lang=k">숫자 타입</a> 메뉴얼에서 DECIMAL 관련된 내용을 참고하자.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-15T19:02:43+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.15</time>
         
            | <a href="/2015/09/15/internationalization-i18n-for-javascript-i18next/#disqus_thread" itemprop="discussionUrl"
@@ -1668,78 +1731,6 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-08T22:27:15+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.08</time>
-        
-           | <a href="/2015/09/08/cleaner-view-casting-with-generics/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/08/cleaner-view-casting-with-generics/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/08/cleaner-view-casting-with-generics/" itemprop="url">안드로이드에서 findViewById 사용시 Generics을 이용해 Type Casting 없애기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 작업을 하다보면 findViewById를 아주 빈번하게 사용하게 된다. 이 작업이 생각보다 귀찮다보니 <a href="%22http://jakewharton.github.io/butterknife/%22">butterknife</a>나 <a href="%22http://androidannotations.org/%22">androidannotations</a> 같은 라이브러리를 사용하게 된다.(당연히 그 함수를 사용이 귀찮다는 이유만은 아니지만)</p>
-
-<p>아래의 방법은 저런 라이브러리를 사용할 때만큼 여러가지 일을 할 수는 없지만 findViewById를 사용함에 가장 귀찮은 작업인 View Type Casting을 하지 않아도 된다.</p>
-
-<p>우린 일반적으로 아래와 같은 방식으로 함수를 사용한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">textview</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이를 개선하기 위해 아래의 함수 하나를 추가한다. 어디든 상관 없이 사용하고자 하는 클래스의 내부에 넣는다. 사실 사용시마다 이 함수를 추가하는 작업이 더 귀찮을 수 있다. 그래서 난 기본 Activity와 Fragment 안에 넣어두고 사용한다. (난 여러가지 이유로 작업시 base activity, fragment를 만들어 두고 실제 작업시 상속받아 사용한다. 이렇게하면 이번 경우와 같이 유틸성 함수를 함께 쓰기도 좋고 제어하기도 좋기 때문이다.)</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@SuppressWarnings</span><span class="o">(</span><span class="s">&quot;unchecked&quot;</span><span class="o">)</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">final</span> <span class="o">&lt;</span><span class="n">E</span> <span class="kd">extends</span> <span class="n">View</span><span class="o">&gt;</span> <span class="n">E</span> <span class="nf">findView</span> <span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">return</span> <span class="o">(</span><span class="n">E</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>그리고 아래와 같이 사용할 수 있다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="n">findView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">textview</span><span class="o">);</span>
-</span><span class='line'><span class="n">Button</span> <span class="n">button</span> <span class="o">=</span> <span class="n">findView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">button</span><span class="o">);</span>
-</span><span class='line'><span class="n">ImageView</span> <span class="n">image</span> <span class="o">=</span> <span class="n">findView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">imageview</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>사실 별차이 아니다. 하지만 작업 해본 사람은 안다. Type Casting을 일일이 넣는게 얼마나 귀찮은지.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1812,7 +1803,7 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (10)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (3)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (10)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1821,6 +1812,8 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법</a>
+    
     <a class="list-group-item " href="/2015/12/02/vagrant-cant-mount-shared-folder/">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a>
     
     <a class="list-group-item " href="/2015/12/02/nginx-414-request-uri-too-large/">Nginx : 414 Request-URI Too Large 오류</a>
@@ -1828,8 +1821,6 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
     <a class="list-group-item " href="/2015/12/02/selinux-plus-php-session-permission-denied-error/">selinux + PHP : Session Permission denied 오류</a>
     
     <a class="list-group-item " href="/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/">Nginx(stable / mainline) 설치 - CentOS 6.5 / 7</a>
-    
-    <a class="list-group-item " href="/2015/11/25/protobuf-protocol-buffers/">protobuf (Protocol Buffers)를 PHP에서 사용하기</a>
     
   </div>
 </section>

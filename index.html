@@ -369,6 +369,168 @@
 <p>이 부분은 MariaDB 10.0이 systemd 지원을 아직 제대로 하지 않아서 그런 것 같다(테스트는 해보지 않았지만 찾아보니 Fedora 22 이상부터는 바로 지원이 되는 것으로 보인다).</p>
 
 <p>그냥 이렇게 사용해도 문제는 되지 않지만 기존과 동일하게 systemd로 사용하고 싶다면 10.1 버전을 사용하면 된다.</p>
+
+<hr>
+
+<p>10.0을 굳이 써야 한다면 다음과 같이 처리할 수는 있으나 권장하지는 않는다. 이왕이면 최신 버전을 사용하자.</p>
+
+<p>이미 위 명령을 입력했었다면 아래와 같이 제거하자. 아직 설치하지 않았다면 이 과정은 생략한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>systemctl disable mysql.service
+</span><span class='line'>mysql.service is not a native service, redirecting to /sbin/chkconfig.
+</span><span class='line'>Executing /sbin/chkconfig mysql off
+</span></code></pre></td></tr></table></div></figure>
+
+<p>아직 설치를 하지 않았다면 10.1과 유사하게 아래의 과정을 처리한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;[mariadb]&quot;</span> &gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;name = MariaDB&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;baseurl = http://yum.mariadb.org/10.0/rhel7-amd64&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;gpgcheck=1&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span></code></pre></td></tr></table></div></figure>
+
+<p>10.1과 유사하게 아래의 방법도 가능하다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>wget -O /etc/yum.repos.d/MariaDB.repo http://mariadb.if-not-true-then-false.com/rhel/<span class="k">$(</span>rpm -E %rhel<span class="k">)</span>/<span class="k">$(</span>uname -i<span class="k">)</span>/10
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이제 mariadb 10.0을 설치한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum install -y mariadb mariadb-server
+</span></code></pre></td></tr></table></div></figure>
+
+<p>아래의 내용으로 <code>/usr/lib/systemd/system/mariadb.service</code> 파일을 만든다. 이 스크립트는 5.5 설치시에 생성되었던 <code>/usr/lib/systemd/system/mariadb.service</code> 파일을 가져다가 조금 수정했다. 그대로 사용하려니 정상적으로 동작하지 않았다. <code>/usr/libexec/mariadb-prepare-db-dir</code> 파일을 필요로해서 동일하게 넣어주었으나 구동은 되나 실행 스크립트가 종료되지 않고 <code>systemctl stop</code>으로 종료 할 수도 없었다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># It&#39;s not recommended to modify this file in-place, because it will be</span>
+</span><span class='line'><span class="c"># overwritten during package upgrades.  If you want to customize, the</span>
+</span><span class='line'><span class="c"># best way is to create a file &quot;/etc/systemd/system/mariadb.service&quot;,</span>
+</span><span class='line'><span class="c"># containing</span>
+</span><span class='line'><span class="c">#   .include /lib/systemd/system/mariadb.service</span>
+</span><span class='line'><span class="c">#   ...make your changes here...</span>
+</span><span class='line'><span class="c"># or create a file &quot;/etc/systemd/system/mariadb.service.d/foo.conf&quot;,</span>
+</span><span class='line'><span class="c"># which doesn&#39;t need to include &quot;.include&quot; call and which will be parsed</span>
+</span><span class='line'><span class="c"># after the file mariadb.service itself is parsed.</span>
+</span><span class='line'><span class="c">#</span>
+</span><span class='line'><span class="c"># For more info about custom unit files, see systemd.unit(5) or</span>
+</span><span class='line'><span class="c"># http://fedoraproject.org/wiki/Systemd#How_do_I_customize_a_unit_file.2F_add_a_custom_unit_file.3F</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># For example, if you want to increase mariadb&#39;s open-files-limit to 10000,</span>
+</span><span class='line'><span class="c"># you need to increase systemd&#39;s LimitNOFILE setting, so create a file named</span>
+</span><span class='line'><span class="c"># &quot;/etc/systemd/system/mariadb.service.d/limits.conf&quot; containing:</span>
+</span><span class='line'><span class="c">#   [Service]</span>
+</span><span class='line'><span class="c">#   LimitNOFILE=10000</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Note: /usr/lib/... is recommended in the .include line though /lib/...</span>
+</span><span class='line'><span class="c"># still works.</span>
+</span><span class='line'><span class="c"># Don&#39;t forget to reload systemd daemon after you change unit configuration:</span>
+</span><span class='line'><span class="c"># root&gt; systemctl --system daemon-reload</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">[</span>Unit<span class="o">]</span>
+</span><span class='line'><span class="nv">Description</span><span class="o">=</span>MariaDB database server
+</span><span class='line'><span class="nv">After</span><span class="o">=</span>syslog.target
+</span><span class='line'><span class="nv">After</span><span class="o">=</span>network.target
+</span><span class='line'>
+</span><span class='line'><span class="o">[</span>Service<span class="o">]</span>
+</span><span class='line'><span class="c">#Type=simple</span>
+</span><span class='line'><span class="nv">Type</span> <span class="o">=</span> forking
+</span><span class='line'><span class="nv">User</span><span class="o">=</span>mysql
+</span><span class='line'><span class="nv">Group</span><span class="o">=</span>mysql
+</span><span class='line'><span class="nv">ExecStart</span> <span class="o">=</span> /etc/rc.d/init.d/mysql start
+</span><span class='line'><span class="nv">ExecStop</span> <span class="o">=</span> /etc/rc.d/init.d/mysql stop
+</span><span class='line'>
+</span><span class='line'><span class="c">#ExecStartPre=/usr/libexec/mariadb-prepare-db-dir %n</span>
+</span><span class='line'><span class="c"># Note: we set --basedir to prevent probes that might trigger SELinux alarms,</span>
+</span><span class='line'><span class="c"># per bug #547485</span>
+</span><span class='line'><span class="c">#ExecStart=/usr/bin/mysqld_safe --basedir=/usr</span>
+</span><span class='line'><span class="c">#ExecStartPost=/usr/libexec/mariadb-wait-ready $MAINPID</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Give a reasonable amount of time for the server to start up/shut down</span>
+</span><span class='line'><span class="nv">TimeoutSec</span><span class="o">=</span>300
+</span><span class='line'>
+</span><span class='line'><span class="c"># Place temp files in a secure directory, not /tmp</span>
+</span><span class='line'><span class="nv">PrivateTmp</span><span class="o">=</span><span class="nb">true</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">[</span>Install<span class="o">]</span>
+</span><span class='line'><span class="nv">WantedBy</span><span class="o">=</span>multi-user.target
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이후의 과정은 동일하다. 단, 10.0 설치에서 설명했던 <code>mysql.service</code> 대신 10.1 처럼 <code>mariadb.service</code>을 사용한다. 해당 파일을 만들어 줬으므로.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>systemctl daemon-reload
+</span><span class='line'>
+</span><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>mariadb.service
+</span><span class='line'><span class="nv">$ </span>systemctl start mariadb.service
+</span><span class='line'><span class="nv">$ </span>mysql_secure_installation
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이제 설치가 끝났다.</p>
 </div>
   
   

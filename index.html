@@ -139,6 +139,262 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-04T12:35:49+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.04</time>
+        
+           | <a href="/2015/12/04/mysql-secure-installation-automation/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/12/04/mysql-secure-installation-automation/" itemprop="url">mysql_secure_installation 자동화</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>이전 글 <a href="2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a>에서 MariaDB를 설치하면서 <code>mysql_secure_installation</code> 명령을 자동화하는 부분을 언급했었다. 이 글에서는 이를 설명하려고 한다. 우선 바로 만들어둔 bash shell script를 보자.</p>
+
+<p><strong>mysql_secure_installation_automation.sh</strong></p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/bash</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># https://gist.github.com/Mins/4602864</span>
+</span><span class='line'>
+</span><span class='line'>yum -y install expect
+</span><span class='line'>
+</span><span class='line'><span class="c"># Not required in actual script</span>
+</span><span class='line'><span class="nv">MYSQL_ROOT_PASSWORD</span><span class="o">=</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">SECURE_MYSQL</span><span class="o">=</span><span class="k">$(</span>expect -c <span class="s2">&quot;</span>
+</span><span class='line'><span class="s2">set timeout 3</span>
+</span><span class='line'><span class="s2">spawn mysql_secure_installation</span>
+</span><span class='line'><span class="s2">expect \&quot;Enter current password for root (enter for none):\&quot;</span>
+</span><span class='line'><span class="s2">send \&quot;$MYSQL\r\&quot;</span>
+</span><span class='line'><span class="s2">expect \&quot;Change the root password?\&quot;</span>
+</span><span class='line'><span class="s2">send \&quot;n\r\&quot;</span>
+</span><span class='line'><span class="s2">expect \&quot;Remove anonymous users?\&quot;</span>
+</span><span class='line'><span class="s2">send \&quot;y\r\&quot;</span>
+</span><span class='line'><span class="s2">expect \&quot;Disallow root login remotely?\&quot;</span>
+</span><span class='line'><span class="s2">send \&quot;y\r\&quot;</span>
+</span><span class='line'><span class="s2">expect \&quot;Remove test database and access to it?\&quot;</span>
+</span><span class='line'><span class="s2">send \&quot;y\r\&quot;</span>
+</span><span class='line'><span class="s2">expect \&quot;Reload privilege tables now?\&quot;</span>
+</span><span class='line'><span class="s2">send \&quot;y\r\&quot;</span>
+</span><span class='line'><span class="s2">expect eof</span>
+</span><span class='line'><span class="s2">&quot;</span><span class="k">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;$SECURE_MYSQL&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이 스크립트는 <a href="https://gist.github.com/Mins/4602864">mysql_secure_installation automation</a> 스크립트를 참고하여 CentOS에 맞게 조금 수정한 것이다.</p>
+
+<p>위 스크립트를 mysql_secure_installation_automation.sh 파일로 저장했다면 아래와 같이 실행하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>chmod <span class="m">700</span> mysql_secure_installation_automation.sh
+</span><span class='line'><span class="nv">$ </span>./mysql_secure_installation_automation.sh
+</span></code></pre></td></tr></table></div></figure>
+
+<p>특별히 설명할 것도 없지만 간략하게나마 원리를 설명하자면 <code>expect</code>라는 도구를 사용해서 사용자 입력을 대신하도록 하는 것이다. 이를 응용하면 <code>mysql_secure_installation</code> 외에도 여러가지 상황에 적용할 수 있다. 나의 경우는 <code>expect</code>를 이용해서 ssh 비밀번호 자동 입력 기능을 만들어 사용하고 있었다. 사실 ssh의 경우는 key를 등록하는 방식으로 비밀번호 없이 로그인이 가능하고 비밀번호를 외부로 노출하는 것이 보안상 문제가 있지만 간단하게 접속이 필요하고 보안상의 이슈가 없는 곳에서 유용하게 사용하고 있다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-04T08:37:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.04</time>
+        
+           | <a href="/2015/12/04/installing-mariadb-on-centos-7/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/12/04/installing-mariadb-on-centos-7/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/12/04/installing-mariadb-on-centos-7/" itemprop="url">MariaDB 최신 버전 설치(yum) - CentOS 7</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>CentOS 7에서의 <a href="https://mariadb.org/">MariaDB</a>의 기본적인 설치는 아주 간단하다. yum epel 저장소가 추가된 상태에서 아래와 같이 설치가 가능하다(epel이 없어도 동일할 것으로 생각되나 이 글에서의 주요 내용이 아니기 때문에 테스트 해보지는 않았다).</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum install -y mariadb mariadb-server
+</span><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>mariadb.service
+</span><span class='line'><span class="nv">$ </span>systemctl start mariadb.service
+</span><span class='line'><span class="nv">$ </span>mysql_secure_installation
+</span></code></pre></td></tr></table></div></figure>
+
+<p>기본 설치는 끝이다. 이제부터 mariadb을 설정하는 부분이 남았지만 이 부분은 서버 상황에 따라 모두 다르니 여기서는 다루지 않는다. 그리고 한가지 더. <code>mysql_secure_installation</code>를 실행하면 자신의 상황에 맞게 설정하기 위해 몇가지를 물어본다. 그런데 이게 거의 일정하고 설치 자동화를 할 때 입력창이 나오면 처리가 귀찮아진다. 이 부분을 자동화하는 부분에 대해서는 <a href="/2015/12/04/mysql-secure-installation-automation/">mysql_secure_installation 자동화</a>에서 따로 글을 남긴다.</p>
+
+<p>이제부터가 본격적인 이 글에서 하고자하는 이야기다.</p>
+
+<p>위의 방법으로 설치하면 현재 기준으로 5.5.44 버전이 설치된다. 하지만 최신 버전은 10.1.9다. 그렇다면 최신 버전을 설치하려면 어떻게 해야하는가? 아래의 과정을 보자.</p>
+
+<p>우선 yum에 mariadb 저장소를 추가한다. <code>http://yum.mariadb.org/10.1/centos7-amd64</code>는 현재 최신 버전과 CentOS7을 기준으로한 주소다. <a href="http://yum.mariadb.org">http://yum.mariadb.org</a> 를 열어보면 다른 기준에서 사용할 수 있는 레포지토리들도 확인할 수 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;[mariadb]&quot;</span> &gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;name = MariaDB&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;baseurl = http://yum.mariadb.org/10.1/rhel7-amd64&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;gpgcheck=1&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span></code></pre></td></tr></table></div></figure>
+
+<p>더 간단한 방법도 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>wget -O /etc/yum.repos.d/MariaDB.repo http://mariadb.if-not-true-then-false.com/rhel/<span class="k">$(</span>rpm -E %rhel<span class="k">)</span>/<span class="k">$(</span>uname -i<span class="k">)</span>/10_1
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이후는 기존과 동일하다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum install -y mariadb mariadb-server
+</span><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>mariadb.service
+</span><span class='line'><span class="nv">$ </span>systemctl start mariadb.service
+</span><span class='line'><span class="nv">$ </span>mysql_secure_installation
+</span></code></pre></td></tr></table></div></figure>
+
+<p>단, 10.1.8 버전 이상일 경우만 위와 같이 처리가 가능한 것으로 보인다(<a href="https://mariadb.com/kb/en/mariadb/systemd/">MariaDB Systemd</a>).</p>
+
+<p>따라서 10.0 버전대를 설치한다면  아래와 같이 하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum install -y mariadb mariadb-server
+</span><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>mysql.service
+</span><span class='line'><span class="nv">$ </span>systemctl start mysql.service
+</span><span class='line'><span class="nv">$ </span>mysql_secure_installation
+</span></code></pre></td></tr></table></div></figure>
+
+<p>하지만 약간의 차이가 있다. systemctl에서 사용하는 service 명이 다르다. 왜 다른지는 모르겠지만 설치를 했는데 서비스 등록이 되지 않아서 처음엔 당황스러웠다. 이 부분도 처음과 동일하게 사용하고 싶다면 alias를 사용하는 방법이 있다(<a href="https://www.centos.org/forums/viewtopic.php?f=47&amp;t=47373">service name alias? mariadb-&gt;mysql - how?</a>).</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> <span class="s2">&quot;Alias=mysql.service&quot;</span> &gt; /usr/lib/systemd/system/mariadb.service
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이렇게 해주면 mariadb라는 이름으로 service를 등록할 수 있다. 큰 의미가 없으니 굳이 적용할 필요는 없으나 혼선을 없애기 위해서라면 적용하는 것도 나쁘지는 않을 듯하다.</p>
+
+<p>자.. 그런데 위 설치 방법대로 따라하면 아래와 같은 화면을 만나게 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>mysql.service
+</span><span class='line'>mysql.service is not a native service, redirecting to /sbin/chkconfig.
+</span><span class='line'>Executing /sbin/chkconfig mysql on
+</span><span class='line'>The unit files have no <span class="o">[</span>Install<span class="o">]</span> section. They are not meant to be enabled
+</span><span class='line'>using systemctl.
+</span><span class='line'>Possible reasons <span class="k">for</span> having this kind of units are:
+</span><span class='line'>1<span class="o">)</span> A unit may be statically enabled by being symlinked from another unit<span class="s1">&#39;s</span>
+</span><span class='line'><span class="s1">   .wants/ or .requires/ directory.</span>
+</span><span class='line'><span class="s1">2) A unit&#39;</span>s purpose may be to act as a helper <span class="k">for</span> some other unit which has
+</span><span class='line'>   a requirement dependency on it.
+</span><span class='line'>3<span class="o">)</span> A unit may be started when needed via activation <span class="o">(</span>socket, path, timer,
+</span><span class='line'>   D-Bus, udev, scripted systemctl call, ...<span class="o">)</span>.
+</span></code></pre></td></tr></table></div></figure>
+
+<p>내용을 보면 mariadb가 systemd에 등록되지 않고 chkconfig로 initd에 등록된다. 앞서 설명했던 5.5/10.1 버전 설치와는 다른 결과다. CentOS의 레포지토리를 이용해서 설치하면 <code>/usr/lib/systemd/system/mariadb.service</code> 파일이 함께 설치되는데 MariaDB 레포지토리로 설치하면 이 파일이 설치되지 않는다(확인해보니 다른 몇가지도 차이가 있다).</p>
+
+<p>이 부분은 MariaDB 10.0이 systemd 지원을 아직 제대로 하지 않아서 그런 것 같다(테스트는 해보지 않았지만 찾아보니 Fedora 22 이상부터는 바로 지원이 되는 것으로 보인다).</p>
+
+<p>그냥 이렇게 사용해도 문제는 되지 않지만 기존과 동일하게 systemd로 사용하고 싶다면 10.1 버전을 사용하면 된다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-03T20:35:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.03</time>
         
            | <a href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/#disqus_thread" itemprop="discussionUrl"
@@ -1301,231 +1557,6 @@ Context: http, server</p>
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-17T13:19:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.17</time>
-        
-           | <a href="/2015/11/17/cocoapods-transitive-dependency-with-static-library/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/11/17/cocoapods-transitive-dependency-with-static-library/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/11/17/cocoapods-transitive-dependency-with-static-library/" itemprop="url">Cocoapods : Sub Module에서 GoogleMaps 의존성 사용시 Transitive dependency 문제 해결</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p><strong>아래에 설명한 방법을 사용시 런타임시에 문제가 될 수 있어 다른 방법을 찾고 있는 중이니 참고만 하길 바란다.</strong></p>
-
-<p>지난 글 <a href="/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/">Cocoapods : The &#39;Pods&#39; target has transitive dependencies that include static binaries 오류</a>에서 언급한 transitive dependencies 문제를 해결하는 방법을 설명하려고 한다. 미리 이야기 하지만 사실 아래의 내용은 아주 깔끔하게 해결하는 방법은 아니다. 정확한 해결이 되려면 CocoaPods에서 정식 지원을 해야 해결될 것으로 보인다. 하지만 임시로라도 사용을 해야 한다면 아래의 내용이 도움이 될지도 모르겠다(어쨌든 난 이렇게 사용중이다).</p>
-
-<p>우선 왜 이 문제를 만나게 되었는지 부터 설명하려고 한다.
-지난글에서 설명 했던 것과 같이 Sub Module에서 GoogleMaps에 대한 의존성을 지정 해야하는 상황이 발생했다. 그래서 아래와 같이 <code>podspec</code> 파일을 만들었다.</p>
-
-<p><strong>ModuleName.podspec</strong>
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Pod</span><span class="o">::</span><span class="no">Spec</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">s</span><span class="o">|</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">name</span>     <span class="o">=</span> <span class="s1">&#39;ModuleName&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">version</span>  <span class="o">=</span> <span class="s1">&#39;1.0.0&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="s1">&#39;MIT&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">summary</span>  <span class="o">=</span> <span class="s1">&#39;ModuleName Summary&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">homepage</span> <span class="o">=</span> <span class="s1">&#39;https://~<del>&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">author</span>   <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;ㅇㅇㅇ&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;<a href="mailto:nobody@nobody.com">nobody@nobody.com</a>&#39;</span> <span class="p">}</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source</span>   <span class="o">=</span> <span class="p">{</span> <span class="ss">:git</span> <span class="o">=&gt;</span> <span class="s1">&#39;https://</del>~/ModuleName.git&#39;</span><span class="p">,</span> <span class="ss">:tag</span> <span class="o">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">version</span> <span class="p">}</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">ios</span><span class="o">.</span><span class="n">deployment_target</span> <span class="o">=</span> <span class="s1">&#39;8.0&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source_files</span> <span class="o">=</span> <span class="s1">&#39;Source/ModuleName/<em>.swift&#39;</span><span class="p">,</span> <span class="s1">&#39;ModuleName/</em><em>/</em>.swift&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">requires_arc</span> <span class="o">=</span> <span class="kp">true</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">dependency</span> <span class="s1">&#39;GoogleMaps&#39;</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p>그런데 <code>[!] The &#39;Pods&#39; target has transitive dependencies that include static binaries: (/~~~/Pods/GoogleMaps/Frameworks/GoogleMaps.framework)</code> 오류가 발생한다(<strong>이전 글에서도 언급했지만 항상 발생하는 것이 아니라 Podfile에서 <code>use_frameworks!</code>를 사용할 경우에 발생한다.</strong>). 그래서 <a href="/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/">Cocoapods : The &#39;Pods&#39; target has transitive dependencies that include static binaries 오류</a>에서 언급한 것처럼 <code>pre_install</code>을 사용해서 오류는 제거했다. 하지만 실제 작업을 위해 <code>import GoogleMaps</code>를 하면 모듈을 찾지를 못한다. 여기서 부터 삽질이 시작되었다.</p>
-
-<p>static binaries를 포함하는 모듈이 아닌 경우 부모 프로젝트(Sub Module을 사용하는)에서 해당 의존성이 지정되어 있다면 바로 import해서 사용이 가능하다(부모 프로젝트의 Podfile에 <code>pod &#39;GoogleMaps&#39;</code>가 추가되어 있는 경우). 당연히 부모 프로젝트를 열어서 Sub Module을 수정하고 있는 경우를 말한다. 하지만 이 경우는 그것도 안된다(정확한 이유는 아직 모르겠다. static binaries를 포함하고 있어서 그런 것인지 GoogleMaps 모듈이 use_frameworks을 완전하게 지원하지 않아서 인지 명확하지는 않다). 따라서 어떻게 해서든 의존성을 지정해야 한다.</p>
-
-<p>이를 해결하려고 여러가지 시도를 해봤으나 모두 실패했다. 그래서 다른 프로젝트들은 어떻게 해결했나 싶어 github에서 모듈들을 찾아다니다 <a href="https://github.com/poulpix/PXGoogleDirections">PXGoogleDirections</a>를 발견했다. 내가 원했던 것처럼 CocoaPods 모듈에서 GoogleMaps에 대한 의존성을 지정한 모듈이다(사실 다른 모듈들도 찾았으니 그냥 <code>dependency</code>를 사용하고 있었다. 이 모듈들은 확인해보니 나처럼 <code>use_frameworks!</code>를 사용하는 상황에서는 동일한 문제가 발생한다). 그래서 <a href="https://github.com/poulpix/PXGoogleDirections">PXGoogleDirections</a>의 소스를 조금 둘러보니 GoogleMaps의 소스를 프로젝트 내부에 포함하고 있었다. 사실 이 방법이 외부에서 사용시에는 가장 깔끔한 방법으로 보인다. 하지만 난 이렇게는 하고 싶지 않았다.</p>
-
-<p>그래서 <a href="https://github.com/poulpix/PXGoogleDirections/blob/master/PXGoogleDirections.podspec">PXGoogleDirections.podspec</a>를 참고해서 여러 번의 시도 끝에 나름의 방법을 찾았다.</p>
-
-<p>결론은 <code>podspec</code>파일을 아래와 같이 설정하면 된다. 단, <a href="/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/">Cocoapods : The &#39;Pods&#39; target has transitive dependencies that include static binaries 오류</a>에서 언급한 것처럼 <code>pre_install</code>을 사용해서 오류는 제거해야 한다.</p>
-
-<p><strong>ModuleName.podspec</strong>
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Pod</span><span class="o">::</span><span class="no">Spec</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">s</span><span class="o">|</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">name</span>     <span class="o">=</span> <span class="s1">&#39;ModuleName&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">version</span>  <span class="o">=</span> <span class="s1">&#39;1.0.0&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="s1">&#39;MIT&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">summary</span>  <span class="o">=</span> <span class="s1">&#39;ModuleName Summary&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">homepage</span> <span class="o">=</span> <span class="s1">&#39;https://~<del>&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">author</span>   <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;ㅇㅇㅇ&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;<a href="mailto:nobody@nobody.com">nobody@nobody.com</a>&#39;</span> <span class="p">}</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source</span>   <span class="o">=</span> <span class="p">{</span> <span class="ss">:git</span> <span class="o">=&gt;</span> <span class="s1">&#39;https://</del>~/ModuleName.git&#39;</span><span class="p">,</span> <span class="ss">:tag</span> <span class="o">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">version</span> <span class="p">}</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">ios</span><span class="o">.</span><span class="n">deployment_target</span> <span class="o">=</span> <span class="s1">&#39;8.0&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source_files</span> <span class="o">=</span> <span class="s1">&#39;Source/ModuleName/<em>.swift&#39;</span><span class="p">,</span> <span class="s1">&#39;ModuleName/</em><em>/</em>.swift&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">requires_arc</span> <span class="o">=</span> <span class="kp">true</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">dependency</span> <span class="s1">&#39;GoogleMaps&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">frameworks</span>            <span class="o">=</span> <span class="s2">&quot;Accelerate&quot;</span><span class="p">,</span> <span class="s2">&quot;AVFoundation&quot;</span><span class="p">,</span> <span class="s2">&quot;CoreBluetooth&quot;</span><span class="p">,</span> <span class="s2">&quot;CoreData&quot;</span><span class="p">,</span> <span class="s2">&quot;CoreLocation&quot;</span><span class="p">,</span> <span class="s2">&quot;CoreText&quot;</span><span class="p">,</span> <span class="s2">&quot;Foundation&quot;</span><span class="p">,</span> <span class="s2">&quot;GLKit&quot;</span><span class="p">,</span> <span class="s2">&quot;ImageIO&quot;</span><span class="p">,</span> <span class="s2">&quot;OpenGLES&quot;</span><span class="p">,</span> <span class="s2">&quot;QuartzCore&quot;</span><span class="p">,</span> <span class="s2">&quot;Security&quot;</span><span class="p">,</span> <span class="s2">&quot;SystemConfiguration&quot;</span><span class="p">,</span> <span class="s2">&quot;CoreGraphics&quot;</span><span class="p">,</span> <span class="s2">&quot;GoogleMaps&quot;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">resource_bundles</span>      <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;GoogleMaps&#39;</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="s1">&#39;$(PODS_ROOT)/GoogleMaps/Frameworks/GoogleMaps.framework/Resources/*.bundle&#39;</span><span class="o">]</span> <span class="p">}</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">vendored_frameworks</span>   <span class="o">=</span> <span class="s2">&quot;$(PODS_ROOT)/GoogleMaps/Frameworks/GoogleMaps.framework&quot;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">xcconfig</span>              <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;FRAMEWORK_SEARCH_PATHS&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;$(PODS_ROOT)/GoogleMaps/Frameworks&#39;</span> <span class="p">}</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p>설명하자면 <code>dependency</code>를 통해 의존성을 설정한다. Cocoapods의 특성상 Sub Module의 의존성도 모두 <code>Pods</code>로 통합되어 추가된다(부모 프로젝트에서도 바로 사용 가능하다). 그런데 이렇게만 설정하면 정작 Sub Module에서는 GoogleMaps에 접근할 수 없으므로 관련된 설정을 <code>Pods</code>에 설치된 GoogleMaps에 맞추어준다. <code>frameworks</code>의 경우만 보더라도 GoogleMaps에서 이미 의존성이 다 지정되어 있음에도 불구하고 다시 다 설정해 주어야 한다(<a href="https://github.com/CocoaPods/Specs/blob/master/Specs/GoogleMaps/1.10.5/GoogleMaps.podspec.json">GoogleMaps.podspec.json</a> 참고)</p>
-
-<p>어쨌든 이렇게 하면 문제는 해결된다. 서두에서 언급한 것처럼 내가 봐도 깔끔한 해결 방법은 아니다. 하지만 이런 불편함을 감수하고서라도 Sub Module로 분리하고 싶다면 위 방법을 참고하자. 원리를 보면 GoogleMaps가 아닌 다른 모듈(static binaries를 포함하는)도 동일하게 처리할 수 있다. 그리고 일단 Sub Module로 분리해서 사용하다 보면 CocoaPods에서 개선해줄 것으로 생각한다(관련되 Issue가 다수 존재하므로).</p>
-</div>
-  
-  
-
-
-        </article>
-      
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-17T13:17:38+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.17</time>
-        
-           | <a href="/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/" itemprop="url">Cocoapods : The 'Pods' target has transitive dependencies that include static binaries 오류</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>iOS용 앱 개발을 하면서 CocoaPods을 사용하고 있다. 그리고 CocoaPods을 이용해서 반복적인 기능의 구현을 Sub Module로 분리하여 프로젝트를 진행하고 있다. Sub Module 분리에 대해서는 <a href="/2015/10/21/xcode-create-sub-module-using-cocoapods/">Xcode에서 CocoaPods를 이용해 sub module 만들기</a>에서 설명 했었다.</p>
-
-<p>이렇게 만든 Sub Module에서 가지는 의존성은 <code>dependency</code> 속성을 이용해서 지정한다. 예를들면 아래와 같다.</p>
-
-<figure class='code notranslate'><figcaption><span>ModuleName.podspec</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Pod</span><span class="o">::</span><span class="no">Spec</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">s</span><span class="o">|</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">name</span>     <span class="o">=</span> <span class="s1">&#39;ModuleName&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">version</span>  <span class="o">=</span> <span class="s1">&#39;1.0.0&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="s1">&#39;MIT&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">summary</span>  <span class="o">=</span> <span class="s1">&#39;ModuleName Summary&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">homepage</span> <span class="o">=</span> <span class="s1">&#39;https://~~~&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">author</span>   <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;ㅇㅇㅇ&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;nobody@nobody.com&#39;</span> <span class="p">}</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source</span>   <span class="o">=</span> <span class="p">{</span> <span class="ss">:git</span> <span class="o">=&gt;</span> <span class="s1">&#39;https://~~~/ModuleName.git&#39;</span><span class="p">,</span> <span class="ss">:tag</span> <span class="o">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">version</span> <span class="p">}</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">ios</span><span class="o">.</span><span class="n">deployment_target</span> <span class="o">=</span> <span class="s1">&#39;8.0&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">source_files</span> <span class="o">=</span> <span class="s1">&#39;Source/ModuleName/*.swift&#39;</span><span class="p">,</span> <span class="s1">&#39;ModuleName/**/*.swift&#39;</span>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">requires_arc</span> <span class="o">=</span> <span class="kp">true</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="n">s</span><span class="o">.</span><span class="n">dependency</span> <span class="s1">&#39;DependencyModuleName&#39;</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>그런데 이렇게 설정해서 사용할 경우 CocoaPods에서 아래와 같은 오류가 나는 경우가 있다. <strong>항상 발생하는 것이 아니라 Podfile에서 <code>use_frameworks!</code>를 사용할 경우에 발생한다.</strong></p>
-
-<figure class='code notranslate'><figcaption><span>ModuleName.podspec</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">[!]</span> <span class="no">The</span> <span class="s1">&#39;Pods&#39;</span> <span class="n">target</span> <span class="n">has</span> <span class="n">transitive</span> <span class="n">dependencies</span> <span class="n">that</span> <span class="kp">include</span> <span class="n">static</span> <span class="ss">binaries</span><span class="p">:</span> <span class="p">(</span><span class="sr">/~~~/</span><span class="no">Pods</span><span class="o">/</span><span class="no">DependencyModuleName</span><span class="o">/</span><span class="no">Frameworks</span><span class="o">/</span><span class="no">DependencyModuleName</span><span class="o">.</span><span class="n">framework</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>대표적으로 GoogleMaps 모듈을 <code>dependency</code>로 사용하면 이 오류를 만나게 된다. 이유를 간단하게 설명하자면 의존성을 지정한 모듈이 static binaries를 포함하고 있기 때문에 발생하는 오류다. 현재 사용중인 CocoaPods의 버전은 0.39.0인데 아직까지 이 상황에 대해서는 지원을 하지 않는 것으로 보인다. 이와 관련하여 <a href="https://github.com/CocoaPods/CocoaPods/issues/2926">Reject installation if a static library is used as a transitive dependency while using frameworks</a>라는 Issue가 진행중이다.</p>
-
-<p>어쨌든 일단 CocoaPods에서 이 오류가 나지 않도록 하는 방법은 다음과 같다. 부모 프로젝트의 Podfile에 아래와 같이 추가 한다.</p>
-
-<figure class='code notranslate'><figcaption><span>Podfile</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">pre_install</span> <span class="k">do</span> <span class="o">|</span><span class="n">installer</span><span class="o">|</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nc">installer</span><span class="o">.</span><span class="nf">verify_no_static_framework_transitive_dependencies</span><span class="p">;</span> <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>관련글 : <a href="https://github.com/CocoaPods/CocoaPods/issues/3289">Prevent Transitive Dependency Errors in Swift Project with Vendored Frameworks</a></p>
-
-<p>pre_install를 이미 사용중이라면 거기에 def 라인만 추가하면 된다.</p>
-
-<p>사실 이 방법은 일단 오류가 나오지 않도록 검사를 하지 않는 것일 뿐 근본적인 해결이 된 것은 아니다. 이와 관련한 해결 방법은 관련성이 있으나 다른 부분을 포함하고 있어 <a href="/2015/11/17/cocoapods-transitive-dependency-with-static-library/">Cocoapods : Sub Module에서 GoogleMaps 의존성 사용시 Transitive dependency 문제 해결</a>에 따로 남긴다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1598,7 +1629,7 @@ Context: http, server</p>
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (10)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (12)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1607,15 +1638,15 @@ Context: http, server</p>
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/12/04/mysql-secure-installation-automation/">mysql_secure_installation 자동화</a>
+    
+    <a class="list-group-item " href="/2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a>
+    
     <a class="list-group-item " href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법</a>
     
     <a class="list-group-item " href="/2015/12/02/vagrant-cant-mount-shared-folder/">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a>
     
     <a class="list-group-item " href="/2015/12/02/nginx-414-request-uri-too-large/">Nginx : 414 Request-URI Too Large 오류</a>
-    
-    <a class="list-group-item " href="/2015/12/02/selinux-plus-php-session-permission-denied-error/">selinux + PHP : Session Permission denied 오류</a>
-    
-    <a class="list-group-item " href="/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/">Nginx(stable / mainline) 설치 - CentOS 6.5 / 7</a>
     
   </div>
 </section>

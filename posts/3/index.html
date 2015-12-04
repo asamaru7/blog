@@ -139,6 +139,105 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-02T16:57:18+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.02</time>
+        
+           | <a href="/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/" itemprop="url">Xcode 7.1에서 Google Maps SDK 사용시 빌드가 되지 않는 결함</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>얼마전 iOS 앱 개발에 사용하던 xcode를 7.1로 업데이트 했다. 그런데 앱에서 사용중이던 Google Maps SDK가 빌드되지 못해 앱을 실행할 수가 없었다. 문제는 header 생성 부분인데 해결 방법을 찾지 못해 다시 7.0을 재설치해서 사용하고 있었다. 그렇게 지내던 중 오늘 갑자기 생각이 나서 다시 확인해 봤다. 다행히 그 사이에 Google에서 update를 내 놓았다. 이 문제가 수정된 버전은 1.10.5 버전이다. 그리고 관련된 issue는 <a href="https://code.google.com/p/gmaps-api-issues/issues/detail?id=8524&amp;can=1&amp;q=Could%20not%20build%20Objective-C%20module&amp;colspec=ID%20Type%20Status%20Introduced%20Fixed%20Summary%20Stars%20ApiType%20Internal">Issue 8524: Bug: Running under Xcode 7 beta 6 with Google Maps SDK results in broken debugging.</a>이다.</p>
+
+<p>오류 메시지는 <code>Include of non-modular header inside framework module &#39;GoogleMaps&#39;</code>이다.</p>
+
+<p>대략 아래의 이미지처럼 오류가 난다(이미지는 캡춰하기 귀찮아 인터넷에 있는 이미지를 가져왔다).</p>
+
+<p><img src="/img/2015-11-02-google-maps-sdk-with-xcode-7-dot-1-bug-1.png" alt="오류"></p>
+
+<p>혹 xcode 7.1 사용시 이런 오류가 나온다면 Google Maps SDK를 1.10.5 이상으로 업데이트 후 빌드 해보기 바란다.</p>
+
+<p>이 문제에 대한 원인은 처음 오류를 만났을 때 다른 사람들이 이야기하는 것을 봤었는데 정확한 내용이 기억이 나지 않는다. 대충 기억이 나는 것은 xcode가 7.1로 버전업 되면서 swift 모듈에 header 처리하는 부분이 변경되었다고 했던 것 같은데... 나중에라도 원인을 알게되면 다시 남기도록 하겠다.</p>
+
+<p>Apple Developer Forums에서 나온 <a href="https://forums.developer.apple.com/thread/23554">Include of non-modular header inside framework module</a> issue도 있다. 혹시 GoogleMaps가 아닌 모듈에서 동일한 오류가 난다면 참고.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-02T12:27:06+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.02</time>
+        
+           | <a href="/2015/11/02/android-online-apk-download-and-decompile/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/11/02/android-online-apk-download-and-decompile/" itemprop="url">android apk download / decompile 하기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>오늘은 <a href="https://play.google.com/store">Google Play</a>에서 apk 파일을 다운 받는 방법과 apk 파일을 decompile하는 방법을 소개하려고 한다.
+일반적인 상황에서는 apk를 받거나 decompile 할 일은 거의 없다. 하지만 안드로이드 개발을 하다보면 필요해지는 경우가 있다. 나의 경우는 ACRA를 이용해서 서비스 앱에서 crash가 발생하면 오류를 보고하도록 해두고 사용한다. 그런데 proguard를 사용해서 난독화가 되어 있다보니 오류 메시지만 보고는 어디에서 발생한 오류인지 확인할 수 없다. 그래서 서비스 중이 apk를 다운 받아 decompile해서 오류 위치를 파악한다. 배포 전에 apk 파일을 따로 보관해두는 방법도 있으나 귀찮아서 일일이 보관하지 않고 있다. 소스야 Git에서 tagging을 해두기 때문에 해당 버전을 바로 확인할 수 있지만 proguard가 적용되면서 package 등을 모두 바꾸게 되어 있어서 서비스 중인 apk가 따로 필요하다.</p>
+
+<p>본론으로 들어가서 일단 APK 파일을 받으려면 <a href="http://apk-dl.com/">Online Google Play APK Downloader</a>를 사용하면 된다. 사이트에 가서 원하는 앱의 package명을 넣으면 다운 받아진다. 간혹 실패하는 경우가 있으나 다시 시도하면 대부분은 받아진다.</p>
+
+<p>받아진 apk 파일을 decompile 하려면 <a href="http://www.decompileandroid.com/">Android APK Decompiler</a>를 사용하면 된다. 다운 받은 파일을 업로드하면 잠시 후에 Manifest 파일 정보와 함께 다운로드 링크가 나온다. 다운 받으면 소스가 zip로 압축되어 있으니 압축을 풀어서 보면 된다. 당연히 완벽한 소스로 복구되지는 않는다. 하지만 오류 위치를 파악하거나 하는 경우에는 충분한 소스가 나온다.</p>
+
+<p>물론 위의 사이트들을 사용해야만 가능한 일들은 아니다. apk 다운로드의 경우 별도의 app도 있고 decompile의 경우도 shell에서 직접할 수 있다. 하지만 위 사이트들을 사용하면 간단하게 처리가 가능하니 필요하다면 한번 쯤은 사용해 봐도 좋을 듯하다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-29T14:14:03+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.29</time>
         
            | <a href="/2015/10/29/google-apps-admin-password-reset/#disqus_thread" itemprop="discussionUrl"
@@ -1195,160 +1294,6 @@ Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-20T20:17:02+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.20</time>
-        
-           | <a href="/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/" itemprop="url">xcode 7 : Alcatraz 와 CocoaPods Xcode plugins</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p><a href="/2015/08/28/cocoapods-usage/">CocoaPods 사용법</a>에서 CocoaPods를 설치하고 사용하는 법에 대해 간단하게 안내했었다. 오늘은 이 CocoaPods을 XCode에서 조금이나마 편하게 쓰기 위한 플러그인을 소개 하려고 한다. 덤으로 <a href="http://alcatraz.io/">Alcatraz</a>라고하는 Xcode용 패키지 메니저도 함께 소개한다.</p>
-
-<p>우선 <a href="http://alcatraz.io/">Alcatraz</a> 부터 소개하려고 한다. CocoaPods Xcode plugins을 직접 설치하는 방법도 있으나 Alcatraz를 사용하면 더 쉽게 할 수 있기 때문이다.</p>
-
-<h2 id="alcatraz">Alcatraz</h2>
-
-<p>공식 사이트에는 <strong>The package manager for Xcode</strong> 라고 소개하고 있다. 말그대로 Xcode를 위한 패키지 매니저로 여러가지 플러그인, Color 테마, 템플릿들을 바로 설치할 수 있도록 도와준다.</p>
-
-<h3 id="설치">설치</h3>
-
-<p>공식 사이트에 안내되어 있는대로 아래의 명령을 실행하는 것으로 설치가 완료된다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>curl -fsSL https://raw.githubusercontent.com/supermarin/Alcatraz/deploy/Scripts/install.sh <span class="p">|</span> sh
-</span></code></pre></td></tr></table></div></figure>
-
-<p>설치후 Xcode는 재시작 해주면 아래와 같은 화면이 나온다.</p>
-
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-1.png" alt="Alcatraz"></p>
-
-<p>설치한 플러그인을 load 할 것인지 물어본다. 당연히 &quot;Load Bundle&quot;을 해주면 이제부터 사용 가능하다. Xcode의 Window 메뉴에 보면 아래와 같이 &quot;Package Manager&quot;라는 메뉴가 추가되어 있다.</p>
-
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-2.png" alt="Alcatraz"></p>
-
-<h2 id="cocoapods-xcode-plugins-설치">CocoaPods Xcode plugins 설치</h2>
-
-<p>Alcatraz에서 바로 설치 가능한 CocoaPods 플러그인은 현재 2가지가 있는 것으로 보이는데 그 중 <a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a>를 먼저 설치해 보자. 사이트에 보면 설치 방법이 나와 있는데 당연히 Alcatraz를 통해 설치하는 것이 쉽다.</p>
-
-<p>&quot;Window &gt; Package Manager&quot; 메뉴를 실행하면 아래와 같은 화면이 나온다. 여기서 cocoapods로 검색하면 두가지의 플러그인이 보인다.</p>
-
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-3.png" alt="Alcatraz"></p>
-
-<p>이 중에서 위에 CocoaPods를 먼저 설치해 보자. 그냥 &quot;INSTALL&quot;이라고 되어 있는 버튼을 누르면 설치가 완료된다. 그리고 Xcode를 재시작하면 다시 아래와 같은 화면이 나온다. 당연히 &quot;Load Bundle&quot;을 선택한다.</p>
-
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-4.png" alt="Alcatraz"></p>
-
-<p>이제는 플러그인이 설치가 완료되었기 때문에 &quot;Product &gt; CocoaPods&quot; 메뉴를 볼 수 있다. 이 메뉴를 열어보면 아래와 같은 화면이 나온다. 여기서 유의할 점은 GEM_PATH를 자신의 환경에 맞게 바꿔야 한다는 점이다. 기본은 &quot;/usr/bin&quot;인 것 같은데 나의 경우는 &quot;/usr/local/bin&quot;에 있어서 지정을 했다. 경로를 모른다면 <code>which pod</code>라는 명령을 shell에서 실행해보면 확인 할 수 있다.</p>
-
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-5.png" alt="Alcatraz"></p>
-
-<p>다음은 <a href="https://github.com/Galeas/CocoaPodUI">CocoaPodUI</a> 플러그인이다. 설치 과정은 위의 플러그인 설치 과정과 동일하다. 그런데 문제는 현재 시점에서 확인해보니 정상적인 설치가 되지 않는다. Xcode 7과의 호환성 문제인지 플러그인은 정상 설치가 된 것으로 나오는데 설치 경로에 가보면 폴더가 비어 있다. 스샷만 보면 이 플러그인이 기능이 더 다양해 보이는데 사용을 해보지 못해 아쉽다.</p>
-
-<p>하지만 <a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a>만 사용하더라도 기존 보다는 편하다(굳이 따로 shell을 열지 않아도 되니).</p>
-</div>
-  
-  
-
-
-        </article>
-      
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-20T13:56:30+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.20</time>
-        
-           | <a href="/2015/10/20/google-play-services-out-of-date/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/20/google-play-services-out-of-date/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/20/google-play-services-out-of-date/" itemprop="url">Google play services out of date 오류 해결</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>오늘 앱 사용자에게서 오류 보고를 받았다. 기타 내용은 생략하고 App crash가 발생한 원인인 <code>Google play services out of date</code>이다. <a href="https://developers.google.com/android/guides/overview">Google play services</a>의 사용기간이 만료되었다는 오류인데 발생 원인은 Google play services 의 버전이 요구되는 버전과 맞지 않기 때문이다.</p>
-
-<p>우선 해결 방법부터 보자. 나의 경우는 아래와 같은 함수를 만들어서 필요한 화면에서 호출하도록 했다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">static</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">checkGooglePlayService</span><span class="o">(</span><span class="n">Activity</span> <span class="n">activity</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">Integer</span> <span class="n">resultCode</span> <span class="o">=</span> <span class="n">GooglePlayServicesUtil</span><span class="o">.</span><span class="na">isGooglePlayServicesAvailable</span><span class="o">(</span><span class="n">activity</span><span class="o">);</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">ConnectionResult</span><span class="o">.</span><span class="na">SUCCESS</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>    <span class="n">Dialog</span> <span class="n">dialog</span> <span class="o">=</span> <span class="n">GooglePlayServicesUtil</span><span class="o">.</span><span class="na">getErrorDialog</span><span class="o">(</span><span class="n">resultCode</span><span class="o">,</span> <span class="n">activity</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">dialog</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">dialog</span><span class="o">.</span><span class="na">show</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p><a href="https://developers.google.com/android/reference/com/google/android/gms/common/GooglePlayServicesUtil">GooglePlayServicesUtil</a>를 사용해서 사용 가능 상태를 확인하고 대응하도록 하는 것이다. 결과적으로 Google play services가 설치되어 있지 않다거나 요구 버전보다 낮다거나해서 사용이 불가능하면 오류 Dialog를 띄워주게 된다.</p>
-
-<p>관련된 내용은 <a href="http://www.androidpub.com/2508286">구글플레이 서비스에 대한 유의점</a>에 설명되어있다. <strong>결론은 <a href="https://developers.google.com/android/guides/overview">Google play services</a>를 사용한다면 해당 서비스가 설치되지 않은 상황에 대한 대응을 해줘야 한다는 것이다.</strong></p>
-
-<p>매번 생각하는 것이지만 이런 부분들은 안드로이드에서 알아서 처리해주면 안되는걸까? 사실 조금 이해가 안된다. 개발자가 모두 알아서 하도록 한다는 것이. 물론 대응 방법이 상황에 따라 다를 수 있으니 일원화하는 것이 정답은 아닐 수 있다. 하지만 별다른 지정을 하지 않는다면 앱을 그냥 죽이는 것 보다는 기본적인 안내라도 보여주는 것이 낫지 않느냐는 말이다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1421,7 +1366,7 @@ Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (10)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (12)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1430,15 +1375,15 @@ Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/12/04/mysql-secure-installation-automation/">mysql_secure_installation 자동화</a>
+    
+    <a class="list-group-item " href="/2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a>
+    
     <a class="list-group-item " href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법</a>
     
     <a class="list-group-item " href="/2015/12/02/vagrant-cant-mount-shared-folder/">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a>
     
     <a class="list-group-item " href="/2015/12/02/nginx-414-request-uri-too-large/">Nginx : 414 Request-URI Too Large 오류</a>
-    
-    <a class="list-group-item " href="/2015/12/02/selinux-plus-php-session-permission-denied-error/">selinux + PHP : Session Permission denied 오류</a>
-    
-    <a class="list-group-item " href="/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/">Nginx(stable / mainline) 설치 - CentOS 6.5 / 7</a>
     
   </div>
 </section>

@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-12-03T20:56:46+09:00</updated>
+  <updated>2015-12-04T13:46:58+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,200 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[mysql_secure_installation 자동화]]></title>
+    <link href="http://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation/"/>
+    <updated>2015-12-04T12:35:49+09:00</updated>
+    <id>http://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation</id>
+    <content type="html"><![CDATA[<p>이전 글 <a href="2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a>에서 MariaDB를 설치하면서 <code>mysql_secure_installation</code> 명령을 자동화하는 부분을 언급했었다. 이 글에서는 이를 설명하려고 한다. 우선 바로 만들어둔 bash shell script를 보자.</p>
+
+<p><strong>mysql_secure_installation_automation.sh</strong></p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/bash</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># https://gist.github.com/Mins/4602864</span>
+</span><span class='line'>
+</span><span class='line'>yum -y install expect
+</span><span class='line'>
+</span><span class='line'><span class="c"># Not required in actual script</span>
+</span><span class='line'><span class="nv">MYSQL_ROOT_PASSWORD</span><span class="o">=</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">SECURE_MYSQL</span><span class="o">=</span><span class="k">$(</span>expect -c <span class="s2">&quot;</span>
+</span><span class='line'><span class="s2">set timeout 3</span>
+</span><span class='line'><span class="s2">spawn mysql_secure_installation</span>
+</span><span class='line'><span class="s2">expect \&quot;Enter current password for root (enter for none):\&quot;</span>
+</span><span class='line'><span class="s2">send \&quot;$MYSQL\r\&quot;</span>
+</span><span class='line'><span class="s2">expect \&quot;Change the root password?\&quot;</span>
+</span><span class='line'><span class="s2">send \&quot;n\r\&quot;</span>
+</span><span class='line'><span class="s2">expect \&quot;Remove anonymous users?\&quot;</span>
+</span><span class='line'><span class="s2">send \&quot;y\r\&quot;</span>
+</span><span class='line'><span class="s2">expect \&quot;Disallow root login remotely?\&quot;</span>
+</span><span class='line'><span class="s2">send \&quot;y\r\&quot;</span>
+</span><span class='line'><span class="s2">expect \&quot;Remove test database and access to it?\&quot;</span>
+</span><span class='line'><span class="s2">send \&quot;y\r\&quot;</span>
+</span><span class='line'><span class="s2">expect \&quot;Reload privilege tables now?\&quot;</span>
+</span><span class='line'><span class="s2">send \&quot;y\r\&quot;</span>
+</span><span class='line'><span class="s2">expect eof</span>
+</span><span class='line'><span class="s2">&quot;</span><span class="k">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;$SECURE_MYSQL&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이 스크립트는 <a href="https://gist.github.com/Mins/4602864">mysql_secure_installation automation</a> 스크립트를 참고하여 CentOS에 맞게 조금 수정한 것이다.</p>
+
+<p>위 스크립트를 mysql_secure_installation_automation.sh 파일로 저장했다면 아래와 같이 실행하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>chmod <span class="m">700</span> mysql_secure_installation_automation.sh
+</span><span class='line'><span class="nv">$ </span>./mysql_secure_installation_automation.sh
+</span></code></pre></td></tr></table></div></figure>
+
+<p>특별히 설명할 것도 없지만 간략하게나마 원리를 설명하자면 <code>expect</code>라는 도구를 사용해서 사용자 입력을 대신하도록 하는 것이다. 이를 응용하면 <code>mysql_secure_installation</code> 외에도 여러가지 상황에 적용할 수 있다. 나의 경우는 <code>expect</code>를 이용해서 ssh 비밀번호 자동 입력 기능을 만들어 사용하고 있었다. 사실 ssh의 경우는 key를 등록하는 방식으로 비밀번호 없이 로그인이 가능하고 비밀번호를 외부로 노출하는 것이 보안상 문제가 있지만 간단하게 접속이 필요하고 보안상의 이슈가 없는 곳에서 유용하게 사용하고 있다.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[MariaDB 최신 버전 설치(yum) - CentOS 7]]></title>
+    <link href="http://blog.asamaru.net/2015/12/04/installing-mariadb-on-centos-7/"/>
+    <updated>2015-12-04T08:37:25+09:00</updated>
+    <id>http://blog.asamaru.net/2015/12/04/installing-mariadb-on-centos-7</id>
+    <content type="html"><![CDATA[<p>CentOS 7에서의 <a href="https://mariadb.org/">MariaDB</a>의 기본적인 설치는 아주 간단하다. yum epel 저장소가 추가된 상태에서 아래와 같이 설치가 가능하다(epel이 없어도 동일할 것으로 생각되나 이 글에서의 주요 내용이 아니기 때문에 테스트 해보지는 않았다).</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum install -y mariadb mariadb-server
+</span><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>mariadb.service
+</span><span class='line'><span class="nv">$ </span>systemctl start mariadb.service
+</span><span class='line'><span class="nv">$ </span>mysql_secure_installation
+</span></code></pre></td></tr></table></div></figure>
+
+<p>기본 설치는 끝이다. 이제부터 mariadb을 설정하는 부분이 남았지만 이 부분은 서버 상황에 따라 모두 다르니 여기서는 다루지 않는다. 그리고 한가지 더. <code>mysql_secure_installation</code>를 실행하면 자신의 상황에 맞게 설정하기 위해 몇가지를 물어본다. 그런데 이게 거의 일정하고 설치 자동화를 할 때 입력창이 나오면 처리가 귀찮아진다. 이 부분을 자동화하는 부분에 대해서는 <a href="http://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation/">mysql_secure_installation 자동화</a>에서 따로 글을 남긴다.</p>
+
+<p>이제부터가 본격적인 이 글에서 하고자하는 이야기다.</p>
+
+<p>위의 방법으로 설치하면 현재 기준으로 5.5.44 버전이 설치된다. 하지만 최신 버전은 10.1.9다. 그렇다면 최신 버전을 설치하려면 어떻게 해야하는가? 아래의 과정을 보자.</p>
+
+<p>우선 yum에 mariadb 저장소를 추가한다. <code>http://yum.mariadb.org/10.1/centos7-amd64</code>는 현재 최신 버전과 CentOS7을 기준으로한 주소다. <a href="http://yum.mariadb.org">http://yum.mariadb.org</a> 를 열어보면 다른 기준에서 사용할 수 있는 레포지토리들도 확인할 수 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;[mariadb]&quot;</span> &gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;name = MariaDB&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;baseurl = http://yum.mariadb.org/10.1/rhel7-amd64&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;gpgcheck=1&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span></code></pre></td></tr></table></div></figure>
+
+<p>더 간단한 방법도 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>wget -O /etc/yum.repos.d/MariaDB.repo http://mariadb.if-not-true-then-false.com/rhel/<span class="k">$(</span>rpm -E %rhel<span class="k">)</span>/<span class="k">$(</span>uname -i<span class="k">)</span>/10_1
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이후는 기존과 동일하다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum install -y mariadb mariadb-server
+</span><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>mariadb.service
+</span><span class='line'><span class="nv">$ </span>systemctl start mariadb.service
+</span><span class='line'><span class="nv">$ </span>mysql_secure_installation
+</span></code></pre></td></tr></table></div></figure>
+
+<p>단, 10.1.8 버전 이상일 경우만 위와 같이 처리가 가능한 것으로 보인다(<a href="https://mariadb.com/kb/en/mariadb/systemd/">MariaDB Systemd</a>).</p>
+
+<p>따라서 10.0 버전대를 설치한다면  아래와 같이 하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum install -y mariadb mariadb-server
+</span><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>mysql.service
+</span><span class='line'><span class="nv">$ </span>systemctl start mysql.service
+</span><span class='line'><span class="nv">$ </span>mysql_secure_installation
+</span></code></pre></td></tr></table></div></figure>
+
+<p>하지만 약간의 차이가 있다. systemctl에서 사용하는 service 명이 다르다. 왜 다른지는 모르겠지만 설치를 했는데 서비스 등록이 되지 않아서 처음엔 당황스러웠다. 이 부분도 처음과 동일하게 사용하고 싶다면 alias를 사용하는 방법이 있다(<a href="https://www.centos.org/forums/viewtopic.php?f=47&amp;t=47373">service name alias? mariadb-&gt;mysql - how?</a>).</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> <span class="s2">&quot;Alias=mysql.service&quot;</span> &gt; /usr/lib/systemd/system/mariadb.service
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이렇게 해주면 mariadb라는 이름으로 service를 등록할 수 있다. 큰 의미가 없으니 굳이 적용할 필요는 없으나 혼선을 없애기 위해서라면 적용하는 것도 나쁘지는 않을 듯하다.</p>
+
+<p>자.. 그런데 위 설치 방법대로 따라하면 아래와 같은 화면을 만나게 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>mysql.service
+</span><span class='line'>mysql.service is not a native service, redirecting to /sbin/chkconfig.
+</span><span class='line'>Executing /sbin/chkconfig mysql on
+</span><span class='line'>The unit files have no <span class="o">[</span>Install<span class="o">]</span> section. They are not meant to be enabled
+</span><span class='line'>using systemctl.
+</span><span class='line'>Possible reasons <span class="k">for</span> having this kind of units are:
+</span><span class='line'>1<span class="o">)</span> A unit may be statically enabled by being symlinked from another unit<span class="s1">&#39;s</span>
+</span><span class='line'><span class="s1">   .wants/ or .requires/ directory.</span>
+</span><span class='line'><span class="s1">2) A unit&#39;</span>s purpose may be to act as a helper <span class="k">for</span> some other unit which has
+</span><span class='line'>   a requirement dependency on it.
+</span><span class='line'>3<span class="o">)</span> A unit may be started when needed via activation <span class="o">(</span>socket, path, timer,
+</span><span class='line'>   D-Bus, udev, scripted systemctl call, ...<span class="o">)</span>.
+</span></code></pre></td></tr></table></div></figure>
+
+<p>내용을 보면 mariadb가 systemd에 등록되지 않고 chkconfig로 initd에 등록된다. 앞서 설명했던 5.5/10.1 버전 설치와는 다른 결과다. CentOS의 레포지토리를 이용해서 설치하면 <code>/usr/lib/systemd/system/mariadb.service</code> 파일이 함께 설치되는데 MariaDB 레포지토리로 설치하면 이 파일이 설치되지 않는다(확인해보니 다른 몇가지도 차이가 있다).</p>
+
+<p>이 부분은 MariaDB 10.0이 systemd 지원을 아직 제대로 하지 않아서 그런 것 같다(테스트는 해보지 않았지만 찾아보니 Fedora 22 이상부터는 바로 지원이 되는 것으로 보인다).</p>
+
+<p>그냥 이렇게 사용해도 문제는 되지 않지만 기존과 동일하게 systemd로 사용하고 싶다면 10.1 버전을 사용하면 된다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법]]></title>
@@ -2618,43 +2812,6 @@ Jan 31st, 2014 6:09 pm<br>
 <p>이 문서 작업, 깨달았다 범위는 정말 강력 하 고 Drawables, 같은 그들이 생각 하지 충분히 사용. 텍스트는 응용 프로그램의 주요 내용, 그것은 어디에 나 그래서 더 역동적이 고 매력적인 걸쳐 그것을 확인 하는 것을 잊지 마세요!</p>
 
 <p>이 문서를 작성하면서 스팬은 정말 강력하지만 그들은 Drawables처럼 충분히 사용하지 않는다는 것을 깨달았다. 텍스트는 어플리케이션의 메인 콘텐츠다. 그것은 어디에나 있다. 그러니 텍스트를 스팬을 통해 역동적이고 매력적으로 만들 수 있다는 것을 잊지마라!</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Xcode 7.1에서 Google Maps SDK 사용시 빌드가 되지 않는 결함]]></title>
-    <link href="http://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/"/>
-    <updated>2015-11-02T16:57:18+09:00</updated>
-    <id>http://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug</id>
-    <content type="html"><![CDATA[<p>얼마전 iOS 앱 개발에 사용하던 xcode를 7.1로 업데이트 했다. 그런데 앱에서 사용중이던 Google Maps SDK가 빌드되지 못해 앱을 실행할 수가 없었다. 문제는 header 생성 부분인데 해결 방법을 찾지 못해 다시 7.0을 재설치해서 사용하고 있었다. 그렇게 지내던 중 오늘 갑자기 생각이 나서 다시 확인해 봤다. 다행히 그 사이에 Google에서 update를 내 놓았다. 이 문제가 수정된 버전은 1.10.5 버전이다. 그리고 관련된 issue는 <a href="https://code.google.com/p/gmaps-api-issues/issues/detail?id=8524&amp;can=1&amp;q=Could%20not%20build%20Objective-C%20module&amp;colspec=ID%20Type%20Status%20Introduced%20Fixed%20Summary%20Stars%20ApiType%20Internal">Issue 8524: Bug: Running under Xcode 7 beta 6 with Google Maps SDK results in broken debugging.</a>이다.</p>
-
-<p>오류 메시지는 <code>Include of non-modular header inside framework module &#39;GoogleMaps&#39;</code>이다.</p>
-
-<p>대략 아래의 이미지처럼 오류가 난다(이미지는 캡춰하기 귀찮아 인터넷에 있는 이미지를 가져왔다).</p>
-
-<p><img src="http://blog.asamaru.net/img/2015-11-02-google-maps-sdk-with-xcode-7-dot-1-bug-1.png" alt="오류"></p>
-
-<p>혹 xcode 7.1 사용시 이런 오류가 나온다면 Google Maps SDK를 1.10.5 이상으로 업데이트 후 빌드 해보기 바란다.</p>
-
-<p>이 문제에 대한 원인은 처음 오류를 만났을 때 다른 사람들이 이야기하는 것을 봤었는데 정확한 내용이 기억이 나지 않는다. 대충 기억이 나는 것은 xcode가 7.1로 버전업 되면서 swift 모듈에 header 처리하는 부분이 변경되었다고 했던 것 같은데... 나중에라도 원인을 알게되면 다시 남기도록 하겠다.</p>
-
-<p>Apple Developer Forums에서 나온 <a href="https://forums.developer.apple.com/thread/23554">Include of non-modular header inside framework module</a> issue도 있다. 혹시 GoogleMaps가 아닌 모듈에서 동일한 오류가 난다면 참고.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[android apk download / decompile 하기]]></title>
-    <link href="http://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/"/>
-    <updated>2015-11-02T12:27:06+09:00</updated>
-    <id>http://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile</id>
-    <content type="html"><![CDATA[<p>오늘은 <a href="https://play.google.com/store">Google Play</a>에서 apk 파일을 다운 받는 방법과 apk 파일을 decompile하는 방법을 소개하려고 한다.
-일반적인 상황에서는 apk를 받거나 decompile 할 일은 거의 없다. 하지만 안드로이드 개발을 하다보면 필요해지는 경우가 있다. 나의 경우는 ACRA를 이용해서 서비스 앱에서 crash가 발생하면 오류를 보고하도록 해두고 사용한다. 그런데 proguard를 사용해서 난독화가 되어 있다보니 오류 메시지만 보고는 어디에서 발생한 오류인지 확인할 수 없다. 그래서 서비스 중이 apk를 다운 받아 decompile해서 오류 위치를 파악한다. 배포 전에 apk 파일을 따로 보관해두는 방법도 있으나 귀찮아서 일일이 보관하지 않고 있다. 소스야 Git에서 tagging을 해두기 때문에 해당 버전을 바로 확인할 수 있지만 proguard가 적용되면서 package 등을 모두 바꾸게 되어 있어서 서비스 중인 apk가 따로 필요하다.</p>
-
-<p>본론으로 들어가서 일단 APK 파일을 받으려면 <a href="http://apk-dl.com/">Online Google Play APK Downloader</a>를 사용하면 된다. 사이트에 가서 원하는 앱의 package명을 넣으면 다운 받아진다. 간혹 실패하는 경우가 있으나 다시 시도하면 대부분은 받아진다.</p>
-
-<p>받아진 apk 파일을 decompile 하려면 <a href="http://www.decompileandroid.com/">Android APK Decompiler</a>를 사용하면 된다. 다운 받은 파일을 업로드하면 잠시 후에 Manifest 파일 정보와 함께 다운로드 링크가 나온다. 다운 받으면 소스가 zip로 압축되어 있으니 압축을 풀어서 보면 된다. 당연히 완벽한 소스로 복구되지는 않는다. 하지만 오류 위치를 파악하거나 하는 경우에는 충분한 소스가 나온다.</p>
-
-<p>물론 위의 사이트들을 사용해야만 가능한 일들은 아니다. apk 다운로드의 경우 별도의 app도 있고 decompile의 경우도 shell에서 직접할 수 있다. 하지만 위 사이트들을 사용하면 간단하게 처리가 가능하니 필요하다면 한번 쯤은 사용해 봐도 좋을 듯하다.</p>
 ]]></content>
   </entry>
   

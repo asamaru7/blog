@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-12-03T20:56:46+09:00</updated>
+  <updated>2015-12-04T13:46:58+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,121 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[mysql_secure_installation 자동화]]></title>
+    <link href="http://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation/"/>
+    <updated>2015-12-04T12:35:49+09:00</updated>
+    <id>http://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation</id>
+    <content type="html"><![CDATA[<p>이전 글 <a href="2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a>에서 MariaDB를 설치하면서 <code>mysql_secure_installation</code> 명령을 자동화하는 부분을 언급했었다. 이 글에서는 이를 설명하려고 한다. 우선 바로 만들어둔 bash shell script를 보자.</p>
+
+<p><strong>mysql_secure_installation_automation.sh</strong></p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c">#!/bin/bash</span>
+
+<span class="c"># https://gist.github.com/Mins/4602864</span>
+
+yum -y install expect
+
+<span class="c"># Not required in actual script</span>
+<span class="nv">MYSQL_ROOT_PASSWORD</span><span class="o">=</span>
+
+<span class="nv">SECURE_MYSQL</span><span class="o">=</span><span class="k">$(</span>expect -c <span class="s2">&quot;</span>
+<span class="s2">set timeout 3</span>
+<span class="s2">spawn mysql_secure_installation</span>
+<span class="s2">expect \&quot;Enter current password for root (enter for none):\&quot;</span>
+<span class="s2">send \&quot;$MYSQL\r\&quot;</span>
+<span class="s2">expect \&quot;Change the root password?\&quot;</span>
+<span class="s2">send \&quot;n\r\&quot;</span>
+<span class="s2">expect \&quot;Remove anonymous users?\&quot;</span>
+<span class="s2">send \&quot;y\r\&quot;</span>
+<span class="s2">expect \&quot;Disallow root login remotely?\&quot;</span>
+<span class="s2">send \&quot;y\r\&quot;</span>
+<span class="s2">expect \&quot;Remove test database and access to it?\&quot;</span>
+<span class="s2">send \&quot;y\r\&quot;</span>
+<span class="s2">expect \&quot;Reload privilege tables now?\&quot;</span>
+<span class="s2">send \&quot;y\r\&quot;</span>
+<span class="s2">expect eof</span>
+<span class="s2">&quot;</span><span class="k">)</span>
+
+<span class="nb">echo</span> <span class="s2">&quot;$SECURE_MYSQL&quot;</span>
+</code></pre></div>
+<p>이 스크립트는 <a href="https://gist.github.com/Mins/4602864">mysql_secure_installation automation</a> 스크립트를 참고하여 CentOS에 맞게 조금 수정한 것이다.</p>
+
+<p>위 스크립트를 mysql_secure_installation_automation.sh 파일로 저장했다면 아래와 같이 실행하면 된다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>chmod <span class="m">700</span> mysql_secure_installation_automation.sh
+<span class="nv">$ </span>./mysql_secure_installation_automation.sh
+</code></pre></div>
+<p>특별히 설명할 것도 없지만 간략하게나마 원리를 설명하자면 <code>expect</code>라는 도구를 사용해서 사용자 입력을 대신하도록 하는 것이다. 이를 응용하면 <code>mysql_secure_installation</code> 외에도 여러가지 상황에 적용할 수 있다. 나의 경우는 <code>expect</code>를 이용해서 ssh 비밀번호 자동 입력 기능을 만들어 사용하고 있었다. 사실 ssh의 경우는 key를 등록하는 방식으로 비밀번호 없이 로그인이 가능하고 비밀번호를 외부로 노출하는 것이 보안상 문제가 있지만 간단하게 접속이 필요하고 보안상의 이슈가 없는 곳에서 유용하게 사용하고 있다.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[MariaDB 최신 버전 설치(yum) - CentOS 7]]></title>
+    <link href="http://blog.asamaru.net/2015/12/04/installing-mariadb-on-centos-7/"/>
+    <updated>2015-12-04T08:37:25+09:00</updated>
+    <id>http://blog.asamaru.net/2015/12/04/installing-mariadb-on-centos-7</id>
+    <content type="html"><![CDATA[<p>CentOS 7에서의 <a href="https://mariadb.org/">MariaDB</a>의 기본적인 설치는 아주 간단하다. yum epel 저장소가 추가된 상태에서 아래와 같이 설치가 가능하다(epel이 없어도 동일할 것으로 생각되나 이 글에서의 주요 내용이 아니기 때문에 테스트 해보지는 않았다).</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>yum install -y mariadb mariadb-server
+<span class="nv">$ </span>systemctl <span class="nb">enable </span>mariadb.service
+<span class="nv">$ </span>systemctl start mariadb.service
+<span class="nv">$ </span>mysql_secure_installation
+</code></pre></div>
+<p>기본 설치는 끝이다. 이제부터 mariadb을 설정하는 부분이 남았지만 이 부분은 서버 상황에 따라 모두 다르니 여기서는 다루지 않는다. 그리고 한가지 더. <code>mysql_secure_installation</code>를 실행하면 자신의 상황에 맞게 설정하기 위해 몇가지를 물어본다. 그런데 이게 거의 일정하고 설치 자동화를 할 때 입력창이 나오면 처리가 귀찮아진다. 이 부분을 자동화하는 부분에 대해서는 <a href="/2015/12/04/mysql-secure-installation-automation/">mysql_secure_installation 자동화</a>에서 따로 글을 남긴다.</p>
+
+<p>이제부터가 본격적인 이 글에서 하고자하는 이야기다.</p>
+
+<p>위의 방법으로 설치하면 현재 기준으로 5.5.44 버전이 설치된다. 하지만 최신 버전은 10.1.9다. 그렇다면 최신 버전을 설치하려면 어떻게 해야하는가? 아래의 과정을 보자.</p>
+
+<p>우선 yum에 mariadb 저장소를 추가한다. <code>http://yum.mariadb.org/10.1/centos7-amd64</code>는 현재 최신 버전과 CentOS7을 기준으로한 주소다. <a href="http://yum.mariadb.org">http://yum.mariadb.org</a> 를 열어보면 다른 기준에서 사용할 수 있는 레포지토리들도 확인할 수 있다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;[mariadb]&quot;</span> &gt; /etc/yum.repos.d/MariaDB.repo
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;name = MariaDB&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;baseurl = http://yum.mariadb.org/10.1/rhel7-amd64&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;gpgcheck=1&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</code></pre></div>
+<p>더 간단한 방법도 있다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>wget -O /etc/yum.repos.d/MariaDB.repo http://mariadb.if-not-true-then-false.com/rhel/<span class="k">$(</span>rpm -E %rhel<span class="k">)</span>/<span class="k">$(</span>uname -i<span class="k">)</span>/10_1
+</code></pre></div>
+<p>이후는 기존과 동일하다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>yum install -y mariadb mariadb-server
+<span class="nv">$ </span>systemctl <span class="nb">enable </span>mariadb.service
+<span class="nv">$ </span>systemctl start mariadb.service
+<span class="nv">$ </span>mysql_secure_installation
+</code></pre></div>
+<p>단, 10.1.8 버전 이상일 경우만 위와 같이 처리가 가능한 것으로 보인다(<a href="https://mariadb.com/kb/en/mariadb/systemd/">MariaDB Systemd</a>).</p>
+
+<p>따라서 10.0 버전대를 설치한다면  아래와 같이 하면 된다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>yum install -y mariadb mariadb-server
+<span class="nv">$ </span>systemctl <span class="nb">enable </span>mysql.service
+<span class="nv">$ </span>systemctl start mysql.service
+<span class="nv">$ </span>mysql_secure_installation
+</code></pre></div>
+<p>하지만 약간의 차이가 있다. systemctl에서 사용하는 service 명이 다르다. 왜 다른지는 모르겠지만 설치를 했는데 서비스 등록이 되지 않아서 처음엔 당황스러웠다. 이 부분도 처음과 동일하게 사용하고 싶다면 alias를 사용하는 방법이 있다(<a href="https://www.centos.org/forums/viewtopic.php?f=47&amp;t=47373">service name alias? mariadb-&gt;mysql - how?</a>).</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nb">echo</span> <span class="s2">&quot;Alias=mysql.service&quot;</span> &gt; /usr/lib/systemd/system/mariadb.service
+</code></pre></div>
+<p>이렇게 해주면 mariadb라는 이름으로 service를 등록할 수 있다. 큰 의미가 없으니 굳이 적용할 필요는 없으나 혼선을 없애기 위해서라면 적용하는 것도 나쁘지는 않을 듯하다.</p>
+
+<p>자.. 그런데 위 설치 방법대로 따라하면 아래와 같은 화면을 만나게 된다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>systemctl <span class="nb">enable </span>mysql.service
+mysql.service is not a native service, redirecting to /sbin/chkconfig.
+Executing /sbin/chkconfig mysql on
+The unit files have no <span class="o">[</span>Install<span class="o">]</span> section. They are not meant to be enabled
+using systemctl.
+Possible reasons <span class="k">for</span> having this kind of units are:
+1<span class="o">)</span> A unit may be statically enabled by being symlinked from another unit<span class="s1">&#39;s</span>
+<span class="s1">   .wants/ or .requires/ directory.</span>
+<span class="s1">2) A unit&#39;</span>s purpose may be to act as a helper <span class="k">for</span> some other unit which has
+   a requirement dependency on it.
+3<span class="o">)</span> A unit may be started when needed via activation <span class="o">(</span>socket, path, timer,
+   D-Bus, udev, scripted systemctl call, ...<span class="o">)</span>.
+</code></pre></div>
+<p>내용을 보면 mariadb가 systemd에 등록되지 않고 chkconfig로 initd에 등록된다. 앞서 설명했던 5.5/10.1 버전 설치와는 다른 결과다. CentOS의 레포지토리를 이용해서 설치하면 <code>/usr/lib/systemd/system/mariadb.service</code> 파일이 함께 설치되는데 MariaDB 레포지토리로 설치하면 이 파일이 설치되지 않는다(확인해보니 다른 몇가지도 차이가 있다).</p>
+
+<p>이 부분은 MariaDB 10.0이 systemd 지원을 아직 제대로 하지 않아서 그런 것 같다(테스트는 해보지 않았지만 찾아보니 Fedora 22 이상부터는 바로 지원이 되는 것으로 보인다).</p>
+
+<p>그냥 이렇게 사용해도 문제는 되지 않지만 기존과 동일하게 systemd로 사용하고 싶다면 10.1 버전을 사용하면 된다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Nginx : 414 Request-URI Too Large 오류]]></title>
@@ -234,173 +349,6 @@ This application is subject to the MPL or LGPL.
 <p>나는 이 방법을 사용했다. 일단 c로 만들어져서 그런지 속도가 아주 빠르다. 하지만 한가지 단점이 있다. 표준 ANSI만 지원하는 것 같다. aixterm 에서 사용하는 속성들은 결과에서 무시되었다. 예를들어 글자색은 30-37 만 사용 가능하다.</p>
 
 <p>구글에서 ansi to html 이라고 검색하면 보다 다양한 방법들이 있으니 필요하다면 한번 검색해보길 바란다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[CentOS 7 firewalld vs iptables]]></title>
-    <link href="http://blog.asamaru.net/2015/10/16/centos-7-firewalld/"/>
-    <updated>2015-10-16T14:33:14+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/16/centos-7-firewalld</id>
-    <content type="html"><![CDATA[<p>CentOS 7부터 방화벽으로 iptables를 사용하지 않고 firewalld를 사용한다. <code>/etc/sysconfig/iptables</code> 파일도 존재하지 않는다. 따라서 <code>firewall-cmd</code>를 사용해서 방화벽을 설정해야 한다(x windows에서는 firewall-config를 사용한다고하나 콘솔만 사용해봐서 firewall-config는 어떻게 생겼는지 모르겠다).</p>
-
-<p><a href="https://access.redhat.com/documentation/ko-KR/Red_Hat_Enterprise_Linux/7/html/Migration_Planning_Guide/ch04s11.html#idp7905344">Redhat Products &amp; Servies의 4.11. 보안 및 액세스 제어</a>에 아래와 같이 설명되어 있다.</p>
-
-<blockquote>
-<p><strong>4.11.1. 새로운 방화벽 (firewalld)</strong></p>
-
-<p>Red Hat Enterprise Linux 6에서 방화벽 기능은 iptables 유틸리티에 의해 제공되어 명령행이나 그래픽 설정 도구, system-config-firewall에서 설정되었습니다. Red Hat Enterprise Linux 7에서 방화벽 기능은 iptables에 의해 제공되지만 관리자는 동적 방화벽 데몬, firewalld, 설정 도구를 통해 iptables와 상호 작용합니다. 설정 도구에는 firewall-config, firewall-cmd, firewall-applet이 있으며 이는 Red Hat Enterprise Linux 7 기본값 설치에 포함되어 있지 않습니다.</p>
-
-<p>firewalld는 동적이기 때문에 언제든지 설정을 변경할 수 있고 바로 실행됩니다. 방화벽을 다시 로딩할 필요가 없으므로 기존 네트워크 연결에서 의도하지 않은 중단이 발생하지 않습니다.</p>
-
-<p>Red Hat Enterprise Linux 6와 7 간의 방화벽에서의 주요 차이점은 다음과 같습니다:</p>
-
-<ul>
-<li><p>방화벽 설정에 대한 자세한 내용은 /etc/sysconfig/iptables에 저장되어 있지 않고 이 파일이 존재하지도 않습니다. 대신 설정 상세 정보는 /usr/lib/firewalld 및 /etc/firewalld 디렉토리에 있는 다양한 파일에 저장됩니다.</p></li>
-<li><p>Red Hat Enterprise Linux 6의 방화벽 시스템에서는 설정 변경 사항이 있을 때 마다 모든 규칙이 삭제되고 다시 적용되어 firewalld는 설정 차이만을 적용합니다. 그 결과 firewalld는 기존 연결을 중단하지 않고 런타임 동안 설정을 변경할 수 있습니다.</p></li>
-</ul>
-</blockquote>
-
-<p>또한 <a href="http://www.slideshare.net/sukkim737/oracle-enterprise-linux-new-featurefirewalld">firewalld concept and configuration</a>에 보면 &quot;firewalld의 필요성&quot;에 대해 설명하고 있다(6 page). 편의를 위해 해당 부분만 아래에 안내한다.</p>
-
-<blockquote>
-<p><strong>firewalld 의 필요성</strong></p>
-
-<ul>
-<li>기존 iptables의 한계
-
-<ul>
-<li>룰 변경시 서비스 중지 및 설정 변경</li>
-<li>오픈스택이나 KVM과 같은 가상화 호스트에서는 네트워크 변 화가 수시로 발생되므로 필터링 정책에 변경이 필요</li>
-<li>응용프로그램 자체에서 필터링 정책을 구성하는 경우 iptables 정책과 충돌되는 등의 문제 야기</li>
-</ul></li>
-<li><p>firewalld가 필요한 이유?</p>
-
-<ul>
-<li>KVM , openstack 과 같은 가상화, 클라우드 환경하에서의 필 터링 정책 동적 추가 가능</li>
-<li>DBUS API를 통한 정보 공유를 통해 정책 충돌 문제 해결</li>
-</ul></li>
-<li><p>DBUS란? 어플리케이션간의 통신을 지원하는 인터페이스</p></li>
-</ul>
-</blockquote>
-
-<p>마지막으로 <a href="https://www.linux.co.kr/home2/board/subbs/board.php?bo_table=lecture&amp;wr_id=1860&amp;sca=&amp;page=0">Doly의 CentOS7 강좌30 12. 네트워크 보안설정 12.2 iptables 서비스 (1/3)</a>에서는 아래와 같이 안내하고 있다.</p>
-
-<blockquote>
-<p><strong>12.2. iptables 서비스</strong></p>
-
-<p>firewalld는 분명 CentOS7의 아주 혁신적인 기능중의 하나이다. 하지만 필자는 본 서적을 집필하면서 인터페이스가 편리 하나 많은 부분에서 부족함을 느꼈다. 특히 소스IP를 명시하는 부분이 명확하지 않다. 방화벽의 기본은 출발지 IP, 프로토콜, 포트 도착지 IP, 프로토콜, 포트를 기본으로 방화벽 규칙을 만들어간다. 하지만, firewalld는 출발지 IP와 목적지 IP에 대한 정의가 명확하지 않다. 리눅스 스킬이 중급 이상이라면 이러한 이유로 firewalld 서비스를 제거하고 예전 iptables 서비스로 돌아가길 권장하고 싶다.</p>
-</blockquote>
-
-<p>사실 &quot;소스IP를 명시하는 부분이 명확하지 않다.&quot; 라는 부분은 글쓴이의 정확한 의도를 알 수 없어 단언하기는 힘들지만 틀린 부분이 있을 수 있다고 생각한다. firewalld를 사용하더라도 소스 IP를 지정할 수 없는 것은 아니다.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">firewall-cmd --permanent --zone<span class="o">=</span>public --add-rich-rule<span class="o">=</span><span class="s1">&#39;rule family=&quot;ipv4&quot; source address=&quot;1.2.3.4/32&quot; port protocol=&quot;tcp&quot; port=&quot;80&quot; accept&#39;</span>
-</code></pre></div>
-<p>위 명령에서 보는 것과 같이 <code>rich-rule</code>를 사용해서 소스 IP를 지정할 수 있다. 그리고 지정된 내역을 보는 방법은 <code>firewall-cmd</code>을 사용하면 되지만 개인적으로는 <code>cat /etc/firewalld/zones/public.xml</code>를 사용해서 확인하는게 더 편한 것 같다. 사실은 아직 <code>firewall-cmd</code>를 능숙하게 사용하지를 못해서 어떻게하면 보기 쉽게 나오는지 잘 모르겠다(몇가지 명령을 시도해 봤는데 내용이 너무 많이 나온다.).</p>
-
-<p>결론적으로 <strong>무조건 firewalld를 사용해야 하는 것은 아니다.</strong> firewalld를 중지시키고 iptables를 설치해서 기존처럼 관리하는 것도 가능하다. 아래의 명령을 실행하면 된다.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>systemctl stop firewalld
-<span class="nv">$ </span>systemctl mask firewalld
-
-<span class="nv">$ </span>yum install iptables-services
-<span class="nv">$ </span>systemctl <span class="nb">enable </span>iptables
-
-<span class="nv">$ </span>service iptables save
-</code></pre></div>
-<p><strong>firewalld를 사용할지 iptables를 사용할지는 자신의 선택이다.</strong></p>
-
-<p>현재 시점에서의 내 생각은 firewalld로 이전하는 것이다. 아직은 사용이 익숙치 않아 정확한 이전이 가능할지는 모르겠다. 이제부터 방법을 하나씩 찾아봐야 할 것이다. 하지만 Redhat에서 설명하는 것 처럼 결국은 iptables와 상호 작용하는 형태라고는 해도 접근 지점이 firewalld로 변경되었으며 앞으로도 그럴 것이기 때문이다. 주로 개발업무를 하다보니 서버를 전문적으로 운영했다고는 할 수 없으나 나름의 경험으로 볼 때 일시적인 대응은 결국 대세를 따르도록 변하게 된다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[CentOS 7 minimal 설치]]></title>
-    <link href="http://blog.asamaru.net/2015/10/14/centos-7-minimal-install/"/>
-    <updated>2015-10-14T11:46:55+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/14/centos-7-minimal-install</id>
-    <content type="html"><![CDATA[<h2 id="minimal-설치">Minimal 설치</h2>
-
-<p>설치를 시작하면 아래와 같은 화면이 나온다. 그냥 Enter를 치면된다.</p>
-
-<p><img src="/img/2015-10-14-centos-7-minimal-install-1.png" alt="centos-7-minimal-install-1"></p>
-
-<p>커서를 옮겨 &quot;Install CentOS 7&quot;을 선택한다.</p>
-
-<p><img src="/img/2015-10-14-centos-7-minimal-install-2.png" alt="centos-7-minimal-install-2"></p>
-
-<p>언어를 한국어로 선택한다.</p>
-
-<p><img src="/img/2015-10-14-centos-7-minimal-install-3.png" alt="centos-7-minimal-install-3"></p>
-
-<p>설치 대상을 선택해서 드라이브를 선택한다.</p>
-
-<p><img src="/img/2015-10-14-centos-7-minimal-install-4.png" alt="centos-7-minimal-install-4"></p>
-
-<p>파티션을 직접 설정하고 싶다면 &quot;파티션을 설정합니다.&quot;를 체크하고 완료한다.</p>
-
-<p><img src="/img/2015-10-14-centos-7-minimal-install-5.png" alt="centos-7-minimal-install-5"></p>
-
-<p>직접 설정하기로 했다면 왼쪽 하단의 &quot;+&quot;를 누르면 아래와 같이 파티션과 용량을 선택할 수 있는 화면이 나온다.</p>
-
-<p><img src="/img/2015-10-14-centos-7-minimal-install-6.png" alt="centos-7-minimal-install-6"></p>
-
-<p>파티션과 용량은 자신에게 맞게 설정하면 된다. 관련해서는 <a href="/2015/10/14/centos-7-install-partitioning/">Centos 7 설치시 파티셔닝</a>을 참고하길 바란다.</p>
-
-<p><img src="/img/2015-10-14-centos-7-minimal-install-7.png" alt="centos-7-minimal-install-7"></p>
-
-<p>완료를 선택하면 확인 창이 나온다. 확인 후 이상이 없다면 &quot;변경 사항을 적용&quot;을 선택한다.</p>
-
-<p><img src="/img/2015-10-14-centos-7-minimal-install-8.png" alt="centos-7-minimal-install-8"></p>
-
-<p>이제 설치가 시작된다.</p>
-
-<p><img src="/img/2015-10-14-centos-7-minimal-install-9.png" alt="centos-7-minimal-install-9"></p>
-
-<p>설치가 되는 동안 &quot;Root 암호&quot;를 선택해서 암호를 입력한다.</p>
-
-<p><img src="/img/2015-10-14-centos-7-minimal-install-10.png" alt="centos-7-minimal-install-10"></p>
-
-<p>설치가 완료되면 Consol이 나타난다. 여기서는 root로 로그인하면 되는데 비밀번호는 설치과정에서 입력했던 비밀번호를 사용하면 된다.</p>
-
-<p><img src="/img/2015-10-14-centos-7-minimal-install-11.png" alt="centos-7-minimal-install-11"></p>
-
-<p>일단 설치는 완료.</p>
-
-<h2 id="초기-설정">초기 설정</h2>
-
-<p>Minimal 설치 과정에서 네트워크 설정을 하지 않았다면 네트워크부터 설정해야 한다.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>vi /etc/sysconfig/network-scripts/ifcfg-enp0s3
-</code></pre></div>
-<p>네트워크 설정 파일을 열어 필요한 부분을 수정한다. 단, <code>ifcfg-enp0s3</code> 부분은 장비에 따라 다르게 나올 수 있다.
-기본적으로 dhcp를 사용하도록 되어 있을텐데 dhcp를 그대로 사용한다면 <code>ONBOOT=no</code> 부분을 <code>ONBOOT=yes</code>으로 바꿔주기만 하면된다. dhcp를 사용하지 않는다면 사용할 IP를 지정한다.</p>
-
-<p>네트워크를 재시작하여 네트워크를 활성화한다.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>service network restart
-</code></pre></div>
-<p>설정에 이상이 없다면 이제 네트워크를 사용할 수 있다. 이제부터는 ssh를 통해서 접속해서 작업하는게 편하다. 그런데 그러려면 해당 IP를 알아야하고(dhcp 사용시) ssh server가 설치되어야 한다.</p>
-
-<p>아이피부터 확인하자.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>ifconfig -a
-</code></pre></div>
-<p>그런데 위 명령을 입력하면 <code>command not found</code> 오류가 난다. centos 7에서는 이것도 기본 설치에서 제외되어 있는 듯 하다(기억이 잘나지 않지만 7 미만 버전에서는 이건 기본 설치 되어 있었던 것 같은데). 일단 다른 명령으로 ip를 확인하자. 굳이 ifconfig를 당장 써야 겠다면 <a href="http://www.unixmen.com/ifconfig-command-found-centos-7-minimal-installation-quick-tip-fix/">‘Ifconfig’ Command Not Found In CentOS 7 Minimal Installation – A Quick Tip To Fix It</a>를 참고하자.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>ip addr
-</code></pre></div>
-<p>이제는 ssh server를 설치하자. 어짜피 ifconfig 등을 사용할테니 net-tools도 함께 설치하자. 그리고 ssh server를 켜고 재부팅시 자동으로 시작되도록 수정한다.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>yum install -y openssh-server net-tools
-
-<span class="nv">$ </span>service sshd start
-Redirecting to /bin/systemctl restart  sshd.service
-
-<span class="nv">$ </span>chkconfig sshd on
-알림: <span class="s1">&#39;systemctl enable sshd.service&#39;</span>에 요청을 전송하고 있습니다.
-</code></pre></div>
-<p>위 내용에서 보이듯이 <code>service sshd start</code> 명령 실행시 <code>/bin/systemctl restart  sshd.service</code>으로 대체되었다고 나온다. 그 아래 <code>chkconfig sshd on</code> 명령 실행시에도 마찬가지다. 이유는 CentOS 7 부터 initd 대신 systemd가 기본으로 사용된다. 따라서 안내된 명령이 정확한 명령이다. 위 내용은 이 부분을 보여주기 위해서 일부러 CentOS 7 미만에서 사용되던 명령을 보여준 것이다. systemd에 대해서는 <a href="http://lunatine.net/about-systemd/">systemd 살펴보기</a>를 참고하자.</p>
-
-<p>이제는 ssh client로 접속도 가능하다. 직접 콘솔을 사용하는 것보다 client로 접속해서 처리하는게 간편하니 ssh client로 접속해서 작업하자. 아직 다른 계정을 만들지 않았으므로 root로 접속하면 된다. 그냥 콘솔에서 하겠다면 그냥 해도 된다.</p>
-
-<p>이제는 최신 버전으로 패키지를 업데이트 한다. 최신 버전의 CentOS를 받아서 설치했더라도 패키지들의 업데이트가 있을테니 업데이트하는게 좋다.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>yum update -y
-</code></pre></div>
-<p>이것으로 가장 기본적인 설치까지 완료되었다. 말그대로 초기세팅만 했은니 사용을 위해서는 여러가지 작업을 따로 해야한다. 이 부분은 용도에 따라 달라질 수 있으니 상황에 맞게 작업하면 된다. 다만 여기서는 길어져서 설명하진 않지만 방화벽 설정, ssh 설정 등 사용을 위한 기본적인 설정은 하는게 좋다. 이와 관련해서는 따로 포스팅하도록 하겠다.</p>
 ]]></content>
   </entry>
   

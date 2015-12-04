@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 <head>
   <meta charset="utf-8">
-  <title>java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류 해결 - 이 세상에 하나는 남기고 가자</title>
+  <title>MariaDB 최신 버전 설치(yum) - CentOS 7 - 이 세상에 하나는 남기고 가자</title>
   <meta name="author" content="유영재">
 
   
@@ -14,15 +14,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.asamaru.net/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/">
+  <link rel="canonical" href="http://blog.asamaru.net/2015/12/04/installing-mariadb-on-centos-7/">
   <link href="/favicon.png" type="image/png" rel="icon">
   <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
 
   <!-- http://opengraphprotocol.org/ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/">
-  <meta property="og:title" content="java.lang.IllegalStateException: Can not perform this action after &hellip; - 이 세상에 하나는 남기고 가자">
+  <meta property="og:url" content="http://blog.asamaru.net/2015/12/04/installing-mariadb-on-centos-7/">
+  <meta property="og:title" content="MariaDB 최신 버전 설치(yum) - CentOS 7 - 이 세상에 하나는 남기고 가자">
   
 
   <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
@@ -135,7 +135,7 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-13T16:53:54+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.13</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-04T08:37:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.04</time>
         
            | <a href="#disqus_thread" itemprop="discussionUrl"
              data-disqus-identifier="http://blog.asamaru.net">Comments</a>
@@ -144,80 +144,86 @@
     
     
     <h1 class="entry-title" itemprop="name headline">
-        java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류 해결
+        MariaDB 최신 버전 설치(yum) - CentOS 7
         
     </h1>
     
   </header>
 
 
-<div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 Fragment 작업 중에 <code>java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</code> 오류가 발생했다. 상황은 이렇다. Fragment를 가진 Activity에서 새로운 Activity를 띄우고 해당 Activity에서 <code>setResult</code>를 통해 값을 반환했다. 새로운 Activity를 열었던 Activity에서는 <code>protected void onActivityResult(int requestCode, int resultCode, Intent intent)</code>를 통해 값을 전달 받아 새로운 Fragment를 불렀다. 그런데 위 오류가 난다. 아래는 작성했던 코드의 일부를 예시를 위해 수정한 것이다(실행가능한 코드가 아니다).</p>
+<div class="entry-content clearfix" itemprop="articleBody description"><p>CentOS 7에서의 <a href="https://mariadb.org/">MariaDB</a>의 기본적인 설치는 아주 간단하다. yum epel 저장소가 추가된 상태에서 아래와 같이 설치가 가능하다(epel이 없어도 동일할 것으로 생각되나 이 글에서의 주요 내용이 아니기 때문에 테스트 해보지는 않았다).</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum install -y mariadb mariadb-server
+</span><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>mariadb.service
+</span><span class='line'><span class="nv">$ </span>systemctl start mariadb.service
+</span><span class='line'><span class="nv">$ </span>mysql_secure_installation
+</span></code></pre></td></tr></table></div></figure>
+
+<p>기본 설치는 끝이다. 이제부터 mariadb을 설정하는 부분이 남았지만 이 부분은 서버 상황에 따라 모두 다르니 여기서는 다루지 않는다. 그리고 한가지 더. <code>mysql_secure_installation</code>를 실행하면 자신의 상황에 맞게 설정하기 위해 몇가지를 물어본다. 그런데 이게 거의 일정하고 설치 자동화를 할 때 입력창이 나오면 처리가 귀찮아진다. 이 부분을 자동화하는 부분에 대해서는 <a href="/2015/12/04/mysql-secure-installation-automation/">mysql_secure_installation 자동화</a>에서 따로 글을 남긴다.</p>
+
+<p>이제부터가 본격적인 이 글에서 하고자하는 이야기다.</p>
+
+<p>위의 방법으로 설치하면 현재 기준으로 5.5.44 버전이 설치된다. 하지만 최신 버전은 10.1.9다. 그렇다면 최신 버전을 설치하려면 어떻게 해야하는가? 아래의 과정을 보자.</p>
+
+<p>우선 yum에 mariadb 저장소를 추가한다. <code>http://yum.mariadb.org/10.1/centos7-amd64</code>는 현재 최신 버전과 CentOS7을 기준으로한 주소다. <a href="http://yum.mariadb.org">http://yum.mariadb.org</a> 를 열어보면 다른 기준에서 사용할 수 있는 레포지토리들도 확인할 수 있다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
-</span><span class='line'><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
-</span><span class='line'>      <span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
-</span><span class='line'>              <span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
-</span><span class='line'>              <span class="o">.</span><span class="na">commit</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>    <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;[mariadb]&quot;</span> &gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;name = MariaDB&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;baseurl = http://yum.mariadb.org/10.1/rhel7-amd64&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;gpgcheck=1&quot;</span> &gt;&gt; /etc/yum.repos.d/MariaDB.repo
 </span></code></pre></td></tr></table></div></figure>
 
-<p>관련된 정보를 찾아보니 아래와 같은 문서들이 보였다.</p>
+<p>더 간단한 방법도 있다.</p>
 
-<ul>
-<li><a href="http://binsolb.tistory.com/entry/javalangIllegalStateException-Can-not-perform-this-action-after-onSaveInstanceState">java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</a></li>
-<li><a href="http://www.kmshack.kr/2013/08/fragment-%ED%8C%8C%ED%97%A4%EC%B9%98%EA%B8%B0-3-fragmentmanager-fragmenttransaction%EC%97%90-%EB%8C%80%ED%95%B4%EC%84%9C/">Fragment 파헤치기 – 3. FragmentManager, FragmentTransaction에 대해서</a></li>
-</ul>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>wget -O /etc/yum.repos.d/MariaDB.repo http://mariadb.if-not-true-then-false.com/rhel/<span class="k">$(</span>rpm -E %rhel<span class="k">)</span>/<span class="k">$(</span>uname -i<span class="k">)</span>/10_1
+</span></code></pre></td></tr></table></div></figure>
 
-<p><strong>간단히 요약하자면 <code>commit()</code> 대신 <code>commitAllowingStateLoss()</code>을 사용하면 된다.</strong> 원인에 대해서는 위의 글들을 참고하면 상세히 설명되어 있다. 그래서 고쳐진 코드는 다음과 같다.</p>
+<p>이후는 기존과 동일하다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
-</span><span class='line'><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
-</span><span class='line'>      <span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
-</span><span class='line'>              <span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
-</span><span class='line'>              <span class="o">.</span><span class="na">commitAllowingStateLoss</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>    <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum install -y mariadb mariadb-server
+</span><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>mariadb.service
+</span><span class='line'><span class="nv">$ </span>systemctl start mariadb.service
+</span><span class='line'><span class="nv">$ </span>mysql_secure_installation
 </span></code></pre></td></tr></table></div></figure>
 
-<p>안드로이드는 이런 문제들에 대해서 알아서 좀 대응할 수 없는건가? 아쉽다.
-그런데 함수 이름에도 나와 있는 것 처럼 <code>commitAllowingStateLoss()</code>를 사용하면 상태값을 잃을 수 있다.</p>
+<p>단, 10.1.8 버전 이상일 경우만 위와 같이 처리가 가능한 것으로 보인다(<a href="https://mariadb.com/kb/en/mariadb/systemd/">MariaDB Systemd</a>).</p>
 
-<p><a href="http://developer.android.com/intl/ko/reference/android/app/FragmentTransaction.html#commitAllowingStateLoss%28%29">FragmentTransaction 메뉴얼</a>에 아래와 같이 나와있다.</p>
+<p>따라서 10.0 버전대를 설치한다면  아래와 같이 하면 된다.</p>
 
-<blockquote>
-<p>public abstract int commitAllowingStateLoss ()</p>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum install -y mariadb mariadb-server
+</span><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>mysql.service
+</span><span class='line'><span class="nv">$ </span>systemctl start mysql.service
+</span><span class='line'><span class="nv">$ </span>mysql_secure_installation
+</span></code></pre></td></tr></table></div></figure>
 
-<p>Like commit() but allows the commit to be executed after an activity&#39;s state is saved. This is dangerous because the commit can be lost if the activity needs to later be restored from its state, so this should only be used for cases where it is okay for the UI state to change unexpectedly on the user.</p>
-</blockquote>
+<p>하지만 약간의 차이가 있다. systemctl에서 사용하는 service 명이 다르다. 왜 다른지는 모르겠지만 설치를 했는데 서비스 등록이 되지 않아서 처음엔 당황스러웠다. 이 부분도 처음과 동일하게 사용하고 싶다면 alias를 사용하는 방법이 있다(<a href="https://www.centos.org/forums/viewtopic.php?f=47&amp;t=47373">service name alias? mariadb-&gt;mysql - how?</a>).</p>
 
-<p><code>commitAllowingStateLoss()</code>를 사용하지 않고 해결하는 방법은 없을까? 생각해보면 실행되는 시점의 문제이므로 시점을 조금 지연하는 방법을 쓸 수도 있다.</p>
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> <span class="s2">&quot;Alias=mysql.service&quot;</span> &gt; /usr/lib/systemd/system/mariadb.service
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이렇게 해주면 mariadb라는 이름으로 service를 등록할 수 있다. 큰 의미가 없으니 굳이 적용할 필요는 없으나 혼선을 없애기 위해서라면 적용하는 것도 나쁘지는 않을 듯하다.</p>
+
+<p>자.. 그런데 위 설치 방법대로 따라하면 아래와 같은 화면을 만나게 된다.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -231,31 +237,25 @@
 <span class='line-number'>10</span>
 <span class='line-number'>11</span>
 <span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
-</span><span class='line'><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">Handler</span> <span class="n">handler_</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Handler</span><span class="o">(</span><span class="n">Looper</span><span class="o">.</span><span class="na">getMainLooper</span><span class="o">());</span>
-</span><span class='line'>        <span class="n">handler_</span><span class="o">.</span><span class="na">postDelayed</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>            <span class="nd">@Override</span>
-</span><span class='line'>            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>                <span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
-</span><span class='line'>                <span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
-</span><span class='line'>                        <span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
-</span><span class='line'>                        <span class="o">.</span><span class="na">commitAllowingStateLoss</span><span class="o">();</span>
-</span><span class='line'>            <span class="o">}</span>
-</span><span class='line'>        <span class="o">},</span> <span class="mi">0</span><span class="o">);</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>    <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>mysql.service
+</span><span class='line'>mysql.service is not a native service, redirecting to /sbin/chkconfig.
+</span><span class='line'>Executing /sbin/chkconfig mysql on
+</span><span class='line'>The unit files have no <span class="o">[</span>Install<span class="o">]</span> section. They are not meant to be enabled
+</span><span class='line'>using systemctl.
+</span><span class='line'>Possible reasons <span class="k">for</span> having this kind of units are:
+</span><span class='line'>1<span class="o">)</span> A unit may be statically enabled by being symlinked from another unit<span class="s1">&#39;s</span>
+</span><span class='line'><span class="s1">   .wants/ or .requires/ directory.</span>
+</span><span class='line'><span class="s1">2) A unit&#39;</span>s purpose may be to act as a helper <span class="k">for</span> some other unit which has
+</span><span class='line'>   a requirement dependency on it.
+</span><span class='line'>3<span class="o">)</span> A unit may be started when needed via activation <span class="o">(</span>socket, path, timer,
+</span><span class='line'>   D-Bus, udev, scripted systemctl call, ...<span class="o">)</span>.
 </span></code></pre></td></tr></table></div></figure>
 
-<p>위 코드를 보면 Handler의 <code>postDelayed()</code> 함수를 사용해서 처리시점을 지연시켰다(사실 시간은 0이므로 작업을 잠시 뒤로 미룬것이다). 이렇게 해도 위 오류는 발생하지 않는다.</p>
+<p>내용을 보면 mariadb가 systemd에 등록되지 않고 chkconfig로 initd에 등록된다. 앞서 설명했던 5.5/10.1 버전 설치와는 다른 결과다. CentOS의 레포지토리를 이용해서 설치하면 <code>/usr/lib/systemd/system/mariadb.service</code> 파일이 함께 설치되는데 MariaDB 레포지토리로 설치하면 이 파일이 설치되지 않는다(확인해보니 다른 몇가지도 차이가 있다).</p>
 
-<p>어떤 방법이 맞는지에 대해서는 아직은 정확히 모르겠다(이렇게하면 상태를 잃어버리는 것과 무관해 지는지 명확하지 않다는 뜻이다). 선택은 자유다.</p>
+<p>이 부분은 MariaDB 10.0이 systemd 지원을 아직 제대로 하지 않아서 그런 것 같다(테스트는 해보지 않았지만 찾아보니 Fedora 22 이상부터는 바로 지원이 되는 것으로 보인다).</p>
+
+<p>그냥 이렇게 사용해도 문제는 되지 않지만 기존과 동일하게 systemd로 사용하고 싶다면 10.1 버전을 사용하면 된다.</p>
 </div>
 
 
@@ -279,13 +279,13 @@
 
 
 
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-13T16:53:54+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.13</time>
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-04T08:37:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.04</time>
           
 
 <span class="glyphicon glyphicon-tags"></span>&nbsp;
 <span class="categories">
   
-    <a class='category' href='/blog/categories/android/'>android</a>
+    <a class='category' href='/blog/categories/linux/'>linux</a>
   
 </span>
 
@@ -294,7 +294,7 @@
         
           <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/" data-via="" data-counturl="http://blog.asamaru.net/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/12/04/installing-mariadb-on-centos-7/" data-via="" data-counturl="http://blog.asamaru.net/2015/12/04/installing-mariadb-on-centos-7/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -308,10 +308,10 @@
         
           <ul class="meta text-muted pager">
             
-            <li class="previous"><a href="/2015/10/13/octopress-github-flavored-markdown-redcarpet/" title="Previous Post: Octopress에서 GitHub Flavored Markdown 사용하기(redcarpet)">&laquo; Octopress에서 GitHub Flavored Markdown 사용하기(redcarpet)</a></li>
+            <li class="previous"><a href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/" title="Previous Post: Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법">&laquo; Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법</a></li>
             
             
-            <li class="next"><a href="/2015/10/14/centos-7-install-partitioning/" title="Next Post: Centos 7 설치시 파티셔닝">Centos 7 설치시 파티셔닝 &raquo;</a></li>
+            <li class="next"><a href="/2015/12/04/mysql-secure-installation-automation/" title="Next Post: mysql_secure_installation 자동화">mysql_secure_installation 자동화 &raquo;</a></li>
             
           </ul>
         
@@ -396,7 +396,7 @@
     
     <a class="list-group-item " href="/2015/12/04/mysql-secure-installation-automation/">mysql_secure_installation 자동화</a>
     
-    <a class="list-group-item " href="/2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a>
+    <a class="list-group-item active" href="/2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a>
     
     <a class="list-group-item " href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법</a>
     
@@ -438,8 +438,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/';
-        var disqus_url = 'http://blog.asamaru.net/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/';
+        var disqus_identifier = 'http://blog.asamaru.net/2015/12/04/installing-mariadb-on-centos-7/';
+        var disqus_url = 'http://blog.asamaru.net/2015/12/04/installing-mariadb-on-centos-7/';
         var disqus_script = 'embed.js';
       
     (function () {

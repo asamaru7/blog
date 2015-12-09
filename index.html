@@ -139,6 +139,123 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-09T11:17:23+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.09</time>
+        
+           | <a href="/2015/12/09/centos-7-create-sftp-only-user/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/12/09/centos-7-create-sftp-only-user/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/12/09/centos-7-create-sftp-only-user/" itemprop="url">sftp-only 사용자 추가 (CentOS 7)</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>linux 서버를 운영하면서 sftp가 필요한 경우가 있다. 일반 계정이라면 sftp로 그냥 접속하면 되지만 특정 사용자에게 shell 접속은 차단하고 파일 업/다운로드만 제공해야 하는 상황이 있을 수 있다. 파일 전송을 주로 해야하는 서버가 아니라면 이런 경우를 위해 ftp 데몬을 구동하는 것도 부담스럽다. 이런 경우라면 sftp 전용 사용자를 추가하는 방법을 사용할 수 있다.</p>
+
+<p>우선 아래의 과정을 보자. 미리 이야기 하지만 아래의 설정 과정은 앞으로 설명하는 요구 사항에 맞추어 작성된 것이다. 따라서 그룹 설정, home directory 설정 등 여러가지 설정들은 자신에게 맞게 변경해도 된다. 단, 설정을 잘못하면 실제로 접속시에 오류가 날 수 있으니 내용을 이해하고 사용하기를 당부한다.</p>
+
+<p><a href="http://bachradsusi.livejournal.com/2239.html">http://bachradsusi.livejournal.com/2239.html</a>
+<a href="http://www.alan.kr/centos-7-chroot-sftp-configuration/">http://www.alan.kr/centos-7-chroot-sftp-configuration/</a>
+<a href="http://studyforus.tistory.com/243">http://studyforus.tistory.com/243</a></p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>/sbin/groupadd sftp
+</span><span class='line'><span class="nv">$ </span>/usr/sbin/useradd -g sftp <span class="o">[</span>username<span class="o">]</span> -d <span class="o">[</span>user home directory<span class="o">]</span> -s /bin/false
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;[password]&quot;</span> <span class="p">|</span> passwd --stdin <span class="o">[</span>username<span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">$ </span>chown -R <span class="o">[</span>username<span class="o">]</span>.sftp <span class="o">[</span>user home directory<span class="o">]</span>
+</span><span class='line'><span class="nv">$ </span>chown root <span class="o">[</span>user home directory<span class="o">]</span>
+</span><span class='line'><span class="nv">$ </span>chmod <span class="m">755</span> <span class="o">[</span>user home directory<span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">$ </span>sed -i <span class="s2">&quot;s/Subsystem[[:space:]]*sftp/#Subsystem   sftp/g&quot;</span> /etc/ssh/sshd_config
+</span><span class='line'>
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;Subsystem   sftp    internal-sftp&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;Match Group sftp&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;    ChrootDirectory %h&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;    AllowTcpForwarding no&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;    X11Forwarding no&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+</span><span class='line'><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;    ForceCommand internal-sftp&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+</span><span class='line'>
+</span><span class='line'><span class="nv">$ </span>setsebool -P ssh_chroot_rw_homedirs on
+</span><span class='line'>
+</span><span class='line'><span class="nv">$ </span>systemctl restart sshd.service
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이제 하나씩 살펴보자</p>
+
+<ul>
+<li><p><code>/sbin/groupadd sftp</code> : sftp라는 사용자 그룹을 추가한다. 필요없다면 하지 않아도 되고 다른 이름을 사용해도 된다. 나의 경우는 sftp 전용 사용자들을 묶어서 관리하기 위해 sftp라는 그룹을 추가한 것이다.</p></li>
+<li><p><code>/usr/sbin/useradd -g sftp [username] -d [user home directory] -s /bin/false</code></p>
+
+<ul>
+<li><code>-g sftp</code> : sftp 그룹에 사용자를 추가한다.</li>
+<li><code>[username]</code> : 원하는 사용자명을 입력한다.</li>
+<li><code>-d [user home directory]</code> : 사용자의 home directory를 지정한다. 이 옵션은 지정하지 않아도 상관없다. 미지정시 일반 계정을 생성할 때와 동일하게 지정된다(일반적으로 /home/[username]).     그리고 이미 directory가 생성되어 있다면 <code>-d [user home directory]</code>를 지정하지 않고 <code>-M</code>을 사용하여 home directory 생성을 건너뛸 수 있다.</li>
+<li><code>-s /bin/false</code> : 이 사용자는 shell로 접속할 수 없음을 지정한다.</li>
+</ul></li>
+<li><p><code>$ echo &quot;[password]&quot; | passwd --stdin [username]</code> : 추가한 사용자 계정의 비밀번호를 입력한다. 일반적으로 비밀번호를 추가하는 방식으로 그냥 <code>passwd</code>를 사용해도 되나 나의 경우는 자동으로 처리하는 스크립트를 만들려고 하다보니 이런 방식을 사용한 것이다.</p></li>
+<li><p><code>chown -R [username].sftp [user home directory]</code> : 사용자가 접속하게 될 폴더의 하위 파일의 소유자를 변경한다. 이 명령도 사용자 추가시 기존에 있던 폴더를 home directory로 지정한 것이 아니라면 실행하지 않아도 된다.</p></li>
+<li><p><code>chown root [user home directory]</code> : 나중에 <code>ChrootDirectory</code>를 적용하려면 home directory의 소유자가 root가 되어야 한다. 이유는 chroot()에서 root가 소유한 directory를 요구하기 때문이다. 관련 내용은 <a href="https://www.debian-administration.org/article/590/OpenSSH_SFTP_chroot_with_ChrootDirectory">OpenSSH SFTP chroot() with ChrootDirectory</a>에 나와 있다.</p></li>
+<li><p><code>chmod 755 [user home directory]</code> : <code>ChrootDirectory</code> 적용시 소유자를 root로 변경하는 것과 함께 권한도 755로 변경해야 한다. 이렇게되면 사용자의 home directory에서는 쓰기 권한을 제거한 것이므로 하위에 폴더를 더 만들어서 소유자를 <code>[username]</code>로 변경하거나 쓰기 권한을 줘야한다(사용자는 해당 폴더들에서 쓰기를 할 수 있다). 이 부분이 상당히 불편할 수 있는 부분인데 chroot 적용이 되려면 보안상 쓰기 권한을 줄 수 없기 때문에 어쩔 수 없다. 사실 나도 이 부분을 제대로 몰라 한참을 고생한 적이있다.</p></li>
+<li><p>echo section : 이 부분은 <code>/etc/ssh/sshd_config</code>에 필요한 부분을 추가하는 과정이다. 꼭 이렇게 해야하는 것은 아니고 직접 파일을 열어서 수정해도 된다. 그리고 나는 그룹 단위로 제어하기 위해서 <code>Match Group sftp</code>를 사용했지만 사용자 단위로 지정하려면 <code>Match User [username]</code>의 형식을 사용해도 된다.</p>
+
+<ul>
+<li><code>ChrootDirectory %h</code> : 이 부분에 관련해서 한가지 이야기 할 것이 있다. 이 설정은 chroot를 사용자 home directory로 지정하는 것이다. <code>%h</code> 대신 특정 경로를 직접 지정해도 된다.</li>
+</ul></li>
+<li><p><code>setsebool -P ssh_chroot_rw_homedirs on</code> : 이 부분은 selinux를 사용할 경우에만 해당된다. chroot가 home directory에 읽기/쓰기를 할 수 있도록 권한을 열어준다.</p></li>
+<li><p><code>systemctl restart sshd.service</code> : 설정이 완료되었으므로 sshd를 재시작 해주면 바로 사용할 수 있다. <code>[username]</code> 계정으로 접속(<code>sftp [username]@127.0.0.1</code>)해서 테스트 해보고 이상이 없다면 완료된 것이다.</p></li>
+</ul>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-09T08:17:05+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.09</time>
         
            | <a href="/2015/12/09/vagrant-box-repackage/#disqus_thread" itemprop="discussionUrl"
@@ -147,7 +264,7 @@
       </p>
     
     
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/12/09/vagrant-box-repackage/" itemprop="url">Vagrant box repackage</a></h2>
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/12/09/vagrant-box-repackage/" itemprop="url">Vagrant box repackage(unpacked box에서 box 파일 만들기)</a></h2>
     
   </header>
 
@@ -1576,158 +1693,6 @@ Context: http, server</p>
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-24T07:35:18+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.24</time>
-        
-           | <a href="/2015/11/24/swift-background-threads-gcd-grand-central-dispatch/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/11/24/swift-background-threads-gcd-grand-central-dispatch/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/11/24/swift-background-threads-gcd-grand-central-dispatch/" itemprop="url">Swift : Async - Background Threads - GCD(Grand Central Dispatch)</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>오늘은 swift에 비동기 처리에 사용하는 <a href="https://github.com/duemunk/Async">Async</a>라는 라이브러리를 소개하고자 한다. <a href="https://github.com/duemunk/Async">Async</a>는 &quot;Syntactic sugar in Swift for asynchronous dispatches in Grand Central Dispatch&quot;라고 소개되어 있다. <a href="https://github.com/duemunk/Async">Async</a>를 소개하기 전에 swift에서의 기본적인 비동기 처리에 대해 먼저 설명한다.</p>
-
-<p>swift는 비동기(Asynchronous) 처리에 사용하는 <a href="https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/">GCD(Grand Central Dispatch)</a>를 사용할 수 있다. GCD(Grand Central Dispatch)는 C로 구성된 스레드 관리 기술로 iOS4 부터 지원한다. NSThread, NSOperation 보다 쉽게 쉽게 사용할 수 있다.</p>
-
-<p>스레드는 다양한 병렬 작업에 사용하지만 특히 앱 개발시에는 더욱 자주 사용하게 된다. 안드로이드와 iOS는 UI처리 등의 앱의 실행을 main 스레드에서 처리한다. 그런데 이 main 스레드에서 무거운 작업을 하게 된다면 UI의 갱신이 지연되므로 화면의 멈춤 현상이 발생한다. 특히 안드로이드의 경우는 main 스레드에서 네트워크 처리 등을 할 수 없도록 제한이 걸려있다(제한을 풀 수 있으나 ANR 문제 등으로 결국은 사용하지 못하는 것과 같다). 이러한 문제를 해결하기 위해서는 스레드의 사용이 필수다.</p>
-
-<p>그럼 <a href="https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/">GCD(Grand Central Dispatch)</a>에 대해서 알아보자.</p>
-
-<p>GCD는 기본적으로 아래의 queue를 가지고 있다.</p>
-
-<ul>
-<li><p><strong>Main</strong>: tasks execute serially on your application’s main thread</p></li>
-<li><p><strong>Concurrent</strong>: tasks are dequeued in FIFO order, but run concurrently and can finish in any order.</p></li>
-<li><p><strong>Serial</strong>: tasks execute one at a time in FIFO order</p></li>
-</ul>
-
-<p>GCD에 대한 자세한 설명은 워낙에 많으니 자세히 설명하지 않고 간단한 예시만 보여주고자 한다.</p>
-
-<p>일단 swift 이전에 objective-c에서는 아래와 같이 사용한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='objective-c'><span class='line'><span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_global_queue</span><span class="p">(</span><span class="n">DISPATCH_QUEUE_PRIORITY_DEFAULT</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">^</span><span class="p">{</span>
-</span><span class='line'>  <span class="c1">// do some task</span>
-</span><span class='line'>  <span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
-</span><span class='line'>      <span class="c1">// update some UI</span>
-</span><span class='line'>  <span class="p">});</span>
-</span><span class='line'><span class="p">});</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>동일한 동작을 swift에서 사용하면 아래와 같다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">let</span> <span class="n">priority</span> <span class="o">=</span> <span class="n">DISPATCH_QUEUE_PRIORITY_DEFAULT</span>
-</span><span class='line'><span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_global_queue</span><span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="p">{</span>
-</span><span class='line'>  <span class="c1">// do some task</span>
-</span><span class='line'>  <span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">())</span> <span class="p">{</span>
-</span><span class='line'>      <span class="c1">// update some UI</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>block object의 표현만 차이가 날 뿐 사실상 거의 차이가 없다.</p>
-
-<p>위 코드를 간단히 설명하자면 global queue에서 작업을 수행하고 main queue에서 UI 변경 작업을 하도록 한 코드다.</p>
-
-<p>뭐 크게 사용이 어렵지도 않고 크게 불편하지는 않다. 하지만 이런 과정을 더욱 쉽게 구성할 수 있도록 도와주는 것이 <a href="https://github.com/duemunk/Async">Async</a>다. 상세한 예시는 해당 사이트를 방문하면 다양하게 소개하고 있다.</p>
-
-<p>그 중에서 Async의 장점을 잘 보여주는 예시를 하나 소개한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">let</span> <span class="n">seconds</span> <span class="o">=</span> <span class="mf">0.5</span>
-</span><span class='line'><span class="n">Async</span><span class="p">.</span><span class="n">main</span><span class="p">(</span><span class="nl">after</span><span class="p">:</span> <span class="n">seconds</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">println</span><span class="p">(</span><span class="s">&quot;Is called after 0.5 seconds&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="p">}.</span><span class="n">background</span><span class="p">(</span><span class="nl">after</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">println</span><span class="p">(</span><span class="s">&quot;At least 0.4 seconds after previous block, and 0.9 after Async code is called&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>&quot;Is called after 0.5 seconds&quot; 메시지를 main 스레드에서 0.5초 뒤에 출력한 후 0.4초 뒤 background 스레드에서 &quot;At least 0.4 seconds after previous block, and 0.9 after Async code is called&quot;를 출력하는 예시다. 이 예시를 보면 알 수 있듯이 <a href="https://github.com/duemunk/Async">Async</a>는 chaining을 지원하며 스레드를 작업 완료에 따라 순차적으로 실행 할 수 있도록 도와준다.</p>
-
-<p>스레드 작업을 취소하는 예시 하나만 더 아래에 소개한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="c1">// Cancel blocks not yet dispatched</span>
-</span><span class='line'><span class="k">let</span> <span class="n">block1</span> <span class="o">=</span> <span class="n">Async</span><span class="p">.</span><span class="n">background</span> <span class="p">{</span>
-</span><span class='line'>    <span class="c1">// Heavy work</span>
-</span><span class='line'>    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mf">0.</span><span class="p">.</span><span class="mf">.1000</span> <span class="p">{</span>
-</span><span class='line'>        <span class="n">println</span><span class="p">(</span><span class="s">&quot;A \(i)&quot;</span><span class="p">)</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="k">let</span> <span class="n">block2</span> <span class="o">=</span> <span class="n">block1</span><span class="p">.</span><span class="n">background</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">println</span><span class="p">(</span><span class="s">&quot;B – shouldn&#39;t be reached, since cancelled&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="n">Async</span><span class="p">.</span><span class="n">main</span> <span class="p">{</span>
-</span><span class='line'>    <span class="c1">// Cancel async to allow block1 to begin</span>
-</span><span class='line'>    <span class="n">block1</span><span class="p">.</span><span class="n">cancel</span><span class="p">()</span> <span class="c1">// First block is _not_ cancelled</span>
-</span><span class='line'>    <span class="n">block2</span><span class="p">.</span><span class="n">cancel</span><span class="p">()</span> <span class="c1">// Second block _is_ cancelled</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>위에서 소개한 것처럼 <a href="https://github.com/duemunk/Async">Async</a>는 swift에서의 thread 작업을 아주 쉽게 할 수 있도록 도와준다.</p>
-
-<p>한가지 라이브러리를 더 소개하자면 위 라이브러리와는 성격이 조금 다르지만 안드로이드의 AsyncTask 같은 작업이 필요하다면 <a href="https://github.com/ReactKit/SwiftTask">SwiftTask</a>를 참고해보면 도움이 될 것 같다. <a href="https://github.com/ReactKit/SwiftTask">SwiftTask</a>는 &quot;Promise + progress + pause + cancel + retry for Swift.&quot;라고 소개하고 있다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1800,7 +1765,7 @@ Context: http, server</p>
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (12)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (13)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1809,15 +1774,15 @@ Context: http, server</p>
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/12/09/vagrant-box-repackage/">Vagrant box repackage</a>
+    <a class="list-group-item " href="/2015/12/09/centos-7-create-sftp-only-user/">sftp-only 사용자 추가 (CentOS 7)</a>
+    
+    <a class="list-group-item " href="/2015/12/09/vagrant-box-repackage/">Vagrant box repackage(unpacked box에서 box 파일 만들기)</a>
     
     <a class="list-group-item " href="/2015/12/04/mysql-secure-installation-automation/">mysql_secure_installation 자동화</a>
     
     <a class="list-group-item " href="/2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a>
     
     <a class="list-group-item " href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법</a>
-    
-    <a class="list-group-item " href="/2015/12/02/vagrant-cant-mount-shared-folder/">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a>
     
   </div>
 </section>

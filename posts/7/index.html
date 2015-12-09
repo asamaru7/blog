@@ -139,6 +139,87 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T12:44:59+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
+        
+           | <a href="/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/" itemprop="url">Swift 2 : Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands 오류 해결</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>이번에 iOS 작업중 Swift 2로 변경을 하면서 아래와 같은 오류를 만났다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands</span></code></pre></td></tr></table></div></figure>
+
+<p>사실 이 부분말고도 여러가지 오류가 나왔지만 기본적으로 swift 버전업을 도와주는 헬프 기능 등을 통해 어느 정도는 쉽게 고칠 수 있었다.</p>
+
+<p>어쨌든 이 오류는 아래의 코드를 보면 해결 방법을 바로 알 수 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">let</span> <span class="n">view</span> <span class="o">=</span> <span class="bp">UIView</span><span class="p">(</span><span class="nl">frame</span><span class="p">:</span> <span class="bp">CGRect</span><span class="p">(</span><span class="nl">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nl">y</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nl">width</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="nl">height</span><span class="p">:</span> <span class="mi">100</span><span class="p">))</span>
+</span><span class='line'><span class="n">addSubview</span><span class="p">(</span><span class="n">view</span><span class="p">)</span>
+</span><span class='line'><span class="c1">// Swift 2.0 미만</span>
+</span><span class='line'><span class="n">view</span><span class="p">.</span><span class="n">autoresizingMask</span> <span class="o">=</span> <span class="n">UIViewAutoresizing</span><span class="p">.</span><span class="n">FlexibleWidth</span> <span class="o">|</span> <span class="n">UIViewAutoresizing</span><span class="p">.</span><span class="n">FlexibleHeight</span>
+</span><span class='line'><span class="c1">// Swift 2.0 이상</span>
+</span><span class='line'><span class="n">view</span><span class="p">.</span><span class="n">autoresizingMask</span> <span class="o">=</span> <span class="p">[.</span><span class="n">FlexibleWidth</span><span class="p">,</span> <span class="p">.</span><span class="n">FlexibleHeight</span><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이와 유사하게 UIUserNotificationType의 경우도 아래와 같이 수정이 필요하다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="c1">// Swift 2.0 미만</span>
+</span><span class='line'><span class="k">let</span> <span class="n">settings</span> <span class="o">=</span> <span class="n">UIUserNotificationSettings</span><span class="p">(</span><span class="nl">forTypes</span><span class="p">:</span> <span class="n">UIUserNotificationType</span><span class="p">.</span><span class="n">Alert</span> <span class="o">|</span> <span class="n">UIUserNotificationType</span><span class="p">.</span><span class="n">Badge</span><span class="p">,</span> <span class="nl">categories</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
+</span><span class='line'><span class="c1">// Swift 2.0 이상</span>
+</span><span class='line'><span class="k">let</span> <span class="n">settings</span> <span class="o">=</span> <span class="n">UIUserNotificationSettings</span><span class="p">(</span><span class="nl">forTypes</span><span class="p">:</span> <span class="p">[.</span><span class="n">Alert</span><span class="p">,</span> <span class="p">.</span><span class="n">Badge</span><span class="p">],</span> <span class="nl">categories</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
+</span><span class='line'><span class="bp">UIApplication</span><span class="p">.</span><span class="n">sharedApplication</span><span class="p">().</span><span class="n">registerUserNotificationSettings</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+</span><span class='line'><span class="k">if</span> <span class="n">settings</span><span class="p">.</span><span class="n">types</span><span class="p">.</span><span class="n">contains</span><span class="p">(.</span><span class="n">Badge</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1">// whatever</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T10:05:11+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
         
            | <a href="/2015/10/05/using-applicationidsuffix-with-androidannotations/#disqus_thread" itemprop="discussionUrl"
@@ -1202,90 +1283,6 @@ android {
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-25T12:10:09+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.25</time>
-        
-           | <a href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/" itemprop="url">Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 앱 개발시 사용하던 <a href="https://github.com/loopj/android-async-http">android-async-http</a>가 최근 1.4.9 버전으로 버전업되었다. 1.4.8 이하 버전을 사용할 경우 이전에 포스팅한 <a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>와 관련된 문제가 있다.</p>
-
-<p>그런데 나는 이 1.4.9 버전을 사용하면서 다른 문제가 생겼다. 빌드에서 오류나 경고는 전혀 나타나지 않지만 URL 호출을 하면 onStart, onProgress까지는 들어오는데 onSuccess, onFailure를 호출해 주지 않았다. 그런데 이 현상이 proguard를 적용할 때만 발생한다는 것이다. 정밀하게 테스트해보지 않아 정확한 원인을 찾지는 못했지만 대략적인 상황을 보면 proguard에 의해 난독화 처리되는 부분이 문제로 보인다(그런데 실제로 내부 소스를 살펴보면 reflection 등을 사용하거나해서 난독화에 영향을 받을 만한 부분을 찾지 못했다).</p>
-
-<p>우선 내가 사용했던 proguard의 설정 중 영향을 줄만한 부분은 다음과 같다. 나머지는 대부분 keep 등의 설정으로 <a href="https://github.com/loopj/android-async-http">android-async-http</a>에 영향을 줄 만한 부분은 없다.</p>
-
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>-optimizationpasses 5
-</span><span class='line'>-repackageclasses ''
-</span><span class='line'>-allowaccessmodification
-</span><span class='line'>-overloadaggressively
-</span><span class='line'>-verbose</span></code></pre></td></tr></table></div></figure>
-
-<p>사실 이 문제에 대해서 검색해보면 다른 이야기들이 많다. 대부분 호출이 되지 않는다는 질문을 하는 사람들의 경우는 onSuccess, onFailure의 오버로딩에 관련된 문제이다. 실제로 android-async-http는 ResponseHandler에 따라 여러 개의 onSuccess, onFailure 함수들을 가지고 있다. 이 함수들은 반환되는 데이터의 형태에 따라 다른 함수를 호출해주도록 되어있다. 이 부분은 편리하긴하나 개인적으론 조금 꺼려지는 형태다. 질문이 많이 올라오는 것처럼 반환 형태에 맞는 함수를 구현하는 것을 누락시킬 수 있기 때문이다. 어쨌든 나의 경우는 이에 해당하지 않았다. 확인을 위해 라이브러리 소스를 일부 수정해서 테스트 했으나 그 전단계까지도 들어오지 않았다.</p>
-
-<p>이 문제는 proguard를 적용했을 때만 발생하는 문제였으므로 아래와 같이 proguard에 추가해주면 간단히 해결된다.</p>
-
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>-keep class com.loopj.android.http.** { *; }
-</span><span class='line'>-keep interface com.loopj.android.** { *; }</span></code></pre></td></tr></table></div></figure>
-
-<p>그런데 개인적으로 이 해결법은 어떤 것이 문제인지 확인하지도 못했을 뿐아니라 문제를 해결하기 위해 통째로 proguard에서 제외하는 것이 맘에들지 않았다. 그래서 수십번의 빌드를 통해 어느 클래스가 문제를 일으키는지 찾아냈다. 아.. 인간 승리다. 수십여개의 클래스들을 넣어보고 빼보고...</p>
-
-<p>결론은 아래의 코드를 proguard에 추가하면 문제가 해결된다.</p>
-
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>-keep class com.loopj.android.http.HttpGet { *; }</span></code></pre></td></tr></table></div></figure>
-
-<p>대충 소스를 보니 HttpGet는 이번에 Apache HTTP 클라이언트가 제거되면서 이를 대체하기 위한 라이브러리를 교체하면서 추가된 클래스로 보인다. 그런데 소스를 봐도 이게 왜 proguard에 영향을 받는지 잘 모르겠지만 위의 코드를 넣음으로써 해결이 되는 것은 확인했다. 더 자세히 코드를 추적해 간다면 원인을 찾을 수 있을지도 모르지만 굳이 거기까지 내가할 필요는 없다고 보고 github에 이슈를 등록하려고 한다. 해당 개발자들이 다음버전에 문제를 해결해 주기를 바라며...</p>
-
-<h2 id="update-2015-10-15">UPDATE - 2015-10-15</h2>
-
-<p>오늘 사용자에게서 오류가 보고 되었다. 문제는 파일업로드가 되지 않는다는 것인데 문제의 원인은 위 글의 내용과 동일하다. 정확히는 안드로이드 버전 문제도 포함된다. 하위 버전의 안드로이드에서는 위의 설정만으로는 해결이 되지 않았던 것이다. 결론은 아래의 내용을 proguard에 대체해서 넣어야 한다는 것. 상황적으로 봤을 때 내가 사용한 범위를 벗어나면 proguard와 충돌하는 부분이 더 있을 수 있을 것 같다(하지만 지금 내가 다 찾기엔 무리이므로 android-async-http 개발자분들에게 넘긴다).</p>
-
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>-keep class cz.msebera.android.httpclient.HttpResponse { *; }
-</span><span class='line'>-keep class com.loopj.android.http.HttpGet { *; }
-</span><span class='line'>-keep class com.loopj.android.http.HttpDelete { *; }</span></code></pre></td></tr></table></div></figure>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1358,7 +1355,7 @@ android {
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (12)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (13)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1367,15 +1364,15 @@ android {
   
   <div id="recent_posts" class="list-group">
     
-    <a class="list-group-item " href="/2015/12/09/vagrant-box-repackage/">Vagrant box repackage</a>
+    <a class="list-group-item " href="/2015/12/09/centos-7-create-sftp-only-user/">sftp-only 사용자 추가 (CentOS 7)</a>
+    
+    <a class="list-group-item " href="/2015/12/09/vagrant-box-repackage/">Vagrant box repackage(unpacked box에서 box 파일 만들기)</a>
     
     <a class="list-group-item " href="/2015/12/04/mysql-secure-installation-automation/">mysql_secure_installation 자동화</a>
     
     <a class="list-group-item " href="/2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a>
     
     <a class="list-group-item " href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법</a>
-    
-    <a class="list-group-item " href="/2015/12/02/vagrant-cant-mount-shared-folder/">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a>
     
   </div>
 </section>

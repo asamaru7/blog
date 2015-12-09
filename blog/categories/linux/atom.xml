@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-12-09T13:16:21+09:00</updated>
+  <updated>2015-12-10T08:38:17+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,68 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[sftp-only 사용자 추가 (CentOS 7)]]></title>
+    <link href="http://blog.asamaru.net/2015/12/09/centos-7-create-sftp-only-user/"/>
+    <updated>2015-12-09T11:17:23+09:00</updated>
+    <id>http://blog.asamaru.net/2015/12/09/centos-7-create-sftp-only-user</id>
+    <content type="html"><![CDATA[<p>linux 서버를 운영하면서 sftp가 필요한 경우가 있다. 일반 계정이라면 sftp로 그냥 접속하면 되지만 특정 사용자에게 shell 접속은 차단하고 파일 업/다운로드만 제공해야 하는 상황이 있을 수 있다. 파일 전송을 주로 해야하는 서버가 아니라면 이런 경우를 위해 ftp 데몬을 구동하는 것도 부담스럽다. 이런 경우라면 sftp 전용 사용자를 추가하는 방법을 사용할 수 있다.</p>
+
+<p>우선 아래의 과정을 보자. 미리 이야기 하지만 아래의 설정 과정은 앞으로 설명하는 요구 사항에 맞추어 작성된 것이다. 따라서 그룹 설정, home directory 설정 등 여러가지 설정들은 자신에게 맞게 변경해도 된다. 단, 설정을 잘못하면 실제로 접속시에 오류가 날 수 있으니 내용을 이해하고 사용하기를 당부한다.</p>
+
+<p><a href="http://bachradsusi.livejournal.com/2239.html">http://bachradsusi.livejournal.com/2239.html</a>
+<a href="http://www.alan.kr/centos-7-chroot-sftp-configuration/">http://www.alan.kr/centos-7-chroot-sftp-configuration/</a>
+<a href="http://studyforus.tistory.com/243">http://studyforus.tistory.com/243</a></p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>/sbin/groupadd sftp
+<span class="nv">$ </span>/usr/sbin/useradd -g sftp <span class="o">[</span>username<span class="o">]</span> -d <span class="o">[</span>user home directory<span class="o">]</span> -s /bin/false
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;[password]&quot;</span> <span class="p">|</span> passwd --stdin <span class="o">[</span>username<span class="o">]</span>
+
+<span class="nv">$ </span>chown -R <span class="o">[</span>username<span class="o">]</span>.sftp <span class="o">[</span>user home directory<span class="o">]</span>
+<span class="nv">$ </span>chown root <span class="o">[</span>user home directory<span class="o">]</span>
+<span class="nv">$ </span>chmod <span class="m">755</span> <span class="o">[</span>user home directory<span class="o">]</span>
+
+<span class="nv">$ </span>sed -i <span class="s2">&quot;s/Subsystem[[:space:]]*sftp/#Subsystem   sftp/g&quot;</span> /etc/ssh/sshd_config
+
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;Subsystem   sftp    internal-sftp&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;Match Group sftp&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;    ChrootDirectory %h&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;    AllowTcpForwarding no&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;    X11Forwarding no&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;    ForceCommand internal-sftp&quot;</span> &gt;&gt; /etc/ssh/sshd_config
+
+<span class="nv">$ </span>setsebool -P ssh_chroot_rw_homedirs on
+
+<span class="nv">$ </span>systemctl restart sshd.service
+</code></pre></div>
+<p>이제 하나씩 살펴보자</p>
+
+<ul>
+<li><p><code>/sbin/groupadd sftp</code> : sftp라는 사용자 그룹을 추가한다. 필요없다면 하지 않아도 되고 다른 이름을 사용해도 된다. 나의 경우는 sftp 전용 사용자들을 묶어서 관리하기 위해 sftp라는 그룹을 추가한 것이다.</p></li>
+<li><p><code>/usr/sbin/useradd -g sftp [username] -d [user home directory] -s /bin/false</code></p>
+
+<ul>
+<li><code>-g sftp</code> : sftp 그룹에 사용자를 추가한다.</li>
+<li><code>[username]</code> : 원하는 사용자명을 입력한다.</li>
+<li><code>-d [user home directory]</code> : 사용자의 home directory를 지정한다. 이 옵션은 지정하지 않아도 상관없다. 미지정시 일반 계정을 생성할 때와 동일하게 지정된다(일반적으로 /home/[username]).     그리고 이미 directory가 생성되어 있다면 <code>-d [user home directory]</code>를 지정하지 않고 <code>-M</code>을 사용하여 home directory 생성을 건너뛸 수 있다.</li>
+<li><code>-s /bin/false</code> : 이 사용자는 shell로 접속할 수 없음을 지정한다.</li>
+</ul></li>
+<li><p><code>$ echo &quot;[password]&quot; | passwd --stdin [username]</code> : 추가한 사용자 계정의 비밀번호를 입력한다. 일반적으로 비밀번호를 추가하는 방식으로 그냥 <code>passwd</code>를 사용해도 되나 나의 경우는 자동으로 처리하는 스크립트를 만들려고 하다보니 이런 방식을 사용한 것이다.</p></li>
+<li><p><code>chown -R [username].sftp [user home directory]</code> : 사용자가 접속하게 될 폴더의 하위 파일의 소유자를 변경한다. 이 명령도 사용자 추가시 기존에 있던 폴더를 home directory로 지정한 것이 아니라면 실행하지 않아도 된다.</p></li>
+<li><p><code>chown root [user home directory]</code> : 나중에 <code>ChrootDirectory</code>를 적용하려면 home directory의 소유자가 root가 되어야 한다. 이유는 chroot()에서 root가 소유한 directory를 요구하기 때문이다. 관련 내용은 <a href="https://www.debian-administration.org/article/590/OpenSSH_SFTP_chroot_with_ChrootDirectory">OpenSSH SFTP chroot() with ChrootDirectory</a>에 나와 있다.</p></li>
+<li><p><code>chmod 755 [user home directory]</code> : <code>ChrootDirectory</code> 적용시 소유자를 root로 변경하는 것과 함께 권한도 755로 변경해야 한다. 이렇게되면 사용자의 home directory에서는 쓰기 권한을 제거한 것이므로 하위에 폴더를 더 만들어서 소유자를 <code>[username]</code>로 변경하거나 쓰기 권한을 줘야한다(사용자는 해당 폴더들에서 쓰기를 할 수 있다). 이 부분이 상당히 불편할 수 있는 부분인데 chroot 적용이 되려면 보안상 쓰기 권한을 줄 수 없기 때문에 어쩔 수 없다. 사실 나도 이 부분을 제대로 몰라 한참을 고생한 적이있다.</p></li>
+<li><p>echo section : 이 부분은 <code>/etc/ssh/sshd_config</code>에 필요한 부분을 추가하는 과정이다. 꼭 이렇게 해야하는 것은 아니고 직접 파일을 열어서 수정해도 된다. 그리고 나는 그룹 단위로 제어하기 위해서 <code>Match Group sftp</code>를 사용했지만 사용자 단위로 지정하려면 <code>Match User [username]</code>의 형식을 사용해도 된다.</p>
+
+<ul>
+<li><code>ChrootDirectory %h</code> : 이 부분에 관련해서 한가지 이야기 할 것이 있다. 이 설정은 chroot를 사용자 home directory로 지정하는 것이다. <code>%h</code> 대신 특정 경로를 직접 지정해도 된다.</li>
+</ul></li>
+<li><p><code>setsebool -P ssh_chroot_rw_homedirs on</code> : 이 부분은 selinux를 사용할 경우에만 해당된다. chroot가 home directory에 읽기/쓰기를 할 수 있도록 권한을 열어준다.</p></li>
+<li><p><code>systemctl restart sshd.service</code> : 설정이 완료되었으므로 sshd를 재시작 해주면 바로 사용할 수 있다. <code>[username]</code> 계정으로 접속(<code>sftp [username]@127.0.0.1</code>)해서 테스트 해보고 이상이 없다면 완료된 것이다.</p></li>
+</ul>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[mysql_secure_installation 자동화]]></title>
@@ -364,75 +426,6 @@ printJob <span class="s2">&quot;방화벽 설정&quot;</span>
 <span class="k">fi</span>
 </code></pre></div>
 <p>위 소스는 CentOS 7에서 firewalld를 사용하는 것을 기준으로 만들어진 것이니 참고하기 바란다. 그리고 원래 내가 사용하는 소스에서 불필요한 부분을 제거하고 넣은 것이라 <code>print***</code> 함수 같은 부분이 잘못 되었을 수 있는데 오류가 난다면 관련 부분을 모두 제거하면 된다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[ANSI text를 HTML로 변환하기]]></title>
-    <link href="http://blog.asamaru.net/2015/10/26/ansi-to-html/"/>
-    <updated>2015-10-26T14:38:36+09:00</updated>
-    <id>http://blog.asamaru.net/2015/10/26/ansi-to-html</id>
-    <content type="html"><![CDATA[<p>지난 글 <a href="/2015/10/23/php-cli-ansi-colors/">PHP를 CLI에서 사용시 ANSI Colors 적용하기</a>에서 php cli에서 ANSI를 사용해서 출력하는 것에 대해 설명했었다. 이번엔 ANSI text를 HTML로 변환하는 것에 대해서 설명하려고 한다.
-이게 왜 필요할까? ANSI는 shell에서만 색상이 적용되므로 해당 내용을 text 파일로 저장해서 다른 곳에서 열어보면 ANSI code가 그대로 보이거나 일반 text로 보인다. 따라서 결과물을 색상을 포함해서 다른 곳에 공유하기가 어렵다.
-나의 경우는 ANSI를 html로 변환해서 chrome에서 열고 pdf로 출력헤서 사용했다.</p>
-
-<p>그럼 본론으로 들어가서 어떻게 하면 되는가? 여러가지 방법이 있다. PHP를 사용하는 방법, Bash script를 사용하는 방법, 특정 프로그램을 사용하는 방법 등 많지만 오늘은 그 중에서 몇가지만 소개하려고 한다.</p>
-
-<p>우선 지난 번에 PHP에서 ANSI를 생성하는 것을 설명했으니 PHP 부터 보자.</p>
-
-<p><a href="https://github.com/sensiolabs/ansi-to-html">ansi-to-html</a> 라이브러리를 사용해서 변환할 수 있다. 자세한 설명은 해당 사이트를 참고하면 자세히 나와 있다.</p>
-
-<p>다음은 Bash script.</p>
-
-<p><a href="http://pablomarin-garcia.blogspot.kr/2011/04/converting-ansi-to-html-how-to-convert.html">converting ANSI to HTML. How to convert to html the colored shell output</a>를 참고하면 Perl CPAN을 사용하는 방법과 <a href="http://www.pixelbeat.org/scripts/ansi2html.sh">ansi2html.sh from pixelbeat</a> Bash script를 사용하는 방법을 안내하고 있다.
-하지만 이 스크립트는 크게 권장하고 싶지는 않다. 간단한 내용엔 문제가 되지 않는데 text 양이 많아지니 너무 느렸다(300kb 가량).</p>
-
-<p>마지막으로 <a href="https://github.com/theZiz/aha">aha</a>를 사용하는 방법이다. 링크를 따라가면 github의 aha repository를 볼 수 있다. 설명은 설치 방법만 나와 있는데 아주 심플하다. 그래서 아래에 직접 사용한 방법을 조금 더 설명하겠다.</p>
-
-<p>centos 기준으로 아래와 같이 설치가 가능하다. 우분투라면 <code>sudo apt-get install aha</code>로 설치가 가능하다고 설명하는 사람이 있는데 확인은 못했다.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>su -
-<span class="nv">$ </span>git clone https://github.com/theZiz/aha.git
-<span class="nv">$ </span>make
-<span class="nv">$ </span>install
-</code></pre></div>
-<p>사용법은 help를 보면 아래와 같이 나온다.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">Ansi Html Adapter Version 0.4.8.0
-aha takes SGR-colored Input and prints W3C conform HTML-Code
-use: aha &lt;options&gt; <span class="o">[</span>-f file<span class="o">]</span>
-     aha <span class="o">(</span>--help<span class="p">|</span>-h<span class="p">|</span>-?<span class="o">)</span>
-aha reads the Input from a file or stdin and writes HTML-Code to stdout
-options: --black,      -b: Black Background and White <span class="s2">&quot;standard color&quot;</span>
-         --pink,       -p: Pink Background
-         --stylesheet, -s: Use a stylesheet instead of inline styles
-         --iso X,    -i X: Uses ISO 8859-X instead of utf-8. X must be 1..16
-         --title X,  -t X: Gives the html output the title <span class="s2">&quot;X&quot;</span> instead of
-                           <span class="s2">&quot;stdin&quot;</span> or the filename
-         --line-fix,   -l: Uses a fix <span class="k">for</span> inputs using control sequences to
-                           change the cursor position like htop. It<span class="s1">&#39;s a hot fix,</span>
-<span class="s1">                           it may not work with any program like htop. Example:</span>
-<span class="s1">                           echo q | htop | aha -l &gt; htop.htm</span>
-<span class="s1">         --word-wrap,  -w: Wrap long lines in the html file. This works with</span>
-<span class="s1">                           CSS3 supporting browsers as well as many older ones.</span>
-<span class="s1">         --no-header,  -n: Don&#39;</span>t include header into generated HTML,
-                           useful <span class="k">for</span> inclusion in full HTML files.
-Example: aha --help <span class="p">|</span> aha --black &gt; aha-help.htm
-         Writes this <span class="nb">help </span>text to the file aha-help.htm
-
-Copyleft Alexander Matthes aka Ziz 2015
-         zizsdl@googlemail.com
-         http://ziz.delphigl.com/tool_aha.php
-This application is subject to the MPL or LGPL.
-</code></pre></div>
-<p>간단한 사용법은 다음과 같다. 기타 옵션들은 몇가지 안되니 바로 보면 된다(사실상 사용할 일이 거의 없을 거 같다).</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>ls -ahl <span class="p">|</span> aha &gt; result.html
-
-<span class="c"># 또는</span>
-
-<span class="nv">$ </span>aha -f <span class="o">{</span>ANSI 파일<span class="o">}</span> &gt; result.html
-</code></pre></div>
-<p>나는 이 방법을 사용했다. 일단 c로 만들어져서 그런지 속도가 아주 빠르다. 하지만 한가지 단점이 있다. 표준 ANSI만 지원하는 것 같다. aixterm 에서 사용하는 속성들은 결과에서 무시되었다. 예를들어 글자색은 30-37 만 사용 가능하다.</p>
-
-<p>구글에서 ansi to html 이라고 검색하면 보다 다양한 방법들이 있으니 필요하다면 한번 검색해보길 바란다.</p>
 ]]></content>
   </entry>
   

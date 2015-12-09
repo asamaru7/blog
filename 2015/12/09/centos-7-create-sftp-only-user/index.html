@@ -155,10 +155,6 @@
 
 <p>우선 아래의 과정을 보자. 미리 이야기 하지만 아래의 설정 과정은 앞으로 설명하는 요구 사항에 맞추어 작성된 것이다. 따라서 그룹 설정, home directory 설정 등 여러가지 설정들은 자신에게 맞게 변경해도 된다. 단, 설정을 잘못하면 실제로 접속시에 오류가 날 수 있으니 내용을 이해하고 사용하기를 당부한다.</p>
 
-<p><a href="http://bachradsusi.livejournal.com/2239.html">http://bachradsusi.livejournal.com/2239.html</a>
-<a href="http://www.alan.kr/centos-7-chroot-sftp-configuration/">http://www.alan.kr/centos-7-chroot-sftp-configuration/</a>
-<a href="http://studyforus.tistory.com/243">http://studyforus.tistory.com/243</a></p>
-
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
@@ -221,12 +217,13 @@
 <li><p><code>chown -R [username].sftp [user home directory]</code> : 사용자가 접속하게 될 폴더의 하위 파일의 소유자를 변경한다. 이 명령도 사용자 추가시 기존에 있던 폴더를 home directory로 지정한 것이 아니라면 실행하지 않아도 된다.</p></li>
 <li><p><code>chown root [user home directory]</code> : 나중에 <code>ChrootDirectory</code>를 적용하려면 home directory의 소유자가 root가 되어야 한다. 이유는 chroot()에서 root가 소유한 directory를 요구하기 때문이다. 관련 내용은 <a href="https://www.debian-administration.org/article/590/OpenSSH_SFTP_chroot_with_ChrootDirectory">OpenSSH SFTP chroot() with ChrootDirectory</a>에 나와 있다.</p></li>
 <li><p><code>chmod 755 [user home directory]</code> : <code>ChrootDirectory</code> 적용시 소유자를 root로 변경하는 것과 함께 권한도 755로 변경해야 한다. 이렇게되면 사용자의 home directory에서는 쓰기 권한을 제거한 것이므로 하위에 폴더를 더 만들어서 소유자를 <code>[username]</code>로 변경하거나 쓰기 권한을 줘야한다(사용자는 해당 폴더들에서 쓰기를 할 수 있다). 이 부분이 상당히 불편할 수 있는 부분인데 chroot 적용이 되려면 보안상 쓰기 권한을 줄 수 없기 때문에 어쩔 수 없다. 사실 나도 이 부분을 제대로 몰라 한참을 고생한 적이있다.</p></li>
+<li><p><code>sed -i &quot;s/Subsystem[[:space:]]*sftp/#Subsystem   sftp/g&quot; /etc/ssh/sshd_config</code> : <code>/etc/ssh/sshd_config</code> 파일에서 <code>Subsystem   sftp</code> 설정 부분을 주석 처리한다. 직접 파일을 열어서 해당 내용을 주석 처리해도 된다.</p></li>
 <li><p>echo section : 이 부분은 <code>/etc/ssh/sshd_config</code>에 필요한 부분을 추가하는 과정이다. 꼭 이렇게 해야하는 것은 아니고 직접 파일을 열어서 수정해도 된다. 그리고 나는 그룹 단위로 제어하기 위해서 <code>Match Group sftp</code>를 사용했지만 사용자 단위로 지정하려면 <code>Match User [username]</code>의 형식을 사용해도 된다.</p>
 
 <ul>
-<li><code>ChrootDirectory %h</code> : 이 부분에 관련해서 한가지 이야기 할 것이 있다. 이 설정은 chroot를 사용자 home directory로 지정하는 것이다. <code>%h</code> 대신 특정 경로를 직접 지정해도 된다.</li>
+<li><code>ChrootDirectory %h</code> : 이 설정은 chroot를 사용자 home directory로 지정하는 것이다. <code>%h</code> 대신 특정 경로를 직접 지정해도 된다.</li>
 </ul></li>
-<li><p><code>setsebool -P ssh_chroot_rw_homedirs on</code> : 이 부분은 selinux를 사용할 경우에만 해당된다. chroot가 home directory에 읽기/쓰기를 할 수 있도록 권한을 열어준다.</p></li>
+<li><p><code>setsebool -P ssh_chroot_rw_homedirs on</code> : 이 부분은 selinux를 사용할 경우에만 해당된다. chroot가 적용된 home directory에 읽기/쓰기를 할 수 있도록 권한을 열어준다.</p></li>
 <li><p><code>systemctl restart sshd.service</code> : 설정이 완료되었으므로 sshd를 재시작 해주면 바로 사용할 수 있다. <code>[username]</code> 계정으로 접속(<code>sftp [username]@127.0.0.1</code>)해서 테스트 해보고 이상이 없다면 완료된 것이다.</p></li>
 </ul>
 </div>

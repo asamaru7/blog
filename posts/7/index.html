@@ -139,6 +139,72 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T10:05:11+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
+        
+           | <a href="/2015/10/05/using-applicationidsuffix-with-androidannotations/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/05/using-applicationidsuffix-with-androidannotations/" itemprop="url">Gradle applicationIdSuffix 사용시 AndroidAnnotations 설정</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p><a href="/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/">Gradle DSL method not found: &#39;packageNameSuffix()&#39; 오류 해결</a>에서 오류 해결 방법을 안내하면서 언급했던 applicationIdSuffix를 사용시 유의사항이 있다. <strong>applicationId가 debug 모드에서 변경됨에 따라 관련된 부분에서 문제가 일어날 수 있다는 것이다.</strong></p>
+
+<p>나의 경우는 AndroidAnnotations을 함께 사용하는 부분에서 오류를 만났다. AndroidAnnotations에서 applicationId를 기준으로 resource에 접근해서 자동 생성된 class들을 찾지 못하는 문제이다.</p>
+
+<p>이런 경우에 대비해서 AndroidAnnotations에는 resourcePackageName라는 속성을 제공한다.</p>
+
+<p><a href="https://github.com/excilys/androidannotations/wiki/CustomizeAnnotationProcessing">CustomizeAnnotationProcessing</a>에 보면 아래와 같이 안내되어 있다.</p>
+
+<blockquote>
+<p><strong>resourcePackageName</strong></p>
+
+<p>Type: string
+By default, AndroidAnnotations try to find the R class by extracting application package from AndroidManifest.xml file. But in some cases you may want to specify a custom package to look for the R class. This is why we added resourcePackageName option.</p>
+</blockquote>
+
+<p>결론은 아래처럼 resourcePackageName에 기존 packageName을 넣어줌으로써 해결이 가능하다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>apt {
+</span><span class='line'>    arguments {
+</span><span class='line'>        resourcePackageName "net.yourdomain"
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-05T08:13:08+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.05</time>
         
            | <a href="/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/#disqus_thread" itemprop="discussionUrl"
@@ -1220,75 +1286,6 @@ android {
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-25T10:47:30+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.25</time>
-        
-           | <a href="/2015/09/25/git-tracking-empty-directories/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/25/git-tracking-empty-directories/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/25/git-tracking-empty-directories/" itemprop="url">Git : 빈 디렉토리 추가하기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>기존에는 SVN을 주로 사용하다가 최근 Git를 사용하기 시작했다. 맛보기를 시작한지는 조금 됐는데 본격적으로 사용하려고하니 아직 많이 미숙하다.</p>
-
-<p>오늘은 작업을 하다가 빈 디렉토리를 추가하려고 하니 동작을 하지 않았다. SVN에서는 당연히 추가가 가능했는데 Git에서는 add로 추가해도 new file로 나타나지 않았다.</p>
-
-<p>그래서 찾아보니 원래 Git는 빈 디렉토리는 Tracking 하지 않는다는 글들을 보게되었다. 이런... 불필요한 것을 관리하지 않는 것은 좋지만 log 디렉토리 등과 같이 빈 디렉토리가 추가되어야 할 상황이 있는데 어떻게 하지?</p>
-
-<p>다행히 간단한 방법이 있었다. 사실 간단히 생각하면 아무 파일이나 넣어서 빈 디렉토리가 되지 않으면 되지 않는가? 그래서 많이 사용하는 방법이 .gitignore 또는 .keep 파일을 넣어서 Tracking하는 것이다.</p>
-
-<p>해당 폴더에 가서 아래의 명령으로 .keep 파일을 만들고 add 하면 된다.
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>touch .keep
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p>한번에 모든 폴더를 검사해서 .keep 파일 넣기.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>git clean -nd <span class="p">|</span> sed s/<span class="s1">&#39;^Would remove &#39;</span>// <span class="p">|</span> xargs -I<span class="o">{}</span> touch <span class="s2">&quot;{}.keep&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>log 폴더와 같이 정말 빈 디렉토리만 존재하고 내부에 생성되는 파일은 Tracking할 필요가 없을 때는 .gitignore 파일을 만들고 아래의 내용을 넣는다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#ignore all files in this dir...</span>
-</span><span class='line'>*
-</span><span class='line'><span class="c">#... except for this one.</span>
-</span><span class='line'>!.gitignore
-</span></code></pre></td></tr></table></div></figure>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1361,7 +1358,7 @@ android {
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (12)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (4)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (12)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1370,6 +1367,8 @@ android {
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/12/09/vagrant-box-repackage/">Vagrant box repackage</a>
+    
     <a class="list-group-item " href="/2015/12/04/mysql-secure-installation-automation/">mysql_secure_installation 자동화</a>
     
     <a class="list-group-item " href="/2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a>
@@ -1377,8 +1376,6 @@ android {
     <a class="list-group-item " href="/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">Vagrant Box Packaging 후 "Warning: Authentication failure. Retrying... " 오류가 발생할 경우 해결 방법</a>
     
     <a class="list-group-item " href="/2015/12/02/vagrant-cant-mount-shared-folder/">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a>
-    
-    <a class="list-group-item " href="/2015/12/02/nginx-414-request-uri-too-large/">Nginx : 414 Request-URI Too Large 오류</a>
     
   </div>
 </section>

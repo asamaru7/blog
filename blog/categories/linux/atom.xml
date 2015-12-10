@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-12-10T08:52:54+09:00</updated>
+  <updated>2015-12-10T11:28:46+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,43 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[selinux enforcing 후 로그인이 되지 않을 때 복구 방법(CentOS 7)]]></title>
+    <link href="http://blog.asamaru.net/2015/12/10/linux-login-error-with-selinux-enforcing/"/>
+    <updated>2015-12-10T10:58:10+09:00</updated>
+    <id>http://blog.asamaru.net/2015/12/10/linux-login-error-with-selinux-enforcing</id>
+    <content type="html"><![CDATA[<p>이 글은 특수한 상황에 대한 이야기다. 하지만 여러가지 경우에 대한 설명이 포함되어 있어 향후 비슷한 상황에 대한 대처를 위해 남겨둔다.</p>
+
+<p>일단 상황은 이렇다. CentOS 7을 selinux가 disabled 상태로 운영하던 중 selinux를 enforcing 상태로 변경해서 재시작했다. 그후로 부팅은 되나 모든 계정으로 로그인을 할 수 없었다.</p>
+
+<p><strong>이 상황의 발생 원인을 먼저 설명하자면 selinux가 켜지면서 권한 문제로 shell이 /etc/passwd와 /etc/shadow에 접근할 수 없어 로그인을 할 수 없었던 것이다.</strong></p>
+
+<p>이런 상황이 왜 발생했을까? selinux가 꺼진 상태에서 운영하다가 켜서 재시작하게되면 파일에 대한 selinux rule이 적용하는 과정을 거치게 된다(이로인해 변경 후 최초 시작시 시간이 오래 걸리면 적용이 끝나면 다시 한번 재부팅된다). 이 과정이 정상적으로 완료되었었다면 위 문제가 발생하지 않았겠지만 나의 경우는 내가 설정해 놓은 다른 옵션으로 인해 문제가 발생했다.</p>
+
+<p>나의 경우는 보안상의 이유로 <code>chattr +i /etc/passwd</code>, <code>chattr +i /etc/shadow</code>를 적용한다. 그런데 내가 이걸 잊고 그냥 selinux만 켠 것이다. 그로인해 재시작시 두 파일에 대한 selinux rule이 적용되지 못했던 것이다.</p>
+
+<p>로그인을 할 수 없었기 때문에 파일 상태를 확인할 수 없어 single mode로 부팅해서 확인해야 했다.
+single mode 부팅에 관련해서는 <a href="http://linux.systemv.pe.kr/centos-7-%EC%8B%B1%EA%B8%80%EB%AA%A8%EB%93%9C-%EB%B6%80%ED%8C%85/">CENTOS 7 싱글모드 부팅</a>에서 잘 설명하고 있다(CentOS 7부터 Grub2로 변경되었다고 한다. 그래서 처음엔 어떻게 single mode 부팅을 해야할지 몰라서 당황했다). 요약하자면 부팅 메시지가 나왔을 때 <code>e</code>를 눌러 편집 모드로 들어가서 <code>ro</code>가 나오는 부분을 찾아서 <code>rw init=/sysroot/bin/sh</code>로 변경한다(찾기가 어려울 수 있다. <code>ro</code>로 시작하는게 아니라 명령줄 내에 <code>ro</code>라고 된 부분이 있다. 나의 경우는 linux16 /vmlinuz-3.10.0-~~ 으로 시작하는 라인에 있었다). 수정 후에는 <code>crtl+x</code>를 눌러서 부팅한다. 부팅이 되고나면 실제 서버의 <code>/</code>는 <code>/sysroot</code>로 마운트되어 있다. 따라서 <code>chroot /sysroot</code>를 하면 기존 서버처럼 <code>/</code> 경로로 변경할 수 있다. 사실 꼭 필요하진 않다. 경로가 헛갈리지 않도록 작업하기 위해서 한다.</p>
+
+<p>single mode로 들어가서 일단 selinux를 끄고(permissive 모드 사용) 다시 부팅했다(여기서 바로 변경해도 되었을 수 있지만 확인을 위해서 일단 다시 부팅했다). 부팅 후 아래와 같이 확인했다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>ls -Z /etc/passwd
+-rw-r--r--. root root system_u:object_r:unlabeled_t:s0 /etc/passwd
+</code></pre></div>
+<p>원래는 <code>/etc/passwd</code>는 <code>passwd_file_t</code>가 되어야 한다. 그런데 <code>unlabeled_t</code>로 되어있어 제대로 로그인 할 수 없었던 것이다. 그래서 <code>restorecon</code>를 사용해서 아래처럼 복구하려고 했다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>restorecon -v /etc/passwd
+restorecon reset /etc/passwd context system_u:object_r:unlabeled_t:s0-&gt;system_u:object_r:passwd_file_t:s0
+restorecon <span class="nb">set </span>context /etc/passwd-&gt;system_u:object_r:passwd_file_t:s0 failed:<span class="s1">&#39;Operation not permitted&#39;</span>
+</code></pre></div>
+<p>그런데 위와 같은 오류가 났다. 아마도 selinux를 켜고 최초 부팅시에도 동일한 오류로 인해 정상적으로 rule이 적용되지 않았을 것이다. 그래서 아래와 같이 다시 처리했다.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>chattr -i /etc/passwd
+<span class="nv">$ </span>chattr -i /etc/shadow
+<span class="nv">$ </span>restorecon -v /etc/passwd
+<span class="nv">$ </span>restorecon -v /etc/shadow
+</code></pre></div>
+<p>이제 다시 재부팅하면 기존처럼 로그인이 잘 된다. 아직 selinux를 잘 다루지 못해 발생한 문제이지만 덕분에 여러가지를 알게 되었다. 사실 다행히 이 문제를 vagrant로 띄운 가상 머신에서 겪어서 다양하게 시도해 보면서 좋은 경험을 했다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[sftp-only 사용자 추가 (CentOS 7)]]></title>
@@ -301,128 +338,6 @@ Context: http, server</p>
 <p>Sets the maximum number and size of buffers used for reading large client request header. A request line cannot exceed the size of one buffer, or the 414 (Request-URI Too Large) error is returned to the client. A request header field cannot exceed the size of one buffer as well, or the 400 (Bad Request) error is returned to the client. Buffers are allocated only on demand. By default, the buffer size is equal to 8K bytes. If after the end of request processing a connection is transitioned into the keep-alive state, these buffers are released.</p>
 
 <p>여기서 조금 애매한 부분이 number 값인데 명확히 어떤 역할인지를 아직 잘 모르겠다. 찾아보니 number * size가 최대 사이즈라고 하는데 테스트 해보니 그건 아닌 것 같다(number가 2이고 size가 1k인 상황에서 1024자를 넘어가니 414 오류가 발생했다).</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Nginx(stable / mainline) 설치 - CentOS 6.5 / 7]]></title>
-    <link href="http://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/"/>
-    <updated>2015-11-27T15:49:16+09:00</updated>
-    <id>http://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7</id>
-    <content type="html"><![CDATA[<p><a href="http://nginx.org/">Nginx</a>는 <a href="https://ko.wikipedia.org/wiki/Nginx">위키피디아</a>에서 아래와 같이 설명하고 있다.</p>
-
-<blockquote>
-<p>Nginx(엔진 x라 읽는다)는 웹 서버 소프트웨어로, 가벼움과 높은 성능을 목표로 한다. 웹 서버, 리버스 프록시 및 메일 프록시 기능을 가진다.</p>
-
-<p>Netcraft의 2011년 1월 웹서버 설문조사에 따르면, nginx는 전체 도메인에서 4번째(7.50%)로 많이 쓰이는 웹서버이며, 활성화된 웹 사이트에 대한 통계에서도 역시 4번째(8.23%)로 많이 사용된다[1].</p>
-
-<p>Nginx는 요청에 응답하기 위해 비동기 이벤트 기반 구조를 가진다. 이것은 아파치 HTTP 서버의 스레드/프로세스 기반 구조를 가지는 것과는 대조적이다. 이러한 구조는 서버에 많은 부하가 생길 경우의 성능을 예측하기 쉽게 해준다.</p>
-</blockquote>
-
-<p>기존에는 Apache를 사용하고 있었다. Apache의 다양한 기능 때문이라기 보다는 익숙함 때문이었다. 그런데 예전부터 <a href="http://nginx.org/">Nginx</a>에 대한 사람들의 평가(Apache의 튜닝 상태에 따라 다른 결과를 보이기도 한다)를 볼 때마다 언젠가는 갈아타야지 싶었는데 최근에야 이 생각을 실천하게 되었다. 그레서 <a href="http://nginx.org/">Nginx</a>를 설치하는 과정을 정리하고자 한다.</p>
-
-<hr>
-
-<p>CentOS에서 Nginx의 설치는 크게 소스를 컴파일해서 설치하는 방법과 YUM을 통해 설치하는 방법이 있다. Nginx의 경우 Apache와 다르게 모듈을 추가할 경우엔 무조건 소스 설치를 해야한다(모듈을 포함시켜 컴파일 해야 한다). 따라서 mod_pagespeed나 pagespeed 등을 사용하고자 하는 경우에는 소스 설치를 해야 한다. 오늘은 YUM 설치를 기준으로 설명하고자 하니 모듈을 추가해서 설치하는 방법은 아래의 링크들을 참고하자.</p>
-
-<ul>
-<li><a href="http://www.nginxtips.com/how-to-install-mod_security-on-nginx/">How to install Mod_Security on Nginx</a>
-<a href="https://developers.google.com/speed/pagespeed/module/build_ngx_pagespeed_from_source">Build ngx_pagespeed From Source</a></li>
-<li><a href="http://d2.naver.com/helloworld/192785">NGINX 모듈 제작하기</a></li>
-</ul>
-
-<p>사실 기본적인 설치는 <a href="https://www.nginx.com/resources/wiki/start/topics/tutorials/install/">공식 메뉴얼</a>에 아주 잘 설명되어 있고 간단하다. 내용을 옮겨 적자면 아래와 같다.</p>
-
-<p><code>/etc/yum.repos.d/nginx.repo</code> 파일을 생성해서 아래의 내용을 넣는다.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">[nginx]
-name=nginx repo
-baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
-gpgcheck=0
-enabled=1
-</code></pre></div>
-<p>그리고는 아래와 같이 yum 으로 설치한다.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">sudo yum install nginx
-</code></pre></div>
-<p>혹시 EPEL을 이용해서 설치하고 싶다면 <code>/etc/yum.repos.d/nginx.repo</code> 파일을 생성할 필요없이 아래와 같이하면 된다.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">sudo yum install epel-release
-sudo yum install nginx
-</code></pre></div>
-<p>끝이다. 정말 간단하다. 설명할 것도 없다. 하지만 사실 이 글을 적는 이유는 이제부터다.</p>
-
-<p>Nginx는 기본적으로 두가지 버전이 존재한다. stable 버전과 mainline 버전이다. 사실상 최신 버전은 mainline 이다. 2015-11-27일 기준으로 stable은 nginx-1.8.0, mainline은 1.9.7이다. 말그대로 stable 버전이 안정 버전이므로 사용이 권장되기는 하나 mainline도 불안정한 것은 아니다.</p>
-
-<p><a href="http://serverfault.com/a/715126">What’s the difference between the “mainline” and “stable” branches of nginx?</a>의 설명대로라면 mainline을 더 권장한다. stable 버전이라고 버그가 없는 것이 아니며 버그 패치는 mainline에 먼저 된다는 이유 때문이다.</p>
-
-<p>그래서 나는 mainline으로 설치하기로 했다. 설치 방법은 위의 stable과 별반 다르지 않으나 repository의 url만 차이가 난다.</p>
-
-<p><code>/etc/yum.repos.d/nginx.repo</code> 파일을 생성해서 아래의 내용을 넣는다.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">[nginx]
-name=nginx repo
-baseurl=http://nginx.org/packages/mainline/centos/\$releasever/\$basearch/
-gpgcheck=0
-enabled=1
-</code></pre></div>
-<p>그리고는 아래와 같이 yum 으로 설치한다.</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">sudo yum install nginx
-</code></pre></div>
-<p>이것 또한 아주 간단하다. 약간의 부가 작업을 포함해서 bash shell 스크립트를 하나 만들어 뒀다.</p>
-
-<p>nginx.install.sh</p>
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c">#!/bin/bash</span>
-<span class="k">function</span> printTitle <span class="o">{</span>
-    <span class="nb">echo</span> -e <span class="s2">&quot;\e[1;97m=======================================\e[0m&quot;</span>
-    <span class="nb">echo</span> -e <span class="s2">&quot;\e[1;97m* $1\e[0m&quot;</span>
-    <span class="nb">echo</span> -e <span class="s2">&quot;\e[1;97m=======================================\e[0m&quot;</span>
-<span class="o">}</span>
-
-<span class="k">function</span> printJob <span class="o">{</span>
-    <span class="nb">echo</span> -e <span class="s2">&quot;\e[94m* $1\e[0m&quot;</span>
-<span class="o">}</span>
-
-<span class="k">function</span> printSubJob <span class="o">{</span>
-    <span class="nb">echo</span> -e <span class="s2">&quot;\e[96m\t$1\e[0m&quot;</span>
-<span class="o">}</span>
-
-printTitle <span class="s2">&quot;Nginx 설치&quot;</span>
-
-printJob <span class="s2">&quot;httpd.service 종료&quot;</span>
-systemctl stop httpd.service
-
-printJob <span class="s2">&quot;httpd.service 제거&quot;</span>
-yum remove -y httpd
-systemctl disable httpd.service
-
-printJob <span class="s2">&quot;Nginx 설치&quot;</span>
-<span class="k">if</span> <span class="o">[</span> ! -e /etc/yum.repos.d/nginx.repo <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-    printSubJob <span class="s2">&quot;nginx repository 추가&quot;</span>
-    <span class="nb">echo</span> <span class="s2">&quot;[nginx]&quot;</span> &gt; /etc/yum.repos.d/nginx.repo
-    <span class="nb">echo</span> <span class="s2">&quot;name=nginx repo&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
-    <span class="nb">echo</span> <span class="s2">&quot;baseurl=http://nginx.org/packages/mainline/centos/\$releasever/\$basearch/&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
-    <span class="c">#echo &quot;baseurl=http://nginx.org/packages/centos/\$releasever/\$basearch/&quot; &gt;&gt; /etc/yum.repos.d/nginx.repo</span>
-    <span class="nb">echo</span> <span class="s2">&quot;gpgcheck=0&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
-    <span class="nb">echo</span> <span class="s2">&quot;enabled=1&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
-<span class="k">fi</span>
-
-printSubJob <span class="s2">&quot;nginx package 설치&quot;</span>
-yum install -y nginx
-
-printJob <span class="s2">&quot;Nginx 서비스 활성&quot;</span>
-systemctl <span class="nb">enable </span>nginx.service
-
-printJob <span class="s2">&quot;Nginx 서비스 시작&quot;</span>
-systemctl start nginx.service
-
-printJob <span class="s2">&quot;방화벽 설정&quot;</span>
-<span class="k">if</span> <span class="o">[</span> <span class="sb">`</span>firewall-cmd --zone<span class="o">=</span>public --list-all<span class="p">|</span>grep <span class="s2">&quot;services&quot;</span><span class="p">|</span>grep <span class="s2">&quot;http&quot;</span> <span class="p">|</span> wc -l<span class="sb">`</span> -eq <span class="m">0</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-    printSubJob <span class="s2">&quot;http/https 개방&quot;</span>
-    firewall-cmd --permanent --zone<span class="o">=</span>public --add-service<span class="o">=</span>http
-    firewall-cmd --permanent --zone<span class="o">=</span>public --add-service<span class="o">=</span>https
-
-    printSubJob <span class="s2">&quot;방화벽 rule reload&quot;</span>
-    firewall-cmd --reload
-<span class="k">fi</span>
-</code></pre></div>
-<p>위 소스는 CentOS 7에서 firewalld를 사용하는 것을 기준으로 만들어진 것이니 참고하기 바란다. 그리고 원래 내가 사용하는 소스에서 불필요한 부분을 제거하고 넣은 것이라 <code>print***</code> 함수 같은 부분이 잘못 되었을 수 있는데 오류가 난다면 관련 부분을 모두 제거하면 된다.</p>
 ]]></content>
   </entry>
   

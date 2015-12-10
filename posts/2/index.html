@@ -139,6 +139,237 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-27T15:49:16+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.27</time>
+        
+           | <a href="/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/" itemprop="url">Nginx(stable / mainline) 설치 - CentOS 6.5 / 7</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p><a href="http://nginx.org/">Nginx</a>는 <a href="https://ko.wikipedia.org/wiki/Nginx">위키피디아</a>에서 아래와 같이 설명하고 있다.</p>
+
+<blockquote>
+<p>Nginx(엔진 x라 읽는다)는 웹 서버 소프트웨어로, 가벼움과 높은 성능을 목표로 한다. 웹 서버, 리버스 프록시 및 메일 프록시 기능을 가진다.</p>
+
+<p>Netcraft의 2011년 1월 웹서버 설문조사에 따르면, nginx는 전체 도메인에서 4번째(7.50%)로 많이 쓰이는 웹서버이며, 활성화된 웹 사이트에 대한 통계에서도 역시 4번째(8.23%)로 많이 사용된다[1].</p>
+
+<p>Nginx는 요청에 응답하기 위해 비동기 이벤트 기반 구조를 가진다. 이것은 아파치 HTTP 서버의 스레드/프로세스 기반 구조를 가지는 것과는 대조적이다. 이러한 구조는 서버에 많은 부하가 생길 경우의 성능을 예측하기 쉽게 해준다.</p>
+</blockquote>
+
+<p>기존에는 Apache를 사용하고 있었다. Apache의 다양한 기능 때문이라기 보다는 익숙함 때문이었다. 그런데 예전부터 <a href="http://nginx.org/">Nginx</a>에 대한 사람들의 평가(Apache의 튜닝 상태에 따라 다른 결과를 보이기도 한다)를 볼 때마다 언젠가는 갈아타야지 싶었는데 최근에야 이 생각을 실천하게 되었다. 그레서 <a href="http://nginx.org/">Nginx</a>를 설치하는 과정을 정리하고자 한다.</p>
+
+<hr>
+
+<p>CentOS에서 Nginx의 설치는 크게 소스를 컴파일해서 설치하는 방법과 YUM을 통해 설치하는 방법이 있다. Nginx의 경우 Apache와 다르게 모듈을 추가할 경우엔 무조건 소스 설치를 해야한다(모듈을 포함시켜 컴파일 해야 한다). 따라서 mod_pagespeed나 pagespeed 등을 사용하고자 하는 경우에는 소스 설치를 해야 한다. 오늘은 YUM 설치를 기준으로 설명하고자 하니 모듈을 추가해서 설치하는 방법은 아래의 링크들을 참고하자.</p>
+
+<ul>
+<li><a href="http://www.nginxtips.com/how-to-install-mod_security-on-nginx/">How to install Mod_Security on Nginx</a>
+<a href="https://developers.google.com/speed/pagespeed/module/build_ngx_pagespeed_from_source">Build ngx_pagespeed From Source</a></li>
+<li><a href="http://d2.naver.com/helloworld/192785">NGINX 모듈 제작하기</a></li>
+</ul>
+
+<p>사실 기본적인 설치는 <a href="https://www.nginx.com/resources/wiki/start/topics/tutorials/install/">공식 메뉴얼</a>에 아주 잘 설명되어 있고 간단하다. 내용을 옮겨 적자면 아래와 같다.</p>
+
+<p><code>/etc/yum.repos.d/nginx.repo</code> 파일을 생성해서 아래의 내용을 넣는다.</p>
+
+<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[nginx]
+</span><span class='line'>name=nginx repo
+</span><span class='line'>baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
+</span><span class='line'>gpgcheck=0
+</span><span class='line'>enabled=1</span></code></pre></td></tr></table></div></figure>
+
+<p>그리고는 아래와 같이 yum 으로 설치한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo yum install nginx
+</span></code></pre></td></tr></table></div></figure>
+
+<p>혹시 EPEL을 이용해서 설치하고 싶다면 <code>/etc/yum.repos.d/nginx.repo</code> 파일을 생성할 필요없이 아래와 같이하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo yum install epel-release
+</span><span class='line'>sudo yum install nginx
+</span></code></pre></td></tr></table></div></figure>
+
+<p>끝이다. 정말 간단하다. 설명할 것도 없다. 하지만 사실 이 글을 적는 이유는 이제부터다.</p>
+
+<p>Nginx는 기본적으로 두가지 버전이 존재한다. stable 버전과 mainline 버전이다. 사실상 최신 버전은 mainline 이다. 2015-11-27일 기준으로 stable은 nginx-1.8.0, mainline은 1.9.7이다. 말그대로 stable 버전이 안정 버전이므로 사용이 권장되기는 하나 mainline도 불안정한 것은 아니다.</p>
+
+<p><a href="http://serverfault.com/a/715126">What’s the difference between the “mainline” and “stable” branches of nginx?</a>의 설명대로라면 mainline을 더 권장한다. stable 버전이라고 버그가 없는 것이 아니며 버그 패치는 mainline에 먼저 된다는 이유 때문이다.</p>
+
+<p>그래서 나는 mainline으로 설치하기로 했다. 설치 방법은 위의 stable과 별반 다르지 않으나 repository의 url만 차이가 난다.</p>
+
+<p><code>/etc/yum.repos.d/nginx.repo</code> 파일을 생성해서 아래의 내용을 넣는다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>nginx<span class="o">]</span>
+</span><span class='line'><span class="nv">name</span><span class="o">=</span>nginx repo
+</span><span class='line'><span class="nv">baseurl</span><span class="o">=</span>http://nginx.org/packages/mainline/centos/<span class="se">\$</span>releasever/<span class="se">\$</span>basearch/
+</span><span class='line'><span class="nv">gpgcheck</span><span class="o">=</span>0
+</span><span class='line'><span class="nv">enabled</span><span class="o">=</span>1
+</span></code></pre></td></tr></table></div></figure>
+
+<p>그리고는 아래와 같이 yum 으로 설치한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo yum install nginx
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이것 또한 아주 간단하다. 약간의 부가 작업을 포함해서 bash shell 스크립트를 하나 만들어 뒀다.</p>
+
+<p>nginx.install.sh</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/bash</span>
+</span><span class='line'><span class="k">function</span> printTitle <span class="o">{</span>
+</span><span class='line'>    <span class="nb">echo</span> -e <span class="s2">&quot;\e[1;97m=======================================\e[0m&quot;</span>
+</span><span class='line'>    <span class="nb">echo</span> -e <span class="s2">&quot;\e[1;97m* $1\e[0m&quot;</span>
+</span><span class='line'>    <span class="nb">echo</span> -e <span class="s2">&quot;\e[1;97m=======================================\e[0m&quot;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">function</span> printJob <span class="o">{</span>
+</span><span class='line'>    <span class="nb">echo</span> -e <span class="s2">&quot;\e[94m* $1\e[0m&quot;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">function</span> printSubJob <span class="o">{</span>
+</span><span class='line'>    <span class="nb">echo</span> -e <span class="s2">&quot;\e[96m\t$1\e[0m&quot;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>printTitle <span class="s2">&quot;Nginx 설치&quot;</span>
+</span><span class='line'>
+</span><span class='line'>printJob <span class="s2">&quot;httpd.service 종료&quot;</span>
+</span><span class='line'>systemctl stop httpd.service
+</span><span class='line'>
+</span><span class='line'>printJob <span class="s2">&quot;httpd.service 제거&quot;</span>
+</span><span class='line'>yum remove -y httpd
+</span><span class='line'>systemctl disable httpd.service
+</span><span class='line'>
+</span><span class='line'>printJob <span class="s2">&quot;Nginx 설치&quot;</span>
+</span><span class='line'><span class="k">if</span> <span class="o">[</span> ! -e /etc/yum.repos.d/nginx.repo <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+</span><span class='line'>    printSubJob <span class="s2">&quot;nginx repository 추가&quot;</span>
+</span><span class='line'>    <span class="nb">echo</span> <span class="s2">&quot;[nginx]&quot;</span> &gt; /etc/yum.repos.d/nginx.repo
+</span><span class='line'>    <span class="nb">echo</span> <span class="s2">&quot;name=nginx repo&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
+</span><span class='line'>    <span class="nb">echo</span> <span class="s2">&quot;baseurl=http://nginx.org/packages/mainline/centos/\$releasever/\$basearch/&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
+</span><span class='line'>    <span class="c">#echo &quot;baseurl=http://nginx.org/packages/centos/\$releasever/\$basearch/&quot; &gt;&gt; /etc/yum.repos.d/nginx.repo</span>
+</span><span class='line'>    <span class="nb">echo</span> <span class="s2">&quot;gpgcheck=0&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
+</span><span class='line'>    <span class="nb">echo</span> <span class="s2">&quot;enabled=1&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
+</span><span class='line'><span class="k">fi</span>
+</span><span class='line'>
+</span><span class='line'>printSubJob <span class="s2">&quot;nginx package 설치&quot;</span>
+</span><span class='line'>yum install -y nginx
+</span><span class='line'>
+</span><span class='line'>printJob <span class="s2">&quot;Nginx 서비스 활성&quot;</span>
+</span><span class='line'>systemctl <span class="nb">enable </span>nginx.service
+</span><span class='line'>
+</span><span class='line'>printJob <span class="s2">&quot;Nginx 서비스 시작&quot;</span>
+</span><span class='line'>systemctl start nginx.service
+</span><span class='line'>
+</span><span class='line'>printJob <span class="s2">&quot;방화벽 설정&quot;</span>
+</span><span class='line'><span class="k">if</span> <span class="o">[</span> <span class="sb">`</span>firewall-cmd --zone<span class="o">=</span>public --list-all<span class="p">|</span>grep <span class="s2">&quot;services&quot;</span><span class="p">|</span>grep <span class="s2">&quot;http&quot;</span> <span class="p">|</span> wc -l<span class="sb">`</span> -eq <span class="m">0</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+</span><span class='line'>    printSubJob <span class="s2">&quot;http/https 개방&quot;</span>
+</span><span class='line'>    firewall-cmd --permanent --zone<span class="o">=</span>public --add-service<span class="o">=</span>http
+</span><span class='line'>    firewall-cmd --permanent --zone<span class="o">=</span>public --add-service<span class="o">=</span>https
+</span><span class='line'>
+</span><span class='line'>    printSubJob <span class="s2">&quot;방화벽 rule reload&quot;</span>
+</span><span class='line'>    firewall-cmd --reload
+</span><span class='line'><span class="k">fi</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>위 소스는 CentOS 7에서 firewalld를 사용하는 것을 기준으로 만들어진 것이니 참고하기 바란다. 그리고 원래 내가 사용하는 소스에서 불필요한 부분을 제거하고 넣은 것이라 <code>print***</code> 함수 같은 부분이 잘못 되었을 수 있는데 오류가 난다면 관련 부분을 모두 제거하면 된다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-25T19:53:52+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.25</time>
         
            | <a href="/2015/11/25/protobuf-protocol-buffers/#disqus_thread" itemprop="discussionUrl"
@@ -1221,96 +1452,6 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-03T17:12:21+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.03</time>
-        
-           | <a href="/2015/11/03/swift-uipagecontrol-overlap/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/11/03/swift-uipagecontrol-overlap/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/11/03/swift-uipagecontrol-overlap/" itemprop="url">Swift UIPageViewController에서 UIPageControl 오버랩하기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>UIPageViewController 사용시에 하단에 현재 페이지의 위치를 알려주는 UIPageControl가 별도의 공간을 차지하고 표시된다.</p>
-
-<p><img src="/img/2015-11-03-swift-uipagecontrol-overlap-1.png" alt="UIPageControl"></p>
-
-<p>이 부분의 공간을 제거하고 내용 페이지의 위에 오버랩하려면 아래와 같이 <code>viewDidLayoutSubviews</code>에 필요한 소스를 추가하면 된다. 기본적으로 UIPageControl는 투명이라 자연스럽게 덮힌다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='swift'><span class='line'><span class="k">class</span> <span class="nl">PageViewController</span><span class="p">:</span> <span class="bp">UIPageViewController</span> <span class="p">{</span>
-</span><span class='line'>  <span class="kr">override</span> <span class="k">func</span> <span class="n">viewDidLayoutSubviews</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>      <span class="c1">// UIPageControl overlap</span>
-</span><span class='line'>      <span class="k">let</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="n">view</span>
-</span><span class='line'>      <span class="k">let</span> <span class="n">subviews</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">subviews</span>
-</span><span class='line'>      <span class="k">var</span> <span class="nl">sv</span><span class="p">:</span> <span class="bp">UIView</span><span class="o">?</span> <span class="o">=</span> <span class="nb">nil</span>
-</span><span class='line'>      <span class="k">var</span> <span class="nl">pc</span><span class="p">:</span> <span class="bp">UIView</span><span class="o">?</span> <span class="o">=</span> <span class="nb">nil</span>
-</span><span class='line'>      <span class="k">for</span> <span class="nl">t</span><span class="p">:</span> <span class="bp">UIView</span> <span class="k">in</span> <span class="n">subviews</span> <span class="p">{</span>
-</span><span class='line'>          <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">isKindOfClass</span><span class="p">(</span><span class="bp">UIScrollView</span><span class="p">))</span> <span class="p">{</span>
-</span><span class='line'>              <span class="n">sv</span> <span class="o">=</span> <span class="n">t</span>
-</span><span class='line'>          <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">isKindOfClass</span><span class="p">(</span><span class="bp">UIPageControl</span><span class="p">))</span> <span class="p">{</span>
-</span><span class='line'>              <span class="n">pc</span> <span class="o">=</span> <span class="n">t</span>
-</span><span class='line'>          <span class="p">}</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'>      <span class="k">if</span> <span class="p">((</span><span class="n">sv</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">pc</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">))</span> <span class="p">{</span>
-</span><span class='line'>          <span class="n">sv</span><span class="o">!</span><span class="p">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">bounds</span>
-</span><span class='line'>          <span class="n">v</span><span class="p">.</span><span class="n">bringSubviewToFront</span><span class="p">(</span><span class="n">pc</span><span class="o">!</span><span class="p">)</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'>      <span class="nb">super</span><span class="p">.</span><span class="n">viewDidLayoutSubviews</span><span class="p">()</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>Objective-c에서의 처리 방법은 <a href="http://stackoverflow.com/a/24851985">How do I make the bottom bar with dots of a UIPageViewController translucent?</a>를 참고.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1383,7 +1524,7 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (36)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (14)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (37)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (14)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1392,6 +1533,8 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/12/10/realm/">안드로이드 Realm 0.82.2 -> 0.86.0 버전업</a>
+    
     <a class="list-group-item " href="/2015/12/10/linux-login-error-with-selinux-enforcing/">selinux enforcing 후 로그인이 되지 않을 때 복구 방법(CentOS 7)</a>
     
     <a class="list-group-item " href="/2015/12/09/centos-7-create-sftp-only-user/">sftp-only 사용자 추가 (CentOS 7)</a>
@@ -1399,8 +1542,6 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
     <a class="list-group-item " href="/2015/12/09/vagrant-box-repackage/">Vagrant box repackage(unpacked box에서 box 파일 만들기)</a>
     
     <a class="list-group-item " href="/2015/12/04/mysql-secure-installation-automation/">mysql_secure_installation 자동화</a>
-    
-    <a class="list-group-item " href="/2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a>
     
   </div>
 </section>

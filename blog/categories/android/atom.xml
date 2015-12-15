@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-12-10T21:44:11+09:00</updated>
+  <updated>2015-12-15T20:53:34+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,136 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[안드로이드 앱 종료 방법]]></title>
+    <link href="http://blog.asamaru.net/2015/12/15/android-app-finish/"/>
+    <updated>2015-12-15T19:38:39+09:00</updated>
+    <id>http://blog.asamaru.net/2015/12/15/android-app-finish</id>
+    <content type="html"><![CDATA[<p>안드로이드에서 앱의 종료는 보통 Root Activity에서 <a href="http://developer.android.com/reference/android/app/Activity.html#finish%28%29">finish()</a>를 사용한다. 그런데 앱의 종료는 이외에도 여러가지 방법이 있고 각각이 다른 상황을 만들어 낸다. 당연히 구글에서는 <a href="http://developer.android.com/reference/android/app/Activity.html#finish%28%29">finish()</a>를 권장한다고 한다. 하지만 상황적으로 프로세스를 완전히 종료해야 하는 경우가 있을 수 있다. 아래에 설명하고자 하는 것들은 안정적으로 사용할 수 있는 방법이라고 장담하지는 못한다. 충분히 테스트된 코드가 아니라 인터넷 상에서 소개되는 방법들을 정리한 것이다. 물론 기본적인 테스트는 했다.</p>
+
+<p>우선 Activity만 종료하는 방법부터 알아보자.</p>
+
+<h3 id="finishaffinity-를-사용하는-방법"><a href="http://developer.android.com/reference/android/app/Activity.html#finishAffinity%28%29">finishAffinity()</a>를 사용하는 방법</h3>
+
+<p>Root Activity에서 <a href="http://developer.android.com/reference/android/app/Activity.html#finish%28%29">finish()</a>를 사용해서 종료하는 것은 굳이 설명하지 않아도 될 것으로 생각한다. 단, 이 방법은 현재 Activity가 Root Activity가 아니면 Root Activity를 찾아가는 과정이 필요하므로 복잡해질 수 있다. 예를들어 아래와 같이 처리한다(이 코드는 테스트하지 않았다. 그리고 호출하는 Activity와 Root Activity에서 각각 처리해야 한다).</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Root Activity를 호출</span>
+<span class="n">Intent</span> <span class="n">intent</span>  <span class="o">=</span> <span class="k">new</span> <span class="nf">Intent</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">FirstActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<span class="n">intent</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="n">EXTRA_FINISH</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+<span class="n">intent</span><span class="o">.</span><span class="na">setFlags</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">FLAG_ACTIVITY_CLEAR_TOP</span><span class="o">);</span>        
+<span class="n">startActivity</span><span class="o">(</span><span class="n">intent</span><span class="o">);</span>
+<span class="n">finish</span><span class="o">();</span>
+</code></pre></div><div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// Root Activity에서 인자를 받아 종료</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">getExtras</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">getIntentExtra</span><span class="o">(</span><span class="n">EXTRA_FINISH</span><span class="o">,</span> <span class="kc">false</span><span class="o">))</span> <span class="o">{</span>
+   <span class="n">finish</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>이런 번거로움을 해결해 줄 수 있는 것이 <a href="http://developer.android.com/reference/android/app/Activity.html#finishAffinity%28%29">finishAffinity()</a>다. 이 함수를 사용하면 어느 Activity에서든 모든 부모 Activity를 닫을 수 있다. 단, 이 함수는 API 16부터 사용 가능하다. 하지만 support library v4를 사용하면 이하 버전에서도 이 함수를 사용할 수 있다.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// only API 16+</span>
+<span class="n">activity</span><span class="o">.</span><span class="na">finishAffinity</span><span class="o">();</span>
+
+<span class="c1">// support library v4</span>
+<span class="n">ActivityCompat</span><span class="o">.</span><span class="na">finishAffinity</span><span class="o">(</span><span class="n">activity</span><span class="o">);</span>
+</code></pre></div>
+<h3 id="홈-화면-activity-띄우기">홈 화면 Activity 띄우기</h3>
+
+<p>이 방법은 Activity의 종료라고 하기에는 조금 애매한 방법이다. 일단 아래의 소스를 보자.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">Intent</span> <span class="n">homeIntent</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Intent</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">ACTION_MAIN</span><span class="o">);</span>
+<span class="n">homeIntent</span><span class="o">.</span><span class="na">addCategory</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">CATEGORY_HOME</span><span class="o">);</span>
+<span class="n">homeIntent</span><span class="o">.</span><span class="na">setFlags</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">FLAG_ACTIVITY_CLEAR_TOP</span><span class="o">);</span>
+<span class="n">startActivity</span><span class="o">(</span><span class="n">homeIntent</span><span class="o">);</span>
+</code></pre></div>
+<p>소스를 보면 알겠지만 말그대로 홈 화면 Activity를 띄우는 것이다. 어쨌든 사용자가 보기에는 앱이 종료된 것처럼 보인다. 뒤에 남겨진 프로세스가 계속 살아남는지 Activity finish와 동일한 생명주기를 갖는지는 테스트 해보지 않았다.</p>
+
+<h3 id="finishandremovetask-를-사용하는-방법"><a href="http://developer.android.com/reference/android/app/Activity.html#finishAndRemoveTask%28%29">finishAndRemoveTask ()</a>를 사용하는 방법</h3>
+
+<p><a href="http://developer.android.com/reference/android/app/Activity.html#finishAndRemoveTask%28%29">finishAndRemoveTask ()</a>는 Activity를 종료하고 Task Manager(최근 앱 사용 목록)에서도 해당 앱을 제거한다. <strong>단, Task를 종료하지만 Process까지 종료하지는 않는다.</strong> 앱을 <a href="http://developer.android.com/reference/android/app/Activity.html#finishAndRemoveTask%28%29">finishAndRemoveTask ()</a>로 종료하고 Task Manager를 보면 해당 앱이 없어 Process가 종료된 것처럼 보이지만 이 상태에서 다시 앱을 실행하면 Application Class의 onCreate()가 실행되지 않는다(Process가 종료되었다면 이 함수가 다시 실행되었을 것이다). 메뉴얼에는 아래와 같이 나와있다.</p>
+
+<blockquote>
+<p>Call this when your activity is done and should be closed and the task should be completely removed as a part of finishing the Activity.</p>
+</blockquote>
+
+<p>그리고 이 함수는 API 21에서 추가된 함수로 아직까지는 호환성 함수는 없는 것으로 보인다. 그나마 찾아본 봐로는 chromium 소스 코드 중 <a href="https://chromium.googlesource.com/chromium/src/base/+/master/android/java/src/org/chromium/base/ApiCompatibilityUtils.java">ApiCompatibilityUtils.java</a>에 있는 아래의 코드가 있다. 하지만 사용에 큰 의미는 없어보이니 참고만 하자.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">finishAndRemoveTask</span><span class="o">(</span><span class="n">Activity</span> <span class="n">activity</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">&gt;</span> <span class="n">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">LOLLIPOP</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">activity</span><span class="o">.</span><span class="na">finishAndRemoveTask</span><span class="o">();</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">==</span> <span class="n">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">LOLLIPOP</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// crbug.com/395772 : Fallback for Activity.finishAndRemoveTask() failing.</span>
+        <span class="k">new</span> <span class="nf">FinishAndRemoveTaskWithRetry</span><span class="o">(</span><span class="n">activity</span><span class="o">).</span><span class="na">run</span><span class="o">();</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="n">activity</span><span class="o">.</span><span class="na">finish</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">FinishAndRemoveTaskWithRetry</span> <span class="kd">implements</span> <span class="n">Runnable</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">long</span> <span class="n">RETRY_DELAY_MS</span> <span class="o">=</span> <span class="mi">500</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">long</span> <span class="n">MAX_TRY_COUNT</span> <span class="o">=</span> <span class="mi">3</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Activity</span> <span class="n">mActivity</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">mTryCount</span><span class="o">;</span>
+    <span class="n">FinishAndRemoveTaskWithRetry</span><span class="o">(</span><span class="n">Activity</span> <span class="n">activity</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">mActivity</span> <span class="o">=</span> <span class="n">activity</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">mActivity</span><span class="o">.</span><span class="na">finishAndRemoveTask</span><span class="o">();</span>
+        <span class="n">mTryCount</span><span class="o">++;</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">mActivity</span><span class="o">.</span><span class="na">isFinishing</span><span class="o">())</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">mTryCount</span> <span class="o">&lt;</span> <span class="n">MAX_TRY_COUNT</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">ThreadUtils</span><span class="o">.</span><span class="na">postOnUiThreadDelayed</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">RETRY_DELAY_MS</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="n">mActivity</span><span class="o">.</span><span class="na">finish</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<h3 id="process-종료하기">Process 종료하기</h3>
+
+<p>이제부터는 앱을 종료하고 Process까지 완전히 종료시키는 방법들이다. 이 부분에 대해서는 의견이 다양한데 앱 종료시 처리되어야 할 프로세스들이 정상적으로 동작하지 못할 수 있다는 우려로 사용을 자제하라는 의견도 있고 알아서 처리하므로 상관없다는 의견도 있다. 테스트를 아직 해보지 못해 어떤 문제가 발생하는지에 대해서는 설명할 수 없으니 사용시 유의하자.</p>
+
+<p><a href="http://stackoverflow.com/a/5036668">How to close Android application?</a>에 소개된 아래의 Class의 일부 소스를 보자.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">killApp</span><span class="o">(</span><span class="kt">boolean</span> <span class="n">killSafely</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">killSafely</span><span class="o">)</span> <span class="o">{</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Notify the system to finalize and collect all objects of the app</span>
+<span class="cm">         * on exit so that the virtual machine running the app can be killed</span>
+<span class="cm">         * by the system without causing issues. NOTE: If this is set to</span>
+<span class="cm">         * true then the virtual machine will not be killed until all of its</span>
+<span class="cm">         * threads have closed.</span>
+<span class="cm">         */</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">runFinalizersOnExit</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Force the system to close the app down completely instead of</span>
+<span class="cm">         * retaining it in the background. The virtual machine that runs the</span>
+<span class="cm">         * app will be killed. The app will be completely created as a new</span>
+<span class="cm">         * app in a new virtual machine running in a new process if the user</span>
+<span class="cm">         * starts the app again.</span>
+<span class="cm">         */</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Alternatively the process that runs the virtual machine could be</span>
+<span class="cm">         * abruptly killed. This is the quickest way to remove the app from</span>
+<span class="cm">         * the device but it could cause problems since resources will not</span>
+<span class="cm">         * be finalized first. For example, all threads running under the</span>
+<span class="cm">         * process will be abruptly killed when the process is abruptly</span>
+<span class="cm">         * killed. If one of those threads was making multiple related</span>
+<span class="cm">         * changes to the database, then it may have committed some of those</span>
+<span class="cm">         * changes but not all of those changes when it was abruptly killed.</span>
+<span class="cm">         */</span>
+        <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Process</span><span class="o">.</span><span class="na">killProcess</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Process</span><span class="o">.</span><span class="na">myPid</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>이 함수에서 Process를 종료하는 방법은 크게 두가지로 나뉜다. <code>System.exit()</code>를 사용하는 방법과 <code>android.os.Process.killProcess</code>를 사용하는 방법이다. 함수를 보면 알다시피 <code>System.exit()</code>를 사용하는 것이 더 안전한 방법으로 보인다. 그런데 이 부분에 대해서도 사람들의 의견이 차이가 있다. <code>System.runFinalizersOnExit(true)</code> 대신 <code>System.runFinalization()</code>를 호출하여 강제로 Finalization을 수행하는 방법을 설명하는 사람도 있고 이렇게하면 불안정하게 동작할 수 있으니 그냥 <code>System.exit()</code>만 호출하라는 사람도 있고... 어쨌든 개인적으로는 위 함수가 가장 적절하게 구성되어 있다고 생각한다. <strong>단, 주의사항 한가지. 이 부분은 직접 테스트 해본 것은 아니나 두개 이상의 Activity가 떠 있는 상황에서 Process를 종료시키면 Process가 살아난다는 이야기도 있다.</strong> 그런 이유가 아니더라도 Activity의 종료 프로세스를 제대로 동작시키는 것이 좋다는 생각으로 나는 아래와 같이 처리하고 있다.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">ActivityCompat</span><span class="o">.</span><span class="na">finishAffinity</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">runFinalizersOnExit</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+</code></pre></div>
+<p>현재까지는 이 방법으로 이상없이 사용하고 있으나 서두에서 언급한 것처럼 충분한 테스트를 거친 내용들이 아니므로 사용시에는 유의하기 바란다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[안드로이드 Realm 0.82.2 -> 0.86.0 버전업]]></title>
@@ -47,7 +177,7 @@
 </code></pre></div>
 <p>오류 내용은 이렇다. 동일 table 파일을 다른 Configurations으로 열 수 없다. 이 오류는 처음에 앱이 열릴 때는 발생하지 않다가 종료 후 다시 들어오면 발생했다. 이상했다. 분명이 앱을 종료 했음에도 불구하고 왜 다른 Configurations을 넣고 있다는 것인지.</p>
 
-<p>이번에 알게 되었는데 root activity에서의 finish()는 앱의 종료를 의미하는 것이 아니었다. 마지막 activity가 finish()되면 화면에서는 즉시 종료된 것으로 보이나 프로세스는 살아 남는다. 아마도 시스템 자원이 부족해지면 프로세스가 OS에 의해 죽을 수는 있다. 이와 관련해서는 조만간 별도로 글을 남기려고 한다.</p>
+<p>이번에 알게 되었는데 root activity에서의 finish()는 앱의 종료를 의미하는 것이 아니었다. 마지막 activity가 finish()되면 화면에서는 즉시 종료된 것으로 보이나 프로세스는 살아 남는다. 아마도 시스템 자원이 부족해지면 프로세스가 OS에 의해 죽을 수는 있다. 이와 관련해서 앱을 완전히 종료하는 방법에 대해서는 <del>조만간 별도로 글을 남기려고 한다.</del> <a href="/2015/12/15/android-app-finish/">안드로이드 앱 종료 방법</a>에서 설명하고 있다.</p>
 
 <p>어쨌든 이러한 상황이 발생하는 것으로 보아 기존 버전과 최신 버전의 Realm 생명 주기를 관리하는 방법이 변경된 것으로 보인다. 메뉴얼에 보면 <a href="https://realm.io/kr/docs/java/0.86.0/#section-52">모범 사용예 - Realm 인스턴스들의 생명주기 관리하기</a>라는 부분이 있다. &quot;모범 사용예&quot;라는 항목 자체가 0.85.0 버전부터 있는 것으로 보아 그 시점에 변경이 된 것으로 생각한다. 그런데 여기서 사용하는 함수는 <a href="https://realm.io/news/realm-java-0.81.1/">Realm Java 0.81.1</a>에서 추가된 것으로 소개하고 있다. 기존에 내가 사용하던 것이 0.82.2 였지만 위 문제가 발생하지 않았던 것으로 보아 앞선 예상대로 그 후에 관리 방법이 변경된 것 같기는 하다. 어쨌든 이 부분에 관련된 정보가 있어 발췌한다.</p>
 
@@ -331,45 +461,6 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
 
 <p>이 글은 정확한 이해를 하고 쓴 글이 아니므로 여러가지 문제가 있을 수 있다. 하지만 내가 원하는 문제에 대한 해결법이 되었기 때문에 기록성으로 글을 남겨둔다.
 결론적으로 notifyDataSetChanged()를 명확히 적용하고 넘어 가야하는 상황에서는 위 방법이 도움이 될 수 있다. 그 외의 경우엔 UIThread의 작업을 굳이 sync 할 필요가 떠오르진 않는다.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[android.view.WindowManager$BadTokenException: Unable to add window 오류]]></title>
-    <link href="http://blog.asamaru.net/2015/11/03/android-dot-view-dot-windowmanager/"/>
-    <updated>2015-11-03T09:00:30+09:00</updated>
-    <id>http://blog.asamaru.net/2015/11/03/android-dot-view-dot-windowmanager</id>
-    <content type="html"><![CDATA[<p>안드로이드에서 아래와 같은 오류가 나는 경우가 있다.</p>
-
-<p><code>android.view.WindowManager$BadTokenException: Unable to add window -- token android.os.BinderProxy@420d8488 is not valid; is your activity running?</code></p>
-
-<p>대부분은 Dialog를 띄우러고 할 때 발생한다. 소스로 보자면 아래와 같은 경우다.</p>
-<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="k">new</span> <span class="n">AlertDialog</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="n">context</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">setTitle</span><span class="o">(</span><span class="s">&quot;알림&quot;</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">setMessage</span><span class="o">(</span><span class="s">&quot;알림 메시지&quot;</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">setNegativeButton</span><span class="o">(</span><span class="s">&quot;취소&quot;</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">show</span><span class="o">();</span>
-</code></pre></div>
-<p>위 소스를 실행 했을 때 BadTokenException 오류가 발생한다면 대부분은 context에 Activity Context를 넣지 않고 Application Context를 넣었을 경우다. 이와 관련해서 <a href="/2015/09/04/android-dialog-windowmanager-badtokenexception/">안드로이드에서 Dialog 사용시 WindowManager$BadTokenException 발생</a>이라는 글을 적은 적이 있었다. 이런 경우라면 처음부터 오류가 발생하기 때문에 발견하고 수정하기가 쉽다.</p>
-
-<p>그런데 분명 Activity Context를 넣어주었음에도 불구하고 불특정하게 오류가 발생하는 상황이 있다. 나의 경우는 다음과 같은 상황에서 이 문제가 발생했다.</p>
-
-<p>앱 시작시 splash 화면에서 네트워크 활성 여부를 검사해서 비활성(서버 접속 불가)되어 있다면 알림 Dialog를 띄우고 앱을 종료하도록 했다. 그런데 여기서 불특정하게 오류가 발생하여 앱이 알림 Dialog를 띄우지 못하고 죽어 버리는 현상이 발생했다.</p>
-
-<p>ACRA를 통해 보고된 오류 메시지를 확인하니 위에서 언급했던 오류가 발생하고 있었다. 그래서 원인을 찾기 위해 소스 코드를 확인해 보았으나 아무리 봐도 문제가 될 부분을 찾을 수 없었다. 그래서 구글에서 관련 정보를 찾아보니 <a href="http://stackoverflow.com/a/18665887">“android.view.WindowManager$BadTokenException: Unable to add window” on buider.show()</a>에 원인과 해결 방법이 나와 있었다.</p>
-
-<p>결론은 context의 null 검사 뿐만 아니라  <a href="http://developer.android.com/intl/ko/reference/android/app/Activity.html#isFinishing%28%29">isFinishing()</a>도 함께 검사 해줘야 한다는 것이다.</p>
-
-<p>적용된 코드는 아래와 같다.</p>
-<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="k">if</span> <span class="o">((</span><span class="n">context</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(!</span><span class="n">context</span><span class="o">.</span><span class="na">isFinishing</span><span class="o">()))</span> <span class="o">{</span>
-  <span class="k">new</span> <span class="n">AlertDialog</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="n">context</span><span class="o">)</span>
-      <span class="o">.</span><span class="na">setTitle</span><span class="o">(</span><span class="s">&quot;알림&quot;</span><span class="o">)</span>
-      <span class="o">.</span><span class="na">setMessage</span><span class="o">(</span><span class="s">&quot;알림 메시지&quot;</span><span class="o">)</span>
-      <span class="o">.</span><span class="na">setNegativeButton</span><span class="o">(</span><span class="s">&quot;취소&quot;</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
-      <span class="o">.</span><span class="na">show</span><span class="o">();</span>  
-<span class="o">}</span>
-</code></pre></div>
-<p>사실 이것 만으로 오류가 모두 해결된 것인지는 확인하지 못했다(오류 재현이 너무 힘들다).   하지만 안드로이드에서 발생하는 비슷한 다른 오류들을 감안하면 이것이 원인이 맞을 것이라고 생각한다.</p>
 ]]></content>
   </entry>
   

@@ -139,6 +139,98 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-16T08:47:36+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.16</time>
+        
+           | <a href="/2015/12/16/delta-rpm/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/12/16/delta-rpm/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/12/16/delta-rpm/" itemprop="url">Yum Delta RPM 사용하기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>최근부터 CentOS 7을 사용하면서 yum으로 update를 하면서 아래와 같은 오류가 자주 발생했다. 하지만 항상 나오는 것은 아니다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>Error: Delta RPMs disabled because /usr/bin/applydeltarpm not installed.
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이 메시지가 나오지만 실제로는 동작에는 이상이 없다. 하지만 계속 메시지가 나오니 보기도 싫고 다른 문제가 생길 수도 있을 것으로 생각되어 좀 찾아봤다.</p>
+
+<p>일단 <strong><a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a> 이라고 하는 것은 RPM 패키지 버전별로 변경사항만 가지고 있는 것을 뜻한다.</strong> 다시 말해 update 시에 전체 RPM을 다운 받아서 설치하지 않고 변경사항만 다운 받아서 update를 하게 해준다는 것이다.</p>
+
+<p>처리 과정을 보자면 yum에서 DRPM(Delta RPM)을 다운 받아 이전 패키지에 변경 사항을 병합하여 새로운 RPM을 빌드한 후 설치가 이루어 진다고 한다. 따라서 다운 받는 시간은 줄어들지만 병합하는 시간이 추가로 소요된다. 하지만 네트워크 비용이 더 크기 때문에 사용하는 것이 더 유리하다.</p>
+
+<p><a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>은 Fedora 11부터 적용되었다고 하며 RPM을 사용하는 다른 Linux에서도 사용중이라고 한다. 그런데 CentOS의 minimal 설치시에는 포함되지 않기 때문에 위 오류가 난다고 한다. 그리고 update 대상이 DRPM을 지원할 경우만 위 오류가 표시되는 것으로 보인다.</p>
+
+<p>이 오류를 제거하고 <a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>을 사용하는 방법은 간단하다. deltarpm 패키지를 설치하면 된다.</p>
+
+<p>우선 오류에 나와있는 프로그램의 경로(<code>/usr/bin/applydeltarpm</code>)를 이용해서 패키지명을 찾는다. 사실 이 과정은 굳이 할 필요가 없다(이미 패키지명을 알고 있으니).</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum provides /usr/bin/applydeltarpm
+</span><span class='line'>
+</span><span class='line'>Loaded plugins: fastestmirror
+</span><span class='line'>Loading mirror speeds from cached hostfile
+</span><span class='line'> * base: ftp.daumkakao.com
+</span><span class='line'> * epel: ftp.cuhk.edu.hk
+</span><span class='line'> * extras: ftp.daumkakao.com
+</span><span class='line'> * updates: ftp.daumkakao.com
+</span><span class='line'> * webtatic: sp.repo.webtatic.com
+</span><span class='line'>deltarpm-3.6-3.el7.x86_64 : Create deltas between rpms
+</span><span class='line'>Repo        : base
+</span><span class='line'>Matched from:
+</span><span class='line'>Filename    : /usr/bin/applydeltarpm
+</span></code></pre></td></tr></table></div></figure>
+
+<p>패키지명을 알았으니 이제 설치만 하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum install deltarpm
+</span></code></pre></td></tr></table></div></figure>
+
+<p>끝이다. 이제부터 <a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>이 지원되는 패키지는 DRPM을 이용해서 다운받는 시간이 줄어들 것이다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-15T19:38:39+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.15</time>
         
            | <a href="/2015/12/15/android-app-finish/#disqus_thread" itemprop="discussionUrl"
@@ -222,7 +314,7 @@
 <p>Call this when your activity is done and should be closed and the task should be completely removed as a part of finishing the Activity.</p>
 </blockquote>
 
-<p>그리고 이 함수는 API 21에서 추가된 함수로 아직까지는 호환성 함수는 없는 것으로 보인다. 그나마 찾아본 봐로는 chromium 소스 코드 중 <a href="https://chromium.googlesource.com/chromium/src/base/+/master/android/java/src/org/chromium/base/ApiCompatibilityUtils.java">ApiCompatibilityUtils.java</a>에 있는 아래의 코드가 있다. 하지만 사용에 큰 의미는 없어보이니 참고만 하자.</p>
+<p>그리고 이 함수는 API 21에서 추가된 함수로 아직까지는 호환성 함수는 없는 것으로 보인다. 그나마 찾아본 바로는 chromium 소스 코드 중 <a href="https://chromium.googlesource.com/chromium/src/base/+/master/android/java/src/org/chromium/base/ApiCompatibilityUtils.java">ApiCompatibilityUtils.java</a>에 있는 아래의 코드가 있다. 하지만 사용에 큰 의미는 없어보이니 참고만 하자.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -294,7 +386,7 @@
 
 <p>이제부터는 앱을 종료하고 Process까지 완전히 종료시키는 방법들이다. 이 부분에 대해서는 의견이 다양한데 앱 종료시 처리되어야 할 프로세스들이 정상적으로 동작하지 못할 수 있다는 우려로 사용을 자제하라는 의견도 있고 알아서 처리하므로 상관없다는 의견도 있다. 테스트를 아직 해보지 못해 어떤 문제가 발생하는지에 대해서는 설명할 수 없으니 사용시 유의하자.</p>
 
-<p><a href="http://stackoverflow.com/a/5036668">How to close Android application?</a>에 소개된 아래의 Class의 일부 소스를 보자.</p>
+<p><a href="http://stackoverflow.com/a/5036668">How to close Android application?</a>에 소개된  Class 소스의 일부를 보자.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -1645,82 +1737,6 @@ single mode 부팅에 관련해서는 <a href="http://linux.systemv.pe.kr/centos
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-02T16:17:54+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.02</time>
-        
-           | <a href="/2015/12/02/nginx-414-request-uri-too-large/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/12/02/nginx-414-request-uri-too-large/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/12/02/nginx-414-request-uri-too-large/" itemprop="url">Nginx : 414 Request-URI Too Large 오류</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>Nginx를 사용하는 중에 아주 긴 URL의 요청이 들어올 경우 <code>414 Request-URI Too Large</code> 오류가 나는 경우가 있다. 이는 말 그대로 URL 요청이 제한된 길이보다 길기 때문에 오류가 발생하는 것이다. 일반적인 웹 서버들은 8kb를 최대 길이로 설정되어 있는 것이 보통이다. 실제로 Nginx의 경우도 기본은 8kb이다. 하지만 URL의 길이는 서버에서 받아주는 길이도 관련이 있지만 웹 브라우저에서도 제한이 있다. 예를들어 오래된 브라우저들은 2kb 가량의 제한이 있다. 하지만 최신 브라우저들은 8kb로 제한하는 것으로 알고 있다.</p>
-
-<p>하지만 나의 경우는 이 값을 1kb로 설정해 둔 상태로 조금 긴 Url에서 해당 오류가 발생했다. 그래서 2kb로 늘려 두었다.</p>
-
-<p>그러면 Nginx에서는 이 값을 어떻게 조정할 수 있을까? 바로 <a href="http://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers">large_client_header_buffers</a>를 사용하면 된다. 예를들면 아래와 같이 사용한다(디폴트 값을 예시로 넣었다).</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='nginx'><span class='line'><span class="k">http</span> <span class="p">{</span>
-</span><span class='line'>  <span class="kn">large_client_header_buffers</span> <span class="mi">4</span> <span class="mi">8k</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='nginx'><span class='line'><span class="k">http</span> <span class="p">{</span>
-</span><span class='line'>  <span class="kn">server</span> <span class="p">{</span>
-</span><span class='line'>    <span class="kn">large_client_header_buffers</span> <span class="mi">4</span> <span class="mi">8k</span><span class="p">;</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p><a href="http://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers">공식 메뉴얼</a>에는 아래와 같이 설명되어 있다.</p>
-
-<blockquote>
-<p>Syntax: large_client_header_buffers number size;
-Default: large_client_header_buffers 4 8k;
-Context: http, server</p>
-</blockquote>
-
-<p>Sets the maximum number and size of buffers used for reading large client request header. A request line cannot exceed the size of one buffer, or the 414 (Request-URI Too Large) error is returned to the client. A request header field cannot exceed the size of one buffer as well, or the 400 (Bad Request) error is returned to the client. Buffers are allocated only on demand. By default, the buffer size is equal to 8K bytes. If after the end of request processing a connection is transitioned into the keep-alive state, these buffers are released.</p>
-
-<p>여기서 조금 애매한 부분이 number 값인데 명확히 어떤 역할인지를 아직 잘 모르겠다. 찾아보니 number * size가 최대 사이즈라고 하는데 테스트 해보니 그건 아닌 것 같다(number가 2이고 size가 1k인 상황에서 1024자를 넘어가니 414 오류가 발생했다).</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1793,7 +1809,7 @@ Context: http, server</p>
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (38)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (14)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (38)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (15)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1802,6 +1818,8 @@ Context: http, server</p>
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/12/16/delta-rpm/">Yum Delta RPM 사용하기</a>
+    
     <a class="list-group-item " href="/2015/12/15/android-app-finish/">안드로이드 앱 종료 방법</a>
     
     <a class="list-group-item " href="/2015/12/10/realm/">안드로이드 Realm 0.82.2 -> 0.86.0 버전업</a>
@@ -1809,8 +1827,6 @@ Context: http, server</p>
     <a class="list-group-item " href="/2015/12/10/linux-login-error-with-selinux-enforcing/">selinux enforcing 후 로그인이 되지 않을 때 복구 방법(CentOS 7)</a>
     
     <a class="list-group-item " href="/2015/12/09/centos-7-create-sftp-only-user/">sftp-only 사용자 추가 (CentOS 7)</a>
-    
-    <a class="list-group-item " href="/2015/12/09/vagrant-box-repackage/">Vagrant box repackage(unpacked box에서 box 파일 만들기)</a>
     
   </div>
 </section>

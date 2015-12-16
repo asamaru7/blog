@@ -139,6 +139,130 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-14T21:19:33+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.14</time>
+        
+           | <a href="/2015/09/14/soundex-slash-metaphone-key-in-php/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/09/14/soundex-slash-metaphone-key-in-php/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/14/soundex-slash-metaphone-key-in-php/" itemprop="url">PHP에서 soundex / metaphone key 구하기</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>앞선 포스팅에서 <a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">levenshtein()</a> 함수, <a href="/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text">similar_text()</a>에 대해 알아보았다.
+이런 문자열 비교 함수는 아니지만 문자열의 soundex key를 구하여 발음이 유사한 단어들을 찾을 수 있도록 도와주는 soundex() 함수와 이보다 더 정확한 결과를 반환한다고 하는 metaphone() 함수에 대해서 알아보자.</p>
+
+<h2 id="soundex란">soundex란?</h2>
+
+<blockquote>
+<p>Soundex란 발음이 유사한 서로다른 철자의 단어를 그룹화하여 철자 입력 오류를 보정하기 위한 색인시스템으로 초기에는 주로 사람이름을 검색하기 위한 용도로 사용되었으나 인터넷 검색이 활성화되면서 다양한 분야에서 응용되고 있다. 대표적인 Soundex Appliation은 “US Bureau of the Censu s”의 것이며, AT&amp;T의 Standard soundex algorithm도 있다.
+(츨처 : <a href="http://www.nicklib.com/nlp/2297">http://www.nicklib.com/nlp/2297</a>)</p>
+</blockquote>
+
+<h2 id="soundex-함수"><a href="http://php.net/manual/en/function.soundex.php">soundex()</a> 함수</h2>
+
+<p><a href="http://php.net/manual/en/function.soundex.php">php 메뉴얼의 설명</a>에 따르면 soundex() 함수는 발음이 유사한 단어들이 같은 soundex 키를 생성하므로, 발음은 알고 있지만 스펠은 모르는 단어를 데이터베이스에서 쉽게 찾을 수 있다. soundex 함수는 문자로 시작하는 4문자 문자열을 반환한다.</p>
+
+<p>이 soundex 함수는 &quot;The Art Of Computer Programming, vol. 3: Sorting And Searching&quot;, Addison-Wesley (1973), 391-392쪽에서 Donald Knuth가 기술한 것이다.</p>
+
+<h3 id="기본-사용법">기본 사용법</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nx">string</span> <span class="nb">soundex</span> <span class="p">(</span> <span class="nx">string</span> <span class="nv">$str</span> <span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="함수-인자">함수 인자</h3>
+
+<h4 id="str">str</h4>
+
+<p>입력 문자열</p>
+
+<h3 id="반환값">반환값</h3>
+
+<p>soundex 키를 문자열로 반환한다.</p>
+
+<h3 id="예시">예시</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="o">&lt;?</span><span class="nx">php</span>
+</span><span class='line'><span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Euler&quot;</span><span class="p">)</span>       <span class="o">==</span> <span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Ellery&quot;</span><span class="p">);</span>    <span class="c1">// E460</span>
+</span><span class='line'><span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Gauss&quot;</span><span class="p">)</span>       <span class="o">==</span> <span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Ghosh&quot;</span><span class="p">);</span>     <span class="c1">// G200</span>
+</span><span class='line'><span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Hilbert&quot;</span><span class="p">)</span>     <span class="o">==</span> <span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Heilbronn&quot;</span><span class="p">);</span> <span class="c1">// H416</span>
+</span><span class='line'><span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Knuth&quot;</span><span class="p">)</span>       <span class="o">==</span> <span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Kant&quot;</span><span class="p">);</span>      <span class="c1">// K530</span>
+</span><span class='line'><span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Lloyd&quot;</span><span class="p">)</span>       <span class="o">==</span> <span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Ladd&quot;</span><span class="p">);</span>      <span class="c1">// L300</span>
+</span><span class='line'><span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Lukasiewicz&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="nb">soundex</span><span class="p">(</span><span class="s2">&quot;Lissajous&quot;</span><span class="p">);</span> <span class="c1">// L222</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h2 id="metaphone-함수"><a href="http://php.net/manual/en/function.metaphone.php">metaphone()</a> 함수</h2>
+
+<p><a href="http://php.net/manual/en/function.metaphone.php">php 메뉴얼의 설명</a>에 따르면 metaphone() 함수는 soundex()처럼 유사한 발음의 단어에 대해 동일한 키를 생성다. 이 함수는 영어 발음의 기본 법칙을 사용하는 soundex()보다 훨씬 정확하다. 메타폰 생성 키는 가변 길이를 가진다.</p>
+
+<p>metaphone은 Lawrence Philips <lphilips at verity dot com>가 개발하였였고 이는 [&quot;Practical Algorithms for Programmers&quot;, Binstock &amp; Rex, Addison Wesley, 1995]에 수록되어 있다.</p>
+
+<h3 id="기본-사용법">기본 사용법</h3>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="nx">string</span> <span class="nb">metaphone</span> <span class="p">(</span> <span class="nx">string</span> <span class="nv">$str</span> <span class="p">[,</span> <span class="nx">int</span> <span class="nv">$phonemes</span> <span class="p">]</span> <span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<h3 id="함수-인자">함수 인자</h3>
+
+<h4 id="str">str</h4>
+
+<p>입력 문자열.</p>
+
+<h4 id="phonemes">phonemes</h4>
+
+<p>이 매개 변수는 음소 문자로 반환된 metaphone key의 길이를 제한한다. 0이 디폴트 값으로 제한하지 않음을 의미한다.</p>
+
+<h3 id="반환값">반환값</h3>
+
+<p>메타폰 키를 문자열로 반환한다.</p>
+
+<h2 id="응용-아이디어">응용 아이디어</h2>
+
+<p>알파벳 문자열의 유사도를 개선하는데에 응용할 수도 있을 것 같다. 문자열을 soundex나 metaphone key로 변환하여 문자열 유사도를 비교하면 조금 더 개선된 유사도를 구할 수 있을 것 같다. 정확히는 다른 의미가 되지만 발음이 유사한 문장을 유사 문장으로 인정하는 효과를 얻을 수 있을 것이다.</p>
+
+<p>사실 중요한 문제는 soundex나 metaphone 뿐만 아니라 Double Metaphone, Caverphone 같은 알고리즘은 알파벳 문자에 대한 음성 특징을 추출하는 것으로 한글에는 사용할 수 없다. 하지만 한글을 초/중/종성으로 분리하고 발음 기호로 변환하는 부분을 추가 처리하면 한글에도 응용할 수 있을 것으로 보인다.</p>
+
+<p>게대가 한글을 영어 발음으로 변환하는 오픈소스들도 찾아보니 있다.(<a href="https://metacpan.org/pod/Lingua::KO::Munja">https://metacpan.org/pod/Lingua::KO::Munja</a>)</p>
+
+<p>추후에 기회가 된다면 직접 구현 해봐야겠다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-14T20:13:22+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.14</time>
         
            | <a href="/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/#disqus_thread" itemprop="discussionUrl"
@@ -1498,100 +1622,6 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-05T06:47:14+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.05</time>
-        
-           | <a href="/2015/09/05/octopress-google-translate/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/09/05/octopress-google-translate/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/09/05/octopress-google-translate/" itemprop="url">옥토프레스에 구글 번역기 달기</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>구글에서는 웹사이트에 여러가지 언어로 번역해서 보여줄 수 있는 기능을 제공해 준다.
-이 블로그에 한국어가 아닌 다른 언어를 사용하는 사람이 누가 오겠냐만은 이 블로그는 여러가지 실험을 하기 위한 블로그이므로 구글 번역기도 달아봤다. 생각보다 간단하다.</p>
-
-<h2 id="구글-번역-스크립트-생성">구글 번역 스크립트 생성</h2>
-
-<p><a href="http://translate.google.com/manager/website/">http://translate.google.com/manager/website/</a></p>
-
-<p><img src="/img/2015-09-05-octopress-google-translate-1.png" alt="웹사이트에 지금 추가" title="웹사이트에 지금 추가"></p>
-
-<p>&quot;웹사이트에 지금 추가&quot;를 눌러 다음으로.</p>
-
-<p><img src="/img/2015-09-05-octopress-google-translate-2.png" alt="웹사이트 정보"></p>
-
-<p>번역기를 넣을 웹사이트 주소를 입력하고 언어 선택 후 다음.</p>
-
-<p><img src="/img/2015-09-05-octopress-google-translate-3.png" alt="플러그인 설정"></p>
-
-<p>원하는 옵션을 선택하고 다음.</p>
-
-<p><img src="/img/2015-09-05-octopress-google-translate-4.png" alt="플러그인 추가"></p>
-
-<p>번역 스크립트 완성. 이제 이 스크립트를 복사해서 원하는 곳에 넣으면 끝이다.</p>
-
-<h2 id="옥토프레스에-추가">옥토프레스에 추가</h2>
-
-<p>옥토프레스에 추가하는 방법은 템플릿 html 어딘가에(노출을 원하는 위치) 넣으면 끝이다.
-맨 상단 메뉴에 넣고 싶다면 source/_includes/navigation.html 파일 내부에 원하는 곳에 넣으면 된다. 당연히 하단, 본문 등 원하는 곳에 그냥 넣으면 끝이다.</p>
-
-<p>하지만. 난 우측 aside 영역에 넣기로 했다. 그리고 그냥 넣지않고 파일을 분리하기로 했다. 플러그인 처럼.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi <span class="nb">source</span>/_includes/custom/asides/google_translate.html
-</span></code></pre></td></tr></table></div></figure>
-
-<p>우선 google_translate.html을 열어 구글에서 제공해준 스크립트를 넣는다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi _config.yml
-</span></code></pre></td></tr></table></div></figure>
-
-<p>_config.yml 파일을 열어 아래처럼 default_asides 항목에 생성한 파일을 넣어준다.(원하는 순서에)</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">default_asides</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">custom/asides/google_translate.html</span><span class="p-Indicator">,</span> <span class="nv">...</span><span class="p-Indicator">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>이것으로 끝.</p>
-
-<p>확인을 위해</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>rake generate
-</span><span class='line'>rake deploy
-</span></code></pre></td></tr></table></div></figure>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1664,7 +1694,7 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (38)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (14)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (38)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (15)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1673,6 +1703,8 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/12/16/delta-rpm/">Yum Delta RPM 사용하기</a>
+    
     <a class="list-group-item " href="/2015/12/15/android-app-finish/">안드로이드 앱 종료 방법</a>
     
     <a class="list-group-item " href="/2015/12/10/realm/">안드로이드 Realm 0.82.2 -> 0.86.0 버전업</a>
@@ -1680,8 +1712,6 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
     <a class="list-group-item " href="/2015/12/10/linux-login-error-with-selinux-enforcing/">selinux enforcing 후 로그인이 되지 않을 때 복구 방법(CentOS 7)</a>
     
     <a class="list-group-item " href="/2015/12/09/centos-7-create-sftp-only-user/">sftp-only 사용자 추가 (CentOS 7)</a>
-    
-    <a class="list-group-item " href="/2015/12/09/vagrant-box-repackage/">Vagrant box repackage(unpacked box에서 box 파일 만들기)</a>
     
   </div>
 </section>

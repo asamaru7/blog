@@ -4,7 +4,7 @@
   <title><![CDATA[이 세상에 하나는 남기고 가자]]></title>
   <link href="http://blog.asamaru.net/atom.xml" rel="self"/>
   <link href="http://blog.asamaru.net/"/>
-  <updated>2015-12-15T20:53:34+09:00</updated>
+  <updated>2015-12-16T12:41:55+09:00</updated>
   <id>http://blog.asamaru.net/</id>
   <author>
     <name><![CDATA[유영재]]></name>
@@ -12,6 +12,67 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Yum Delta RPM 사용하기]]></title>
+    <link href="http://blog.asamaru.net/2015/12/16/delta-rpm/"/>
+    <updated>2015-12-16T08:47:36+09:00</updated>
+    <id>http://blog.asamaru.net/2015/12/16/delta-rpm</id>
+    <content type="html"><![CDATA[<p>최근부터 CentOS 7을 사용하면서 yum으로 update를 하면서 아래와 같은 오류가 자주 발생했다. 하지만 항상 나오는 것은 아니다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>Error: Delta RPMs disabled because /usr/bin/applydeltarpm not installed.
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이 메시지가 나오지만 실제로는 동작에는 이상이 없다. 하지만 계속 메시지가 나오니 보기도 싫고 다른 문제가 생길 수도 있을 것으로 생각되어 좀 찾아봤다.</p>
+
+<p>일단 <strong><a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a> 이라고 하는 것은 RPM 패키지 버전별로 변경사항만 가지고 있는 것을 뜻한다.</strong> 다시 말해 update 시에 전체 RPM을 다운 받아서 설치하지 않고 변경사항만 다운 받아서 update를 하게 해준다는 것이다.</p>
+
+<p>처리 과정을 보자면 yum에서 DRPM(Delta RPM)을 다운 받아 이전 패키지에 변경 사항을 병합하여 새로운 RPM을 빌드한 후 설치가 이루어 진다고 한다. 따라서 다운 받는 시간은 줄어들지만 병합하는 시간이 추가로 소요된다. 하지만 네트워크 비용이 더 크기 때문에 사용하는 것이 더 유리하다.</p>
+
+<p><a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>은 Fedora 11부터 적용되었다고 하며 RPM을 사용하는 다른 Linux에서도 사용중이라고 한다. 그런데 CentOS의 minimal 설치시에는 포함되지 않기 때문에 위 오류가 난다고 한다. 그리고 update 대상이 DRPM을 지원할 경우만 위 오류가 표시되는 것으로 보인다.</p>
+
+<p>이 오류를 제거하고 <a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>을 사용하는 방법은 간단하다. deltarpm 패키지를 설치하면 된다.</p>
+
+<p>우선 오류에 나와있는 프로그램의 경로(<code>/usr/bin/applydeltarpm</code>)를 이용해서 패키지명을 찾는다. 사실 이 과정은 굳이 할 필요가 없다(이미 패키지명을 알고 있으니).</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum provides /usr/bin/applydeltarpm
+</span><span class='line'>
+</span><span class='line'>Loaded plugins: fastestmirror
+</span><span class='line'>Loading mirror speeds from cached hostfile
+</span><span class='line'> * base: ftp.daumkakao.com
+</span><span class='line'> * epel: ftp.cuhk.edu.hk
+</span><span class='line'> * extras: ftp.daumkakao.com
+</span><span class='line'> * updates: ftp.daumkakao.com
+</span><span class='line'> * webtatic: sp.repo.webtatic.com
+</span><span class='line'>deltarpm-3.6-3.el7.x86_64 : Create deltas between rpms
+</span><span class='line'>Repo        : base
+</span><span class='line'>Matched from:
+</span><span class='line'>Filename    : /usr/bin/applydeltarpm
+</span></code></pre></td></tr></table></div></figure>
+
+<p>패키지명을 알았으니 이제 설치만 하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>yum install deltarpm
+</span></code></pre></td></tr></table></div></figure>
+
+<p>끝이다. 이제부터 <a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>이 지원되는 패키지는 DRPM을 이용해서 다운받는 시간이 줄어들 것이다.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[안드로이드 앱 종료 방법]]></title>
@@ -88,7 +149,7 @@
 <p>Call this when your activity is done and should be closed and the task should be completely removed as a part of finishing the Activity.</p>
 </blockquote>
 
-<p>그리고 이 함수는 API 21에서 추가된 함수로 아직까지는 호환성 함수는 없는 것으로 보인다. 그나마 찾아본 봐로는 chromium 소스 코드 중 <a href="https://chromium.googlesource.com/chromium/src/base/+/master/android/java/src/org/chromium/base/ApiCompatibilityUtils.java">ApiCompatibilityUtils.java</a>에 있는 아래의 코드가 있다. 하지만 사용에 큰 의미는 없어보이니 참고만 하자.</p>
+<p>그리고 이 함수는 API 21에서 추가된 함수로 아직까지는 호환성 함수는 없는 것으로 보인다. 그나마 찾아본 바로는 chromium 소스 코드 중 <a href="https://chromium.googlesource.com/chromium/src/base/+/master/android/java/src/org/chromium/base/ApiCompatibilityUtils.java">ApiCompatibilityUtils.java</a>에 있는 아래의 코드가 있다. 하지만 사용에 큰 의미는 없어보이니 참고만 하자.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -160,7 +221,7 @@
 
 <p>이제부터는 앱을 종료하고 Process까지 완전히 종료시키는 방법들이다. 이 부분에 대해서는 의견이 다양한데 앱 종료시 처리되어야 할 프로세스들이 정상적으로 동작하지 못할 수 있다는 우려로 사용을 자제하라는 의견도 있고 알아서 처리하므로 상관없다는 의견도 있다. 테스트를 아직 해보지 못해 어떤 문제가 발생하는지에 대해서는 설명할 수 없으니 사용시 유의하자.</p>
 
-<p><a href="http://stackoverflow.com/a/5036668">How to close Android application?</a>에 소개된 아래의 Class의 일부 소스를 보자.</p>
+<p><a href="http://stackoverflow.com/a/5036668">How to close Android application?</a>에 소개된  Class 소스의 일부를 보자.</p>
 
 <figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -2123,87 +2184,6 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
 <p>따라서 각각의 서비스를 사용해도 무방할 것으로 보인다. 하지만 <a href="https://fabric.io">Fabric</a>을 사용함으로써 통합 관리를 할 수 있으며 설치 과정이 아주 단순해진다.</p>
 
 <p><strong>결론 : Crash Report 도구가 필요하다면, iOS와 Android 모두 한 곳에서 관리하고 싶다면, 사용자 이벤트 로깅도 하고 싶다면, <a href="https://fabric.io">Fabric</a>을 적극 추천하고 싶다.</strong></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Android : is not translated in ... Lint Error 해결]]></title>
-    <link href="http://blog.asamaru.net/2015/11/05/android-is-not-translated-in-dot-dot-dot-lint-error/"/>
-    <updated>2015-11-05T14:27:23+09:00</updated>
-    <id>http://blog.asamaru.net/2015/11/05/android-is-not-translated-in-dot-dot-dot-lint-error</id>
-    <content type="html"><![CDATA[<p>안드로이드에서 배포를 위한 빌드시에 아래와 같은 오류가 발생하는 경우가 있다. 상황에 따라 언어의 종류(en)는 다를 수 있다.</p>
-
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Error:(65) Error: "..." is not translated in "en" (English) [MissingTranslation]</span></code></pre></td></tr></table></div></figure>
-
-<p>이 오류는 말그대로 다국어 지원에 대한 처리가 제대로 되어 있지 않다는 오류이다. 일반적으로 다국어 지원을 위한 별도의 처리를 한적이 없다면 이 오류는 발생하지 않는 것이 당연하다.
-하지만 이번에 이 오류를 만나고 찾아보니 많은 개발자들이 이 문제를 겪는 것 같다. 사실 나는 다국어 지원에 관련된 별도의 처리를 한 상황이었으므로 이 오류를 만나는 것이 당연한 상황이었다.
-어쨌든 인터넷에 찾아보면 대부분 다음과 같이 해결법을 제시하고 있다.</p>
-
-<ul>
-<li>Lint 관련 설정은 이클립스 메뉴의 Window - Preference - Android - Lint 에서 변경할 수 있는데요..  여기서 MissingTranslation 항목을 찾아 Severity를 warning으로 변경하면 됩니다.</li>
-<li><a href="http://mytalkhome.tistory.com/816">Android Studio &quot;is not translated in &quot;en&quot; (English) [MissingTranslation]&quot; 오류 해결하기</a></li>
-</ul>
-
-<p>이 방법은 말그대로 제대로 처리되지 않은 부분을 오류에서 경고로 변경하여 빌드를 수행하는 것으로 좋지 못한 방법이다. 게다가 나의 경우는 OSX라서 그런지 안드로이드 스튜디오의 버전 때문인지 위치와 명칭이 많이 달랐다.</p>
-
-<p>유사하지만 다른 방법도 있다. build.gradle에서 lint를 제외하는 것이다. <a href="http://stackoverflow.com/questions/20699147/gradle-build-fails-on-lint-task">gradle build fails on lint task</a></p>
-
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>android {
-</span><span class='line'>  lintOptions {
-</span><span class='line'>      checkReleaseBuilds false
-</span><span class='line'>  }
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
-
-<p>그리고 또 다른 방법 한가지. <a href="http://stackoverflow.com/questions/28106875/missingtranslation-for-default-language-is-not-translated-in-en">MissingTranslation for default language ( “…” is not translated in “en”)</a>
-이 방법은 Strings.xml에서 locale을 아예 미리 입력해 버리는 것이다. 위 오류에 맞추어 en이라고 했지만 자신의 상황에 맞게 입력해야 한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;resources</span>
-</span><span class='line'>    <span class="na">xmlns:tools=</span><span class="s">&quot;http://schemas.android.com/tools&quot;</span>
-</span><span class='line'>    <span class="na">tools:locale=</span><span class="s">&quot;en&quot;</span><span class="nt">&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-<p>당연히 문제의 원인을 정확히 파악하여 해결하는 것이 가장 좋은 방법이다.
-당장 급하고 원인을 찾지 못하겠다면 위의 방법들을 쓸 수도 있겠지만 계속 저렇게 사용하는 것은 권장하고 싶지는 않다.</p>
-
-<p>이제부터는 내가 문제를 만난 상황이다. 사실 나 또한 다국어를 지원할 필요가 있었던 것은 아니다. 다만 사용한 라이브러리 중 하나가 다국어를 지원하고 있었다.
-따라서 한국어 부분은 <code>values-ko/strings.xml</code>파일로 분리되어서 처리되고 있었다. 이 상황에서 내가 필요한 것은 설정된 문장의 일부를 변경하는 것이었다.
-그래서 내 프로젝트의 <code>values/strings.xml</code>에 필요한 문장들을 재정의 했다. 오류는 나지 않지만 적용되지 않는다. 다시 내 프로젝트에도 <code>values-ko/strings.xml</code> 파일을 만들고 필요한 부분을 재정의 했다.
-여기서부터 문제의 시작이다. 아래의 오류가 발생한다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'>Error:(65) Error: &quot;...&quot; is not translated in &quot;ko&quot;
-</span></code></pre></td></tr></table></div></figure>
-
-<p><code>values-ko/strings.xml</code> 파일에 모든 내용을 넣지 않고 필요한 부분만 넣었으므로 나머지 부분이 번역되지 않았다고 오류가 나는 것이다. 간단한 해결 방법은 <code>values-ko/strings.xml</code> 파일에 <code>values/strings.xml</code>의 내용을 모두 복사해 넣어준다. 그런데 이 방법은 싫다. 둘다 한국어인데 굳이 두군데를 관리하고 싶지 않다. 이런 경우라면 아래와 같이 <code>tools:ignore=&quot;MissingTranslation&quot;</code>를 사용해서 문제를 해결할 수 있다.</p>
-
-<p><strong>Strings.xml</strong>
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;resources</span>
-</span><span class='line'>    <span class="na">xmlns:tools=</span><span class="s">&quot;<a href="http://schemas.android.com/tools">http://schemas.android.com/tools</a>&quot;</span>
-</span><span class='line'>    <span class="na">tools:ignore=</span><span class="s">&quot;MissingTranslation&quot;</span><span class="nt">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p>명확히 이 영역은 다국어 지원이 필요하지 않은 이므로 명시적으로 번역 누락을 무시하도록 하는 것이다. 어떻게 보면 상기 설명했던 오류를 무시하는 것과 같아 보일 수 있으나 이 방법은 무시할 범위를 명확히 인지하고 해당 영역만 필요에 의해 무시하도록 했다는 것이다.
-단, 한가지 추가 작업이 필요하다. <code>values-ko/strings.xml</code> 파일에서 재정의 했던 항목들을 <code>values/strings.xml</code>에도 넣어주어야 한다는 것이다. 안그러면 아래와 같은 오류가 난다.</p>
-
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'>Error:(3) Error: &quot;XXX&quot; is translated here but not found in default locale [ExtraTranslation]
-</span></code></pre></td></tr></table></div></figure>
-
-<p>사실 불편함이 생기는 부분이지만 앞서 설명처럼 반대로 모두를 두군데서 관리하는 것보다 필요한 몇줄만 별도 관리하는 것을 선택했다.</p>
-
-<p><strong>결론적으로 선택은 자유다. 위 방법들 중 필요에 맞게 선택해서 사용하면 되겠다.</strong></p>
 ]]></content>
   </entry>
   

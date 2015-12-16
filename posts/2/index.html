@@ -139,6 +139,196 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-02T19:39:43+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.02</time>
+        
+           | <a href="/2015/12/02/vagrant-cant-mount-shared-folder/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/12/02/vagrant-cant-mount-shared-folder/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/12/02/vagrant-cant-mount-shared-folder/" itemprop="url">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>vagrant를 사용하면서 로컬과 가상 머신 사이의 파일 전달을 간단히 하려면 synced_folder를 사용하면 된다. 설정도 아주 간단하다. <code>Vagrantfile</code>에 아래의 내용을 추가하면 된다. 당연히 설정값은 자신의 상황에 맞게 지정하면 된다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>config.vm.synced_folder <span class="s2">&quot;/local/vagrant/share&quot;</span>, <span class="s2">&quot;/vagrant&quot;</span>, owner: <span class="s2">&quot;web&quot;</span>, group: <span class="s2">&quot;usergroup&quot;</span>, mount_options: <span class="o">[</span><span class="s2">&quot;dmode=777,fmode=777&quot;</span><span class="o">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>사실 synced_folder의 단점은 퍼미션에 있다. 나의 경우는 osx 환경에서 centos 가상 머신을 사용하는 상황이라 퍼미션을 유지한 상태로 폴더를 연결하고 싶으나 그렇게는 되지 않는다. 그래서 나는 synced_folder는 파일 전달용으로 사용하고 작업 소스 폴더 등은 NFS를 이용해서 로컬과 가상 머신을 연결한다. 그렇게하면 퍼미션도 유지할 수 있기 때문에 관련 작업시 편하다. 이와 관련해서는 오늘 이야기하고자 하는 부분이 아니므로 일단 넘어가기로 한다.</p>
+
+<p>사실 나도 이렇게 잘 사용하고 있었는데 얼마 전부터 아래와 같은 오류가 나면서 정상적으로 연결이 되지 않았다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>default: /vagrant <span class="o">=</span>&gt; /local/vagrant/share
+</span><span class='line'>Failed to mount folders in Linux guest. This is usually because
+</span><span class='line'>the <span class="s2">&quot;vboxsf&quot;</span> file system is not available. Please verify that
+</span><span class='line'>the guest additions are properly installed in the guest and
+</span><span class='line'>can work properly. The <span class="nb">command </span>attempted was:
+</span><span class='line'>
+</span><span class='line'>mount -t vboxsf -o <span class="nv">uid</span><span class="o">=</span><span class="sb">`</span>id -u web<span class="sb">`</span>,gid<span class="o">=</span><span class="sb">`</span>getent group usergroup <span class="p">|</span> cut -d: -f3<span class="sb">`</span>,dmode<span class="o">=</span>777,fmode<span class="o">=</span><span class="m">777</span> vagrant /vagrant
+</span><span class='line'>mount -t vboxsf -o <span class="nv">uid</span><span class="o">=</span><span class="sb">`</span>id -u web<span class="sb">`</span>,gid<span class="o">=</span><span class="sb">`</span>id -g usergroup<span class="sb">`</span>,dmode<span class="o">=</span>777,fmode<span class="o">=</span><span class="m">777</span> vagrant /vagrant
+</span></code></pre></td></tr></table></div></figure>
+
+<p>synced_folder의 경우 주로 사용하는 작업용 폴더가 아니라서 일단 무시하고 사용하고 있었는데 vagrant up 할 때마다 오류가 보여서 해결하기로 했다.</p>
+
+<p>기존에는 아무 문제가 없었다. 그래서 가만히 생각해보니 얼마전 VirtualBox를 버전업 했다는 사실이 떠올랐다. 그래서 확인해보니 이 부분이 문제를 일으키는 원인이 맞았다. synced_folder의 경우 vboxsf를 사용하는데 VirtualBox가 버전업 되면서 호환이 되지 않았던 것이다(4.3.30 -&gt; 5.0.10). 간단히 생각하면 VBoxGuestAdditions을 다시 설치해주면 된다. 그런데 이렇게 하려니 가상 머신마다 일일이 작업을 해야하기 때문에 귀찮다.</p>
+
+<p>그래서 조금 찾아보니 <a href="https://github.com/mitchellh/vagrant/issues/3341">Vagrant can&#39;t mount shared folder in VirtualBox 4.3.10</a>에 해결 방법이 있었다.</p>
+
+<p>간단히 요약하면 <code>vagrant-vbguest</code> 플러그인을 설치하면 vagrant up 시에 알아서 GuestAdditions을 다시 설치해 준다. 우선 <code>vagrant-vbguest</code> 플러그인을 설치하려면 local에서 아래와 같이 실행한다(osx 기준이다).</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>vagrant plugin install vagrant-vbguest
+</span><span class='line'>
+</span><span class='line'>Installing the <span class="sb">`</span>vagrant-vbguest<span class="sb">`</span> plugin. This can take a few minutes...
+</span><span class='line'>Installed the plugin <span class="s1">&#39;vagrant-vbguest (0.11.0)&#39;</span>!
+</span></code></pre></td></tr></table></div></figure>
+
+<p>그리고 다시 vagrant up을 하면 아래와 같이 다시 설치하는 모습을 볼 수 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">==</span>&gt; default: Machine booted and ready!
+</span><span class='line'>GuestAdditions versions on your host <span class="o">(</span>5.0.10<span class="o">)</span> and guest <span class="o">(</span>4.3.30<span class="o">)</span> <span class="k">do</span> not match.
+</span><span class='line'>Loaded plugins: fastestmirror
+</span><span class='line'>Repodata is over <span class="m">2</span> weeks old. Install yum-cron? Or run: yum makecache fast
+</span><span class='line'>Determining fastest mirrors
+</span><span class='line'> * base: mirror.premi.st
+</span><span class='line'> * extras: mirror.premi.st
+</span><span class='line'> * updates: mirror.premi.st
+</span><span class='line'>Package kernel-devel-3.10.0-229.14.1.el7.x86_64 already installed and latest version
+</span><span class='line'>Package gcc-4.8.3-9.el7.x86_64 already installed and latest version
+</span><span class='line'>Package 1:make-3.82-21.el7.x86_64 already installed and latest version
+</span><span class='line'>Package 4:perl-5.16.3-285.el7.x86_64 already installed and latest version
+</span><span class='line'>Package bzip2-1.0.6-12.el7.x86_64 already installed and latest version
+</span><span class='line'>Nothing to <span class="k">do</span>
+</span><span class='line'>Copy iso file /Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso into the box /tmp/VBoxGuestAdditions.iso
+</span><span class='line'>mount: /dev/loop0 is write-protected, mounting <span class="nb">read</span>-only
+</span><span class='line'>Installing Virtualbox Guest Additions 5.0.10 - guest version is 4.3.30
+</span><span class='line'>Verifying archive integrity... All good.
+</span><span class='line'>Uncompressing VirtualBox 5.0.10 Guest Additions <span class="k">for</span> Linux............
+</span><span class='line'>VirtualBox Guest Additions installer
+</span><span class='line'>Removing installed version 4.3.30 of VirtualBox Guest Additions...
+</span><span class='line'>Copying additional installer modules ...
+</span><span class='line'>Installing additional modules ...
+</span><span class='line'>Removing existing VirtualBox non-DKMS kernel modules<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Building the VirtualBox Guest Additions kernel modules
+</span><span class='line'>Building the main Guest Additions module<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Building the shared folder support module<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Building the OpenGL support module<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>Doing non-kernel setup of the Guest Additions<span class="o">[</span>  OK  <span class="o">]</span>
+</span><span class='line'>You should restart your guest to make sure the new modules are actually used
+</span></code></pre></td></tr></table></div></figure>
+
+<p><a href="https://github.com/mitchellh/vagrant/issues/3341">Vagrant can&#39;t mount shared folder in VirtualBox 4.3.10</a>에서는 <code>sudo ln -s /opt/VBoxGuestAdditions-4.3.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</code> 처리를 통해 심볼릭 링크를 만들어 주고 있지만 나의 경우는 <code>vagrant-vbguest</code> 플러그인이 이 과정도 처리해놔서 별도로 처리하지는 않았다.</p>
+
+<p>하지만 이 과정이 필요하다면 동일하게 처리해 줘야할 수 있다. 나의 경우로 예를들자면 VirtualBox가 5.0.10이므로 <code>sudo ln -s /opt/VBoxGuestAdditions-5.0.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</code>라고 해야한다. 그런데 여기서도 문제가 있을 수 있다. 나의 경우는 최초 설치가 아니라 이미 사용중이었으므로 <code>/usr/lib/VBoxGuestAdditions</code> 파일이 이미 존재하고 이 파일은 <code>/opt/VBoxGuestAdditions-4.3.30/lib/VBoxGuestAdditions</code>의 심볼릭 링크다. 그래서 아래와 같이 처리해 주어야 한다. 당연히 이 과정은 가상 머신에서 실행한다. 하지만</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo su -
+</span><span class='line'><span class="nv">$ </span>rm -f /usr/lib/VBoxGuestAdditions
+</span><span class='line'><span class="nv">$ </span>ln -s /opt/VBoxGuestAdditions-5.0.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions
+</span></code></pre></td></tr></table></div></figure>
+
+<p>그런데 다시 vagrant up 시에 아래와 같은 오류가 날 수 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>GuestAdditions seems to be installed <span class="o">(</span>5.0.10<span class="o">)</span> correctly, but not running.
+</span></code></pre></td></tr></table></div></figure>
+
+<p>또는</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>/sbin/mount.vboxsf: mounting failed with the error: No such device
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이 경우는 vboxadd 서비스가 부팅시에 자동으로 시작되도록 되어있지 않기 때문이다. 따라서 서비스를 아래와 같이 추가해 주어야 한다. 이 명령 또한 가상 머신에서 실행하는 것이다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>systemctl <span class="nb">enable </span>vboxadd.service
+</span></code></pre></td></tr></table></div></figure>
+
+<p>단, 여기서 유의할 점은 위 과정은 CentOS 7 기준이라는 것이다. 따라서 상황에 따라 <code>systemctl</code>에 관련된 부분을 수정해야 한다. 예를들어 CentOS 6.5의 경우라면 아래의 명령을 사용해야 한다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>chkconfig --add vboxadd
+</span><span class='line'><span class="nv">$ </span>chkconfig vboxadd on
+</span></code></pre></td></tr></table></div></figure>
+
+<p>이제 다 되었다. 기존처럼 synced_folder를 사용할 수 있다.</p>
+
+<p>이 글의 내용을 요약하자면 이렇다. <strong>VirtualBox의 버전업을 한 후 vboxsf가 정상 동작하지 않는다면 VBoxGuestAdditions를 재설치 해야한다. 매번 재설치하는 것이 귀찮다면 <code>vagrant-vbguest</code> 플러그인을 사용한다.</strong></p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-12-02T16:17:54+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.12.02</time>
         
            | <a href="/2015/12/02/nginx-414-request-uri-too-large/#disqus_thread" itemprop="discussionUrl"
@@ -1230,73 +1420,6 @@ XCode는 사용하면 할수록 잘 만들었다는 생각이 든다. 단, 코�
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-11-11T20:33:16+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.11.11</time>
-        
-           | <a href="/2015/11/11/from-acra-to-fabric/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/11/11/from-acra-to-fabric/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/11/11/from-acra-to-fabric/" itemprop="url">안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>지난 글 <a href="/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/">ACRA : Please configure &#39;buildConfigClass&#39; in your ACRA config 오류</a>와 <a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>에서 언급했던 것처럼 안드로이드 Crash Report 도구로 ACRA를 사용중이었다.
-ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원인을 찾고 개발자에게 전달해서 개선을 요청할 정도로 나름 애용하려던 도구였는데 오늘 <a href="https://fabric.io">Fabric(Crashlytics)</a>으로 바꿔버렸다.</p>
-
-<p>사실 처음부터 대체할 목적이 있었던 것은 아니었다. 안드로이드용으로 제작된 앱을 iOS용으로도 제작할 일이 있어 개발을 진행하던 중 안드로이드의 ACRA 같은 도구가 iOS에도 있을 것이라는 생각에 몇가지를 찾아보고 있었다. 그때 눈에 띄는 것이 <a href="https://try.crashlytics.com/">Crashlytics</a> 였다(<a href="https://gist.github.com/rino0601/018c7f22aeb23cf2e2a0">Crashlytics 소개 + Android Studio에서 적용하는 방법</a>).</p>
-
-<p>그런데 이 Crashlytics라는 서비스를 운영하는 회사가 트위터에 인수가 되었다(<a href="http://besuccess.com/2013/01/28496/">앱 충돌 리포트 서비스 Crashlytics, 트위터에 인수되다</a>). 그래서 조금 더 알아보니 트위터에서 <a href="https://fabric.io">Fabric</a>이라는 것을 새로 내놓았다.</p>
-
-<p><a href="https://fabric.io">Fabric</a>이 무엇인지에 대해서는 트위터 한글 블로그의 &quot;<a href="https://blog.twitter.com/ko/2014/introducing-fabric-kr">패브릭(Fabric)을 소개합니다.</a>&quot;를 보면 잘 설명되어 있다.</p>
-
-<blockquote>
-<p>패브릭(Fabric)은 앱 개발자들이 흔히 직면하는 안정성, 사용자 확보, 수익성, 사용자 인증의 이슈들&gt;을 해결해 줄 세 가지의 모듈형 키트들로 이루어져 있습니다. 패브릭은 크래시리틱스(Crashlytics), 모펍(MoPub), 트위터 등의 서비스를 통합해 개발자들이 더 안정적인 앱을 만들도록 돕습니다. 패브릭은 앱 개발자들이 세계 최고의 모바일 애드 익스체인지(ad exchange)를 통해 수익을 확보할 수 있게 하며, 트위터 로그인 기능과 실시간 콘텐츠 스트림 기능을 통해 더 많은 사용자에 콘텐츠를 전달할 수 있게 하거나 더욱 간단히 사용자를 인증할 수 있도록 해줍니다.</p>
-</blockquote>
-
-<p>나는 우선 최초 목적이었던 iOS를 위한 Crash Report 도구의 설치를 위해 xcode 프로젝트에 <a href="https://fabric.io">Fabric</a>을 추가했다. 설치 과정은 복잡하지는 않으나 몇가지 설정할 부분들이 있어서 자칫 까다로워질 수 있지만 <a href="https://fabric.io">Fabric</a>에서 관련 도구를 워낙에 잘 제공 해줘서 시키는대로 따라만 하면 큰 무리없이 적용할 수 있다. &quot;기회가 되면 설치 과정을 글로 남길까?&quot; 생각했었지만 설치 도구가 워낙 잘되어 있어 &quot;굳이 내가 다시 설명할 필요가 있을까?&quot;라는 생각이다. 그 정도로 잘 되어있다. 다만 기본 설치 후 Debug 모드에서는 로그 수집을 하지 않도록 설정하는 등의 몇가지 안내가 필요한 부분들이 있는데 이건 시간이되면 따로 글을 남기려고 한다. 사실 이 부분도 메뉴얼로 모두 제공되고 있으나 막상 찾으려니 귀찮은 것들이다.</p>
-
-<p>결론적으로는 아주 만족스러웠다. Crash Report가 잘되는 것은 물론이고 Hook을 걸 수 있도록 하는 기능도 제공되고 있어서 기존에 ACRA에서 연결해 두었던 자체 로그 수집기로도 기존처럼 정보를 전달하는 것이 가능했다(정확히 이야기 하자면 기존과 동일한 내용을 전달하는 것은 아니고 오류 발생 이벤트만 전달된다). 그리고 <a href="https://fabric.io">Fabric</a>에는 <a href="https://try.crashlytics.com/">Crashlytics</a> 외에도 <a href="https://answers.io/">Answers</a>라는 모듈도 함께 제공된다(사실 더 많은 것들이 있다). 이 모듈은 구글 어날리틱스 처럼 앱에 대한 이벤트를 수집하여 보고서를 제공해 준다. 결정적으로 이 모든 것이 무료.</p>
-
-<p>그래서 안드로이드용 앱에서도 ACRA를 걷어내고 Fabric을 적용했다. 역시 아주 만족스럽다. ACRA에서 보내주는 무지막지한 Crash 로그 대신 잘 정리된 로그를 확인할 수 있게 되었다.</p>
-
-<p>앞선 설명처럼 <a href="https://fabric.io">Fabric</a>에는 여러가지 모듈들이 있는데 이들 중 일부는 각각 독립적인 서비스를 가지고 있다(<a href="https://try.crashlytics.com/">Crashlytics</a>와 <a href="https://answers.io/">Answers</a> 처럼). 이 부분에 관련해서는 트위터 한글 블로그의 &quot;<a href="https://blog.twitter.com/ko/2014/introducing-fabric-kr">패브릭(Fabric)을 소개합니다.</a>&quot;의 내용 마지막에 아래와 같이 안내 되어있다.</p>
-
-<blockquote>
-<p>패브릭(Fabric)은 트위터만의 작품이 아닙니다. 패브릭(Fabric)이 가능하도록 키트(Kits)들의 관리, 설치, 업데이트에 관여하는 모든 SDK 벤더들이 만들어낸 것이라고 생각합니다. 당신이 SDK를 관리하는 사람이고, 트위터와 함께 일하고 싶다면 패브릭 파트너십 담당(<a href="mailto:partners@fabric.io">partners@fabric.io</a>)에 메일을 보내 주시길 바랍니다. 개발자 여러분들의 연락을 기다리고 있겠습니다.</p>
-</blockquote>
-
-<p>따라서 각각의 서비스를 사용해도 무방할 것으로 보인다. 하지만 <a href="https://fabric.io">Fabric</a>을 사용함으로써 통합 관리를 할 수 있으며 설치 과정이 아주 단순해진다.</p>
-
-<p><strong>결론 : Crash Report 도구가 필요하다면, iOS와 Android 모두 한 곳에서 관리하고 싶다면, 사용자 이벤트 로깅도 하고 싶다면, <a href="https://fabric.io">Fabric</a>을 적극 추천하고 싶다.</strong></p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1369,7 +1492,7 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (38)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (15)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (38)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (15)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (9)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1378,6 +1501,8 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/12/16/how-can-i-prevent-mail-from-being-classified-as-spam/">발송 메일을 스팸으로 분류되지 않도록 개선하는 법</a>
+    
     <a class="list-group-item " href="/2015/12/16/delta-rpm/">Yum Delta RPM 사용하기</a>
     
     <a class="list-group-item " href="/2015/12/15/android-app-finish/">안드로이드 앱 종료 방법</a>
@@ -1385,8 +1510,6 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
     <a class="list-group-item " href="/2015/12/10/realm/">안드로이드 Realm 0.82.2 -> 0.86.0 버전업</a>
     
     <a class="list-group-item " href="/2015/12/10/linux-login-error-with-selinux-enforcing/">selinux enforcing 후 로그인이 되지 않을 때 복구 방법(CentOS 7)</a>
-    
-    <a class="list-group-item " href="/2015/12/09/centos-7-create-sftp-only-user/">sftp-only 사용자 추가 (CentOS 7)</a>
     
   </div>
 </section>

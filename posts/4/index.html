@@ -139,6 +139,89 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-29T12:22:02+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.29</time>
+        
+           | <a href="/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/" itemprop="url">java setChunkedStreamingMode를 php-fpm 서버와 연결할 때 발생하는 문제</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p><a href="/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/">ACRA : Please configure &#39;buildConfigClass&#39; in your ACRA config 오류</a>에서  http 접속시 <code>setChunkedStreamingMode</code>를 사용하면 request의 body가 수신되지 못하는 문제를 언급하고 Github에 <a href="https://github.com/ACRA/acra/issues/310#issuecomment-151826809">issue로 등록</a> 했었다. 그런데 어제 ACRA로 부터 답변을 받았다.
+간단히 요약하자면 &quot;일반적인 상황에 대한 문제가 아니므로 수정 해 줄 수 없다.&quot;라는 것이다. 게다가 자신의 생각을 바꾸려면 정당한 근거를 제시하란다. 안그래도 영어가 안되서 겨우 report했는데 근거를 달라니...
+현재로써는 ACRA를 대체할만한 라이브러리를 찾지 못했기 때문에 어떻게든 방법을 찾아보려고 노력했다. 우선 proxy 상황에서만 문제가 되므로 apache에서 해결 방법이 있을 것이라고 생각하고 자료를 찾아봤다. 이와 관련된 문제와 해결 방법은 무수히 많았지만 정작 해결이 되는 자료는 찾을 수 없었다. 찾았던 정보 중에 도움이 될만한  것들을 링크하고 싶지만 다시 찾으려니 못찾겠다. 구글에서 &quot;http chunked proxy&quot;와 같은 키워드들로 검색하면 무지하게 나온다. 그중 그나마 기억에 남아있는 것 몇가지만 아래에 언급하려고 한다.</p>
+
+<p>일단 nginx를 web 서버로 사용하는 경우라면 <a href="http://serverfault.com/a/408131">Enabling Chunked Uploading in Nginx</a>를 참고하면 해결이 될지도 모르겠다. nginx는 현재 사용을 검토중이고 서비스 서버에 적용되지 않은 상황이라 적용해서 테스트해보지는 못했다.</p>
+
+<p>내가 사용하는 apache에 대해서는 해결 방법을 찾지는 못했지만 관련된 bug report가 된 것이 있었다. <a href="https://bz.apache.org/bugzilla/show_bug.cgi?id=55475">mod_proxy breaks HTTP chunked transfer coding</a>. 사실 정확히 동일한 문제는 아니지만 mod_proxy와 관련이 있어서 내용을 봤다. 2.4.8버전에 수정되었다는 말이 있어서 apache도 버전업해서 확인 했지만 도움이 되지는 못했다. php-fpm을 사용하면서 mod_proxy_fcgi를 사용하고 있는데 여기에 문제인 것으로 추정만 하고 있다.</p>
+
+<p><a href="https://gnunet.org/book/export/html/1932">Configuring HTTP(S) reverse proxy functionality using Apache or nginx</a>라는 글도 있으나 역시 도움이 되지 않았다.</p>
+
+<p>그 외에도 무수히 많은 자료를 봤지만 대부분 SenEnv를 사용해서 인자를 넘겨주는 방법들을 제시했는데 모두 해결에 도움이 되지 않았다. 결국 내 서버를 수정하는 것은 방법이 없다는 결론을 내리고 ACRA에 다시 요청했다.</p>
+
+<p>요청 내용은 이렇다.</p>
+
+<blockquote>
+<p><code>setChunkedStreamingMode</code>를 사용하는 것은 proxy 상황에서 정상적인 동작을 하지 않는 웹 서버들이 많으니 <code>setFixedLengthStreamingMode</code> 함수로 교체하는 것이 어떠냐?</p>
+</blockquote>
+
+<p>사실 ACRA의 경우는 소스를 보면 굳이 <code>setChunkedStreamingMode</code>를 사용할 필요는 없다. 전송할 내용을 미리 다 생성해 놓았기 때문에 길이를 알 수 있는 상황이기 때문이다. 따라서 <code>setFixedLengthStreamingMode</code>를 사용해도 되며 실제로 테스트 결과 정상적으로 값을 받을 수 있었다. 가급적 ACRA를 custom해서 사용하는 것은 피하고 싶으므로 이 요구를 ACRA 측에서 받아들여 줬으면 한다.</p>
+
+<p>마지막으로 <code>setChunkedStreamingMode</code>와 <code>setFixedLengthStreamingMode</code>에 관련된 내용은 <a href="https://byunsooblog.wordpress.com/2013/03/26/urlconnection-httpurlconnection/">URLConnection &amp; HttpURLConnection</a>에서 <code>HttpURLconnection</code>를 설명하는 과정에 나와있다.</p>
+
+<p>내용을 일부를 발췌하여 아래에 추가해 둔다.</p>
+
+<blockquote>
+<p><strong>Posting Content</strong></p>
+
+<p>데이터를 웹 서버로 보내기 위해, setDoOutput(true)를 써서 커넥션을 구성한다.</p>
+
+<p>setFixedLengthStreamingMode(int),setChunkedStreamingMode(int)</p>
+
+<ul>
+<li>좋은 성능을 위해서, 이 둘 중 하나의 함수를 불러야 한다.</li>
+<li>setFixedLengthStreamingMode() : body의 길이를 미리 알고있을때 쓴다.</li>
+<li>setChunkedStreamingMode(int) : body의 길이를 모를 때 쓴다.</li>
+<li>안그러면 HttpURLConnection은 전송되기전에 완성된 request body를 메모리 buffer에 넣도록 강요된다.
+
+<ul>
+<li>이건 heap을 낭비하는 일이고 지연시간을 늘리는 일이다.</li>
+</ul></li>
+</ul>
+</blockquote>
+
+<p>첨언 : 방금 ACRA 측의 답변을 받았다. 다행히 나의 요구사항을 수용해서 패치를 완료했단다. <a href="https://github.com/ACRA/acra/pull/318">Configuring request length instead of using chunked streaming mode.</a></p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-27T14:23:28+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.27</time>
         
            | <a href="/2015/10/27/kakaotalk-share-link-with-requirejs-error/#disqus_thread" itemprop="discussionUrl"
@@ -1343,68 +1426,6 @@ Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-20T09:08:30+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.20</time>
-        
-           | <a href="/2015/10/20/ios-9-xcode-you-must-rebuild-it-with-bitcode-enabled/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/20/ios-9-xcode-you-must-rebuild-it-with-bitcode-enabled/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/20/ios-9-xcode-you-must-rebuild-it-with-bitcode-enabled/" itemprop="url">Xcode 7 - You must rebuild it with bitcode enabled 오류 해결</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>Xcode 7에서 빌드시 아래와 같은 오류가 날 수 있다.</p>
-
-<figure class='code notranslate'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ld: '/Volumes/Data/work/ios/bang9/Pods/GoogleMaps/Frameworks/GoogleMaps.framework/GoogleMaps(GMSCachedTile.o)' does not contain bitcode. You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE), obtain an updated library from the vendor, or disable bitcode for this target. for architecture armv7
-</span><span class='line'>clang: error: linker command failed with exit code 1 (use -v to see invocation)</span></code></pre></td></tr></table></div></figure>
-
-<p>내용을 확인해 보니 Xcode 7부터는 <a href="https://developer.apple.com/library/prerelease/watchos/documentation/IDEs/Conceptual/AppDistributionGuide/AppThinning/AppThinning.html#//apple_ref/doc/uid/TP40012582-CH35-SW2">Bitcode</a>가 기본적으로 enabled 되어 있다는 것이다.</p>
-
-<p><a href="http://blog.kollus.com/?p=1252">iOS9 출시에 따른 개발자 대응 방안</a>에 보면 Bitcode에 대해 설명되어 있다.</p>
-
-<blockquote>
-<p>iOS9 에서 LLVM Compiler에서 Bitcode를 생성을 지원한다. Bitcode를 사용하는 경우 AppStore에서 필요한 경우에 해당 코드를 사용하여 다시 최적화 된 바이너리를 생성하여 End user에게 전송해 주는 역할을 담당한다.
-Xcode에서 Bitcode를 포함한 iOS 앱을 AppStore로 전송하면, AppStore 내에서 사용자의 디바이스에 따라 최적화된 바이너리를 다시 빌드하는 과정을 거친다. 따라서, Bitcode가 적용된 앱을 앱스토어로 전송한 경우 개발자는 추후 새롭게 출시되는 디바이스의 특성에 따라 다시 빌드하는 수고를 덜어줄 것으로 예상된다.</p>
-</blockquote>
-
-<p>결론은 가장 쉽게 해결하는 방법은 Bitcode를 Disabled로 변경하면된다.</p>
-
-<p>프로젝트를 선택한 후 Build Settings 탭에서 bitcode로 검색하면 해당 항목을 찾을 수 있다. 여기서 값을 NO로 변경하면 된다. 찾기가 어렵다면 위 링크에 스샷으로 설명해주고 있으니 참고 바란다. 그리고 혹시 예전에 생성했던 프로젝트라면 해당 설정이 없을 수 있다. 그렇다면 <a href="http://theeye.pe.kr/archives/2501">iOS9 ENABLE_BITCODE 설정을 찾을 수 없을 때 강제 추가하기</a>를 참고해서 강제로 추가하면 된다.</p>
-
-<p>그런데 나의 경우는 GoogleMaps에서 문제가 발생한 경우다. 그래서 Bitcode를 Enabled 상태로 문제를 해결하는 방법을 찾고 싶었다. 그래서 조금 더 찾아보니 Google SDK to 1.10.2+ 이상을 사용하면 된다는 내용을 찾았다. 하지만 내가 사용하던 버전은 1.10.3이었다. 그래도 혹시나 싶어 cocoapod에서 업데이트 했더니 1.10.4로 업데이트가 되었다. 그래서 다시 빌드 시도. 그런데 결과는 역시나 동일한 오류가 난다.</p>
-
-<p><a href="https://code.google.com/p/gmaps-api-issues/issues/detail?id=8219">gmaps-api-issues - Bitcode Build</a>에 보면 관련된 이슈가 진행중이다. 이 문제는 해당 라이브러리에서 지원해야만 해결할 수 있는 문제로 구글에서 패치가 될 때까지는 Bitcode를 Disabled 상태로 사용할 수 밖에 없다. 하지만 곧 해결될 것이라고 생각한다.</p>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1477,7 +1498,7 @@ Xcode에서 Bitcode를 포함한 iOS 앱을 AppStore로 전송하면, AppStore �
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (38)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (15)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (8)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (38)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (15)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (9)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1486,6 +1507,8 @@ Xcode에서 Bitcode를 포함한 iOS 앱을 AppStore로 전송하면, AppStore �
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/12/16/how-can-i-prevent-mail-from-being-classified-as-spam/">발송 메일을 스팸으로 분류되지 않도록 개선하는 법</a>
+    
     <a class="list-group-item " href="/2015/12/16/delta-rpm/">Yum Delta RPM 사용하기</a>
     
     <a class="list-group-item " href="/2015/12/15/android-app-finish/">안드로이드 앱 종료 방법</a>
@@ -1493,8 +1516,6 @@ Xcode에서 Bitcode를 포함한 iOS 앱을 AppStore로 전송하면, AppStore �
     <a class="list-group-item " href="/2015/12/10/realm/">안드로이드 Realm 0.82.2 -> 0.86.0 버전업</a>
     
     <a class="list-group-item " href="/2015/12/10/linux-login-error-with-selinux-enforcing/">selinux enforcing 후 로그인이 되지 않을 때 복구 방법(CentOS 7)</a>
-    
-    <a class="list-group-item " href="/2015/12/09/centos-7-create-sftp-only-user/">sftp-only 사용자 추가 (CentOS 7)</a>
     
   </div>
 </section>

@@ -139,6 +139,150 @@
 
 
 
+<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-13T16:53:54+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.13</time>
+        
+           | <a href="/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/#disqus_thread" itemprop="discussionUrl"
+             data-disqus-identifier="http://blog.asamaru.net/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/">Comments</a>
+        
+      </p>
+    
+    
+      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/" itemprop="url">java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류 해결</a></h2>
+    
+  </header>
+
+
+  <div class="entry-content clearfix" itemprop="articleBody description"><p>안드로이드 Fragment 작업 중에 <code>java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</code> 오류가 발생했다. 상황은 이렇다. Fragment를 가진 Activity에서 새로운 Activity를 띄우고 해당 Activity에서 <code>setResult</code>를 통해 값을 반환했다. 새로운 Activity를 열었던 Activity에서는 <code>protected void onActivityResult(int requestCode, int resultCode, Intent intent)</code>를 통해 값을 전달 받아 새로운 Fragment를 불렀다. 그런데 위 오류가 난다. 아래는 작성했던 코드의 일부를 예시를 위해 수정한 것이다(실행가능한 코드가 아니다).</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
+</span><span class='line'>              <span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
+</span><span class='line'>              <span class="o">.</span><span class="na">commit</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>관련된 정보를 찾아보니 아래와 같은 문서들이 보였다.</p>
+
+<ul>
+<li><a href="http://binsolb.tistory.com/entry/javalangIllegalStateException-Can-not-perform-this-action-after-onSaveInstanceState">java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</a></li>
+<li><a href="http://www.kmshack.kr/2013/08/fragment-%ED%8C%8C%ED%97%A4%EC%B9%98%EA%B8%B0-3-fragmentmanager-fragmenttransaction%EC%97%90-%EB%8C%80%ED%95%B4%EC%84%9C/">Fragment 파헤치기 – 3. FragmentManager, FragmentTransaction에 대해서</a></li>
+</ul>
+
+<p><strong>간단히 요약하자면 <code>commit()</code> 대신 <code>commitAllowingStateLoss()</code>을 사용하면 된다.</strong> 원인에 대해서는 위의 글들을 참고하면 상세히 설명되어 있다. 그래서 고쳐진 코드는 다음과 같다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
+</span><span class='line'>              <span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
+</span><span class='line'>              <span class="o">.</span><span class="na">commitAllowingStateLoss</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>안드로이드는 이런 문제들에 대해서 알아서 좀 대응할 수 없는건가? 아쉽다.
+그런데 함수 이름에도 나와 있는 것 처럼 <code>commitAllowingStateLoss()</code>를 사용하면 상태값을 잃을 수 있다.</p>
+
+<p><a href="http://developer.android.com/intl/ko/reference/android/app/FragmentTransaction.html#commitAllowingStateLoss%28%29">FragmentTransaction 메뉴얼</a>에 아래와 같이 나와있다.</p>
+
+<blockquote>
+<p>public abstract int commitAllowingStateLoss ()</p>
+
+<p>Like commit() but allows the commit to be executed after an activity&#39;s state is saved. This is dangerous because the commit can be lost if the activity needs to later be restored from its state, so this should only be used for cases where it is okay for the UI state to change unexpectedly on the user.</p>
+</blockquote>
+
+<p><code>commitAllowingStateLoss()</code>를 사용하지 않고 해결하는 방법은 없을까? 생각해보면 실행되는 시점의 문제이므로 시점을 조금 지연하는 방법을 쓸 수도 있다.</p>
+
+<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Handler</span> <span class="n">handler_</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Handler</span><span class="o">(</span><span class="n">Looper</span><span class="o">.</span><span class="na">getMainLooper</span><span class="o">());</span>
+</span><span class='line'>        <span class="n">handler_</span><span class="o">.</span><span class="na">postDelayed</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>            <span class="nd">@Override</span>
+</span><span class='line'>            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>                <span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
+</span><span class='line'>                <span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
+</span><span class='line'>                        <span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
+</span><span class='line'>                        <span class="o">.</span><span class="na">commitAllowingStateLoss</span><span class="o">();</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>        <span class="o">},</span> <span class="mi">0</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+<p>위 코드를 보면 Handler의 <code>postDelayed()</code> 함수를 사용해서 처리시점을 지연시켰다(사실 시간은 0이므로 작업을 잠시 뒤로 미룬것이다). 이렇게 해도 위 오류는 발생하지 않는다.</p>
+
+<p>어떤 방법이 맞는지에 대해서는 아직은 정확히 모르겠다(이렇게하면 상태를 잃어버리는 것과 무관해 지는지 명확하지 않다는 뜻이다). 선택은 자유다.</p>
+</div>
+  
+  
+
+
+        </article>
+      
+      
+        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+          
+  <header class="page-header">
+    
+      <p class="meta text-muted text-uppercase">
+        
+
+
+
+
+
+
+
+
+
+
+
+
 <span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-13T14:38:25+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.13</time>
         
            | <a href="/2015/10/13/octopress-github-flavored-markdown-redcarpet/#disqus_thread" itemprop="discussionUrl"
@@ -1083,53 +1227,6 @@
 
         </article>
       
-      
-        <article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-          
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-10-08T11:41:12+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.10.08</time>
-        
-           | <a href="/2015/10/08/change-xcode-project-app-name/#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net/2015/10/08/change-xcode-project-app-name/">Comments</a>
-        
-      </p>
-    
-    
-      <h2 class="entry-title" itemprop="name headline"><a href="/2015/10/08/change-xcode-project-app-name/" itemprop="url">Xcode 프로젝트 앱 이름 변경</a></h2>
-    
-  </header>
-
-
-  <div class="entry-content clearfix" itemprop="articleBody description"><p>앱 이름 변경</p>
-
-<ol>
-<li>xxx-Info.plist 선택</li>
-<li>Bundle display name 선택</li>
-<li>새로운 이름으로 변경</li>
-<li>끝</li>
-</ol>
-</div>
-  
-  
-
-
-        </article>
-      
     </div>
 
     <ul class="pager">
@@ -1202,7 +1299,7 @@
     <h3 class="panel-title">Categories</h3>
   </div>
   
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (38)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (15)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (9)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
+  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (39)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (15)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (10)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
 </section>
 <section class="panel panel-default">
   <div class="panel-heading">
@@ -1211,6 +1308,8 @@
   
   <div id="recent_posts" class="list-group">
     
+    <a class="list-group-item " href="/2015/12/17/charles-android-ssl-proxy/">Charles를 이용한 안드로이드 SSL Proxy</a>
+    
     <a class="list-group-item " href="/2015/12/16/how-can-i-prevent-mail-from-being-classified-as-spam/">발송 메일을 스팸으로 분류되지 않도록 개선하는 법</a>
     
     <a class="list-group-item " href="/2015/12/16/delta-rpm/">Yum Delta RPM 사용하기</a>
@@ -1218,8 +1317,6 @@
     <a class="list-group-item " href="/2015/12/15/android-app-finish/">안드로이드 앱 종료 방법</a>
     
     <a class="list-group-item " href="/2015/12/10/realm/">안드로이드 Realm 0.82.2 -> 0.86.0 버전업</a>
-    
-    <a class="list-group-item " href="/2015/12/10/linux-login-error-with-selinux-enforcing/">selinux enforcing 후 로그인이 되지 않을 때 복구 방법(CentOS 7)</a>
     
   </div>
 </section>

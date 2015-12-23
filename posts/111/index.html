@@ -103,88 +103,40 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/08/28/octopress-category-list-plugin-install/">
-								옥토프레스 category list 플러그인 설치
+							<a class="title" href="http://blog.asamaru.net/2015/08/30/phpstorm8-phpunit-install/">
+								phpstorm8 phpunit 설치
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/08/28/octopress-category-list-plugin-install/">2015.08.28.</span></a>
+								<a href="http://blog.asamaru.net/2015/08/30/phpstorm8-phpunit-install/">2015.08.30.</span></a>
 							</p>
 						</header>
 						<p>
 							
-							<p>이번엔 옥토프레스에 category list 플러그인을 추가해 보았다.</p>
+							<p>phpstorm8 phpunit 세팅법</p>
 
-<p>사실 현재 시점에서 쓰고 있는 테마를 선택한 이유가 우측에 나오는 카테고리 목록이었다. 그런데 막상 테마를 설치한 후에도 카테고리 목록이 보이지 않았다. 처음엔 설정이 누락되어서 그렇다고 생각했고 시간이 없어서 그냥 두다가 오늘에서야 추가를 하고자 확인해 봤다.</p>
-
-<p>현재 시점에 사용하고 있는 테마는 <a href="&quot;https://github.com/kAworu/octostrap3&quot;">octostrap3</a>다. 해당 소스를 뒤져서 aside에 추가하는 부분은 찾았으나 테마엔 그 파일이 없었다. 그럼 이사람은 없는 파일을 어떻게 불러서 쓴단 말인가?</p>
-
-<p>알아보니 별도 플러그인을 추가해야만 했다.
-https://github.com/ctdk/octopress-category-list
-현재 내가 적용한 플러그인이다. 최근 업데이트가 시점이 오래되어 조금 미심쩍지만 대안이 없다.</p>
-
-<p>일단 설명이 된대로 소스를 받아서 안내하는 경로에 집어 넣었다.
-그리고 octostrap3에서 사용하던것 처럼 _config.xml 파일에 추가 했다.일단 사이드 영역에 “custom/asides/category_list.html”를 추가.</p>
-
-<blockquote>
-  <p>default_asides: [asides/recent_posts.html, custom/asides/category_list.html, asides/github.html, asides/delicious.html, asides/pinboard.html, asides/googleplus.html]</p>
-</blockquote>
-
-<p>그리고는 정상적으로 적용이 되는지 확인.</p>
+<ul>
+  <li>PHPStorm</li>
+  <li>preferences &gt; php &gt; phpunit &gt; + &gt; By remote interpreter</li>
+  <li>remote server 추가 : ssh로 접속 설정</li>
+  <li>path to phpunit.phar 선택 &gt; path to phpunit.phar : /czdev/vagrant/work/phpunit.phar</li>
+  <li>Default configuration file : /home/web/makeus/CZFramework/tests/phpunit.xml</li>
+  <li>
+    <p>Default bootstrap file : /home/web/makeus/CZFramework/tests/bootstrap.php</p>
+  </li>
+  <li>해당 서버에서 작업 : 로컬 경로와 서버의 경로가 같아야 실행에 문제가 없음</li>
+</ul>
 
 <figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
 4
-5
-6
-7
-8</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>rake generate
-<span class="c">## Generating Site with Jekyll</span>
-Configuration file: /Volumes/Data/DropBox/blog/_config.yml
-            Source: <span class="nb">source</span>
-<span class="nb">       </span>Destination: public/blog
-      Generating...
-  Liquid Exception: undefined method <span class="sb">`</span>+<span class="s1">&#39; for nil:NilClass in _layouts/page.html</span>
-<span class="s1">jekyll 2.5.3 | Error:  undefined method `+&#39;</span> <span class="k">for</span> nil:NilClass
+5</pre></div></td><td class="code"><div class="highlight"><pre>su -
+<span class="nb">cd</span> /
+mkdir /czdev/vagrant/work/ : 로컬과 같은 경로 생성
+wget https://phar.phpunit.de/phpunit.phar
+ln -s /home/web ./ : 로컬 소스 경로 맞춤
 </pre></div>
 </td></tr></table></code></pre></div></figure>
-
-<p>하지만 오류.. 이런.. 불친절하게 어디가 문제인지 명확히 알려주지 않는다. 무작정 소스를 봤다. ruby를 아예 모르는 관계로 봐도 모르겠다. 하지만 nil 오류라고 하니 값이 없는 것이 문제라는 생각에 의심되는 부분들을 보다가 발견한 부분..</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
-  <span class="n">lists</span> <span class="o">=</span> <span class="p">{}</span>
-  <span class="n">max</span><span class="p">,</span> <span class="n">min</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="n">config</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">registers</span><span class="o">[</span><span class="ss">:site</span><span class="o">].</span><span class="n">config</span>
-  <span class="n">category_dir</span> <span class="o">=</span> <span class="n">config</span><span class="o">[</span><span class="s1">&#39;root&#39;</span><span class="o">]</span> <span class="o">+</span> <span class="n">config</span><span class="o">[</span><span class="s1">&#39;category_dir&#39;</span><span class="o">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span>
-  <span class="n">categories</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">registers</span><span class="o">[</span><span class="ss">:site</span><span class="o">].</span><span class="n">categories</span>
-  <span class="n">categories</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">sort_by</span><span class="p">{</span> <span class="o">|</span><span class="n">str</span><span class="o">|</span> <span class="n">str</span><span class="o">.</span><span class="n">downcase</span> <span class="p">}</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">category</span><span class="o">|</span>
-    <span class="n">count</span> <span class="o">=</span> <span class="n">categories</span><span class="o">[</span><span class="n">category</span><span class="o">].</span><span class="n">count</span>
-    <span class="n">lists</span><span class="o">[</span><span class="n">category</span><span class="o">]</span> <span class="o">=</span> <span class="n">count</span>
-    <span class="n">max</span> <span class="o">=</span> <span class="n">count</span> <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="n">max</span>
-  <span class="k">end</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>여기서 config[‘root’] 이 부분이 문제 였다. 내 _config.xml 파일에서는 “root:” 부분을 비워두었다. 하위 폴더를 사용하지 않기 때문에. 여기에 값이 없어서 오류. 그래서 “root: /”로 수정.</p>
-
-<p>다시 시도.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>rake generate
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>이젠 된다. 카테고리 목록도 잘 나온다.</p>
-
 
 							
 						</p>
@@ -192,8 +144,8 @@ Configuration file: /Volumes/Data/DropBox/blog/_config.yml
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/08/28/octopress-category-list-plugin-install/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/08/28/octopress-category-list-plugin-install/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/08/30/phpstorm8-phpunit-install/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/08/30/phpstorm8-phpunit-install/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

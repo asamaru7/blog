@@ -103,43 +103,52 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/">
-								selinux + PHP : Session Permission denied 오류
+							<a class="title" href="http://blog.asamaru.net/2015/12/02/nginx-414-request-uri-too-large/">
+								Nginx : 414 Request-URI Too Large 오류
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/">2015.12.02.</span></a>
+								<a href="http://blog.asamaru.net/2015/12/02/nginx-414-request-uri-too-large/">2015.12.02.</span></a>
 							</p>
 						</header>
 						<p>
 							
-							<p>서버를 새로 세팅하면서 CentOS 7에서 selinux와 함께 PHP 5.6을 설치했다. 기존에는 selinux를 사용하지 않도록 했었는데 이번에는 사용하도록 설정해서 설치를 완료했다. 그런데 세션을 사용하려고 <code>session_start();</code>를 하면 아래와 유사한 오류가 발생했다.</p>
+							<p>Nginx를 사용하는 중에 아주 긴 URL의 요청이 들어올 경우 <code>414 Request-URI Too Large</code> 오류가 나는 경우가 있다. 이는 말 그대로 URL 요청이 제한된 길이보다 길기 때문에 오류가 발생하는 것이다. 일반적인 웹 서버들은 8kb를 최대 길이로 설정되어 있는 것이 보통이다. 실제로 Nginx의 경우도 기본은 8kb이다. 하지만 URL의 길이는 서버에서 받아주는 길이도 관련이 있지만 웹 브라우저에서도 제한이 있다. 예를들어 오래된 브라우저들은 2kb 가량의 제한이 있다. 하지만 최신 브라우저들은 8kb로 제한하는 것으로 알고 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">FastCGI sent in stderr: "PHP message: PHP Warning: session_start(): open(/var/lib/php/session/sess_sk456vdemnp391spiv3i622i96, O_RDWR) failed: Permission denied
-</code></pre></div></figure>
+<p>하지만 나의 경우는 이 값을 1kb로 설정해 둔 상태로 조금 긴 Url에서 해당 오류가 발생했다. 그래서 2kb로 늘려 두었다.</p>
 
-<p>당연히 원인은 selinux이다. selinux가 적용된 상태라면 아무리 777 권한을 부여해도 접근을 할 수 없다. 그 해결법은 <a href="http://stackoverflow.com/a/33030627">(nginx/selinux) Permission denied error for sessions but files are created</a>에 잘 설명되어 있다.</p>
+<p>그러면 Nginx에서는 이 값을 어떻게 조정할 수 있을까? 바로 <a href="http://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers">large_client_header_buffers</a>를 사용하면 된다. 예를들면 아래와 같이 사용한다(디폴트 값을 예시로 넣었다).</p>
 
-<p>결과적으로 아래의 방법을 통해 문제를 해결할 수 있다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-nginx"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
-3
-4
-5
-6
-7
-8</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>mkdir /var/lib/php/session
-<span class="nv">$ </span>mkdir /var/lib/php/wsdlcache
-<span class="nv">$ </span>chmod <span class="m">777</span> /var/lib/php/session /var/lib/php/wsdlcache
-
-<span class="nv">$ </span>restorecon -v <span class="s2">&quot;/var/lib/php/session&quot;</span>
-<span class="nv">$ </span>semanage fcontext -a -t httpd_sys_rw_content_t /var/lib/php/session
-<span class="nv">$ </span>restorecon -v <span class="s2">&quot;/var/lib/php/wsdlcache&quot;</span>
-<span class="nv">$ </span>semanage fcontext -a -t httpd_sys_rw_content_t /var/lib/php/wsdlcache
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">http</span> <span class="p">{</span>
+  <span class="kn">large_client_header_buffers</span> <span class="mi">4</span> <span class="mi">8k</span><span class="p">;</span>
+<span class="p">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>mkdir과 chmod는 필요 없을 수 있다. 나의 경우는 아예 폴더도 만들어져 있지 않아서 폴더를 생성하고 권한도 함께 지정했다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-nginx"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">http</span> <span class="p">{</span>
+  <span class="kn">server</span> <span class="p">{</span>
+    <span class="kn">large_client_header_buffers</span> <span class="mi">4</span> <span class="mi">8k</span><span class="p">;</span>    
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p><a href="http://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers">공식 메뉴얼</a>에는 아래와 같이 설명되어 있다.</p>
+
+<blockquote>
+  <p>Syntax: large_client_header_buffers number size;
+Default: large_client_header_buffers 4 8k;
+Context: http, server</p>
+</blockquote>
+
+<p>Sets the maximum number and size of buffers used for reading large client request header. A request line cannot exceed the size of one buffer, or the 414 (Request-URI Too Large) error is returned to the client. A request header field cannot exceed the size of one buffer as well, or the 400 (Bad Request) error is returned to the client. Buffers are allocated only on demand. By default, the buffer size is equal to 8K bytes. If after the end of request processing a connection is transitioned into the keep-alive state, these buffers are released.</p>
+
+<p>여기서 조금 애매한 부분이 number 값인데 명확히 어떤 역할인지를 아직 잘 모르겠다. 찾아보니 number * size가 최대 사이즈라고 하는데 테스트 해보니 그건 아닌 것 같다(number가 2이고 size가 1k인 상황에서 1024자를 넘어가니 414 오류가 발생했다).</p>
 
 							
 						</p>
@@ -147,8 +156,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/12/02/nginx-414-request-uri-too-large/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/12/02/nginx-414-request-uri-too-large/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

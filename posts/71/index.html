@@ -103,102 +103,23 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/">
-								ACRA : Please configure 'buildConfigClass' in your ACRA config 오류
+							<a class="title" href="http://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/">
+								리눅스에서 swap 메모리 초기화
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/">2015.10.01.</span></a>
+								<a href="http://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/">2015.10.02.</span></a>
 							</p>
 						</header>
 						<p>
 							
-							<p><a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a> 포스트에서 언급했던 것처럼 개발 중인 앱에서 Crash Report를 위해 <a href="https://github.com/ACRA/acra">ACRA</a>를 사용중이다. 아직 4.7.0으로 정식 버전업이 되지는 않았지만 4.7.0 RC1 버전이 maven에 올려져 있어서 적용해 보았다.
-사실은 미리 적용할 예정은 없었으나 <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>와 관련하여 Gradle을 2.4로 버전업 하면서 release 빌드 시에 다른 오류(setLatestEventInfo 함수가 제거됨)가 나타나서 어쩔 수 없이 버전업을 해야했다.</p>
+							<p>리눅스에서 swap 메모리를 초기화하는 것은 아주 간단하다.
+일시적 메모리 사용의 증가로 swap을 사용하게될 경우 메모리에 여유가 생겨도 swap 메모리는 자동으로 초기화되지 않는다. 이것을 수동으로 초기화하려면 아래의 명령을 입력하면 된다. 당연히 root 권한에서 실행해야 한다.</p>
 
-<p>그런데 버전업을하고 나서 Crash 테스트를 하는 도중 또 다른 오류를 만났다. 기존에도 오류가 나고 있었는지 버전업 후의 문제인지는 확실치는 않다. 안드로이드 작업은 끝없는 오류 해결의 연속인 듯하다. 오류는 아래와 같다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">E</span><span class="o">/</span><span class="nl">ACRA:</span> <span class="n">Not</span> <span class="n">adding</span> <span class="n">buildConfig</span> <span class="n">to</span> <span class="n">log</span><span class="o">.</span> <span class="n">Class</span> <span class="n">Not</span> <span class="n">found</span> <span class="o">:</span> <span class="n">net</span><span class="o">.</span><span class="na">yourdomain</span><span class="o">.</span><span class="na">BuildConfig</span><span class="o">.</span> <span class="n">Please</span> <span class="n">configure</span> <span class="err">&#39;</span><span class="n">buildConfigClass</span><span class="err">&#39;</span> <span class="n">in</span> <span class="n">your</span> <span class="n">ACRA</span> <span class="n">config</span>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>swapoff -a <span class="o">&amp;&amp;</span> swapon -a
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>우선 ACRA를 초기화하는 코드를 살펴보자. 당연하지만 실제 적용코드가 아닌 부분적으로 정리된 코드다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">ACRAConfiguration</span> <span class="n">config</span> <span class="o">=</span> <span class="n">ACRA</span><span class="o">.</span><span class="na">getNewDefaultConfig</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
-<span class="n">config</span><span class="o">.</span><span class="na">setFormUri</span><span class="o">(</span><span class="s">&quot;http://dev.yourdomain.net/AppCrash&quot;</span><span class="o">);</span>
-<span class="n">ACRA</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span> <span class="c1">// The following line triggers the initialization of ACRA</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>@ReportsCrashes 어노테이션을 사용하지 않고 동적으로 초기화시켜주는 코드다. 실제로 Crash를 발생시키면 위에서 보여준 오류가 난다. 사실 이 문제는 원인을 확인한 결과 Proguard가 적용되었을 때만 오류가 발생한다. 아래의 ACRA 소스 코드의 일부를 보자.</p>
-
-<p><strong><a href="https://github.com/ACRA/acra/blob/master/src/main/java/org/acra/collector/CrashReportDataFactory.java">CrashReportDataFactory.java</a></strong></p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">private</span> <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">getBuildConfigClass</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">ClassNotFoundException</span> <span class="o">{</span>
-    <span class="kd">final</span> <span class="n">Class</span> <span class="n">configuredBuildConfig</span> <span class="o">=</span> <span class="n">ACRA</span><span class="o">.</span><span class="na">getConfig</span><span class="o">().</span><span class="na">buildConfigClass</span><span class="o">();</span>
-    <span class="k">if</span> <span class="o">((</span><span class="n">configuredBuildConfig</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">configuredBuildConfig</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">Object</span><span class="o">.</span><span class="na">class</span><span class="o">))</span> <span class="o">{</span>
-        <span class="c1">// If set via annotations or programatically then it will have a real value,</span>
-        <span class="c1">// otherwise it will be Object.class (annotation default) or null (explicit programmatic).</span>
-        <span class="k">return</span> <span class="n">configuredBuildConfig</span><span class="o">;</span>
-    <span class="o">}</span>
-
-    <span class="kd">final</span> <span class="n">String</span> <span class="n">className</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getPackage</span><span class="o">().</span><span class="na">getName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;.BuildConfig&quot;</span><span class="o">;</span>
-    <span class="k">try</span> <span class="o">{</span>
-        <span class="k">return</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="n">className</span><span class="o">);</span>
-    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ClassNotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-        <span class="n">ACRA</span><span class="o">.</span><span class="na">log</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">LOG_TAG</span><span class="o">,</span> <span class="s">&quot;Not adding buildConfig to log. Class Not found : &quot;</span> <span class="o">+</span> <span class="n">className</span> <span class="o">+</span> <span class="s">&quot;. Please configure &#39;buildConfigClass&#39; in your ACRA config&quot;</span><span class="o">);</span>
-        <span class="k">throw</span> <span class="n">e</span><span class="o">;</span>
-    <span class="o">}</span>
-<span class="o">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p><code>final String className = context.getClass().getPackage().getName() + ".BuildConfig";</code> 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
-해결을 위한 아래의 코드를 보자.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">ACRAConfiguration</span> <span class="n">config</span> <span class="o">=</span> <span class="n">ACRA</span><span class="o">.</span><span class="na">getNewDefaultConfig</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
-<span class="n">config</span><span class="o">.</span><span class="na">setBuildConfigClass</span><span class="o">(</span><span class="n">BuildConfig</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-<span class="n">config</span><span class="o">.</span><span class="na">setFormUri</span><span class="o">(</span><span class="s">&quot;http://dev.yourdomain.net/AppCrash&quot;</span><span class="o">);</span>
-<span class="n">ACRA</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span> <span class="c1">// The following line triggers the initialization of ACRA</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p><code>config.setBuildConfigClass(BuildConfig.class);</code> 이 부분을 추가했다. ACRA 코드에서 보듯이 setBuildConfigClass로 직접 BuildConfig를 넘겨주면 패키지명으로 찾지 않는다. 따라서 Proguard가 적용되어도 문제가 없다.</p>
-
-<hr />
-
-<p>이 오류는 이것으로 해결이 가능하다. 하지만 나는 지금 다른 문제로 다시 고군분투 중이다.
-오류 발생시 HTTP/POST를 통해 오류 관련 정보를 전송하도록 사용중이었다. 그런데 앞서 이야기 한것과 같이 이번에 버전업이 되면서 HTTP 접속 관련 부분이 변경되었다. 여기에 문제가 있다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">...</span>
-<span class="n">urlConnection</span><span class="o">.</span><span class="na">setChunkedStreamingMode</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
-<span class="o">...</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>위 부분은 ACRA에서 HTTP 전송시 사용하는 HttpRequest.java 의 일부분이다. <code>setChunkedStreamingMode</code>에 대해서는 여기서 설명하기엔 너무 길고 간단히 요약하자면 chunked 상태로 데이터가 전송된다.
-그런데 이 상태로 전송되면 현재 내가 사용하고 있는 서버에서 POST 값이 모두 비어 있다. request의 body가 수신되지 못하는 것이다. 이 부분은 나의 환경인 php-fpm가 proxy로 연결되어 있는 것과 관련이 있는 것으로 보인다. 이 부분에 대해서는 여러가지로 시도해 보았으나 해결이 되지 않았고 일단은 몇개의 클래스를 재정의해서 문제를 막아 놓았다. 그리고 관련해서는 ACRA에 Issue로 등록해 두었다. 개선이 될런지는 미지수인데 안된다면 앞으로 사용상에 걸림돌이 될 것 같다. 이 부분에 관련된 해결책이 나온다면 다시 포스팅을 하도록 하겠다.</p>
+<p>swapoff 처리에 시간이 조금 오래 걸릴 수 있는데 서버가 멈춘 것은 아니므로 걱정하지 않아도 된다. swap 메모리에서 필요한 부분을 물리 메모리로 옮기는 처리중인 것이다.</p>
 
 							
 						</p>
@@ -206,8 +127,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

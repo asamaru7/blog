@@ -116,22 +116,37 @@
 
 <p>이렇게 만든 Sub Module에서 가지는 의존성은 <code>dependency</code> 속성을 이용해서 지정한다. 예를들면 아래와 같다.</p>
 
-<p>```ruby ModuleName.podspec
-Pod::Spec.new do |s|
-  s.name     = ‘ModuleName’
-  s.version  = ‘1.0.0’
-  s.license = ‘MIT’
-  s.summary  = ‘ModuleName Summary’
-  s.homepage = ‘https://~~~’
-  s.author   = { ‘ㅇㅇㅇ’ =&gt; ‘nobody@nobody.com’ }
-  s.source   = { :git =&gt; ‘https://~~~/ModuleName.git’, :tag =&gt; s.version }
-  s.ios.deployment_target = ‘8.0’
-  s.source_files = ‘Source/ModuleName/<em>.swift’, ‘ModuleName/**/</em>.swift’
-  s.requires_arc = true</p>
+<p><strong>ModuleName.podspec</strong></p>
 
-<p>s.dependency ‘DependencyModuleName’
-end
-```</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span class="no">Pod</span><span class="o">::</span><span class="no">Spec</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">s</span><span class="o">|</span>
+  <span class="n">s</span><span class="o">.</span><span class="n">name</span>     <span class="o">=</span> <span class="s1">&#39;ModuleName&#39;</span>
+  <span class="n">s</span><span class="o">.</span><span class="n">version</span>  <span class="o">=</span> <span class="s1">&#39;1.0.0&#39;</span>
+  <span class="n">s</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="s1">&#39;MIT&#39;</span>
+  <span class="n">s</span><span class="o">.</span><span class="n">summary</span>  <span class="o">=</span> <span class="s1">&#39;ModuleName Summary&#39;</span>
+  <span class="n">s</span><span class="o">.</span><span class="n">homepage</span> <span class="o">=</span> <span class="s1">&#39;https://~~~&#39;</span>
+  <span class="n">s</span><span class="o">.</span><span class="n">author</span>   <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;ㅇㅇㅇ&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;nobody@nobody.com&#39;</span> <span class="p">}</span>
+  <span class="n">s</span><span class="o">.</span><span class="n">source</span>   <span class="o">=</span> <span class="p">{</span> <span class="ss">:git</span> <span class="o">=&gt;</span> <span class="s1">&#39;https://~~~/ModuleName.git&#39;</span><span class="p">,</span> <span class="ss">:tag</span> <span class="o">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">version</span> <span class="p">}</span>
+  <span class="n">s</span><span class="o">.</span><span class="n">ios</span><span class="o">.</span><span class="n">deployment_target</span> <span class="o">=</span> <span class="s1">&#39;8.0&#39;</span>
+  <span class="n">s</span><span class="o">.</span><span class="n">source_files</span> <span class="o">=</span> <span class="s1">&#39;Source/ModuleName/*.swift&#39;</span><span class="p">,</span> <span class="s1">&#39;ModuleName/**/*.swift&#39;</span>
+  <span class="n">s</span><span class="o">.</span><span class="n">requires_arc</span> <span class="o">=</span> <span class="kp">true</span>
+
+  <span class="n">s</span><span class="o">.</span><span class="n">dependency</span> <span class="s1">&#39;DependencyModuleName&#39;</span>
+<span class="k">end</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
 <p>그런데 이렇게 설정해서 사용할 경우 CocoaPods에서 아래와 같은 오류가 나는 경우가 있다. <strong>항상 발생하는 것이 아니라 Podfile에서 <code>use_frameworks!</code>를 사용할 경우에 발생한다.</strong></p>
 
@@ -142,14 +157,15 @@ end
 
 <p>어쨌든 일단 CocoaPods에서 이 오류가 나지 않도록 하는 방법은 다음과 같다. 부모 프로젝트의 Podfile에 아래와 같이 추가 한다.</p>
 
-<p>  <figure class='code'><figcaption><span></span></figcaption><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+<p><strong>Podfile</strong></p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">pre_install</span> <span class="k">do</span> <span class="o">|</span><span class="n">installer</span><span class="o">|</span>
 	<span class="k">def</span> <span class="nc">installer</span><span class="o">.</span><span class="nf">verify_no_static_framework_transitive_dependencies</span><span class="p">;</span> <span class="k">end</span>
 <span class="k">end</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
-</p>
 
 <p>관련글 : <a href="https://github.com/CocoaPods/CocoaPods/issues/3289">Prevent Transitive Dependency Errors in Swift Project with Vendored Frameworks</a></p>
 

@@ -212,25 +212,25 @@ la /home/gogs
 
 <p>우선 DB를 세팅한다.</p>
 
-<p>root 계정을 설정하는데 필요없다면 하지 않아도 된다. 기존에 DB가 이미 설치되어 있다면 당연히 이 부분이 처리가 되어 있을테니 하지 말자.
-  <figure class='code'><figcaption><span></span></figcaption><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+<p>root 계정을 설정하는데 필요없다면 하지 않아도 된다. 기존에 DB가 이미 설치되어 있다면 당연히 이 부분이 처리가 되어 있을테니 하지 말자.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2</pre></div></td><td class="code"><div class="highlight"><pre>mysqladmin -u root password <span class="s2">&quot;${MYSQL_PASSWORD}&quot;</span>
 mysqladmin -u root --password<span class="o">=</span><span class="s2">&quot;${MYSQL_PASSWORD}&quot;</span> password <span class="s2">&quot;${MYSQL_PASSWORD}&quot;</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
-</p>
 
-<p>하지만 DB는 만들어 줘야 한다.
-  <figure class='code'><figcaption><span></span></figcaption><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>mysql -u root -p<span class="k">${</span><span class="nv">MYSQL_PASSWORD</span><span class="k">}</span> -e <span class="s2">&quot;CREATE DATABASE IF NOT EXISTS ${APP_NAME}; use ${APP_NAME}; set global storage_engine=INNODB;&quot;</span>
+<p>하지만 DB는 만들어 줘야 한다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>mysql -u root -p<span class="k">${</span><span class="nv">MYSQL_PASSWORD</span><span class="k">}</span> -e <span class="s2">&quot;CREATE DATABASE IF NOT EXISTS ${APP_NAME}; use ${APP_NAME}; set global storage_engine=INNODB;&quot;</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
-</p>
 
-<p><strong>예시</strong>
-  <figure class='code'><figcaption><span></span></figcaption><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>mysql -u root -p -e <span class="s2">&quot;CREATE DATABASE IF NOT EXISTS gogs; use gogs; set global storage_engine=INNODB;&quot;</span>
+<p><strong>예시</strong></p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>mysql -u root -p -e <span class="s2">&quot;CREATE DATABASE IF NOT EXISTS gogs; use gogs; set global storage_engine=INNODB;&quot;</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
-</p>
 
 <h3 id="web-ui--">WEB UI를 이용한 설정</h3>
 
@@ -244,38 +244,61 @@ mysqladmin -u root --password<span class="o">=</span><span class="s2">&quot;${MY
 
 <p>이제는 도메인 연결을 할 차례이다.</p>
 
-<p><strong>httpd 2 기준</strong>
-```apacheconf
-&lt;VirtualHost *:80&gt;
-  ServerName your.domain.com</p>
+<p><strong>httpd 2 기준</strong></p>
 
-<p>&lt;IfModule !mod_proxy.c&gt;
-    LoadModule proxy_module modules/mod_proxy.so
-  &lt;/IfModule&gt;
-  &lt;IfModule !proxy_http_module.c&gt;
-    LoadModule proxy_http_module modules/mod_proxy_http.so
-  &lt;/IfModule&gt;</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-apacheconf"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span class="nt">&lt;VirtualHost</span> <span class="s">*:80</span><span class="nt">&gt;</span>
+  <span class="nb">ServerName</span> your.domain.com
 
-<p>ProxyPass / http://localhost:3000/
-  ProxyPassReverse / http://localhost:3000/
-&lt;/VirtualHost&gt;
-```</p>
+  <span class="nt">&lt;IfModule</span> <span class="s">!mod_proxy.c</span><span class="nt">&gt;</span>
+    <span class="nb">LoadModule</span> proxy_module modules/mod_proxy.so
+  <span class="nt">&lt;/IfModule&gt;</span>
+  <span class="nt">&lt;IfModule</span> <span class="s">!proxy_http_module.c</span><span class="nt">&gt;</span>
+    <span class="nb">LoadModule</span> proxy_http_module modules/mod_proxy_http.so
+  <span class="nt">&lt;/IfModule&gt;</span>
+
+  <span class="nb">ProxyPass</span> / http://localhost:3000/
+  <span class="nb">ProxyPassReverse</span> / http://localhost:3000/
+<span class="nt">&lt;/VirtualHost&gt;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
 <p>나의 경우는 apache를 사용중이라 위와 같이 설정하면 되나 nginx를 사용하는 경우라면 아래를 참고하자(packager.io에 안내된 내용이다.).</p>
 
-<p><strong>nginx</strong>
-<code>bash
-cat &gt; /etc/nginx/sites-available/default &lt;&lt;EOF
-server {
-  listen          80;
-  server_name     ${HOSTNAME};
-  location / {
-    proxy_pass      http://localhost:6000;
-  }
-}
-EOF
+<p><strong>nginx</strong></p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td><td class="code"><div class="highlight"><pre>cat &gt; /etc/nginx/sites-available/default <span class="s">&lt;&lt;EOF</span>
+<span class="s">server {</span>
+<span class="s">  listen          80;</span>
+<span class="s">  server_name     ${HOSTNAME};</span>
+<span class="s">  location / {</span>
+<span class="s">    proxy_pass      http://localhost:6000;</span>
+<span class="s">  }</span>
+<span class="s">}</span>
+<span class="s">EOF</span>
 sudo service nginx restart
-</code></p>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
 <h3 id="section-2">서버 시작시 자동시작</h3>
 

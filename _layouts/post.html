@@ -1,0 +1,171 @@
+---
+layout: default
+navbar: Blog
+styles: post.css
+scripts: [post.js]
+---
+<div class="row">
+	<div class="content col-lg-9">
+		<!-- adsense -->
+		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<!-- 블로그 하단 -->
+		<ins class="adsbygoogle"
+			 style="display:block"
+			 data-ad-client="ca-pub-8163803188491150"
+			 data-ad-slot="7841851420"
+			 data-ad-format="auto"></ins>
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>
+		<!-- adsense -->
+
+		<div class="sheet post">
+			<header>
+				<h2>{{ page.title }}</h2>
+				<p class="post-meta">
+					<!--<span class="glyphicon glyphicon-calendar"></span>--> {{ page.date | date: "%Y.%m.%d." }}
+					{% if page.author %} • {{ page.author }}{% endif %}{% if page.meta %} • {{ page.meta }}{%endif %}
+					&nbsp;&nbsp;&nbsp;
+					<span>{% for cat in page.categories %}
+						<a href="{{ '/category' | prepend: site.baseurl | prepend: site.url }}/{{ cat }}/"><span class="glyphicon glyphicon-list"></span>&nbsp;{{cat }}</a>
+					{% endfor %}</span>
+					<span>{% for tag in page.tags %}
+                    <a class="word-keep" href="{{ '/tag' | prepend: site.baseurl | prepend: site.url }}/{{ tag }}/"><span class="glyphicon glyphicon-tags"></span>&nbsp;{{ tag }}</a>
+                    {% endfor %}
+                </span>
+				</p>
+			</header>
+			<hr class="boundary">
+			<article>
+				<!-- Topic of Contents -->
+				<!--
+								<section class="panel panel-default cToc">
+									<div class="panel-heading">
+										<h3 class="panel-title">Topic of Contents</h3>
+									</div>
+									<ul class="list-group">
+										<li class="list-group-item toc">
+										</li>
+									</ul>
+								</section>
+				-->
+
+				{{content}}
+			</article>
+			<hr class="boundary">
+		</div>
+		<div class="pad-min"></div>
+		<div id="post-comment" class="sheet post">
+			<div id="disqus_thread"></div>
+		</div>
+	</div>
+	<div class="content-navigation col-lg-3">
+		<!-- I made it -->
+		<section class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">I made it</h3>
+			</div>
+			<ul class="list-group">
+				<li class="list-group-item"><a href="http://sprite.asamaru.net/" target="_blank">Sprite CSS/Image</a></li>
+				<li class="list-group-item"><a href="http://loan.asamaru.net/" target="_blank">대출이자계산기</a></li>
+				<li class="list-group-item"><a href="http://bookmarklet.asamaru.net/" target="_blank">북마클릿 생성기</a></li>
+			</ul>
+		</section>
+
+		<!-- Categories -->
+		{% assign categories_list = site.categories %}
+		{% if categories_list != null %}{% if categories_list.size > 0 %}
+		<section class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Categories</h3>
+			</div>
+			<ul class="list-group">
+				{% for category in categories_list %}
+				<li class="list-group-item"><a href="/category/{{ category[0] }}/">{{ category[0] | capitalize }} <span class="badge">{{ category[1].size }}</span></a></li>
+				{% endfor %}
+			</ul>
+		</section>
+		{% endif %}{% endif %}
+		{% assign categories_list = nil %}
+
+		<!-- Tags -->
+		{% assign tags_list = site.tags %}
+		{% if tags_list != null %}{% if tags_list.size > 0 %}
+		<section class="panel panel-default dTags">
+			<div class="panel-heading">
+				<h3 class="panel-title">Tags</h3>
+			</div>
+			<ul class="list-group">
+				<li class="list-group-item">
+					{% for tag in tags_list %}
+					<a href="/tag/{{ tag[0] }}/">{{ tag[0] | capitalize }} <span class="badge">{{ tag[1].size }}</span></a>
+					{% endfor %}
+				</li>
+			</ul>
+		</section>
+		{% endif %}{% endif %}
+		{% assign tags_list = nil %}
+
+		<!-- Related -->
+		{% assign postsAfterFilter = '-' | split: "-" %}
+
+		{% for p in site.posts %}
+		{%if p.url != page.url %}
+		{% assign commonTagCount = 0 %}
+
+		{% for tag in p.tags %}
+		{% if page.tags contains tag %}
+		{% assign commonTagCount = commonTagCount | plus: 1 %}
+		{% endif %}
+		{% endfor %}
+
+		{% for cat in p.categories %}
+		{% if page.categories contains cat %}
+		{% assign commonTagCount = commonTagCount | plus: 1 %}
+		{% endif %}
+		{% endfor %}
+
+		{% if commonTagCount > 0 %}
+		{% assign postsAfterFilter = postsAfterFilter | push: p %}
+		{% endif %}
+		{% endif %}
+		{% endfor %}
+
+		{% if postsAfterFilter.size > 0 %}
+		<section class="panel panel-default dRelatedPosts">
+			<div class="panel-heading">
+				<h3 class="panel-title">Related</h3>
+			</div>
+			<ul class="list-group">
+				{% for p in postsAfterFilter limit: 5 %}
+				<li class="list-group-item"><a href="{{ p.url | prepend: site.baseurl | prepend: site.url }}">{{ p.title }}</a></li>
+				{% endfor %}
+			</ul>
+		</section>
+		{% endif %}
+
+		<section class="panel panel-default">
+			<style>
+				#google_translate_country { text-align:center; padding-top:5px; }
+				#google_translate_element > div { text-align:center; padding:5px 0; }
+				#google_translate_element > div > div { display:inline-block; *display:inline; *zoom:1; margin-right:10px; }
+			</style>
+			<div id="google_translate_country">
+				<a href="#googtrans(ko|en)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/English.gif?w=660" alt="English"/></a>
+				<!-- <a href="#googtrans(ko|ko)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Korean.gif?w=660" alt="Korean"/></a> -->
+				<a href="#googtrans(ko|zh-CN)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Chinese.gif?w=660" alt="Chinese"/></a>
+				<a href="#googtrans(ko|ja)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Japanese.gif?w=660" alt="Japanese"/></a>
+				<a href="#googtrans(ko|fr)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/French.gif?w=660" alt="French"/></a>
+				<a href="#googtrans(ko|de)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/German.gif?w=660" alt="German"/></a>
+				<a href="#googtrans(ko|it)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Italian.gif?w=660" alt="Italian"/></a>
+			</div>
+			<div id="google_translate_element"></div>
+			<script type="text/javascript">
+				function googleTranslateElementInit() {
+					new google.translate.TranslateElement({pageLanguage: 'ko'}, 'google_translate_element');
+				}
+			</script>
+			<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+		</section>
+	</div>
+</div>

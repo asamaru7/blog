@@ -1,20 +1,17 @@
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
-group :development do
-  gem 'rake', '~> 10.0'
-  gem 'jekyll', '~> 2.0'
-  gem 'octopress-hooks', '~> 2.2'
-  gem 'octopress-date-format', '~> 2.0'
-  gem 'jekyll-sitemap'
-  gem 'rdiscount', '~> 2.0'
-  gem 'RedCloth', '~> 4.2.9'
-  gem 'haml', '~> 4.0'
-  gem 'compass', '~> 1.0.1'
-  gem 'sass-globbing', '~> 1.0.0'
-  gem 'rb-fsevent', '~> 0.9'
-  gem 'stringex', '~> 2.5.2'
-  gem 'redcarpet', '~> 3.3.2'
-  gem 'albino', '~> 1.3.3'
-end
+#require 'json'
+#require 'open-uri'
+#versions = JSON.parse(open('https://pages.github.com/versions.json').read)
+#gem 'github-pages', versions['github-pages']
 
-gem 'sinatra', '~> 1.4.2'
+gem 'jekyll', '= 3.0.1'
+gem 'jekyll-paginate'
+gem 'jekyll-archives'
+gem 'jekyll-sitemap'
+gem 'jekyll-feed'
+gem 'pygments.rb'
+
+# markdown
+gem 'redcarpet', '~> 3.3.2'
+gem 'albino', '~> 1.3.3'

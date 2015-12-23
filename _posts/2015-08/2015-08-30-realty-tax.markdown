@@ -24,36 +24,15 @@ categories:
 
 아래에는 내가 찾았던 자료 중 참고가 되었던 사이트 목록이다.
 
-직계존비속으로부터 증여받은 주택의 비과세.
-http://www.taxboy.co.kr/gnuboard4/bbs/board.php?bo_table=QNA1&wr_id=8142
-
-증여받은집, 3년후에 매매가능한가요?
-http://startline.tistory.com/179
-
-증여받은 아파트 비과세요건
-http://www.etaxkorea.net/sub/sub_page.php?sp=s0107&md=view&minno=999995&code1=&nts_year=2014&CURRENT_PAGE=5775
-
-
-증여주택은 몇년후 매매하면 비과세가 됩니까 ?
-http://tj4.joinsland.com/consult/read.asp?qno=30389&ReplyUserID=7300
-
-
-부모님으로 부터 증여받은 부동산(주택) 매도
-http://blog.daum.net/_blog/BlogTypeView.do?blogid=08Ku8&articleno=16153767&categoryId=540732&regdt=20130522170301
-
-O 직계존비속간 이월과세 및 비과세
-http://www.cnprea.com/information/tax.cnp?cid=3643
-
-O 우회양도에 대한 부당행위계산의 부인 
-https://books.google.co.kr/books?id=kNtpBQAAQBAJ&pg=PA696&lpg=PA696&dq=%EB%B6%80%EB%8B%B9%ED%96%89%EC%9C%84%EA%B3%84%EC%82%B0%EB%B6%80%EC%9D%B8+%EC%A6%9D%EC%97%AC&source=bl&ots=xWtH0GZjWi&sig=X2k_gEaXq4RkOSsTc8iteqTIaK4&hl=ko&sa=X&ei=SfpJVZfbHoK5mAWY64DoAw&ved=0CEIQ6AEwBg#v=onepage&q=%EB%B6%80%EB%8B%B9%ED%96%89%EC%9C%84%EA%B3%84%EC%82%B0%EB%B6%80%EC%9D%B8%20%EC%A6%9D%EC%97%AC&f=false
-
-양도소득세부과처분취소 : 판례 - 양도소득이 증여자 귀속
-http://www.law.go.kr/LSW/precInfoP.do?precSeq=172450
-
-양도소득이 수증자에게 실질적으로 귀속된 경우는? - 수증자에게 실질적으로 귀속될 경우 제외, 자산의 취득가액은 증여일 기준으로 책정이 맞다
-http://www.intn.co.kr/news/articleView.html?idxno=327710
-
-양도소득이 수증자에게 실질적으로 귀속되는 경우 부당행위계산 부인 외
-http://www.cnprea.com/information/tax.cnp?cid=3600
+* [직계존비속으로부터 증여받은 주택의 비과세.](http://www.taxboy.co.kr/gnuboard4/bbs/board.php?bo_table=QNA1&wr_id=8142)
+* [증여받은집, 3년후에 매매가능한가요?](http://startline.tistory.com/179)
+* [증여받은 아파트 비과세요건](http://www.etaxkorea.net/sub/sub_page.php?sp=s0107&md=view&minno=999995&code1=&nts_year=2014&CURRENT_PAGE=5775)
+* [증여주택은 몇년후 매매하면 비과세가 됩니까 ?](http://tj4.joinsland.com/consult/read.asp?qno=30389&ReplyUserID=7300)
+* [부모님으로 부터 증여받은 부동산(주택) 매도](http://blog.daum.net/_blog/BlogTypeView.do?blogid=08Ku8&articleno=16153767&categoryId=540732&regdt=20130522170301)
+* [직계존비속간 이월과세 및 비과세](http://www.cnprea.com/information/tax.cnp?cid=3643)
+* [우회양도에 대한 부당행위계산의 부인](https://books.google.co.kr/books?id=kNtpBQAAQBAJ&pg=PA696&lpg=PA696&dq=%EB%B6%80%EB%8B%B9%ED%96%89%EC%9C%84%EA%B3%84%EC%82%B0%EB%B6%80%EC%9D%B8+%EC%A6%9D%EC%97%AC&source=bl&ots=xWtH0GZjWi&sig=X2k_gEaXq4RkOSsTc8iteqTIaK4&hl=ko&sa=X&ei=SfpJVZfbHoK5mAWY64DoAw&ved=0CEIQ6AEwBg#v=onepage&q=%EB%B6%80%EB%8B%B9%ED%96%89%EC%9C%84%EA%B3%84%EC%82%B0%EB%B6%80%EC%9D%B8%20%EC%A6%9D%EC%97%AC&f=false)
+* [양도소득세부과처분취소 : 판례 - 양도소득이 증여자 귀속](http://www.law.go.kr/LSW/precInfoP.do?precSeq=172450)
+* [양도소득이 수증자에게 실질적으로 귀속된 경우는? - 수증자에게 실질적으로 귀속될 경우 제외, 자산의 취득가액은 증여일 기준으로 책정이 맞다](http://www.intn.co.kr/news/articleView.html?idxno=327710)
+* [양도소득이 수증자에게 실질적으로 귀속되는 경우 부당행위계산 부인 외](http://www.cnprea.com/information/tax.cnp?cid=3600)
 
 

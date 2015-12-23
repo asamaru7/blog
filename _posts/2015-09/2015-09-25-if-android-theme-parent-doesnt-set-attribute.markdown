@@ -10,7 +10,7 @@ categories: android
 
 작업 중에 DialogTheme를 정의해서 사용할 일이 있었다. 그래서 다음과 같이 정의해서 사용중이었다. Theme가 무엇인지에 대해서는 http://developer.android.com/intl/ko/guide/topics/ui/themes.html 를 참고하자.
 
-** values/styles.xml **
+**values/styles.xml **
 
 ```XML
 <style name="af_DialogTheme.Base">
@@ -25,14 +25,14 @@ categories: android
 
 굳이 `af_DialogTheme.Base`를 정의하고 다시 `af_DialogTheme`에서 이를 상속받아 처리하는 것에는 이유가 있다. Theme에서 사용하는 속성들 또는 상황이 API 버전에 따라 다르기 때문이다. 예를 들어 내가 버전별로 다르게 사용한 style은 아래와 같다.
 
-** values-v19/styles.xml **
+**values-v19/styles.xml**
 ```XML
 <style name="af_DialogTheme" parent="af_DialogTheme.Base">
     <item name="android:windowTranslucentStatus">true</item>
 </style>
 ```
 
-** values-v21/styles.xml **
+**values-v21/styles.xml**
 ```XML
 <style name="af_DialogTheme" parent="af_DialogTheme.Base">
     <item name="android:statusBarColor">@android:color/transparent</item>
@@ -62,7 +62,7 @@ Error:(11) Error: Style Resource definition cycle: AppThemeDialog => af_DialogTh
 결론은 후배의 말이 맞았다. name을 `af_DialogTheme.Base`에서 `af_DialogTheme_Base`로 변경하자 오류는 사라졌다. 아... 어의없다.
 보다 확실히 하기 위해 아래와 같이 name을 둔 채로 parent를 추가했다. 당연히 상속받을 것은 없으므로 공백으로...
 
-** values/styles.xml **
+**values/styles.xml **
 ```XML
 <style name="af_DialogTheme.Base" parent="">
     <item name="android:windowNoTitle">true</item>

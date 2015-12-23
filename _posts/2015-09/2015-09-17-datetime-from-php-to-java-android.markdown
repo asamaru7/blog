@@ -40,7 +40,8 @@ Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
 
 아래는 추가적으로 다른 타입으로 수신했을 때 안드로이드 클라이언트에서 Date 타입으로 변환하고자 할때 사용할 수 있는 참고 코드들이다.
 
-** string 타입으로 수신시 **
+**string 타입으로 수신시**
+
 ```java
 try {
     String dateTime = "2015-09-17 10:00:00";
@@ -51,7 +52,7 @@ try {
 }
 ```
 
-** timestamp(int) 타입으로 수신시 **
+**timestamp(int) 타입으로 수신시**
 
 PHP에서의 TimeStamp는 초단위(s)지만 Java에서는 밀리초(ms) 단위이므로 1000을 곱해서 넣어 주어야 한다.
 그리고 Java에서는 Date가 Deprecated되어 [Calendar](http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html)를 더 권장한다고 한다. [정확하게는 완전히 Deprecated된 것은 아니고 일부 생성자가 그렇다는 것](http://docs.oracle.com/javase/6/docs/api/java/util/Date.html)이지만 [Calendar](http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html)가 더 다양한 기능을 제공하므로 더 권장된다는 것이다. 자세한 이유는 검색해보면 많이 나온다.

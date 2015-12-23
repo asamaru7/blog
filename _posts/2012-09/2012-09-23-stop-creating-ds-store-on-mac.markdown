@@ -33,6 +33,7 @@ defaults read com.apple.desktopservices DSDontWriteNetworkStores
 * * *
 
 **기존에 이미 생성된 파일을 지우는 방법**
+
 ```bash
 find . -name \.DS_Store -exec rm {} \;
 find . -name \.AppleDouble -exec rm -rf {} \;

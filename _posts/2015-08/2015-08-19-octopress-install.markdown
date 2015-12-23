@@ -147,8 +147,8 @@ $ rake install['테마이름']
 octostrap3 테마 적용 예시.
 
 ```bash
-% git clone https://github.com/kAworu/octostrap3.git .themes/octostrap3
-% rake install["octostrap3"]
+$ git clone https://github.com/kAworu/octostrap3.git .themes/octostrap3
+$ rake install["octostrap3"]
 ```
 
 ## 설정

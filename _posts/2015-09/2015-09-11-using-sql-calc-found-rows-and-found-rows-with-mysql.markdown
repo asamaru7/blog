@@ -3,7 +3,7 @@ layout: post
 title: "MySql의 SQL_CALC_FOUND_ROWS와 FOUND_ROWS()"
 date: 2015-09-11 19:05:37 +0900
 comments: true
-categories: DB
+categories: db
 ---
 MySql에는 SQL_CALC_FOUND_ROWS과 FOUND_ROWS() 라는 기능이 있다.일반적인 쿼리를 작성하는 상황에서는 크게 사용할 일이 없는 기능들이지만 알아두면 정말 유용하게 사용할 수 있다.
 

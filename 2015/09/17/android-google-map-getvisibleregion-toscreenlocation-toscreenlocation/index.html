@@ -1,197 +1,188 @@
 <!DOCTYPE html>
-<html class="no-js" lang="en">
+<html>
+
 <head>
-  <meta charset="utf-8">
-  <title>안드로이드에서 구글맵 사용시 맵의 보여지는 영역의 좌표를 원하는 pixel만큼 제외하고 가져오기 - 이 세상에 하나는 남기고 가자</title>
-  <meta name="author" content="유영재">
+	<title>안드로이드에서 구글맵 사용시 맵의 보여지는 영역의 좌표를 원하는 pixel만큼 제외하고 가져오기</title>
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="author" content="유영재">
+	<meta name="keywords" content="안드로이드에서 구글맵 사용시 맵의 보여지는 영역의 좌표를 원하는 pixel만큼 제외하고 가져오기, android,  이 세상에 하나는 남기고 가자"/>
+	<meta name="description" content="안드로이드에서 구글맵 사용시 맵의 보여지는 영역의 좌표를 원하는 pixel만큼 제외하고 가져오기, android,  이 글의 제목이 참 길고 어렵다. 나름대로 정하긴 했지만 어떻게 해야 내용을 설명할 수 있을지 잘 모르겠기에 그냥 필요한 상황을 차례로 적어보려 한다.      안드로이드에서 구글맵을 사용하면서 현재 맵에서 보여지는 영역의 좌표를 얻고 싶을 때가 있다. 중심 좌표와 확대 비율은 c..."/>
 
-  
-  
+	<!-- http://t.co/dKP3o1e -->
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- http://opengraphprotocol.org/ -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="http://blog.asamaru.net">
+	<meta property="og:title" content="이 세상에 하나는 남기고 가자">
+	<meta property="og:description" content="세상에 필요한 소스코드 한줄 남기고 가자.
+">
 
-  
-  <link rel="canonical" href="http://blog.asamaru.net/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/">
-  <link href="/favicon.png" type="image/png" rel="icon">
-  <link href="/atom.xml" rel="alternate" title="이 세상에 하나는 남기고 가자" type="application/atom+xml">
+	<link rel="canonical" href="http://blog.asamaru.net/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/"/>
+	<link rel="shortcut icon" type="image/x-icon" media="screen" href="http://blog.asamaru.net/favicon.ico"/>
+	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="http://blog.asamaru.net/atom.xml"/>
 
-  <!-- http://opengraphprotocol.org/ -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="http://blog.asamaru.net/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/">
-  <meta property="og:title" content="안드로이드에서 구글맵 사용시 맵의 보여지는 영역의 좌표를 원하는 pixel만큼 제외하고 가져오기 - 이 세상에 하나는 남기고 가자">
-  
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="http://blog.asamaru.net/static/css/highlight.css"/>
+	<link rel="stylesheet" type="text/css" href="http://blog.asamaru.net/static/css/style.css"/>
 
-  <script src="/javascripts/libs/jquery/jquery-2.1.3.min.js"></script>
+	
+	<link rel="stylesheet" type="text/css" href="http://blog.asamaru.net/static/css/post.css"/>
+	
+	
 
-<link href="/assets/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-<link href="/assets/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet" type="text/css">
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+					(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
+		ga('create', 'UA-65749108-2', 'auto');
+		ga('send', 'pageview');
 
-  
-  <link href="/stylesheets/screen.css" media="screen, projection, print" rel="stylesheet" type="text/css">
-  <link href="/stylesheets/custom.css" media="screen, projection, print" rel="stylesheet" type="text/css">
-
-  
-   <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-65749108-2', 'auto');
-    ga('send', 'pageview');
-
-  </script>
-
-
+	</script>
 </head>
 
-  <body   >
-    <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
-    <div id="wrap">
-      <header role="banner">
-        <nav class="navbar navbar-default" role="navigation">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" title="toggle navbar" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="/">이 세상에 하나는 남기고 가자</a>
-        </div>
+<body>
+<div class="main">
 
-        <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-                <li class="active">
-                    <a rel="index" href="/">Blog</a>
-                </li>
-                <li >
-                    <a href="/blog/archives">Archives</a>
-                </li>
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                <li>
-                    <a class="subscribe-rss" href="/atom.xml" title="subscribe via RSS">
-                        <span class="visible-xs">RSS</span>
-                        <img class="hidden-xs" src="/images/rss.png" alt="RSS">
-                    </a>
-                </li>
-                
-            </ul>
-            
-                <form class="navbar-form navbar-right" action="https://www.google.com/search" method="GET">
-                    <input type="hidden" name="sitesearch" value="blog.asamaru.net">
-                    <div class="form-group">
-                        <input class="form-control" type="text" name="q" placeholder="Search">
-                    </div>
-                </form>
-            
-        </div>
-    </div>
+	<nav class="navbar navbar-default" role="navigation">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" title="toggle navbar" data-toggle="collapse" data-target=".navbar-collapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="/">이 세상에 하나는 남기고 가자</a>
+		</div>
+
+		<div class="navbar-collapse collapse">
+			
+			<ul class="nav navbar-nav">
+				<li class="active">
+				<a rel="index" href="/">Blog</a>
+				</li>
+				<li >
+				<a href="/archives/">Archives</a>
+				</li>
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a class="subscribe-rss" href="http://blog.asamaru.net/atom.xml" title="subscribe via RSS">
+						<span class="visible-xs">RSS</span>
+						<img class="hidden-xs" src="/static/img/rss.png" alt="RSS">
+					</a>
+				</li>
+			</ul>
+			
+			<form class="navbar-form navbar-right" action="https://www.google.com/search" method="GET">
+				<input type="hidden" name="sitesearch" value="http://blog.asamaru.net">
+				<div class="form-group">
+					<input class="form-control" type="text" name="q" placeholder="Search">
+				</div>
+			</form>
+			
+		</div>
+	</div>
 </nav>
 
 
-      </header>
-      <div id="main" role="main" class="container">
-        <div id="content">
-          <div class="row">
-  <div class="page-content col-md-9" itemscope itemtype="http://schema.org/Blog">
-    <!-- adsense -->
-    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-    <!-- 블로그 하단 -->
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-8163803188491150"
-         data-ad-slot="7841851420"
-         data-ad-format="auto"></ins>
-    <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-    <!-- adsense -->
+	<div class="container">
+		<div class="row">
+	<div class="content col-lg-9">
+		<!-- adsense -->
+		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<!-- 블로그 하단 -->
+		<ins class="adsbygoogle"
+			 style="display:block"
+			 data-ad-client="ca-pub-8163803188491150"
+			 data-ad-slot="7841851420"
+			 data-ad-format="auto"></ins>
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>
+		<!-- adsense -->
 
-    <meta itemprop="name" content="이 세상에 하나는 남기고 가자" />
-    <meta itemprop="description" content="아사마루 개발 블로그. 세상에 필요한 소스코드 한줄 남기고 가자." />
-    <meta itemprop="url" content="http://blog.asamaru.net" />
-    <article class="hentry" role="article" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
-      
-  <header class="page-header">
-    
-      <p class="meta text-muted text-uppercase">
-        
+		<div class="sheet post">
+			<header>
+				<h2>안드로이드에서 구글맵 사용시 맵의 보여지는 영역의 좌표를 원하는 pixel만큼 제외하고 가져오기</h2>
+				<p class="post-meta">
+					<!--<span class="glyphicon glyphicon-calendar"></span>--> 2015.09.17.
+					
+					&nbsp;&nbsp;&nbsp;
+					<span>
+						<a href="http://blog.asamaru.net/category/android/"><span class="glyphicon glyphicon-list"></span>&nbsp;android</a>
+					</span>
+					<span>
+                </span>
+				</p>
+			</header>
+			<hr class="boundary">
+			<article>
+				<!-- Topic of Contents -->
+				<!--
+								<section class="panel panel-default cToc">
+									<div class="panel-heading">
+										<h3 class="panel-title">Topic of Contents</h3>
+									</div>
+									<ul class="list-group">
+										<li class="list-group-item toc">
+										</li>
+									</ul>
+								</section>
+				-->
 
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-17T14:18:50+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.17</time>
-        
-           | <a href="#disqus_thread" itemprop="discussionUrl"
-             data-disqus-identifier="http://blog.asamaru.net">Comments</a>
-        
-      </p>
-    
-    
-    <h1 class="entry-title" itemprop="name headline">
-        안드로이드에서 구글맵 사용시 맵의 보여지는 영역의 좌표를 원하는 pixel만큼 제외하고 가져오기
-        
-    </h1>
-    
-  </header>
-
-
-<div class="entry-content clearfix" itemprop="articleBody description"><p>이 글의 제목이 참 길고 어렵다. 나름대로 정하긴 했지만 어떻게 해야 내용을 설명할 수 있을지 잘 모르겠기에 그냥 필요한 상황을 차례로 적어보려 한다.</p>
+				<p>이 글의 제목이 참 길고 어렵다. 나름대로 정하긴 했지만 어떻게 해야 내용을 설명할 수 있을지 잘 모르겠기에 그냥 필요한 상황을 차례로 적어보려 한다.</p>
 
 <ol>
-<li><p>안드로이드에서 구글맵을 사용하면서 현재 맵에서 보여지는 영역의 좌표를 얻고 싶을 때가 있다. 
+  <li>
+    <p>안드로이드에서 구글맵을 사용하면서 현재 맵에서 보여지는 영역의 좌표를 얻고 싶을 때가 있다. 
 중심 좌표와 확대 비율은 center와 zoom을 통해 쉽게 구할 수 있다. 하지만 필요한 것은 보여지는 영역을 모두 포함하는 좌표들이다.
-이 좌표들은 대부분 보여지는 화면 내부에 해당하는 데이터를 query 하기 위해서 사용될 것이다. 다른 경우도 당연히 있을 수 있고...</p></li>
-<li><p>위의 목적대로 좌표를 가져오긴 했는데 일부 영역을 제외하고 싶을 때가 있다. 예를들어 지도 상단에 버튼들이 나열되어 있다고 가정할 때 이 영역은 query에서 제외하고 싶을 때가 해당된다. 이 문제는 간단하지가 않은게 버튼들이 차지하는 공간이야 pixel로 얼마든지 계산 가능하지만 이 pixel 사이즈를 좌표에 반영해야 원하는 값을 얻을 수 있기 때문이다.</p></li>
+이 좌표들은 대부분 보여지는 화면 내부에 해당하는 데이터를 query 하기 위해서 사용될 것이다. 다른 경우도 당연히 있을 수 있고…</p>
+  </li>
+  <li>
+    <p>위의 목적대로 좌표를 가져오긴 했는데 일부 영역을 제외하고 싶을 때가 있다. 예를들어 지도 상단에 버튼들이 나열되어 있다고 가정할 때 이 영역은 query에서 제외하고 싶을 때가 해당된다. 이 문제는 간단하지가 않은게 버튼들이 차지하는 공간이야 pixel로 얼마든지 계산 가능하지만 이 pixel 사이즈를 좌표에 반영해야 원하는 값을 얻을 수 있기 때문이다.</p>
+  </li>
 </ol>
 
 <p>위의 상황들의 목적은 결국 하나다. 구글 지도에서 원하는 영역의 평면 좌표를 얻고 싶다는 것이다.</p>
 
 <p>우선 해결 방법을 설명하기 전에 필요한 함수에 대한 설명부터 보자. 이 처리를 하기 위해 가장 중요한 요소는 Projection 이다.</p>
 
-<h2 id="google-apis-for-android-projection"><a href="https://developers.google.com/android/reference/com/google/android/gms/maps/Projection.html">Google APIs for Android - Projection</a></h2>
+<h2 id="google-apis-for-android---projectionhttpsdevelopersgooglecomandroidreferencecomgoogleandroidgmsmapsprojectionhtml"><a href="https://developers.google.com/android/reference/com/google/android/gms/maps/Projection.html">Google APIs for Android - Projection</a></h2>
 
 <p>위 링크를 참고하면 자세한 설명이 나와있지만 간단하게 필요한 것들에 대해서 정리하자면 다음과 같다.</p>
 
 <h3 id="projection">Projection</h3>
 
 <blockquote>
-<p>Projection은 화면상의 위치와 위경도 좌표(LatLng) 간의 변환하는데 사용된다. 그리고 화면의 위치는 항상 맵 화면의 좌상단(top left)을 기준으로 한다.</p>
+  <p>Projection은 화면상의 위치와 위경도 좌표(LatLng) 간의 변환하는데 사용된다. 그리고 화면의 위치는 항상 맵 화면의 좌상단(top left)을 기준으로 한다.</p>
 </blockquote>
 
 <h3 id="getvisibleregion">getVisibleRegion()</h3>
 
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">VisibleRegion</span> <span class="nf">getVisibleRegion</span> <span class="o">()</span>
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="n">VisibleRegion</span> <span class="nf">getVisibleRegion</span> <span class="o">()</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
 <blockquote>
-<p>화면상의 좌표와 위경도 좌표 간의 변환을 위한 Projection을 가져온다.</p>
+  <p>화면상의 좌표와 위경도 좌표 간의 변환을 위한 Projection을 가져온다.</p>
 </blockquote>
 
 <h3 id="toscreenlocation-latlng-location">toScreenLocation (LatLng location)</h3>
 
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">Point</span> <span class="nf">toScreenLocation</span> <span class="o">(</span><span class="n">LatLng</span> <span class="n">location</span><span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="n">Point</span> <span class="nf">toScreenLocation</span> <span class="o">(</span><span class="n">LatLng</span> <span class="n">location</span><span class="o">)</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
 <blockquote>
-<p>인자로 넘겨준 위경도 좌표가 화면 상에서 어디에 위치하는지를 Point 객체로 반환해 준다. 반환되는 단위는 화면 상의 Pixel(화소가 아닌)이다.</p>
+  <p>인자로 넘겨준 위경도 좌표가 화면 상에서 어디에 위치하는지를 Point 객체로 반환해 준다. 반환되는 단위는 화면 상의 Pixel(화소가 아닌)이다.</p>
 </blockquote>
 
 <h3 id="fromscreenlocation-point-point">fromScreenLocation (Point point)</h3>
@@ -199,42 +190,42 @@
 <p>public LatLng fromScreenLocation (Point point)</p>
 
 <blockquote>
-<p>인자로 넘겨준 화면 상의 좌표에 해당하는 위경도를 LatLng 객체로 반환해 준다.</p>
+  <p>인자로 넘겨준 화면 상의 좌표에 해당하는 위경도를 LatLng 객체로 반환해 준다.</p>
 </blockquote>
 
-<h2 id="구현">구현</h2>
+<h2 id="section">구현</h2>
 
 <p>위와 같이 기본적인 함수들에 대해서 알아보았고 이제는 실제 사용 사례를 살펴보자.</p>
 
 <p>아래는 서두에 얘기한 기능을 수행하게 하기 위해 만들어 본 함수이다.</p>
 
-<figure class='code notranslate'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">LatLngBounds</span> <span class="nf">getBoundsWithoutSpacing</span><span class="o">(</span><span class="kt">int</span> <span class="n">top</span><span class="o">,</span> <span class="kt">int</span> <span class="n">right</span><span class="o">,</span> <span class="kt">int</span> <span class="n">bottom</span><span class="o">,</span> <span class="kt">int</span> <span class="n">left</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>  <span class="n">Projection</span> <span class="n">projection</span> <span class="o">=</span> <span class="n">googleMap</span><span class="o">.</span><span class="na">getProjection</span><span class="o">();</span>
-</span><span class='line'>  <span class="n">LatLngBounds</span> <span class="n">bounds</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="na">getVisibleRegion</span><span class="o">().</span><span class="na">latLngBounds</span><span class="o">;</span>
-</span><span class='line'>  <span class="n">Point</span> <span class="n">northeast</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="na">toScreenLocation</span><span class="o">(</span><span class="n">bounds</span><span class="o">.</span><span class="na">northeast</span><span class="o">);</span>
-</span><span class='line'>  <span class="n">Point</span> <span class="n">toNortheast</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Point</span><span class="o">(</span><span class="n">northeast</span><span class="o">.</span><span class="na">x</span> <span class="o">-</span> <span class="n">right</span><span class="o">,</span> <span class="n">northeast</span><span class="o">.</span><span class="na">y</span> <span class="o">+</span> <span class="n">top</span><span class="o">);</span>
-</span><span class='line'>  <span class="n">Point</span> <span class="n">southwest</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="na">toScreenLocation</span><span class="o">(</span><span class="n">bounds</span><span class="o">.</span><span class="na">southwest</span><span class="o">);</span>
-</span><span class='line'>  <span class="n">Point</span> <span class="n">toSouthwest</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Point</span><span class="o">(</span><span class="n">southwest</span><span class="o">.</span><span class="na">x</span> <span class="o">+</span> <span class="n">left</span><span class="o">,</span> <span class="n">southwest</span><span class="o">.</span><span class="na">y</span> <span class="o">-</span> <span class="n">bottom</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="n">LatLngBounds</span><span class="o">.</span><span class="na">Builder</span> <span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LatLngBounds</span><span class="o">.</span><span class="na">Builder</span><span class="o">();</span>
-</span><span class='line'>  <span class="n">builder</span><span class="o">.</span><span class="na">include</span><span class="o">(</span><span class="n">projection</span><span class="o">.</span><span class="na">fromScreenLocation</span><span class="o">(</span><span class="n">toNortheast</span><span class="o">));</span>
-</span><span class='line'>  <span class="n">builder</span><span class="o">.</span><span class="na">include</span><span class="o">(</span><span class="n">projection</span><span class="o">.</span><span class="na">fromScreenLocation</span><span class="o">(</span><span class="n">toSouthwest</span><span class="o">));</span>
-</span><span class='line'>  <span class="k">return</span> <span class="n">builder</span><span class="o">.</span><span class="na">build</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="n">LatLngBounds</span> <span class="nf">getBoundsWithoutSpacing</span><span class="o">(</span><span class="kt">int</span> <span class="n">top</span><span class="o">,</span> <span class="kt">int</span> <span class="n">right</span><span class="o">,</span> <span class="kt">int</span> <span class="n">bottom</span><span class="o">,</span> <span class="kt">int</span> <span class="n">left</span><span class="o">)</span> <span class="o">{</span>
+	<span class="n">Projection</span> <span class="n">projection</span> <span class="o">=</span> <span class="n">googleMap</span><span class="o">.</span><span class="na">getProjection</span><span class="o">();</span>
+	<span class="n">LatLngBounds</span> <span class="n">bounds</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="na">getVisibleRegion</span><span class="o">().</span><span class="na">latLngBounds</span><span class="o">;</span>
+	<span class="n">Point</span> <span class="n">northeast</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="na">toScreenLocation</span><span class="o">(</span><span class="n">bounds</span><span class="o">.</span><span class="na">northeast</span><span class="o">);</span>
+	<span class="n">Point</span> <span class="n">toNortheast</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Point</span><span class="o">(</span><span class="n">northeast</span><span class="o">.</span><span class="na">x</span> <span class="o">-</span> <span class="n">right</span><span class="o">,</span> <span class="n">northeast</span><span class="o">.</span><span class="na">y</span> <span class="o">+</span> <span class="n">top</span><span class="o">);</span>
+	<span class="n">Point</span> <span class="n">southwest</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="na">toScreenLocation</span><span class="o">(</span><span class="n">bounds</span><span class="o">.</span><span class="na">southwest</span><span class="o">);</span>
+	<span class="n">Point</span> <span class="n">toSouthwest</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Point</span><span class="o">(</span><span class="n">southwest</span><span class="o">.</span><span class="na">x</span> <span class="o">+</span> <span class="n">left</span><span class="o">,</span> <span class="n">southwest</span><span class="o">.</span><span class="na">y</span> <span class="o">-</span> <span class="n">bottom</span><span class="o">);</span>
+
+	<span class="n">LatLngBounds</span><span class="o">.</span><span class="na">Builder</span> <span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LatLngBounds</span><span class="o">.</span><span class="na">Builder</span><span class="o">();</span>
+	<span class="n">builder</span><span class="o">.</span><span class="na">include</span><span class="o">(</span><span class="n">projection</span><span class="o">.</span><span class="na">fromScreenLocation</span><span class="o">(</span><span class="n">toNortheast</span><span class="o">));</span>
+	<span class="n">builder</span><span class="o">.</span><span class="na">include</span><span class="o">(</span><span class="n">projection</span><span class="o">.</span><span class="na">fromScreenLocation</span><span class="o">(</span><span class="n">toSouthwest</span><span class="o">));</span>
+	<span class="k">return</span> <span class="n">builder</span><span class="o">.</span><span class="na">build</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
 <p>설명하자면 다음과 같다.</p>
 
@@ -250,236 +241,194 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
 <p>사실 결과를 보면 아주 간단한 작업이다. 하지만 이 함수들의 역할을 모를때는 어떻게 그 값을 구할 수 있을지 막막했다. 처음엔 구글의 zoom 레벨을 가져와서 pixel 비율을 계산하여 적용하려고 했으나 만만치 않았다.</p>
 
 <p>결론은 위의 함수를 바탕으로 원하는 목적을 달성할 수 있으니 필요에 맞게 사용하면 된다.</p>
-</div>
 
-
-      <footer>
-        <p class="meta text-muted">
-          
-  
-
-<span class="glyphicon glyphicon-user"></span> <span class="byline author vcard" itemprop="author" itemscope itemtype="http://schema.org/Person">Posted by <span class="fn" itemprop="name">유영재</span></span>
-
-          
-
-
-
-
-
-
-
-
-
-
-
-
-<span class="glyphicon glyphicon-calendar"></span> <time datetime="2015-09-17T14:18:50+09:00"  data-updated="true" itemprop="datePublished dateCreated">15.09.17</time>
-          
-
-<span class="glyphicon glyphicon-tags"></span>&nbsp;
-<span class="categories">
-  
-    <a class='category' href='/blog/categories/android/'>android</a>
-  
-</span>
-
-
-        </p>
-        
-          <div class="sharing">
-  
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://blog.asamaru.net/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/" data-via="" data-counturl="http://blog.asamaru.net/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/" >Tweet</a>
-  
-  
-  <div class="g-plusone" data-size="medium"></div>
-  
-  
-    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
-  
-</div>
-
-        
-        
-          <ul class="meta text-muted pager">
-            
-            <li class="previous"><a href="/2015/09/17/sort-of-strings-that-start-with-numbers-in-mysql/" title="Previous Post: MySql에서 숫자로 시작하는 문자열의 정렬 문제">&laquo; MySql에서 숫자로 시작하는 문자열의 정렬 문제</a></li>
-            
-            
-            <li class="next"><a href="/2015/09/17/datetime-from-php-to-java-android/" title="Next Post: PHP의 DateTime을 Java (Android)로 전달하기">PHP의 DateTime을 Java (Android)로 전달하기 &raquo;</a></li>
-            
-          </ul>
-        
-      </footer>
-    </article>
-    
-      <section>
-        <h2>Comments</h2>
-        <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-</div>
-      </section>
-    
-  </div>
-
-  
-  <aside class="sidebar col-md-3">
-    
-      <section class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">About Me</h3>
-  </div>
-  <ul class="list-group">
-  	<li class="list-group-item"><a href="mailto:asamaru@asamaru.net">asamaru@asamaru.net</a></li>
-  </ul>
-</section>
-<section class="panel panel-default">
-	<style>
-		#google_translate_country { text-align:center; padding-top:5px; }
-		#google_translate_element > div { text-align:center; padding:5px 0; }
-		#google_translate_element > div > div { display:inline-block; *display:inline; *zoom:1; margin-right:10px; }
-	</style>
-	<div id="google_translate_country">
-		<a href="#googtrans(ko|en)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/English.gif?w=660" alt="English"/></a>
-		<!-- <a href="#googtrans(ko|ko)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/Korean.gif?w=660" alt="Korean"/></a> -->
-		<a href="#googtrans(ko|zh-CN)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/Chinese.gif?w=660" alt="Chinese"/></a>
-		<a href="#googtrans(ko|ja)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/Japanese.gif?w=660" alt="Japanese"/></a>
-		<a href="#googtrans(ko|fr)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/French.gif?w=660" alt="French"/></a>
-		<a href="#googtrans(ko|de)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/German.gif?w=660" alt="German"/></a>
-		<a href="#googtrans(ko|it)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/img/Italian.gif?w=660" alt="Italian"/></a>
+			</article>
+			<hr class="boundary">
+		</div>
+		<div class="pad-min"></div>
+		<div id="post-comment" class="sheet post">
+			<div id="disqus_thread"></div>
+		</div>
 	</div>
-	<div id="google_translate_element"></div><script type="text/javascript">
-	function googleTranslateElementInit() {
-	  new google.translate.TranslateElement({pageLanguage: 'ko'}, 'google_translate_element');
-	}
-	</script><script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-</section>
-<section class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">I made it</h3>
-  </div>
-  <ul class="list-group">
-  	<li class="list-group-item"><a href="http://sprite.asamaru.net/" target="_blank">Sprite CSS/Image</a></li>
-  	<li class="list-group-item"><a href="http://loan.asamaru.net/" target="_blank">대출이자계산기</a></li>
-  	<li class="list-group-item"><a href="http://bookmarklet.asamaru.net/" target="_blank">북마클릿 생성기</a></li>
-  </ul>
-</section>
-<section class="panel panel-default">
-	<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-	<!-- 블로그 우측 -->
-	<ins class="adsbygoogle"
-		 style="display:block"
-		 data-ad-client="ca-pub-8163803188491150"
-		 data-ad-slot="1934918622"
-		 data-ad-format="auto"></ins>
-	<script>
-	(adsbygoogle = window.adsbygoogle || []).push({});
-	</script>
-</section>
-<section class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">Categories</h3>
-  </div>
-  
-  <ul id="category-list" class="list-group"><li class="list-group-item"><a href='/blog/categories/android'>android (39)</a></li><li class="list-group-item"><a href='/blog/categories/blog'>blog (1)</a></li><li class="list-group-item"><a href='/blog/categories/css'>css (3)</a></li><li class="list-group-item"><a href='/blog/categories/db'>db (4)</a></li><li class="list-group-item"><a href='/blog/categories/git'>git (4)</a></li><li class="list-group-item"><a href='/blog/categories/html'>html (1)</a></li><li class="list-group-item"><a href='/blog/categories/ios'>ios (20)</a></li><li class="list-group-item"><a href='/blog/categories/java'>java (3)</a></li><li class="list-group-item"><a href='/blog/categories/js'>js (4)</a></li><li class="list-group-item"><a href='/blog/categories/linux'>linux (15)</a></li><li class="list-group-item"><a href='/blog/categories/octopress'>octopress (7)</a></li><li class="list-group-item"><a href='/blog/categories/osx'>osx (1)</a></li><li class="list-group-item"><a href='/blog/categories/php'>php (11)</a></li><li class="list-group-item"><a href='/blog/categories/programming'>programming (1)</a></li><li class="list-group-item"><a href='/blog/categories/swift'>swift (6)</a></li><li class="list-group-item"><a href='/blog/categories/tip'>tip (10)</a></li><li class="list-group-item"><a href='/blog/categories/vagrant'>vagrant (5)</a></li><li class="list-group-item"><a href='/blog/categories/jabnyeom'>잡념 (2)</a></li></ul>
-</section>
-<section class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">Recent Posts</h3>
-  </div>
-  
-  <div id="recent_posts" class="list-group">
-    
-    <a class="list-group-item " href="/2015/12/17/charles-android-ssl-proxy/">Charles를 이용한 안드로이드 SSL Proxy</a>
-    
-    <a class="list-group-item " href="/2015/12/16/how-can-i-prevent-mail-from-being-classified-as-spam/">발송 메일을 스팸으로 분류되지 않도록 개선하는 법</a>
-    
-    <a class="list-group-item " href="/2015/12/16/delta-rpm/">Yum Delta RPM 사용하기</a>
-    
-    <a class="list-group-item " href="/2015/12/15/android-app-finish/">안드로이드 앱 종료 방법</a>
-    
-    <a class="list-group-item " href="/2015/12/10/realm/">안드로이드 Realm 0.82.2 -> 0.86.0 버전업</a>
-    
-  </div>
-</section>
+	<div class="content-navigation col-lg-3">
+		<!-- I made it -->
+		<section class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">I made it</h3>
+			</div>
+			<ul class="list-group">
+				<li class="list-group-item"><a href="http://sprite.asamaru.net/" target="_blank">Sprite CSS/Image</a></li>
+				<li class="list-group-item"><a href="http://loan.asamaru.net/" target="_blank">대출이자계산기</a></li>
+				<li class="list-group-item"><a href="http://bookmarklet.asamaru.net/" target="_blank">북마클릿 생성기</a></li>
+			</ul>
+		</section>
 
+		<!-- Categories -->
+		
+		
+		<section class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Categories</h3>
+			</div>
+			<ul class="list-group">
+				
+				<li class="list-group-item"><a href="/category/잡념/">잡념 <span class="badge">2</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/css/">Css <span class="badge">3</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/js/">Js <span class="badge">4</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/android/">Android <span class="badge">39</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/octopress/">Octopress <span class="badge">7</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/ios/">Ios <span class="badge">18</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/php/">Php <span class="badge">11</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/java/">Java <span class="badge">3</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/DB/">Db <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/db/">Db <span class="badge">3</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/html/">Html <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/git/">Git <span class="badge">4</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/blog/">Blog <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/Tip/">Tip <span class="badge">3</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/linux/">Linux <span class="badge">15</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/swift/">Swift <span class="badge">6</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/iOS/">Ios <span class="badge">2</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/tip/">Tip <span class="badge">7</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/vagrant/">Vagrant <span class="badge">5</span></a></li>
+				
+			</ul>
+		</section>
+		
+		
 
+		<!-- Tags -->
+		
+		
+		
 
+		<!-- Related -->
+		
 
+		
 
+		
+		<section class="panel panel-default dRelatedPosts">
+			<div class="panel-heading">
+				<h3 class="panel-title">Related</h3>
+			</div>
+			<ul class="list-group">
+				
+				<li class="list-group-item"><a href="http://blog.asamaru.net/2015/12/17/charles-android-ssl-proxy/">Charles를 이용한 안드로이드 SSL Proxy</a></li>
+				
+				<li class="list-group-item"><a href="http://blog.asamaru.net/2015/12/15/android-app-finish/">안드로이드 앱 종료 방법</a></li>
+				
+				<li class="list-group-item"><a href="http://blog.asamaru.net/2015/12/10/realm/">안드로이드 Realm 0.82.2 -> 0.86.0 버전업</a></li>
+				
+				<li class="list-group-item"><a href="http://blog.asamaru.net/2015/11/11/from-acra-to-fabric/">안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환</a></li>
+				
+				<li class="list-group-item"><a href="http://blog.asamaru.net/2015/11/05/android-is-not-translated-in-dot-dot-dot-lint-error/">Android : is not translated in ... Lint Error 해결</a></li>
+				
+			</ul>
+		</section>
+		
 
-    
-  </aside>
-  
+		<section class="panel panel-default">
+			<style>
+				#google_translate_country { text-align:center; padding-top:5px; }
+				#google_translate_element > div { text-align:center; padding:5px 0; }
+				#google_translate_element > div > div { display:inline-block; *display:inline; *zoom:1; margin-right:10px; }
+			</style>
+			<div id="google_translate_country">
+				<a href="#googtrans(ko|en)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/English.gif?w=660" alt="English"/></a>
+				<!-- <a href="#googtrans(ko|ko)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Korean.gif?w=660" alt="Korean"/></a> -->
+				<a href="#googtrans(ko|zh-CN)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Chinese.gif?w=660" alt="Chinese"/></a>
+				<a href="#googtrans(ko|ja)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Japanese.gif?w=660" alt="Japanese"/></a>
+				<a href="#googtrans(ko|fr)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/French.gif?w=660" alt="French"/></a>
+				<a href="#googtrans(ko|de)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/German.gif?w=660" alt="German"/></a>
+				<a href="#googtrans(ko|it)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Italian.gif?w=660" alt="Italian"/></a>
+			</div>
+			<div id="google_translate_element"></div>
+			<script type="text/javascript">
+				function googleTranslateElementInit() {
+					new google.translate.TranslateElement({pageLanguage: 'ko'}, 'google_translate_element');
+				}
+			</script>
+			<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+		</section>
+	</div>
 </div>
 
-        </div>
-      </div>
-    </div>
-    <footer role="contentinfo"><div class="container">
-    <p class="text-muted credits">
-  Copyright &copy; 2015 - 유영재<br>
-  <small>
-      <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>,
-      <span class="credit">customized with <a href="https://github.com/kAworu/octostrap3">octostrap3</a></span>.
-  </small>
-</p>
+		
+		<div id="disqus_thread"></div>
+		<script type="text/javascript">
+			/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+			var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+			// var disqus_developer = 1; // Comment out when the site is live
+			var disqus_identifier = "/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/";
 
+			/* * * DON'T EDIT BELOW THIS LINE * * */
+			(function () {
+				var dsq = document.createElement('script');
+				dsq.type = 'text/javascript';
+				dsq.async = true;
+				dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+				(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+		<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		
+	</div>
+
+	<div class="page-scrollTop" data-toggle="tooltip" data-placement="top" title="Top">
+		<a href="javascript:void(0);">
+			<div class="arrow"></div>
+			<div class="stick"></div>
+		</a>
+	</div>
 </div>
+
+<footer class="footnote footnote-tiffany">
+	<div class="container">
+		<a class="foot-item" href="mailto:asamaru@asamaru.net" target="_blank"><img src="/static/img/bottom-email.png" alt="Email"></a>
+		<a class="foot-item" href="https://github.com/asamaru7" target="_blank"><img src="/static/img/bottom-github.png" alt="Github"></a>
+		<a class="foot-item" href="http://blog.asamaru.net/atom.xml" target="_blank"><img src="/static/img/bottom-rss.png" alt="RSS"></a>
+		&nbsp;
+		<a href="http://blog.asamaru.net"><span class="word-keep">&copy; 유영재</span></a>
+	</div>
 </footer>
-    
 
-<script type="text/javascript">
-      var disqus_shortname = 'asamaru7';
-      
-        
-        // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.asamaru.net/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/';
-        var disqus_url = 'http://blog.asamaru.net/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/';
-        var disqus_script = 'embed.js';
-      
-    (function () {
-      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
-      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    }());
-</script>
+
+<div class="scriptHub">
+	<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="http://blog.asamaru.net/static/js/script.js"></script>
+
+	
+	<script type="text/javascript" src="http://blog.asamaru.net/static/js/post.js"></script>
+	
+	
+</div>
 
 
 
-<div id="fb-root"></div>
-<script>(function(d, s, id) {
-  var js, fjs = d.getElementsByTagName(s)[0];
-  if (d.getElementById(id)) {return;}
-  js = d.createElement(s); js.id = id; js.async = true;
-  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
-  fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));</script>
-
-
-
-  <script type="text/javascript">
-    (function() {
-      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
-      script.src = 'https://apis.google.com/js/plusone.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
-    })();
-  </script>
-
-
-
-  <script type="text/javascript">
-    (function(){
-      var twitterWidgets = document.createElement('script');
-      twitterWidgets.type = 'text/javascript';
-      twitterWidgets.async = true;
-      twitterWidgets.src = '//platform.twitter.com/widgets.js';
-      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
-    })();
-  </script>
-
-
-<script src="/assets/bootstrap/dist/js/bootstrap.min.js"></script>
-<script src="/javascripts/modernizr.js"></script>
-
-
-  </body>
+</body>
 </html>

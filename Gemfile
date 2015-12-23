@@ -13,5 +13,5 @@ gem 'jekyll-feed'
 gem 'pygments.rb'
 
 # markdown
-gem 'redcarpet', '~> 3.3.2'
-gem 'albino', '~> 1.3.3'
+#gem 'redcarpet', '~> 3.3.2'
+#gem 'albino', '~> 1.3.3'

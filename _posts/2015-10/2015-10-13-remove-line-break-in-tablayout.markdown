@@ -19,7 +19,9 @@ TabLayout에 대한 사용법은 [Google Play Style Tabs using TabLayout](https:
 
 그런데 여기서도 문제가 있다. 이 라이브러리에서는 Tab의 길이를 내부적으로 계산해서 fixed와 scrollable를 선택해 주는데 fixed일때와 scrollable일때 가로 사이즈가 차이가 날 수 있다(내부적으로 스타일이 약간 다르게 지정되는 것으로 보인다). 특히 Tab의 Text가 여러줄이 될 수 있도록 되어 있으면 문제가 더 심하게 나타난다(경험적으로). 이 문제를 개선하려면 Tab의 Text를 무조건 한줄로 나오게 하면 된다. 아래의 예시를 보자.
 
-```xml layout.xml
+**layout.xml**
+
+```xml
 <android.support.design.widget.TabLayout
         android:id="@+id/tabs"
         style="@style/MyCustomTabLayout"
@@ -28,7 +30,9 @@ TabLayout에 대한 사용법은 [Google Play Style Tabs using TabLayout](https:
 </android.support.design.widget.TabLayout>
 ```
 
-```xml styles.xml
+**styles.xml**
+
+```xml
 <style name="MyCustomTabLayout" parent="Widget.Design.TabLayout">
     <item name="tabTextAppearance">@style/MyCustomTabTextAppearance</item>
 </style>

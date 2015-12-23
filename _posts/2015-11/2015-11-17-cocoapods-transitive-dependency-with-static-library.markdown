@@ -13,6 +13,7 @@ categories: ios
 지난글에서 설명 했던 것과 같이 Sub Module에서 GoogleMaps에 대한 의존성을 지정 해야하는 상황이 발생했다. 그래서 아래와 같이 `podspec` 파일을 만들었다.
 
 **ModuleName.podspec**
+
 ```ruby
 Pod::Spec.new do |s|
   s.name     = 'ModuleName'
@@ -41,6 +42,7 @@ static binaries를 포함하는 모듈이 아닌 경우 부모 프로젝트(Sub 
 결론은 `podspec`파일을 아래와 같이 설정하면 된다. 단, [Cocoapods : The 'Pods' target has transitive dependencies that include static binaries 오류](/2015/11/17/cocoapods-the-pods-target-has-transitive-dependencies-that-include-static-binaries/)에서 언급한 것처럼 `pre_install`을 사용해서 오류는 제거해야 한다.
 
 **ModuleName.podspec**
+
 ```ruby
 Pod::Spec.new do |s|
   s.name     = 'ModuleName'

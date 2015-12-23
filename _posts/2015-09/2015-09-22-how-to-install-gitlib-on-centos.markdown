@@ -98,17 +98,20 @@ sudo gitlab-ctl stop
 ```
 
 그리고 `/etc/gitlab/gitlab.rb`에 아래의 내용을 추가한다.
+
 ```ruby
 nginx['enable'] = false
 ```
 
 그리고 재설정.
+
 ```bash
 sudo gitlab-ctl reconfigure
 ```
 ### 예시
 
 내가 설정한 설정을 예로 보자면 아래와 같다.
+
 ```ruby
 external_url 'http://git.asamaru.net'
 nginx['enable'] = false

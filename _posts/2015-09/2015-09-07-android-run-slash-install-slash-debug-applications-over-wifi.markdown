@@ -26,6 +26,7 @@ List of devices attached
 ```
 
 ### 3. 연결된 기기의 IP를 확인한다. adb shell 실행 후 shell이 뜨면 netcfg 입력. exit로 종료.
+
 ```bash
 $ adb shell
 
@@ -42,11 +43,13 @@ shell@hltelgt:/ $ exit
 ```
 
 ### 4. adb를 통해 포트 5555(원하는 포트)로 변경한다.
+
 ```bash
 $ adb tcpip 5555
 ```
 
 ### 5. 기기 IP를 통해서 연결
+
 ```bash
 $ adb connect <DEVICE_IP_ADDRESS>:5555
 ```

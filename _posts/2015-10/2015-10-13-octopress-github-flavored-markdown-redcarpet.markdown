@@ -18,7 +18,9 @@ categories: octopress
 
 Gemfile에 아래의 내용을 추가 한다.
 
-```ruby Gemfile
+**Gemfile**
+
+```ruby
 gem 'redcarpet', '~> 3.3.2'
 gem 'albino', '~> 1.3.3'
 ```
@@ -31,7 +33,9 @@ gem 'albino', '~> 1.3.3'
 
 plugins/redcarpet2_markdown.rb 파일을 추가한다. 원본은 https://github.com/nono/Jekyll-plugins에 가면 볼 수 있다. 거의 그대로인데 약간 수정을 했다.
 
-```ruby plugins/redcarpet2_markdown.rb
+**plugins/redcarpet2_markdown.rb**
+
+```ruby
 require 'fileutils'
 require 'digest/md5'
 require 'redcarpet'

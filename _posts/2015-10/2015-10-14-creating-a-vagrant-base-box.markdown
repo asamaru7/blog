@@ -108,6 +108,7 @@ Defaults:vagrant !requiretty
 ```
 
 sudo에 정상적으로 추가되었는지를 확인하기 위해 아래의 명령을 수행해 본다.
+
 ```bash
 $ su vagrant
 $ cd

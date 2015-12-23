@@ -8,7 +8,9 @@ categories: android
 
 SpannableString을 사용하던 중에 사이즈가 다른 두 단어를 세로로 중앙 정렬해야 할 일이 생겼다. 그런데 찾아보니 그런 Span은 없고 비슷한 기능이 있는 것들도 BASELINE 또는 BOTTOM으로만 정렬이 가능했다. 그래서 간단하게 Span 클래스를 하나 만들었다. 단, 주의할 것은 multi line은 지원하지 않는다는 것이다(내가 당장 필요하지 않아서 기능을 구현하지 않았다).
 
-```java VerticalCenterSpan.java  
+**VerticalCenterSpan.java**
+
+```java  
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.text.style.ReplacementSpan;
@@ -41,7 +43,9 @@ styledText.setSpan(new VerticalCenterSpan(), 0, 4, Spannable.SPAN_EXCLUSIVE_EXCL
 
 위 소스는 글자 크기와 색상을 바꾼 후 세로 중앙정렬을 하기 위한 코드다. 그런데 실행해보면 색상이 적용되지 않는다. 이 것과 관련해서는 정확한 이유를 확인해보지는 못했지만 [ForegroundColorSpan is not applied to ReplacementSpan](http://stackoverflow.com/a/28329166)를 보면 버그라고 추정하는 것 같다. 어쨌든 색상도 함께 바꾸어야 할 경우를 위해 조금 변경한 소스는 아래와 같다.
 
-```java ColorVerticalCenterSpan.java
+**ColorVerticalCenterSpan.java**
+
+```java
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;

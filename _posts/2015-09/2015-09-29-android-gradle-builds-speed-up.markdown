@@ -83,6 +83,7 @@ mavenCentral() 대신 jcenter()를 사용해라.
 ### Gradle properties
 
 아래의 Gradle properties를 적용하라(위의 설명이 더 상세하다).
+
 ```ini
 org.gradle.parallel=true
 org.gradle.daemon=true

@@ -28,6 +28,7 @@ categories: html
 인터넷 익스플로러가 호환성 보기가 아닌 지정된 모드로 랜더링되게 하는 방법을 하나씩 알아보자.
 
 ## X-UA-Compatible Meta 선언을 사용하여 브라우저의 호환성 모드를 조정
+
 ```html
 <!DOCTYPE html>
 <html>

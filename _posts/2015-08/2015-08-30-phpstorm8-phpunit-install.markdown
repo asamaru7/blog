@@ -15,6 +15,7 @@ phpstorm8 phpunit 세팅법
 - Default bootstrap file : /home/web/makeus/CZFramework/tests/bootstrap.php
 
 * 해당 서버에서 작업 : 로컬 경로와 서버의 경로가 같아야 실행에 문제가 없음
+
 ```bash
 su -
 cd /

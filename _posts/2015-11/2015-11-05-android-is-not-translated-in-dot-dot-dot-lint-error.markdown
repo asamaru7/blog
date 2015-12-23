@@ -55,6 +55,7 @@ Error:(65) Error: "..." is not translated in "ko"
 `values-ko/strings.xml` 파일에 모든 내용을 넣지 않고 필요한 부분만 넣었으므로 나머지 부분이 번역되지 않았다고 오류가 나는 것이다. 간단한 해결 방법은 `values-ko/strings.xml` 파일에 `values/strings.xml`의 내용을 모두 복사해 넣어준다. 그런데 이 방법은 싫다. 둘다 한국어인데 굳이 두군데를 관리하고 싶지 않다. 이런 경우라면 아래와 같이 `tools:ignore="MissingTranslation"`를 사용해서 문제를 해결할 수 있다.
 
 **Strings.xml**
+
 ```xml
 <resources
     xmlns:tools="http://schemas.android.com/tools"

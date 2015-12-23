@@ -18,8 +18,10 @@ end
 # It has nothing to do with Jekyll, it is simply used by the custom converter below
 module Kramdown
   module Converter
-    AllOptions = /([^\s]+)\s+(.+?)\s+(https?:\/\/\S+|\/\S+)\s*(.+)?\n/i
-    LangCaption = /([^\s]+)\s*(.+)?\n/i
+    #AllOptions = /([^\s]+)\s+(.+?)\s+(https?:\/\/\S+|\/\S+)\s*(.+)?\n/i
+    #LangCaption = /([^\s]+)\s*(.+)?\n/i
+    AllOptions = /([a-z0-9]+)[[:blank:]]+(.+?)[[:blank:]]+(https?:\/\/\S+|\/\S+)[[:blank:]]*([^\n]+)?\n/i
+    LangCaption = /([a-z0-9]+)[[:blank:]]*([^\n]+)?\n/i
 
     class PygmentsHtml < Html
 
@@ -42,6 +44,7 @@ module Kramdown
       def codeProc(el, indent, isSapn)
         attr = el.attr.dup
         lang = extract_code_language!(attr) || @options[:kramdown_default_lang]
+        # STDERR.puts "lang #{el.value}"
 
         codeStr = el.value
         # octopress code 형식 지원
@@ -50,14 +53,22 @@ module Kramdown
           if codeStr =~ AllOptions or codeStr =~ LangCaption
             acceptLang = Pygments::Lexer.find_by_alias("#{$1}")
             if acceptLang != nil
+              # STDERR.puts "lang [#{$1}] [#{$2}]"
               isSapn = false
               lang = "#{$1}"
-              if codeStr =~ LangCaption
-                caption = "<figcaption><span>#{$2}</span></figcaption>"
-              else
+
+              if codeStr =~ AllOptions
+                # STDERR.puts "lang all"
+                # fn = "#{$2}".gsub(/\s+/, "")
                 caption = "<figcaption><span>#{$2}</span><a href='#{$3}'>#{$4 || 'link'}</a></figcaption>"
               end
-              codeStr = codeStr.lines.to_a[1..-1].join  # 첫줄 제거
+              if caption == "" and codeStr =~ LangCaption
+                # STDERR.puts "lang lang"
+                caption = "<figcaption><span>#{$2}</span></figcaption>"
+              end
+              if caption != ""
+                codeStr = codeStr.lines.to_a[1..-1].join  # 첫줄 제거
+              end
             end
           end
         end

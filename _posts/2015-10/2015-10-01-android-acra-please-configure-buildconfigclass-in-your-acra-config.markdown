@@ -16,7 +16,7 @@ E/ACRA: Not adding buildConfig to log. Class Not found : net.yourdomain.BuildCon
 
 우선 ACRA를 초기화하는 코드를 살펴보자. 당연하지만 실제 적용코드가 아닌 부분적으로 정리된 코드다.
 
-```
+```java
 ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
 config.setFormUri("http://dev.yourdomain.net/AppCrash");
 ACRA.init(this, config); // The following line triggers the initialization of ACRA

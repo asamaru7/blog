@@ -302,7 +302,8 @@ public TextAppearanceSpan(String family, int style, int size, ColorStateList col
 span = new TextAppearanceSpan(this/*a context*/, R.style.SpecialTextAppearance);
 ```
 
-styles.xml
+**styles.xml**
+
 ```xml
 <style name="SpecialTextAppearance" parent="@android:style/TextAppearance">
     <item name="android:textColor">@color/color1</item>
@@ -407,7 +408,8 @@ span = new MaskFilterSpan(new EmbossMaskFilter(new float[] { 1, 1, 1 }, 0.4f, 6,
 
 ForegroundColorSpan은 읽기 전용이다. 그것은 인스턴스화된 후에는 글자색을 변경할 수 없다는 뜻이다. 따라서 처음으로 할 일은 MutableForegroundColorSpan을 작성하는 것이다.
 
-MutableForegroundColorSpan.java
+**MutableForegroundColorSpan.java**
+
 ```java
 public class MutableForegroundColorSpan extends ForegroundColorSpan {
 

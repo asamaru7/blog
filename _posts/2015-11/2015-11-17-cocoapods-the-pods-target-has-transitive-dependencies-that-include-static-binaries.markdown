@@ -9,7 +9,9 @@ iOS용 앱 개발을 하면서 CocoaPods을 사용하고 있다. 그리고 Cocoa
 
 이렇게 만든 Sub Module에서 가지는 의존성은 `dependency` 속성을 이용해서 지정한다. 예를들면 아래와 같다.
 
-```ruby ModuleName.podspec
+**ModuleName.podspec**
+
+```ruby
 Pod::Spec.new do |s|
   s.name     = 'ModuleName'
   s.version  = '1.0.0'
@@ -36,7 +38,9 @@ end
 
 어쨌든 일단 CocoaPods에서 이 오류가 나지 않도록 하는 방법은 다음과 같다. 부모 프로젝트의 Podfile에 아래와 같이 추가 한다.
 
-```ruby Podfile
+**Podfile**
+
+```ruby
 pre_install do |installer|
 	def installer.verify_no_static_framework_transitive_dependencies; end
 end

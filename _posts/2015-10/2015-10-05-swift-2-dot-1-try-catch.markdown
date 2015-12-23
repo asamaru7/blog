@@ -39,6 +39,7 @@ throw VendingMachineError.InsufficientFunds(coinsNeeded: 5)
 조금더 자세히 보자면 ErrorType은 enum으로 정의될 수 있다. Swift에서 try, catch는 항상 ErrorType를 throw 한다. Java에서는 오류 유형을 클래스로 취급하므로 종류마다 클래스를 정의하므로 개수가 많아지고 오류를 처리에 따라 묶어서 관리하기 어렵다. 하지만 Swift의 ErrorType는 관련 오류를 enum으로 정리할 수 있기 때문에 정리가 쉽다.
 
 예들들어 String을 Int로 변환하는 함수를 가정할 경우 발생할 수 있는 오류는 String이 nil이거나 숫자로 변환될 수 없는 문자열일 수 있다. 이를 ErrorType 로 구현하면 다음과 같이 정의할 수 있다.
+
 ```swift
 enum ParseError : ErrorType {
     case Nil // nil 인 경우

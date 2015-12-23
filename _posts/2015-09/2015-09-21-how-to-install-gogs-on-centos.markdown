@@ -71,17 +71,20 @@ $ passwd gogs
 우선 DB를 세팅한다.
 
 root 계정을 설정하는데 필요없다면 하지 않아도 된다. 기존에 DB가 이미 설치되어 있다면 당연히 이 부분이 처리가 되어 있을테니 하지 말자.
+
 ```bash
 mysqladmin -u root password "${MYSQL_PASSWORD}"
 mysqladmin -u root --password="${MYSQL_PASSWORD}" password "${MYSQL_PASSWORD}"
 ```
 
 하지만 DB는 만들어 줘야 한다.
+
 ```bash
 mysql -u root -p${MYSQL_PASSWORD} -e "CREATE DATABASE IF NOT EXISTS ${APP_NAME}; use ${APP_NAME}; set global storage_engine=INNODB;"
 ```
 
 **예시**
+
 ```bash
 mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS gogs; use gogs; set global storage_engine=INNODB;"
 ```
@@ -100,6 +103,7 @@ http://userdomain:3000/
 이제는 도메인 연결을 할 차례이다.
 
 **httpd 2 기준**
+
 ```apacheconf
 <VirtualHost *:80>
   ServerName your.domain.com
@@ -119,6 +123,7 @@ http://userdomain:3000/
 나의 경우는 apache를 사용중이라 위와 같이 설정하면 되나 nginx를 사용하는 경우라면 아래를 참고하자(packager.io에 안내된 내용이다.).
 
 **nginx**
+
 ```bash
 cat > /etc/nginx/sites-available/default <<EOF
 server {

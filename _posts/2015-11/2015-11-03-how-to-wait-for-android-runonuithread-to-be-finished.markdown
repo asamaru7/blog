@@ -27,6 +27,7 @@ categories: ["android","java"]
 일단 기존 소스와 해결된 소스부터 보자. 당연히 동작하는 소스는 아니다. 하지만 무엇을 하고 있는지를 확인하는데는 충분할 것으로 본다.
 
 **오류가 발생하던 소스**
+
 ```java
 public class PreviewPagerAdapterBase<T extends DataItem> extends PagerAdapter<T> {
   private final Runnable notifyDataSetChangedRunnalbe = ;
@@ -48,6 +49,7 @@ public class PreviewPagerAdapterBase<T extends DataItem> extends PagerAdapter<T>
 ```
 
 **수정된 소스**
+
 ```java
 public class PreviewPagerAdapterBase<T extends DataItem> extends PagerAdapter<T> {
   private final Runnable notifyDataSetChangedRunnalbe = new Runnable() {

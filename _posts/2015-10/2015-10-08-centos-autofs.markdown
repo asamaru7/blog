@@ -6,17 +6,20 @@ comments: true
 categories: linux
 ---
 ## 설치
+
 ```bash
 yum install -y autofs
 ```
 
 ## 설정
+
 ```bash
 # 서버 부팅시 자동 시작
 /sbin/chkconfig --add autofs
 /sbin/chkconfig --level 35 autofs on
 ```
 ## mount 설정
+
 ```bash
 vi /etc/auto.master
 
@@ -29,6 +32,7 @@ service autofs restart
 ```
 
 ## 관리
+
 ```bash
 # 데몬 재시작
 service autofs restart
@@ -41,6 +45,7 @@ service autofs reload
 ```
 
 ## Troubleshooting
+
 ```bash
 # 동작 로그 보기
 service autofs stop

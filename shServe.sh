@@ -6,4 +6,6 @@ realpath() {
 base=$(dirname $(realpath "$0"))
 cd $base
 
+# todo 데이터 검사 [^\n]\n```([a-zA-Z0-9]+)
+
 jekyll serve

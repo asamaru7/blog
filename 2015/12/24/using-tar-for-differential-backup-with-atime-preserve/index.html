@@ -168,17 +168,17 @@
 
 <p>이제부터는 증분 백업에 대해서 본격적으로 알아보자. 그런데 사실은 아주 간단하다. <code>-g</code> 옵션을 사용해서 백업 파일에 대한 기록을 남겨서 보관하는 것만 추가하면 기존의 tar 압축과 다를 것이 없다. 예를들어 아래의 스크립트를 보자.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>tar -g backup.snap -zcf backup.tgz /backup/target/
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>tar -g backup.snap -zcf backup.tgz /backup/target/
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>위처럼 실행을 하면 <code>/backup/target/</code> 폴더를 <code>backup.tgz</code>로 압축해준다. 그런데 일반 압축과 차이는 <code>backup.snap</code>라는 파일이 하나 더 생긴다는 것이다. 이 파일은 압축한 파일들의 정보로 이후 증분 백업시 데이터로 사용되므로 보관해야 한다.</p>
+<p>위처럼 실행을 하면 <code>/backup/target/</code> 폴더를 <code>backup.tgz</code>로 압축해준다. 그런데 일반 압축과의 차이는 <code>backup.snap</code>라는 파일이 하나 더 생긴다는 것이다. 이 파일은 압축한 파일들의 정보로 이후 증분 백업시 데이터로 사용되므로 보관해야 한다.</p>
 
 <p>방금했던 압축은 증분이 아닌 full 백업이다. <code>-g</code> 옵션으로 넘겨주는 데이터가 없다면 이전 백업을 확인할 수 없으므로 full 백업을 한다. 자.. 이제 다시 아래의 스크립트를 보자.</p>
 
 <figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>cp backup.snap backup-1.snap
-<span class="nv">$ </span>tar -g backup-1.snap -zcf backup-1.tgz /backup/target/
+2</pre></div></td><td class="code"><div class="highlight"><pre>cp backup.snap backup-1.snap
+tar -g backup-1.snap -zcf backup-1.tgz /backup/target/
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
@@ -187,8 +187,8 @@
 <p>마지막으로 이 상태에서 다시 증분 백업하는 것을 한번만 더 보자.</p>
 
 <figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>cp backup-1.snap backup-2.snap
-<span class="nv">$ </span>tar -g backup-2.snap -zcf backup-2.tgz /backup/target/
+2</pre></div></td><td class="code"><div class="highlight"><pre>cp backup-1.snap backup-2.snap
+tar -g backup-2.snap -zcf backup-2.tgz /backup/target/
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 

@@ -103,422 +103,41 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/">
-								AutoCompleteAdapter(ArrayAdapter with Filterable) 사용시 비주기적 오류 발생 해결
+							<a class="title" href="http://blog.asamaru.net/2015/09/18/google-translate-exclude-words/">
+								구글 번역 사용시 특정 영역을 번역에서 제외하기
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/">2015.09.18.</span></a>
+								<a href="http://blog.asamaru.net/2015/09/18/google-translate-exclude-words/">2015.09.18.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>AppCompatAutoCompleteTextView를 사용하고자 할때 필요한 것이 데이터를 넘겨주는 Adapter이다. 단, 이 Adepter는 <code>extends ListAdapter &amp; Filterable</code> 가 적용되어야 한다. 그래서 보통은 <code>public class StringAutoCompleteAdapter extends ArrayAdapter&lt;String&gt; implements Filterable</code> 형태의 구현을 많이 사용한다. 그리고 대부분의 경우에 AutoCompleteTextView를 사용하는 이유는 검색어 자동완성 등에 사용되고 이 데이터는 서버에서 데이터를 호출해서 적용하도록 한다.</p>
+							<p>이 블로그에는 구글 번역 기능이 붙어 있다. 관련해서 포스팅한 글 <a href="/2015/09/05/octopress-google-translate/">옥토프레스에 구글 번역기 달기</a>도 있다.
+현재 테스트로 몇가지 언어를 선택 가능하도록 하고 사용중인데 문제가 생겼다. 기존에는 기능을 달아 놓고 번역이 되는 것만 확인하고는 자세히 보지 않아서 몰랐는데 오늘 확인하니 소스 코드까지 부분적으로 번역이 되는 것이 아닌가. 사실 이 블로그의 주된 내용이 프로그래밍 관련이라 코드 블록이 아주 많다.
+그래서 방법을 구글 번역 메뉴얼에서 보니 다음과 같은 방법이 나와있었다.</p>
 
-<p>위에 설명한 내용대로 하나의 예시를 보면 아래와 같다(미리 설명하자면 아래의 예제는 잘못된 예제이다. 생각지 못한 오류를 비주기적으로 만나게 된다).</p>
+<h2 id="section">부분적으로 번역 제외하기</h2>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87
-88
-89
-90
-91
-92</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">package</span> <span class="n">net</span><span class="o">.</span><span class="na">asamaru</span><span class="o">.</span><span class="na">android</span><span class="o">.</span><span class="na">test</span><span class="o">;</span>
+<p>해당 영역을 둘러싸고 있는 Tag에 notranslate Class를 준다.</p>
 
-<span class="kn">import</span> <span class="nn">android.content.Context</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">android.widget.ArrayAdapter</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">android.widget.Filter</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">android.widget.Filterable</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">com.google.gson.Gson</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.google.gson.reflect.TypeToken</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.io.InputStreamReader</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.HttpURLConnection</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.MalformedURLException</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.URL</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.URLEncoder</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
-
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">StringAutoCompleteAdapter</span> <span class="kd">extends</span> <span class="n">ArrayAdapter</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">Filterable</span> <span class="o">{</span>
-	<span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">resultList</span><span class="o">;</span>
-
-	<span class="kd">public</span> <span class="nf">StringAutoCompleteAdapter</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="kt">int</span> <span class="n">textViewResourceId</span><span class="o">)</span> <span class="o">{</span>
-		<span class="kd">super</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">textViewResourceId</span><span class="o">);</span>
-	<span class="o">}</span>
-
-	<span class="nd">@Override</span>
-	<span class="kd">public</span> <span class="kt">int</span> <span class="nf">getCount</span><span class="o">()</span> <span class="o">{</span>
-		<span class="k">return</span> <span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-	<span class="o">}</span>
-
-	<span class="nd">@Override</span>
-	<span class="kd">public</span> <span class="n">String</span> <span class="nf">getItem</span><span class="o">(</span><span class="kt">int</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
-		<span class="k">if</span> <span class="o">((</span><span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">&gt;=</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
-			<span class="k">return</span> <span class="n">resultList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">index</span><span class="o">);</span>
-		<span class="o">}</span>
-		<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-	<span class="o">}</span>
-
-	<span class="nd">@Override</span>
-	<span class="kd">public</span> <span class="n">Filter</span> <span class="nf">getFilter</span><span class="o">()</span> <span class="o">{</span>
-		<span class="k">return</span> <span class="k">new</span> <span class="nf">Filter</span><span class="o">()</span> <span class="o">{</span>
-			<span class="nd">@Override</span>
-			<span class="kd">protected</span> <span class="n">FilterResults</span> <span class="nf">performFiltering</span><span class="o">(</span><span class="n">CharSequence</span> <span class="n">constraint</span><span class="o">)</span> <span class="o">{</span>
-				<span class="n">FilterResults</span> <span class="n">filterResults</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">FilterResults</span><span class="o">();</span>
-				<span class="k">if</span> <span class="o">(</span><span class="n">constraint</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-					<span class="n">resultList</span> <span class="o">=</span> <span class="n">autocomplete</span><span class="o">(</span><span class="n">constraint</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
-					<span class="k">if</span> <span class="o">(</span><span class="n">resultList</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-						<span class="n">filterResults</span><span class="o">.</span><span class="na">values</span> <span class="o">=</span> <span class="n">resultList</span><span class="o">;</span>
-						<span class="n">filterResults</span><span class="o">.</span><span class="na">count</span> <span class="o">=</span> <span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-					<span class="o">}</span>
-				<span class="o">}</span>
-				<span class="k">return</span> <span class="n">filterResults</span><span class="o">;</span>
-			<span class="o">}</span>
-
-			<span class="nd">@Override</span>
-			<span class="kd">protected</span> <span class="kt">void</span> <span class="nf">publishResults</span><span class="o">(</span><span class="n">CharSequence</span> <span class="n">constraint</span><span class="o">,</span> <span class="n">FilterResults</span> <span class="n">results</span><span class="o">)</span> <span class="o">{</span>
-				<span class="k">if</span> <span class="o">(</span><span class="n">results</span><span class="o">.</span><span class="na">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-					<span class="n">notifyDataSetChanged</span><span class="o">();</span>
-				<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-					<span class="n">notifyDataSetInvalidated</span><span class="o">();</span>
-				<span class="o">}</span>
-			<span class="o">}</span>
-		<span class="o">};</span>
-	<span class="o">}</span>
-
-	<span class="kd">public</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="nf">autocomplete</span><span class="o">(</span><span class="n">String</span> <span class="n">input</span><span class="o">)</span> <span class="o">{</span>
-		<span class="n">HttpURLConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-		<span class="n">StringBuilder</span> <span class="n">jsonResults</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StringBuilder</span><span class="o">();</span>
-		<span class="k">try</span> <span class="o">{</span>
-			<span class="n">URL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">URL</span><span class="o">(</span><span class="s">&quot;http://www.abc.com/search/?kwd=&quot;</span> <span class="o">+</span> <span class="n">URLEncoder</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="n">input</span><span class="o">,</span> <span class="s">&quot;utf8&quot;</span><span class="o">));</span>
-			<span class="n">conn</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="n">url</span><span class="o">.</span><span class="na">openConnection</span><span class="o">();</span>
-			<span class="n">InputStreamReader</span> <span class="n">in</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">InputStreamReader</span><span class="o">(</span><span class="n">conn</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">());</span>
-			<span class="kt">int</span> <span class="n">read</span><span class="o">;</span>
-			<span class="kt">char</span><span class="o">[]</span> <span class="n">buff</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[</span><span class="mi">1024</span><span class="o">];</span>
-			<span class="k">while</span> <span class="o">((</span><span class="n">read</span> <span class="o">=</span> <span class="n">in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buff</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
-				<span class="n">jsonResults</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">buff</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">read</span><span class="o">);</span>
-			<span class="o">}</span>
-		<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">MalformedURLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-			<span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-			<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-		<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-			<span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-			<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-		<span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
-			<span class="k">if</span> <span class="o">(</span><span class="n">conn</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-				<span class="n">conn</span><span class="o">.</span><span class="na">disconnect</span><span class="o">();</span>
-			<span class="o">}</span>
-		<span class="o">}</span>
-		<span class="k">return</span> <span class="o">(</span><span class="k">new</span> <span class="nf">Gson</span><span class="o">()).</span><span class="na">fromJson</span><span class="o">(</span><span class="n">jsonResults</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="k">new</span> <span class="n">TypeToken</span><span class="o">&lt;</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;()</span> <span class="o">{}.</span><span class="na">getType</span><span class="o">());</span>
-	<span class="o">}</span>
-<span class="o">}</span>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-html"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">&quot;notranslate&quot;</span><span class="nt">&gt;</span>번역하지 말아야 할 영역<span class="nt">&lt;/span&gt;</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>위의 예제를 보면 얼핏봐서는 문제가 없어 보인다. 실제로 동작도 잘된다. 하지만 아주 낮은 빈도로 Exception이 발생해 앱이 죽는다. 이 문제로 인하여 원인을 찾지못해 고생하는 경우가 많다. 내가 작업하면서 발생했던 오류는 다음과 같다.</p>
+<h2 id="section-1">문서 전체를 번역 제외하기</h2>
 
-<ul>
-  <li>The content of the adapter has changed but ListView did not receive a notification.</li>
-  <li>java.lang.NullPointerException: Attempt to invoke virtual method ‘java.lang.String java.lang.Object.toString()’ on a null object reference</li>
-</ul>
+<p>Html의 head 영역에 아래의 Meta 정보를 추가한다.</p>
 
-<p>내부적 동작 코드들을 보면 이 외에도 View의 구성이나 기타 코딩에 따라 다른 오류가 날 수도 있을 것 같다. 하지만 원인은 대부분 아래의 부분 때문이다(정확하게는 저 부분에서 오류가 나는 것이 아니라 저 부분이 들어간 위치 때문에 다른 부분에서 오류가 난다).</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">resultList</span> <span class="o">=</span> <span class="n">autocomplete</span><span class="o">(</span><span class="n">constraint</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-html"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">&quot;google&quot;</span> <span class="na">content=</span><span class="s">&quot;notranslate&quot;</span><span class="nt">&gt;</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>이유를 설명하자면 Filter의 performFiltering() 함수는 백그라운드 쓰레드에서 동작하도록 되어 있다. 그런데 이 함수 안에서 Adapter의 데이터를 변경하는 코드가 들어있기 때문에 Adapter가 데이터의 변경을 확인하는 시점과 notify 되는 시점이 엉킬 경우 오류를 내게 된다. 따라서 타이밍에 따라서 오류가 발생하기도 안하기도 하는 것이다(나의 경우는 키워드를 입력하거나 지우는 등의 변경이 빠르게 반복될 때 데이터의 변경이 빈번히 반복되면서 오류가 나타났다). 실제로 오류를 재현하기가 어려울 정도로 잘 안나오는 경우도 있었다.</p>
+<h2 id="section-2">옥토프레스에 적용하기</h2>
 
-<p>그럼 잘못된 예제와 오류, 원인을 알아봤으니 정확한 처리 예시를 보자.</p>
+<p>문제는 옥토프레스의 결과 HTML은 직접 만드는 것이 아니라는 것이다. 여러가지 방법이 있을 수 있으나 나는 code block만 검색에서 제외되면 되므로 그냥 관련 플러그인을 수정해 버렸다. <code>backtick_code_block.rb</code> 파일에서 <code>&lt;figure class='code'&gt;</code> 부분을 찾아서 <code>&lt;figure class='code notranslate'&gt;</code>로 바꿔 버렸다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87
-88
-89
-90
-91
-92
-93
-94
-95</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">package</span> <span class="n">net</span><span class="o">.</span><span class="na">asamaru</span><span class="o">.</span><span class="na">android</span><span class="o">.</span><span class="na">test</span><span class="o">;</span>
+<p>이것으로 모든 것이 해결된 것은 아니다. 문장 내에서 사용된 코드 블록은 backtick_code_block 플러그인에서 처리하지 않으니 다른 플러그인을 고쳐야 하는데 어딘지 찾지 못했다. 아마도 markdown 해석 플러그인 내부에 있을텐데 gem으로 설치된 것인지 내부에서는 보이지 않는 듯하다(사실 귀찮아서 자세히 찾지 않았다. 게다가 Ruby를 거의 모른다.)</p>
 
-<span class="kn">import</span> <span class="nn">android.content.Context</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">android.widget.ArrayAdapter</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">android.widget.Filter</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">android.widget.Filterable</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">com.google.gson.Gson</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.google.gson.reflect.TypeToken</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.io.InputStreamReader</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.HttpURLConnection</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.MalformedURLException</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.URL</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.URLEncoder</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
-
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">StringAutoCompleteAdapter</span> <span class="kd">extends</span> <span class="n">ArrayAdapter</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">Filterable</span> <span class="o">{</span>
-	<span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">resultList</span><span class="o">;</span>
-
-	<span class="kd">public</span> <span class="nf">StringAutoCompleteAdapter</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="kt">int</span> <span class="n">textViewResourceId</span><span class="o">)</span> <span class="o">{</span>
-		<span class="kd">super</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">textViewResourceId</span><span class="o">);</span>
-	<span class="o">}</span>
-
-	<span class="nd">@Override</span>
-	<span class="kd">public</span> <span class="kt">int</span> <span class="nf">getCount</span><span class="o">()</span> <span class="o">{</span>
-		<span class="k">return</span> <span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-	<span class="o">}</span>
-
-	<span class="nd">@Override</span>
-	<span class="kd">public</span> <span class="n">String</span> <span class="nf">getItem</span><span class="o">(</span><span class="kt">int</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
-		<span class="k">if</span> <span class="o">((</span><span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">&gt;=</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
-			<span class="k">return</span> <span class="n">resultList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">index</span><span class="o">);</span>
-		<span class="o">}</span>
-		<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-	<span class="o">}</span>
-
-	<span class="nd">@Override</span>
-	<span class="kd">public</span> <span class="n">Filter</span> <span class="nf">getFilter</span><span class="o">()</span> <span class="o">{</span>
-		<span class="k">return</span> <span class="k">new</span> <span class="nf">Filter</span><span class="o">()</span> <span class="o">{</span>
-			<span class="nd">@Override</span>
-			<span class="kd">protected</span> <span class="n">FilterResults</span> <span class="nf">performFiltering</span><span class="o">(</span><span class="n">CharSequence</span> <span class="n">constraint</span><span class="o">)</span> <span class="o">{</span>
-				<span class="n">FilterResults</span> <span class="n">filterResults</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">FilterResults</span><span class="o">();</span>
-				<span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">queryResults</span><span class="o">;</span>
-				<span class="k">if</span> <span class="o">((</span><span class="n">constraint</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">constraint</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">))</span> <span class="o">{</span>
-					<span class="n">queryResults</span> <span class="o">=</span> <span class="n">autocomplete</span><span class="o">(</span><span class="n">constraint</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
-				<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-					<span class="n">queryResults</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
-				<span class="o">}</span>
-				<span class="n">filterResults</span><span class="o">.</span><span class="na">values</span> <span class="o">=</span> <span class="n">queryResults</span><span class="o">;</span>
-				<span class="n">filterResults</span><span class="o">.</span><span class="na">count</span> <span class="o">=</span> <span class="n">queryResults</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-				<span class="k">return</span> <span class="n">filterResults</span><span class="o">;</span>
-			<span class="o">}</span>
-
-			<span class="nd">@Override</span>
-			<span class="kd">protected</span> <span class="kt">void</span> <span class="nf">publishResults</span><span class="o">(</span><span class="n">CharSequence</span> <span class="n">constraint</span><span class="o">,</span> <span class="n">FilterResults</span> <span class="n">results</span><span class="o">)</span> <span class="o">{</span>
-				<span class="c1">// noinspection unchecked</span>
-				<span class="n">resultList</span> <span class="o">=</span> <span class="o">(</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;)</span> <span class="n">results</span><span class="o">.</span><span class="na">values</span><span class="o">;</span>
-				<span class="k">if</span> <span class="o">(</span><span class="n">results</span><span class="o">.</span><span class="na">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-					<span class="n">notifyDataSetChanged</span><span class="o">();</span>
-				<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-					<span class="n">notifyDataSetInvalidated</span><span class="o">();</span>
-				<span class="o">}</span>
-			<span class="o">}</span>
-		<span class="o">};</span>
-	<span class="o">}</span>
-
-	<span class="kd">public</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="nf">autocomplete</span><span class="o">(</span><span class="n">String</span> <span class="n">input</span><span class="o">)</span> <span class="o">{</span>
-		<span class="n">HttpURLConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-		<span class="n">StringBuilder</span> <span class="n">jsonResults</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StringBuilder</span><span class="o">();</span>
-		<span class="k">try</span> <span class="o">{</span>
-			<span class="n">URL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">URL</span><span class="o">(</span><span class="s">&quot;http://www.abc.com/search/?kwd=&quot;</span> <span class="o">+</span> <span class="n">URLEncoder</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="n">input</span><span class="o">,</span> <span class="s">&quot;utf8&quot;</span><span class="o">));</span>
-			<span class="n">conn</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="n">url</span><span class="o">.</span><span class="na">openConnection</span><span class="o">();</span>
-			<span class="n">InputStreamReader</span> <span class="n">in</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">InputStreamReader</span><span class="o">(</span><span class="n">conn</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">());</span>
-			<span class="kt">int</span> <span class="n">read</span><span class="o">;</span>
-			<span class="kt">char</span><span class="o">[]</span> <span class="n">buff</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[</span><span class="mi">1024</span><span class="o">];</span>
-			<span class="k">while</span> <span class="o">((</span><span class="n">read</span> <span class="o">=</span> <span class="n">in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buff</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
-				<span class="n">jsonResults</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">buff</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">read</span><span class="o">);</span>
-			<span class="o">}</span>
-		<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">MalformedURLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-			<span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-			<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-		<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-			<span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-			<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-		<span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
-			<span class="k">if</span> <span class="o">(</span><span class="n">conn</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-				<span class="n">conn</span><span class="o">.</span><span class="na">disconnect</span><span class="o">();</span>
-			<span class="o">}</span>
-		<span class="o">}</span>
-		<span class="k">return</span> <span class="o">(</span><span class="k">new</span> <span class="nf">Gson</span><span class="o">()).</span><span class="na">fromJson</span><span class="o">(</span><span class="n">jsonResults</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="k">new</span> <span class="n">TypeToken</span><span class="o">&lt;</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;()</span> <span class="o">{}.</span><span class="na">getType</span><span class="o">());</span>
-	<span class="o">}</span>
-<span class="o">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>주요 변경 지점은 <code>getFilter()</code>이다. 기존에 <code>resultList = autocomplete(constraint.toString());</code> 부분을 통해 미리 Adapter의 데이터를 변경하던 것을 publishResults로 옮긴 것이다. 그리고 검색된 결과가 없더라도 빈 ArrayList를 만들어 넣어준 것이다.
-코드 상으로는 큰 차이가 나지않고 굳이 이렇게 해야하나 싶지만 내부 동작 방식을 보면 이렇게 하지 않으면 앞서 설명한 것과 같이 예기치 못한 상황을 만날 수 있다.</p>
-
-<p><strong>첨언 :</strong></p>
-
-<ul>
-  <li>안드로이드는 조금만 잘못써도 오류가 발생하는 이런 경우를 많이 보게 되는데 아위운 점은 정확한 사용법을 제시하는 메뉴얼을 찾기 어렵다는 것이다.</li>
-  <li>코드 중간에 보면 <code>// noinspection unchecked</code> 부분이 있는데 크게 중요한 부분은 아니지만 이 부분을 제외하면 warning이 뜬다(안드로이드 스튜디오에서 노란 밑줄). 이 warning을 안드로이드 스튜디오에서 숨기는 역할을 하는 코드다.</li>
-</ul>
+<p>어쨌든 이로써 소스 코드 영역은 번역에서 제외되어 조금은 나아졌다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -532,8 +151,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/09/18/google-translate-exclude-words/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/09/18/google-translate-exclude-words/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

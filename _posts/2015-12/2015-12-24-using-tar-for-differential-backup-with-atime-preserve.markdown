@@ -37,7 +37,7 @@ categories: linux
 tar -g backup.snap -zcf backup.tgz /backup/target/
 ```
 
-위처럼 실행을 하면 `/backup/target/` 폴더를 `backup.tgz`로 압축해준다. 그런데 일반 압축과 차이는 `backup.snap`라는 파일이 하나 더 생긴다는 것이다. 이 파일은 압축한 파일들의 정보로 이후 증분 백업시 데이터로 사용되므로 보관해야 한다.
+위처럼 실행을 하면 `/backup/target/` 폴더를 `backup.tgz`로 압축해준다. 그런데 일반 압축과의 차이는 `backup.snap`라는 파일이 하나 더 생긴다는 것이다. 이 파일은 압축한 파일들의 정보로 이후 증분 백업시 데이터로 사용되므로 보관해야 한다.
 
 방금했던 압축은 증분이 아닌 full 백업이다. `-g` 옵션으로 넘겨주는 데이터가 없다면 이전 백업을 확인할 수 없으므로 full 백업을 한다. 자.. 이제 다시 아래의 스크립트를 보자.
 

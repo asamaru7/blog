@@ -103,87 +103,45 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation/">
-								mysql_secure_installation 자동화
+							<a class="title" href="http://blog.asamaru.net/2015/12/09/vagrant-box-repackage/">
+								Vagrant box repackage(unpacked box에서 box 파일 만들기)
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation/">2015.12.04.</span></a>
+								<a href="http://blog.asamaru.net/2015/12/09/vagrant-box-repackage/">2015.12.09.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>이전 글 <a href="2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a>에서 MariaDB를 설치하면서 <code>mysql_secure_installation</code> 명령을 자동화하는 부분을 언급했었다. 이 글에서는 이를 설명하려고 한다. 우선 바로 만들어둔 bash shell script를 보자.</p>
+							<p>vagrant box를 생성하는 것에 대해서는 <a href="/2015/10/14/creating-a-vagrant-base-box/">Vagrant BASE Box 만들기(CentOS 7)</a>에서 설명했었다. 이번에도 box를 생성하는 것에 대한 것이지만 대상이 다르다. 기존 글에서는 생성한 가상 머신을 대상으로 box 파일을 만들었지만 아래에서 설명하고자 하는 것은 <code>vagrant box add</code> 명령을 사용하거나 <code>vagrant up</code> 명령을 통해 box 파일을 unpacked(~/.vagrant.d/boxes에 보관)한 것을 다시 배포용(distributable) box 파일로 만드는 것이다.</p>
 
-<p><strong>mysql_secure_installation_automation.sh</strong></p>
+<p>이 방법이 필요한 경우를 예를 들자면 box를 생성하고 unpacked 했지만 box 파일을 배포 경로(원격/로컬)로 이동하지 않고 지워버린 경우에 사용할 수 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
+<p>vagrant는 이런 경우를 위해 <code>repackage</code> 명령을 제공한다. <a href="https://docs.vagrantup.com/v2/cli/box.html">VAGRANT DOCS : BOX REPACKAGE</a>에는 아래와 같이 설명되어 있다.</p>
 
-<span class="c"># https://gist.github.com/Mins/4602864</span>
+<blockquote>
+  <p>Command: vagrant box repackage NAME PROVIDER VERSION</p>
 
-yum -y install expect
+  <p>This command repackages the given box and puts it in the current directory so you can redistribute it. The name, provider, and version of the box can be retrieved using vagrant box list.</p>
 
-<span class="c"># Not required in actual script</span>
-<span class="nv">MYSQL_ROOT_PASSWORD</span><span class="o">=</span>
+  <p>When you add a box, Vagrant unpacks it and stores it internally. The original *.box file is not preserved. This command is useful for reclaiming a *.box file from an installed Vagrant box.</p>
+</blockquote>
 
-<span class="nv">SECURE_MYSQL</span><span class="o">=</span><span class="k">$(</span>expect -c <span class="s2">&quot;</span>
-<span class="s2">set timeout 3</span>
-<span class="s2">spawn mysql_secure_installation</span>
-<span class="s2">expect \&quot;Enter current password for root (enter for none):\&quot;</span>
-<span class="s2">send \&quot;$MYSQL\r\&quot;</span>
-<span class="s2">expect \&quot;Change the root password?\&quot;</span>
-<span class="s2">send \&quot;n\r\&quot;</span>
-<span class="s2">expect \&quot;Remove anonymous users?\&quot;</span>
-<span class="s2">send \&quot;y\r\&quot;</span>
-<span class="s2">expect \&quot;Disallow root login remotely?\&quot;</span>
-<span class="s2">send \&quot;y\r\&quot;</span>
-<span class="s2">expect \&quot;Remove test database and access to it?\&quot;</span>
-<span class="s2">send \&quot;y\r\&quot;</span>
-<span class="s2">expect \&quot;Reload privilege tables now?\&quot;</span>
-<span class="s2">send \&quot;y\r\&quot;</span>
-<span class="s2">expect eof</span>
-<span class="s2">&quot;</span><span class="k">)</span>
+<p><code>repackage</code> 명령은 NAME, PROVIDER, VERSION 인자 모두를 지정해야 한다. 각 인자에 어떤 정보를 넣는지 알아보자.</p>
 
-<span class="nb">echo</span> <span class="s2">&quot;$SECURE_MYSQL&quot;</span>
+<ul>
+  <li>NAME : <code>vagrant box list</code> 명령으로 확인할 수 있는 box명을 지정한다.</li>
+  <li>PROVIDER : 가상 머신을 구동하는 PROVIDER를 지정한다.</li>
+  <li>VERSION : box의 버전을 지정한다.</li>
+</ul>
+
+<p>우선 실제로 사용하는 예시를 보자.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>vagrant box repackage centos7-dev-1 virtualbox 0
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>이 스크립트는 <a href="https://gist.github.com/Mins/4602864">mysql_secure_installation automation</a> 스크립트를 참고하여 CentOS에 맞게 조금 수정한 것이다.</p>
+<p>이 명령을 실행하면 box 파일이 실행한 경로에 생성된다.</p>
 
-<p>위 스크립트를 mysql_secure_installation_automation.sh 파일로 저장했다면 아래와 같이 실행하면 된다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>chmod <span class="m">700</span> mysql_secure_installation_automation.sh
-<span class="nv">$ </span>./mysql_secure_installation_automation.sh
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>특별히 설명할 것도 없지만 간략하게나마 원리를 설명하자면 <code>expect</code>라는 도구를 사용해서 사용자 입력을 대신하도록 하는 것이다. 이를 응용하면 <code>mysql_secure_installation</code> 외에도 여러가지 상황에 적용할 수 있다. 나의 경우는 <code>expect</code>를 이용해서 ssh 비밀번호 자동 입력 기능을 만들어 사용하고 있었다. 사실 ssh의 경우는 key를 등록하는 방식으로 비밀번호 없이 로그인이 가능하고 비밀번호를 외부로 노출하는 것이 보안상 문제가 있지만 간단하게 접속이 필요하고 보안상의 이슈가 없는 곳에서 유용하게 사용하고 있다.</p>
+<p>예시를 보면 어떻게 사용해야 하는지 이해가 될 것이다. NAME은 별다를 것이 없고 PROVIDER의 경우는 일반적으로 <code>virtualbox</code>를 지정한다(box 생성시 virtualbox를 대부분 사용하므로). VERSION의 경우는 별도의 version을 사용하지 않았다면 그냥 0을 입력하면 된다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -197,8 +155,8 @@ yum -y install expect
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/12/09/vagrant-box-repackage/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/12/09/vagrant-box-repackage/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

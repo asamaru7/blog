@@ -103,21 +103,52 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/09/03/android-http-ping/">
-								안드로이드에서 android.os.NetworkOnMainThreadException을 발생시키지 않고 HTTP Ping 보내기
+							<a class="title" href="http://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/">
+								안드로이드 View.isLaidOut / View.post
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/09/03/android-http-ping/">2015.09.03.</span></a>
+								<a href="http://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/">2015.09.04.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>오늘은 작업을 하던 중간에 서버로 ping을 보내야 하는 작업이 생겼다. 정확하게는 서버에 간단한 값을 전송해서 로그로 쌓기 위한 작업이다.
-우선 안드로이드는 main thread에서 network 작업을 할 수 없도록 되어있다. 억지로 하려고하면 android.os.NetworkOnMainThreadException이 발생한다.</p>
+							<p>안드로이드 View는 isLaidOut이라는 함수를 가지고 있다. 단, API 19(KITKAT)부터 사용가능하다. 사실 그 이하의 기기에서도 다른 방법을 통해서 사용가능하다. 아주 간단히. 이 부분은 나중에 다시 설명하겠다.</p>
 
-<p>간단히 생각해서 handler를 사용하는 방법도 있으나 메인 handler를 사용하면 마찬가지다.
-그래서 가장 간단한 방법은 AsyncTask를 사용하는 것이다.</p>
+<p>우선 isLaidOut 함수에 대해 안드로이드 메뉴얼에는 다음과 같이 나와있다.</p>
 
-<p>아래는 url을 인자로 받아 http로 접속한 후 response가 200이 나왔는지를 반환한다.</p>
+<blockquote>
+  <p>public boolean isLaidOut ()</p>
+</blockquote>
+
+<blockquote>
+  <p>Added in API level 19</p>
+
+  <p>Returns true if this view has been through at least one layout since it was last attached to or detached from a window.</p>
+</blockquote>
+
+<p>쉽게 말해서 “해당 View가 layout이 그려졌는가?”를 반환하는 함수다.</p>
+
+<p>다음은 post 함수에 대한 안드로이드 메뉴얼이다.</p>
+
+<blockquote>
+  <p>public boolean post (Runnable action)</p>
+</blockquote>
+
+<blockquote>
+  <p>Added in API level 1</p>
+
+  <p>Causes the Runnable to be added to the message queue. The runnable will be run on the user interface thread.</p>
+</blockquote>
+
+<p>Runnalbe을 넘겨 받아 UIThread에서 실행시켜준다고 한다.</p>
+
+<p>그래서 어디에 써먹을 수 있나?
+한가지 예를들어 보자면 TextView의 getLineCount()의 반환값 문제를 해결할 수 있다.</p>
+
+<p>구글에서 “<a href="https://www.google.co.kr/search?q=isLaidOut&amp;gws_rd=ssl#newwindow=1&amp;safe=off&amp;q=textview+getlinecount">textview getlinecount</a>“로 검색하면 많이 나오는 것 중 하나가 “textview.getLineCount always 0 in android”라는 질문이다.</p>
+
+<p>textview의 getLineCount()를 요청하면 항상 0이 나오는 문제가 있다는 얘기인데, 이런 문제의 원인은 getLineCount() 함수가 TextView가 그려진 후 그 상황에 맞는 라인수를 반환한다는 것이다. 따라서 그려지기 전에는 항상 0을 반환한다.</p>
+
+<p>그럼 이 문제를 isLaidOut을 써서 해결해보자.</p>
 
 <figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
@@ -131,32 +162,76 @@
 10
 11
 12
-13</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">static</span> <span class="kd">class</span> <span class="nc">HttpPingAsyncTask</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Boolean</span><span class="o">&gt;</span> <span class="o">{</span>
-    <span class="nd">@Override</span>
-    <span class="kd">protected</span> <span class="n">Boolean</span> <span class="nf">doInBackground</span><span class="o">(</span><span class="n">String</span><span class="o">...</span> <span class="n">urls</span><span class="o">)</span> <span class="o">{</span>
-        <span class="k">try</span> <span class="o">{</span>
-            <span class="n">HttpURLConnection</span><span class="o">.</span><span class="na">setFollowRedirects</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
-            <span class="n">HttpURLConnection</span> <span class="n">con</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="k">new</span> <span class="nf">URL</span><span class="o">(</span><span class="n">urls</span><span class="o">[</span><span class="mi">0</span><span class="o">]).</span><span class="na">openConnection</span><span class="o">();</span>
-            <span class="n">con</span><span class="o">.</span><span class="na">setRequestMethod</span><span class="o">(</span><span class="s">&quot;HEAD&quot;</span><span class="o">);</span>
-            <span class="k">return</span> <span class="o">(</span><span class="n">con</span><span class="o">.</span><span class="na">getResponseCode</span><span class="o">()</span> <span class="o">==</span> <span class="n">HttpURLConnection</span><span class="o">.</span><span class="na">HTTP_OK</span><span class="o">);</span>
-        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+13
+14
+15
+16</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">TextView</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+
+<span class="o">...</span>
+
+<span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;test message&quot;</span><span class="o">);</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">textView</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">())</span> <span class="o">{</span>
+    <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">textView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
+<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="n">TextView</span> <span class="n">postTextView</span> <span class="o">=</span> <span class="n">textView</span><span class="o">;</span>
+    <span class="n">textView</span><span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+            <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">postTextView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
         <span class="o">}</span>
-    <span class="o">}</span>
+    <span class="o">});</span>
 <span class="o">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>사용법은 다음과 같다.</p>
+<p>여러가지 상황이 있을 수 있다. 위의 예시와 다르게 layout xml에서 TextView가 정의될 수도 있고.
+중요한 것은 TextView가 그려지기 전에 getLineCount() 함수를 사용하려는 것이다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">(</span><span class="k">new</span> <span class="nf">HttpPingAsyncTask</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">url</span><span class="o">);</span>
+<p>그런데 여기서도 한계는 있다. 값을 가져오는 부분이 비동기 방식이 된다는 것이다. 이를 해결하기 위해서는 다른 방법이 필요하다. 하지만 여기서는 isLaidOut에 대한 설명을 하고자 하는 것이므로 다음으로 넘긴다. 사실 찾아보면 여러가지 방법들이 제시되어 있는데 아주 깔끔한 방법은 현재로써는 찾기 힘들다.</p>
+
+<p>위의 TextView 사례는 말그대로 예시일뿐 isLaidOut에 대한 활용 범위는 아주 다양할 수 있다.</p>
+
+<p>마지막으로 isLaidOut을 API 19 이하에서 사용할 수 있는 방법은 다음의 예시를 참고하자.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">TextView</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+
+<span class="o">...</span>
+
+<span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">&quot;test message&quot;</span><span class="o">);</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">ViewCompat</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">(</span><span class="n">textView</span><span class="o">))</span> <span class="o">{</span>
+    <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">textView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
+<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="n">TextView</span> <span class="n">postTextView</span> <span class="o">=</span> <span class="n">textView</span><span class="o">;</span>
+    <span class="n">textView</span><span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+            <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">&quot;TEXTVIEW&quot;</span><span class="o">,</span> <span class="s">&quot;line count : &quot;</span> <span class="o">+</span> <span class="n">postTextView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
+        <span class="o">}</span>
+    <span class="o">});</span>
+<span class="o">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>이는 가장 간단한 형태로 구현된 코드로 할 수 있는 일이 url을 호출하고 응답을 확인하는 것 밖에 없다. 하지만 조금만 응용하면 여러가지로 활용할 수 있다.
-url에 GET 인자로 전달하고자 하는 값을 넘기고 서버에서는 해당 값을 로그로 남기거나 필요한 처리를 한다. 그리고 정상처리가 되었다면 200을 반환하고 실패하면 500을 반환함으로써 처리 결과를 알 수 있다. 이러한 형태를 이용하면 간단한 구현으로 여러가지 일을 할 수 있다.</p>
+<p>중요한 부분은 ViewCompat을 사용한다는 부분이다. 아주 간단한 방법으로 사용할 수 있으므로 하위 버전을 지원해야 한다하더라도 사용할 수 있다.</p>
 
-<p>또한 위의 코드에 필요한 기능을 조금씩 덧붙이면 보다 다양한 일을 할 수 있는 코드를 만들수도 있을 것이다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">ViewCompat</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">(</span><span class="n">textView</span><span class="o">)</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -170,8 +245,8 @@ url에 GET 인자로 전달하고자 하는 값을 넘기고 서버에서는 해
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/09/03/android-http-ping/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/09/03/android-http-ping/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

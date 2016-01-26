@@ -49,4 +49,4 @@ $ chmod 700 mysql_secure_installation_automation.sh
 $ ./mysql_secure_installation_automation.sh
 ```
 
-특별히 설명할 것도 없지만 간략하게나마 원리를 설명하자면 `expect`라는 도구를 사용해서 사용자 입력을 대신하도록 하는 것이다. 이를 응용하면 `mysql_secure_installation` 외에도 여러가지 상황에 적용할 수 있다. 나의 경우는 `expect`를 이용해서 ssh 비밀번호 자동 입력 기능을 만들어 사용하고 있었다. 사실 ssh의 경우는 key를 등록하는 방식으로 비밀번호 없이 로그인이 가능하고 비밀번호를 외부로 노출하는 것이 보안상 문제가 있지만 간단하게 접속이 필요하고 보안상의 이슈가 없는 곳에서 유용하게 사용하고 있다.
+특별히 설명할 것도 없지만 간략하게나마 원리를 설명하자면 `expect`라는 도구를 사용해서 사용자 입력을 대신하도록 하는 것이다(이후에 알게되었지만 [sshpass](http://sourceforge.net/projects/sshpass/)라는 것이 있어서 expect를 사용하지 않아도 된다. 아니면 [ssh 비밀번호 없이 로그인하기](/2016/01/26/ssh-login-without-password/)에서 쓴 것처럼 다른 방법도 있다). 이를 응용하면 `mysql_secure_installation` 외에도 여러가지 상황에 적용할 수 있다. 나의 경우는 `expect`를 이용해서 ssh 비밀번호 자동 입력 기능을 만들어 사용하고 있었다. 사실 ssh의 경우는 key를 등록하는 방식으로 비밀번호 없이 로그인이 가능하고 비밀번호를 외부로 노출하는 것이 보안상 문제가 있지만 간단하게 접속이 필요하고 보안상의 이슈가 없는 곳에서 유용하게 사용하고 있다.

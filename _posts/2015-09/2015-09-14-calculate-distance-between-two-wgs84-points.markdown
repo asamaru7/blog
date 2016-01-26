@@ -21,7 +21,7 @@ WGS84 좌표계는 [위키피디아](https://ko.wikipedia.org/wiki/%EC%84%B8%EA%
 ## php
 
 ```php
-function getDistance($lat1, $lon1, $lat2, $lon2)
+function getDistance($lat1, $lng1, $lat2, $lng2)
 {
     $earth_radius = 6371;
     $dLat = deg2rad($lat2 - $lat1);

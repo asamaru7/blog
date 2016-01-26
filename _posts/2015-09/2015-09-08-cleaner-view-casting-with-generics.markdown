@@ -6,7 +6,7 @@ comments: true
 categories: android
 ---
 
-안드로이드 작업을 하다보면 findViewById를 아주 빈번하게 사용하게 된다. 이 작업이 생각보다 귀찮다보니 [butterknife]("http://jakewharton.github.io/butterknife/")나 [androidannotations]("http://androidannotations.org/") 같은 라이브러리를 사용하게 된다.(당연히 그 함수를 사용이 귀찮다는 이유만은 아니지만)
+안드로이드 작업을 하다보면 findViewById를 아주 빈번하게 사용하게 된다. 이 작업이 생각보다 귀찮다보니 "[butterknife](http://jakewharton.github.io/butterknife/)"나 "[androidannotations](http://androidannotations.org/)" 같은 라이브러리를 사용하게 된다.(당연히 그 함수를 사용이 귀찮다는 이유만은 아니지만)
 
 아래의 방법은 저런 라이브러리를 사용할 때만큼 여러가지 일을 할 수는 없지만 findViewById를 사용함에 가장 귀찮은 작업인 View Type Casting을 하지 않아도 된다.
 

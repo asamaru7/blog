@@ -103,124 +103,157 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/">
-								iOS 9 : The resource could not be loaded because the App Transport Security policy requires the use of a secure connection 오류
+							<a class="title" href="http://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/">
+								Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/">2015.10.19.</span></a>
+								<a href="http://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/">2015.10.19.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>iOS 9을 대상으로 개발시 아래와 같은 오류를 만날 수 있다.</p>
+							<p>Vagrant는 포트 포워딩을 지원한다. VAGRANT DOCS의 <a href="https://docs.vagrantup.com/v2/networking/forwarded_ports.html">FORWARDED PORTS</a> 문서를 보면 설명되어 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">ERRO AppDelegate[application(_:didFinishLaunchingWithOptions:):32]: Optional(Error Domain=NSURLErrorDomain Code=-1022 "The resource could not be loaded because the App Transport Security policy requires the use of a secure connection." UserInfo={NSUnderlyingError=0x7fddb1cb34b0 {Error Domain=kCFErrorDomainCFNetwork Code=-1022 "(null)"}, NSErrorFailingURLStringKey=http://yourdomain.com/session/get, NSErrorFailingURLKey=http://yourdomain.com/session/get, NSLocalizedDescription=The resource could not be loaded because the App Transport Security policy requires the use of a secure connection.})
-</code></pre></div></figure>
+<p>간단하게 살펴보자면 아래와 같이 설정할 수 있다.</p>
 
-<p>iOS 9과 OS X 10.11 이후에 App Transport Security 정책이 추가되어 발생하는 오류로 관련된 정보는 <a href="https://developer.apple.com/library/prerelease/ios/technotes/App-Transport-Security-Technote/index.html">App Transport Security Technote</a>에서 자세히 볼 수 있다. 안내에 나와 있듯이 현재 개발중인 기능이라 추후 변경 가능성이 있다고 되어있다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="s2">&quot;forwarded_port&quot;</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8080</span>
+<span class="k">end</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<blockquote>
-  <p>App Transport Security is a feature that improves the security of connections between an app and web services. The feature consists of default connection requirements that conform to best practices for secure connections. Apps can override this default behavior and turn off transport security.</p>
+<p>위 설정의 의미는 host(PC)에 8080 포트로 접근하면 guest(VM)의 80 포트로 포워딩 한다는 뜻이다. 따라서 host에서 <code>localhost:8080</code>로 접속하면 guest의 웹 서버에 접근할 수 있다.</p>
 
-  <p>Transport security is available in iOS 9.0 or later, and in OS X v10.11 and later.</p>
-</blockquote>
-
-<p>해결방법은 아래와 같다.</p>
-
-<p>Info.plist 파일에 NSAppTransportSecurity 항목을 추가해서 필요한 설정을 해준다. NSAppTransportSecurity의 구조는 아래와 같다.</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Key</th>
-      <th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>NSAppTransportSecurity</td>
-      <td>Dictionary</td>
-    </tr>
-    <tr>
-      <td>  NSAllowsArbitraryLoads</td>
-      <td>Boolean</td>
-    </tr>
-    <tr>
-      <td>  NSExceptionDomains</td>
-      <td>Dictionary</td>
-    </tr>
-    <tr>
-      <td>     &lt;domain-name-for-exception-as-string&gt;</td>
-      <td>Dictionary</td>
-    </tr>
-    <tr>
-      <td>     NSExceptionMinimumTLSVersion</td>
-      <td>String</td>
-    </tr>
-    <tr>
-      <td>     NSExceptionRequiresForwardSecrecy</td>
-      <td>Boolean</td>
-    </tr>
-    <tr>
-      <td>     NSExceptionAllowsInsecureHTTPLoads</td>
-      <td>Boolean</td>
-    </tr>
-    <tr>
-      <td>     NSIncludesSubdomains</td>
-      <td>Boolean</td>
-    </tr>
-    <tr>
-      <td>     NSThirdPartyExceptionMinimumTLSVersion</td>
-      <td>String</td>
-    </tr>
-    <tr>
-      <td>     NSThirdPartyExceptionRequiresForwardSecrecy</td>
-      <td>Boolean</td>
-    </tr>
-    <tr>
-      <td>     NSThirdPartyExceptionAllowsInsecureHTTPLoads</td>
-      <td>Boolean</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>정확하게 설명하자면 두가지 방법이 있다.</p>
+<p>사용할 수 있는 옵션은 아래와 같이 설명되어 있다.</p>
 
 <ul>
-  <li>NSAppTransportSecurity &gt; NSAllowsArbitraryLoads를 추가해서 NSAllowsArbitraryLoads 값을 YES로 넣어준다.
-    <ul>
-      <li>앱 내의 모든 네트워크 통신에 대한 제한을 푼다.</li>
-    </ul>
-  </li>
-  <li>NSAppTransportSecurity &gt; NSExceptionDomains를 추가하고 세부항목을 설정한다.
-    <ul>
-      <li>지정된 도메인의 네트워크 통신에 대한 제한을 푼다.</li>
-      <li>NSExceptionMinimumTLSVersion: TLS 최소 버전을 문자열로 입력한다. 아래 값들 중 하나를 넣을 수 있거나 생략할 수 있다.
-        <ul>
-          <li>TLSv1.0</li>
-          <li>TLSv1.1</li>
-          <li>TLSv1.2 (생략할 경우의 기본값)</li>
-        </ul>
-      </li>
-      <li>NSExceptionRequiresForwardSecrecy: forward secrecy 라는 비밀키 암호화 설정이다. 기본으 YES이며 NO를 선택시 사용할 수 있는 ciphers 목록은 아래와 같다.
-        <ul>
-          <li>TLS_RSA_WITH_AES_256_GCM_SHA384</li>
-          <li>TLS_RSA_WITH_AES_128_GCM_SHA256</li>
-          <li>TLS_RSA_WITH_AES_256_CBC_SHA256</li>
-          <li>TLS_RSA_WITH_AES_256_CBC_SHA</li>
-          <li>TLS_RSA_WITH_AES_128_CBC_SHA256</li>
-          <li>TLS_RSA_WITH_AES_128_CBC_SHA</li>
-        </ul>
-      </li>
-      <li>NSExceptionAllowsInsecureHTTPLoads: HTTPS(SSL) 연결이 아니더라도 통신을 허용 것인지에 대한 설정이다. 기본값은 NO이다.</li>
-      <li>NSIncludesSubdomains: 이 사이트의 하부도메인들에도 이 설정을 적용할 것인지에 대한 설정이다. 기본값은 NO이다.</li>
-      <li>NSThirdPartyExceptionMinimumTLSVersion: 써드파티 TLS 버전을 설정한다.</li>
-      <li>NSThirdPartyExceptionRequiresForwardSecrecy: 써드파티 Forward Secrecy 설정이다.</li>
-      <li>NSThirdPartyExceptionAllowsInsecureHTTPLoads: 써드파티 HTTPS 연결을 강제를 할 것이지에 대한 설정이다.</li>
-    </ul>
-  </li>
+  <li>guest (int) - The port on the guest that you want to be exposed on the host. This can be any port.</li>
+  <li>guest_ip (string) - The guest IP to bind the forwarded port to. If this is not set, the port will go to the every interface. By default, this is empty.</li>
+  <li>host (int) - The port on the host that you want to use to access the port on the guest. This must be greater than port 1024 unless Vagrant is running as root (which is not recommended).</li>
+  <li>host_ip (string) - The IP on the host you want to bind the forwarded port to. If not specified, it will be bound to every IP. By default, this is empty.</li>
+  <li>protocol (string) - Either “udp” or “tcp”. This specifies the protocol that will be allowed through the forwarded port. By default this is “tcp”.</li>
 </ul>
 
-<p>필요에 따라 방법을 선택하면 된다.</p>
+<p>크게 어려운 부분은 없기 때문에 더욱 자세한 설명은 필요없을 듯 하다.</p>
+
+<p>그런데 여기서 한가지 상황을 생각해보자. <code>localhost:8080</code>로 접속하기는 싫고 <code>localhost</code>로 접속하고 싶다면 어떻게 해야 하나? 위의 설명대로라면 아래와 같이 설정하면 된다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="s2">&quot;forwarded_port&quot;</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">80</span>
+<span class="k">end</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>그런데 위와 같이 설정하면 vagrant 실행시 오류를 만나게 된다. 이와 관련된 정보는 virtualbox 메뉴얼 <a href="https://www.virtualbox.org/manual/ch06.html#nat-limitations">6.3.3. NAT limitations</a>에서 찾을 수 있다.</p>
+
+<blockquote>
+  <p>Forwarding host ports &lt; 1024 impossible:
+On Unix-based hosts (e.g. Linux, Solaris, Mac OS X) it is not possible to bind to ports below 1024 from applications that are not run by root. As a result, if you try to configure such a port forwarding, the VM will refuse to start. ipfw deprecated as of mavericks</p>
+</blockquote>
+
+<p>간단히 말하자면 <strong>Unix 계열에서는 1024 이하 포트에 대한 포워딩을 하려면 root 권한이 있어야 한다는 것</strong>.
+그렇다면 해결 방법은 나왔다. 간단하게 vagrant 자체를 root 권한으로 실행하면 된다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>sudo vagrant up
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>그런데 이렇게하면 vagrant나 virtualbox가 별개로 실행된다(로그인된 계정이 아닌 root계정에서 실행하게 된다). 따라서 virtualbox를 실행해보아도 해당 VM을 볼 수 없을 것이다. 일단 어디에 있는지 보려면 아래의 명령으로 virtualbox를 실행해보자.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">$ sudo VirtualBox
+</code></pre></div></figure>
+
+<p>VirtualBox가 따로 실행되면서 추가된 VM도 볼 수 있다.</p>
+
+<p>나는 다른 방법을 찾을 수 없어 얼마전까지 이렇게 사용해 왔다. 그런데 최근에 다시 vagrant를 설정할 일이 생겨 작업을 하면서 다시 찾아봤더니 그 사이에 해결 방법이 나와 있었다. 게다가 더욱 세련된(?) 방법으로.</p>
+
+<ul>
+  <li><a href="http://salvatore.garbesi.com/vagrant-port-forwarding-on-mac/">Vagrant Port Forwarding On Mac</a></li>
+  <li><a href="https://www.danpurdy.co.uk/web-development/osx-yosemite-port-forwarding-for-vagrant/">OSX Yosemite Port Forwarding for Vagrant</a></li>
+  <li><a href="http://www.dmuth.org/node/1404/web-development-port-80-and-443-vagrant">Web Development on Port 80 and 443 in Vagrant</a></li>
+</ul>
+
+<p>여러개의 글을 링크했지만 모두 비슷한 방법이다. 그러나 마지막 글의 경우는 확인이 필요하다. 마지막 글에서 사용하는 ipfw는 요세미티에서 deprecated 되었다는 이야기가 있다. 나머지 두개는 같은 방법인데 간단히 요약하자면 아래와 같다.</p>
+
+<p>우선 vagrant-triggers 플러그인을 설치한다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>vagrant plugin install vagrant-triggers
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>Vagrantfile에 아래의 내용을 추가한다. 당연히 원하는 포트가 다르다면 조정해서 추가하면 된다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8080</span>
+<span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">443</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8443</span>
+
+<span class="n">config</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">after</span> <span class="o">[</span><span class="ss">:provision</span><span class="p">,</span> <span class="ss">:up</span><span class="p">,</span> <span class="ss">:reload</span><span class="o">]</span> <span class="k">do</span>
+      <span class="nb">system</span><span class="p">(</span><span class="s1">&#39;echo &quot;</span>
+<span class="s1">		rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 80 -&gt; 127.0.0.1 port 8080</span>
+<span class="s1">		rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 443 -&gt; 127.0.0.1 port 8443</span>
+<span class="s1">		&quot; | sudo pfctl -f - &gt; /dev/null 2&gt;&amp;1; echo &quot;==&gt; Fowarding Ports: 80 -&gt; 8080, 443 -&gt; 8443&quot;&#39;</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="n">config</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">after</span> <span class="o">[</span><span class="ss">:halt</span><span class="p">,</span> <span class="ss">:destroy</span><span class="o">]</span> <span class="k">do</span>
+    <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;sudo pfctl -f /etc/pf.conf &gt; /dev/null 2&gt;&amp;1; echo &#39;==&gt; Removing Port Forwarding&#39;&quot;</span><span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>한가지 설명을 더 추가 해야할 것 같다. 위 명령은 pf가 enabled 되어 있을 경우만 제대로 동작한다. 하지만 대부분의 경우 pf가 disabled 되어 있을 것이다. <code>pfctl -ef</code>와 같이 <code>e</code> 옵션을 추가해 주면 pf를 강제로 켜서 실행해 준다. 하지만 이 방법은 vagrant가 <code>halt</code>된 후에도 pf가 enabled된 상태를 유지하므로 뭔가 꺼림직하다. 개선 방법은 <code>halt</code>시 <code>d</code> 옵션을 줘서 다시 pfctl을 disabled 상태로 변경하면 된다. 그런데 이렇게하면 반대로 enabled가 기본인 상태였다면 pf를 disabled 상태로 바꿔버리는 결과를 가져온다. 그래서 이 부분을 해결한 스크립트를 아래에 추가한다. 기존 pf의 상태와 무관하게 룰을 추가하고 사용이 끝나면 해당 룰만 제거하는 것이다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8080</span>
+<span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest</span><span class="p">:</span> <span class="mi">443</span><span class="p">,</span> <span class="ss">host</span><span class="p">:</span> <span class="mi">8443</span>
+
+<span class="n">config</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">after</span> <span class="o">[</span><span class="ss">:provision</span><span class="p">,</span> <span class="ss">:up</span><span class="p">,</span> <span class="ss">:reload</span><span class="o">]</span> <span class="k">do</span>
+      <span class="nb">system</span><span class="p">(</span><span class="s1">&#39;echo &quot;</span>
+<span class="s1">		rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 80 -&gt; 127.0.0.1 port 8080</span>
+<span class="s1">		rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 443 -&gt; 127.0.0.1 port 8443</span>
+<span class="s1">		&quot; | sudo pfctl -Ef - &gt; /dev/null 2&gt; pfctl.token; echo &quot;==&gt; Fowarding Ports: 80 -&gt; 8080, 443 -&gt; 8443&quot;&#39;</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="n">config</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">after</span> <span class="o">[</span><span class="ss">:halt</span><span class="p">,</span> <span class="ss">:destroy</span><span class="o">]</span> <span class="k">do</span>
+	<span class="nb">system</span><span class="p">(</span><span class="s2">&quot;PFCTL_TOKEN=</span><span class="se">\&quot;</span><span class="s2">$(cat pfctl.token |grep Token| awk &#39;{ split($0,numbers,</span><span class="se">\&quot;</span><span class="s2">:</span><span class="se">\&quot;</span><span class="s2">); print numbers[2]; }&#39;| tr -d &#39;[[:space:]]&#39;)</span><span class="se">\&quot;</span><span class="s2">; sudo pfctl -X $PFCTL_TOKEN -f /etc/pf.conf &gt; /dev/null 2&gt;&amp;1; echo </span><span class="se">\&quot;</span><span class="s2">==&gt; Removing Port Forwarding : $PFCTL_TOKEN</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>원리를 간단히 설명하겠다. 우선 pfctl에 있는 옵션 중 <code>E</code> 옵션을 추가했다. 소문자 <code>e</code>와는 다르다.</p>
+
+<ul>
+  <li>-e : Enable the packet filter.</li>
+  <li>-E : Enable the packet filter and increment the pf enable reference count.</li>
+</ul>
+
+<p><code>E</code>를 사용하면 pf enable reference count를 증가시키고 token을 반환해 준다. 이 토큰을 <code>pfctl.token</code>에 저장해 놨다가 <code>halt</code>시 <code>X</code> 옵션을 통해서 pf에게 disabled 요청을 한다.</p>
+
+<p>이제부터는 80포트와 443 포트가 guest로 포워딩 된다. 이젠 <code>http://127.0.0.1</code>로 접속할 수 있다. 나의 경우엔 DNS에 별도의 도메인을 127.0.0.1로 지정해서 사용중이다. 따라서 <code>http://vagrant.mydomain.com</code>으로 웹 화면을 확인할 수 있다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -234,8 +267,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/10/19/ios-9-the-resource-could-not-be-loaded-because-the-app-transport-security-policy-requires-the-use-of-a-secure-connection/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

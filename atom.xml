@@ -3,13 +3,143 @@
 <generator uri="http://jekyllrb.com" version="3.0.1">Jekyll</generator>
 <link href="http://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" />
 <link href="http://blog.asamaru.net/" rel="alternate" type="text/html" />
-<updated>2016-02-01T19:59:08+09:00</updated>
+<updated>2016-02-02T12:41:09+09:00</updated>
 <id>http://blog.asamaru.net/</id>
 <subtitle>세상에 필요한 소스코드 한줄 남기고 가자.
 </subtitle>
 <author>
 <name>유영재</name>
 </author>
+<entry>
+<title>구형 애플 맥 미니 CentOS 7 서버로 재활용하기</title>
+<link href="http://blog.asamaru.net/2016/02/02/installing-centos-7-on-an-apple-mac-mini/" rel="alternate" type="text/html" title="구형 애플 맥 미니 CentOS 7 서버로 재활용하기" />
+<published>2016-02-02T12:37:47+09:00</published>
+<updated>2016-02-02T12:37:47+09:00</updated>
+<id>http://blog.asamaru.net/2016/02/02/installing-centos-7-on-an-apple-mac-mini</id>
+<content type="html" xml:base="http://blog.asamaru.net/2016/02/02/installing-centos-7-on-an-apple-mac-mini/">&lt;p&gt;회사에서 맥북 프로를 새로 구매하면서 맥 미니(2012년형)가 한대 남게 되었다. 사실은 다른 이유로 2대가 남게 되었는데 한대는 예비로 그냥 두고 한대를 서버로 사용하기로 했다. 그래서 설치 방법을 찾아보다 &lt;a href=&quot;http://drewcdecker.me/2014/08/installing-centos-7-on-an-apple-mac-mini/&quot;&gt;Installing CentOS 7 on an Apple Mac Mini&lt;/a&gt;를 찾았다. 그런데 이 글에서는 &lt;a href=&quot;https://www.centos.org/&quot;&gt;CentOS 7&lt;/a&gt;을 바로 설치할 수 없어 CentOS 6.5를 설치 후 7으로 업데이트하는 방법을 안내하고 있었다. 이 방법은 개인적인 취향상 선택하기 싫었다. 그래서 조금 더 찾다보니 &lt;a href=&quot;http://www.myiphoneadventure.com/os-x/create-a-bootable-centos-usb-drive-with-a-mac-os-x&quot;&gt;Create a bootable CentOS USB drive with a Mac (OS X) for a PC&lt;/a&gt;라는 글이 있었다. 여기서는 맥 설치용 CentOS 7 부트 USB를 만드는 법을 설명하고 있어서 이 글을 참고해서 작업을 시작했다.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;우선 &lt;a href=&quot;https://www.centos.org/download/&quot;&gt;CentOS 7용 iso 이미지&lt;/a&gt;를 내려 받는다. 나는 minimal을 선호하기 때문에 위 글의 설명과 달리 minimal을 다운 받았다.&lt;/p&gt;
+
+&lt;p&gt;해당 이미지가 있는 폴더에 가서 아래와 같이 dmg 파일을 우선 생성한다. 당연히 맥에서 작업해야 한다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt; 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;hdiutil convert -format UDRW -o target.img CentOS-7-x86_64-Minimal-1511.iso
+
+Master Boot Record&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;MBR : 0&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; 읽는 중...
+CentOS &lt;span class=&quot;m&quot;&gt;7&lt;/span&gt; x86_64                 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Apple_ISO : 1&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; 읽는 중...
+&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Type EF : 2&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; 읽는 중...
+.
+CentOS &lt;span class=&quot;m&quot;&gt;7&lt;/span&gt; x86_64                 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Apple_ISO : 3&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; 읽는 중...
+....................................................................................................................................................................
+경과 시간: 661.204ms
+속도: 912.0Mbytes/초
+저장: 0.0%
+created: /Users/yjyou/Downloads/target.img.dmg
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;부트 이미지를 담을 USB를 연결한 다음 아래와 같이 &lt;code&gt;diskutil&lt;/code&gt;을 사용해서 disk 번호를 확인한다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt; 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;diskutil list
+
+/dev/disk0 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;internal, physical&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;:
+   &lt;span class=&quot;c&quot;&gt;#:                       TYPE NAME                    SIZE       IDENTIFIER&lt;/span&gt;
+   0:      GUID_partition_scheme                        *500.3 GB   disk0
+   1:                        EFI EFI                     209.7 MB   disk0s1
+   2:          Apple_CoreStorage Macintosh HD            250.5 GB   disk0s2
+   3:                 Apple_Boot Recovery HD             650.0 MB   disk0s3
+   4:                  Apple_HFS DATA                    248.8 GB   disk0s4
+/dev/disk1 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;internal, virtual&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;:
+   &lt;span class=&quot;c&quot;&gt;#:                       TYPE NAME                    SIZE       IDENTIFIER&lt;/span&gt;
+   0:                  Apple_HFS Macintosh HD           +250.1 GB   disk1
+                                 Logical Volume on disk0s2
+                                 55AC6B2F-B3B4-450F-B4DE-E025311E9955
+                                 Unencrypted
+/dev/disk2 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;external, physical&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;:
+   &lt;span class=&quot;c&quot;&gt;#:                       TYPE NAME                    SIZE       IDENTIFIER&lt;/span&gt;
+   0:      GUID_partition_scheme                        *15.8 GB    disk2
+   1:                        EFI EFI                     209.7 MB   disk2s1
+   2:       Microsoft Basic Data USB                     15.6 GB    disk2s2
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;나의 경우는 &lt;code&gt;/dev/disk2&lt;/code&gt;에 mount 되어 있었다. &lt;strong&gt;이후의 과정에서는 당연히 자신에게 맞는 disk 번호를 사용해야 한다.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;우선 USB를 unmount 한다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
+2
+3&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt; diskutil unmountDisk /dev/disk2
+
+Unmount of all volumes on disk2 was successful
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;이제는 실제로 위에 만든 dmg 이미지를 이용해서 부트 USB를 만든다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
+2
+3
+4
+5
+6
+7
+8
+9&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;time &lt;/span&gt;sudo dd &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;target.img.dmg &lt;span class=&quot;nv&quot;&gt;of&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/dev/disk2 &lt;span class=&quot;nv&quot;&gt;bs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1m
+
+602+1 records in
+602+1 records out
+&lt;span class=&quot;m&quot;&gt;632262656&lt;/span&gt; bytes transferred in 155.872514 secs &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;4056281&lt;/span&gt; bytes/sec&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+
+real	2m36.025s
+user	0m0.006s
+sys	0m2.548s
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;이미지를 만드는데 시간이 조금 소요되니 걱정하지 말고 기다리자. 그리고 생성되고 나면 해당 디스크를 인식할 수 없다고 자동적으로 추출된다. 이제는 USB를 빼서 설치할 맥 미니에 연결하고 부팅한다. 당연히 &lt;code&gt;alt/option&lt;/code&gt;를 누르고 부팅해서 부팅 디스크를 선택하는 화면으로 진입해야 한다.&lt;/p&gt;
+
+&lt;p&gt;이후 과정을 진행하기 전에 파티션의 변경이 필요하다면 미리 맥 미니 내에서 설정해 두어야 한다. 나의 경우를 보자면 500G의 디스크를 2개의 파티션으로 나누고 복구 파티션까지 3개가 있었다. 처음엔 복구 파티션을 두고 두개의 파티션을 CentOS 설치 과정에서 묶으려고 했는데 복구 파티션이 두개 파티션 사이에 위치해 합칠 수 없었다. 그래서 맥에서 두개의 파티션을 합쳐주고 다시 설치했다. 사실은 이 과정은 복구 파티션을 두려고 했던 것인데 실제 CentOS를 설치하면서 복구 파티션도 날렸다(원하지 않았지만). 이렇게되면 위 과정이 필요없었을 수 있지만 혹시나해서 남겨둔다.&lt;/p&gt;
+
+&lt;p&gt;이제부터는 일반적으로 CentOS를 설치하는 것과 동일하게 설치하면 된다. 설치 방법이 궁금하다면 &lt;a href=&quot;http://blog.asamaru.net/2015/10/14/centos-7-minimal-install/&quot;&gt;CentOS 7 minimal 설치&lt;/a&gt;를  참고해도 된다.&lt;/p&gt;
+
+&lt;p&gt;마지막으로 중요한 부분이 있다. 파티션 설치시 &lt;code&gt;/boot/efi&lt;/code&gt;을 별도로 지정해야 한다는 것이다. 일반적인 설치에서는 하지 않던 작업인데 맥 미니의 경우 해당 파티션이 기본적으로 없어서 그런 것인지 지정하지 않으면 파티셔닝이 완료되지 않았다. &lt;code&gt;/boot/efi&lt;/code&gt;의 용량은 최소 100MB를 지정하도록 권장하는 것 같다. 이 부분 또한 자동 파티셔닝이 아닌 사용자 지정 파티션을 사용해서 발생한 문제일지도 모르겠다. 하지만 개인적인 생각으로 “맥 미니에서 다른 CentOS 설치시 잘 안되는 경우는 이것 때문이지 않을까?”해서 경험을 남겨둔다.&lt;/p&gt;
+
+&lt;p&gt;이후부터는 정말 CentOS 설치와 동일하다(일단 나의 경우엔).&lt;/p&gt;
+</content>
+<summary>회사에서 맥북 프로를 새로 구매하면서 맥 미니(2012년형)가 한대 남게 되었다. 사실은 다른 이유로 2대가 남게 되었는데 한대는 예비로 그냥 두고 한대를 서버로 사용하기로 했다. 그래서 설치 방법을 찾아보다 Installing CentOS 7 on an Apple Mac Mini를 찾았다. 그런데 이 글에서는 CentOS 7을 바로 설치할 수 없어 CentOS 6.5를 설치 후 7으로 업데이트하는 방법을 안내하고 있었다. 이 방법은 개인적인 취향상 선택하기 싫었다. 그래서 조금 더 찾다보니 Create a bootable CentOS USB drive with a Mac (OS X) for a PC라는 글이 있었다. 여기서는 맥 설치용 CentOS 7 부트 USB를 만드는 법을 설명하고 있어서 이 글을 참고해서 작업을 시작했다.우선 CentOS 7용 iso 이미지를 내려 받는다. 나는 minimal을 선호하기 때문에 위 글의 설명과 달리 minimal을 다운 받았다.해당 이미지가 있는 폴더에 가서 아래와 같이 dmg 파일을 우선 생성한다. 당연히 맥에서 작업해야 한다. 1 2 3 4 5 6 7 8 9101112$ hdiutil convert -format UDRW -o target.img CentOS-7-x86_64-Minimal-1511.isoMaster Boot Record(MBR : 0) 읽는 중...CentOS 7 x86_64                 (Apple_ISO : 1) 읽는 중...(Type EF : 2) 읽는 중....CentOS 7 x86_64                 (Apple_ISO : 3) 읽는 중.......................................................................................................................................................................경과 시간: 661.204ms속도: 912.0Mbytes/초저장: 0.0%created: /Users/yjyou/Downloads/target.img.dmg부트 이미지를 담을 USB를 연결한 다음 아래와 같이 diskutil을 사용해서 disk 번호를 확인한다. 1 2 3 4 5 6 7 8 91011121314151617181920$ diskutil list/dev/disk0 (internal, physical):   #:                       TYPE NAME                    SIZE       IDENTIFIER   0:      GUID_partition_scheme                        *500.3 GB   disk0   1:                        EFI EFI                     209.7 MB   disk0s1   2:          Apple_CoreStorage Macintosh HD            250.5 GB   disk0s2   3:                 Apple_Boot Recovery HD             650.0 MB   disk0s3   4:                  Apple_HFS DATA                    248.8 GB   disk0s4/dev/disk1 (internal, virtual):   #:                       TYPE NAME                    SIZE       IDENTIFIER   0:                  Apple_HFS Macintosh HD           +250.1 GB   disk1                                 Logical Volume on disk0s2                                 55AC6B2F-B3B4-450F-B4DE-E025311E9955                                 Unencrypted/dev/disk2 (external, physical):   #:                       TYPE NAME                    SIZE       IDENTIFIER   0:      GUID_partition_scheme                        *15.8 GB    disk2   1:                        EFI EFI                     209.7 MB   disk2s1   2:       Microsoft Basic Data USB                     15.6 GB    disk2s2나의 경우는 /dev/disk2에 mount 되어 있었다. 이후의 과정에서는 당연히 자신에게 맞는 disk 번호를 사용해야 한다.우선 USB를 unmount 한다.123$  diskutil unmountDisk /dev/disk2Unmount of all volumes on disk2 was successful이제는 실제로 위에 만든 dmg 이미지를 이용해서 부트 USB를 만든다.123456789$ time sudo dd if=target.img.dmg of=/dev/disk2 bs=1m602+1 records in602+1 records out632262656 bytes transferred in 155.872514 secs (4056281 bytes/sec)real	2m36.025suser	0m0.006ssys	0m2.548s이미지를 만드는데 시간이 조금 소요되니 걱정하지 말고 기다리자. 그리고 생성되고 나면 해당 디스크를 인식할 수 없다고 자동적으로 추출된다. 이제는 USB를 빼서 설치할 맥 미니에 연결하고 부팅한다. 당연히 alt/option를 누르고 부팅해서 부팅 디스크를 선택하는 화면으로 진입해야 한다.이후 과정을 진행하기 전에 파티션의 변경이 필요하다면 미리 맥 미니 내에서 설정해 두어야 한다. 나의 경우를 보자면 500G의 디스크를 2개의 파티션으로 나누고 복구 파티션까지 3개가 있었다. 처음엔 복구 파티션을 두고 두개의 파티션을 CentOS 설치 과정에서 묶으려고 했는데 복구 파티션이 두개 파티션 사이에 위치해 합칠 수 없었다. 그래서 맥에서 두개의 파티션을 합쳐주고 다시 설치했다. 사실은 이 과정은 복구 파티션을 두려고 했던 것인데 실제 CentOS를 설치하면서 복구 파티션도 날렸다(원하지 않았지만). 이렇게되면 위 과정이 필요없었을 수 있지만 혹시나해서 남겨둔다.이제부터는 일반적으로 CentOS를 설치하는 것과 동일하게 설치하면 된다. 설치 방법이 궁금하다면 CentOS 7 minimal 설치를  참고해도 된다.마지막으로 중요한 부분이 있다. 파티션 설치시 /boot/efi을 별도로 지정해야 한다는 것이다. 일반적인 설치에서는 하지 않던 작업인데 맥 미니의 경우 해당 파티션이 기본적으로 없어서 그런 것인지 지정하지 않으면 파티셔닝이 완료되지 않았다. /boot/efi의 용량은 최소 100MB를 지정하도록 권장하는 것 같다. 이 부분 또한 자동 파티셔닝이 아닌 사용자 지정 파티션을 사용해서 발생한 문제일지도 모르겠다. 하지만 개인적인 생각으로 “맥 미니에서 다른 CentOS 설치시 잘 안되는 경우는 이것 때문이지 않을까?”해서 경험을 남겨둔다.이후부터는 정말 CentOS 설치와 동일하다(일단 나의 경우엔).</summary>
+</entry>
 <entry>
 <title>SSH를 사용해서 mysqldump 하기</title>
 <link href="http://blog.asamaru.net/2016/01/27/mysqldump-via-ssh/" rel="alternate" type="text/html" title="SSH를 사용해서 mysqldump 하기" />
@@ -787,500 +917,5 @@ ls -al ./test/
 &lt;p&gt;그런데 이런 차이는 상황에 따라 다를 수 있으므로 차이를 이해하고 선택적으로 사용하면 된다. 그리고 내용이 길어질까봐 압축/복원시 사용하는 옵션들의 사용법에 대해서는 설명하지 않았으니 메뉴얼을 참고하자. 압축/복원시 다양한 옵션을 활용하면 보다 정교한 백업을 할 수 있다.&lt;/p&gt;
 </content>
 <summary>서버를 운영하면서 가장 중요한 부분을 꼽으라면 백업을 꼽을 것이다. 안정적인 서버의 운영도 중요한 문제지만 소중한 데이터를 보호하는 것은 더 중요한 문제이다. 백업의 방법은 다양하다. RAID를 이용한 백업, sync를 통한 원격 백업, 파일을 압축해서 보관하는 백업, 백업 장비를 이용한 백업 등 많은 종류의 방법이 존재한다. 하지만 나는 백업의 방법 보다 백업 정책이 더 중요하다고 생각한다. 그중에서도 가장 중요한 원칙은 백업본은 원본 데이터와 함께 두지 않는다는 것이다. 다시말해 백업본은 원격지로 보내서 보관하여 원본 데이터가 있는 장소가 복구 불가능한 상황이 되더라도 데이터를 살릴 수 있어야 한다는 것이다. 나의 경우엔 다음과 같은 방식으로 백업본을 관리한다.  원본 데이터를 해당 서버에서 1차 백업  백업된 데이터를 백업 서버로 sync하여 2차 백업  백업 서버의 데이터를 원격지 백업 서버로 sync하여 3차 백업위 정책이 최선이라는 것은 아니지만 나에게 주어진 여건 내에서 할 수 있는 나름의 최선이라고 생각한다. 비용의 여유가 있다면 백업 솔루션을 사용하는 것이 더욱 좋겠지만 아직은 여건이 안된다.이 글에서 다루고자하는 이야기는 1차 백업(원본 데이터 보관 서버 내 백업)시 증분 백업을 적용하는 부분이다. 증분 백업은 최종 백업된 상태 이후로 변경된 사항만 다시 백업하는 방식으로 full 백업에 비해 자원 소모가 적다. 그렇다고 지속적인 증분 백업만 할 수는 없으므로(복원 과정이 너무 길어질 수 있고 데이터의 손실 위험이 있을 수 있으므로) 나의 경우엔 일요일 새벽에 full 백업을 하고 주간 동안에는 증분 백업을 시행한다.이러한 일련의 과정에서 가장 중요한 역할을 하는 것이 tar다. 다른 압축 프로그램들을 사용할 수도 있지만 대부분의 서버에서 기본적으로 설치하는 tar를 사용하는 것이 가장 범용적이라 나는 tar를 압축 백업에 사용한다.참고로 여기서는 tar의 기본적인 사용법에 대해서는 다루지 않는다.증분 백업의 원리에 대해서는 Using tar to Perform Incremental Dumps와 bdsatish/gist:5650700 - Differential backups를 참고하면 도움이 될 것이다. 그리고 incremental backups with tar에는 기본적인 설명과 증분 백업용 스크립트를 안내하고 있다(참고만 하자).그리고 미리 한가지를 설명할 것이 있다. 이것은 증분 백업과 직접적인 상관이 있는 것은 아니지만 필요한 경우가 있다. 그것은 다름이 아니라 백업시 파일의 atime을 보존하는 것이다. atime에 대해서는 Difference between mtime, ctime and atime를 참고하면 되는데 간단히 이야기하자면 해당 파일의 최종 access time을 뜻한다. 그렇다면 이게 백업과 무슨 상관이 있을까? tar를 사용해서 파일을 압축하면 atime이 압축 시점으로 변경된다. 그런데 백업을 하면서 atime은 그대로 보존해야 할 수도 있다. 예를들면 cache 파일의 경우 오랫동안 access가 없는 경우 삭제하는 것이 효율이 높이는 방법이므로 삭제시 검사를 위해 atime을 유지해야 한다. 그렇지 않으면 백업할 때마다 최종 access 시점이 변경되면서 언제 실제 access가 일어났었는지 확인할 수 없게 된다. 이 부분은 예시일 뿐이므로 그렇다고만 생각하자. 실제로 파일 access가 많은 곳에서는 성능을 높이기 위해 access time을 기록하지 않도록 설정하기 때문이다. 게다가 cache 파일은 손실되어도 문제가 되지 않으므로 백업에서 아예 제외하는 것이 맞을 것이다.어쨌든 어떠한 목적으로 인해 백업시 atime을 유지하고자 한다면 tar 사용시 --atime-preserve 옵션을 주면 된다. 자세한 설명은 GNU tar: an archiver tool - 8.2 Handling File Attributes을 참고하자. 그런데 이 옵션을 사용할 경우 유의할 점이 하나 있다. --atime-preserve을 그냥 사용하면 --atime-preserve=replace로 동작하는데 이 경우는 증분 백업이 정상적으로 되지 않는다(계속 full 백업이 일어난다). 이 옵션은 대부분의 시스템에서 동작하나 증분 백업이 정상적이지 않을 수 있다고 메뉴얼에도 설명하고 있다. 그러면 atime을 유지하면서 증분 백업을 하려면 어떻게 해야하나? --atime-preserve=system 옵션을 사용하면 된다. 이 옵션에 대해서도 메뉴얼에 나와 있는데 시스템에 따라서 지원하지 않을 수도 있다고하니 유의하자(CentOS 7에서는 정상 동작했다).이제부터는 증분 백업에 대해서 본격적으로 알아보자. 그런데 사실은 아주 간단하다. -g 옵션을 사용해서 백업 파일에 대한 기록을 남겨서 보관하는 것만 추가하면 기존의 tar 압축과 다를 것이 없다. 예를들어 아래의 스크립트를 보자.1tar -g backup.snap -zcf backup.tgz /backup/target/위처럼 실행을 하면 /backup/target/ 폴더를 backup.tgz로 압축해준다. 그런데 일반 압축과의 차이는 backup.snap라는 파일이 하나 더 생긴다는 것이다. 이 파일은 압축한 파일들의 정보로 이후 증분 백업시 데이터로 사용되므로 보관해야 한다.방금했던 압축은 증분이 아닌 full 백업이다. -g 옵션으로 넘겨주는 데이터가 없다면 이전 백업을 확인할 수 없으므로 full 백업을 한다. 자.. 이제 다시 아래의 스크립트를 보자.12cp backup.snap backup-1.snaptar -g backup-1.snap -zcf backup-1.tgz /backup/target/이번에도 최초의 full 백업과 별반 다르지 않다. 다만, snapshot 파일을 복사해서 사용했다는 차이만 있다. -g 옵션을 사용하면 백업시 참조만 하는 것이 아니라 이번 백업의 정보를 보관하므로 내용을 덮어쓰지 않도록 복사해서 사용한 것이다. 위 과정을 통해 압축한 결과 파일들을 보면 backup.tgz는 용량이 커도 backup-1.tgz는 용량이 적을 것이다(대상 폴더에 파일이 거의 없었다면 별반 차이가 나지 않을 수 있다). backup-1.tgz는 증분 백업된 파일이기 때문이다.마지막으로 이 상태에서 다시 증분 백업하는 것을 한번만 더 보자.12cp backup-1.snap backup-2.snaptar -g backup-2.snap -zcf backup-2.tgz /backup/target/굳이 설명하지 않아도 보면 이해가 될 것이다. 그럼에도 한번 더 적는 이유는 cp backup.snap backup-2.snap 처럼 최초 snapshot에서 시작해야 하는지 마지막 snapshot에서 시작해야 하는지 헛갈릴 수 있기 때문이다. 사실 이 부분은 증분 백업 방식에 따라 차이가 나는 부분인데 뒤에 자세히 설명할 것이므로 일단은 그렇다고 생각하자.이로써 증분 백업에 대한 기본적인 설명이 끝났다. 생각보다 아주 간단하다. 하지만 이해를 돕기 위해 아래에 예시를 하나 첨부한다.우선 백업 과정이다. 이후의 예시들은 명령 중간 중간에 ls -al 등으로 test 폴더의 상태를 확인해 가면서 진행하면 이해가 더 쉬울 것이다. 1 2 3 4 5 6 7 8 910111213141516171819202122mkdir testecho &amp;quot;1&amp;quot; &amp;gt; test/1.txtecho &amp;quot;2&amp;quot; &amp;gt; test/2.txttar -g backup.snap -zcf backup.tgz ./test/echo &amp;quot;3&amp;quot; &amp;gt; test/3.txtecho &amp;quot;4&amp;quot; &amp;gt; test/4.txtcp backup.snap backup-1.snaptar -g backup-1.snap -zcf backup-1.tgz ./test/rm -f test/4.txtcp backup-1.snap backup-2.snaptar -g backup-2.snap -zcf backup-2.tgz ./test/echo &amp;quot;5&amp;quot; &amp;gt; test/5.txtecho &amp;quot;6&amp;quot; &amp;gt; test/6.txtcp backup-2.snap backup-3.snaptar -g backup-3.snap -zcf backup-3.tgz ./test/이번엔 증분 백업된 내용에서 복원하는 과정이다. 1 2 3 4 5 6 7 8 91011121314# 복원 과정을 확인하기 위해 백업한 폴더는 일단 지운다.rm -rf testtar zxvf backup-0.tgzls -al ./test/tar --incremental -zxvf backup-1.tgzls -al ./test/tar --incremental -zxvf backup-2.tgzls -al ./test/tar --incremental -zxvf backup-3.tgzls -al ./test/그런데 이상하게 보이는 부분이 있을 수 있다. 압축할 때 사용했던 snapshot 파일을 복원시에는 사용하지 않는다는 것이다. 대신에 --incremental를 사용하고 있다. 이게 가능한 이유는 tgz 파일이 이미 자신에게 필요한 정보를 모두 가지고 있기 때문이다. 단, 정상적인 복원를 위해서는 백업한 순서대로 복원해야 한다. 그리고 --incremental 대신 --listed-incremental=/dev/null를 사용해도 무방하다. 그리고 이 부분에 대해서는 유의할 점이 한가지 있다. 다른 대부분의 설명글에 보면 snapshot 파일을 복원시에 사용한다. 그럼에도 불구하고 내가 이렇게 설명하는 것은 메뉴얼에 동일하게 나와있으며 위 실험 결과를 보면 알 수 있듯이 정상 동작하기 때문이다. 하지만 tar의 버전에 따른 차이일 수도 있으니 유의하자.자.. 다시 백업 과정을 한번 생각해보자. 복원시에 snapshot 파일이 필요하지 않다면 굳이 백업시마다 snapshot 파일을 복사하거나 하지 않고 계속 같은 파일을 덮어쓰도록 하면 안될까? 결론부터 이야기 하자면 당연히 가능하다. 그럼 굳이 복사를 했던 이유는 뭘까? 이 부분은 증분 백업의 방법 중 level을 증가시키면서 백업하는 방법을 보여주기 위해서였다. 따라서 이 방법에서는 backup.snap 파일을 다음 백업에서도 사용해도 된다. 데이터를 덮어쓰겠지만 어짜피 level을 증가시키면서 백업하는 것이므로 상관없다.이번엔 level-0와 level-1만 생성하는 백업 과정을 한번 보자. 이를 예를들어 설명하자면 다음과 같다. 최초에 full 백업(level-0) 한다. 다음 백업에서 증분 백업(level-1)으로 백업한다. 여기까지는 위의 방식과 같다. 하지만 이 다음부터 다르다. 위의 방법에서는 그 다음 백업은 level-1 상태를 기초로 level-2로 백업했다. 하지만 이 방법에서는 다시 level-0에서 level-1을 백업한다. 따라서 기존에 level-1 백업 파일은 필요가 없다. 아래의 스크립트를 보자.이전 백업 방법과 유사하지만 자세히 보면 다른 백업 과정이다. 1 2 3 4 5 6 7 8 91011121314151617181920212223242526rm -rf *mkdir testecho &amp;quot;1&amp;quot; &amp;gt; test/1.txtecho &amp;quot;2&amp;quot; &amp;gt; test/2.txttar -g backup-0.snap -zcf backup-0.tgz ./test/echo &amp;quot;3&amp;quot; &amp;gt; test/3.txtecho &amp;quot;4&amp;quot; &amp;gt; test/4.txtcp backup-0.snap backup-1.snaptar -g backup-1.snap -zcf backup-1.tgz ./test/rm -f backup-1.snaprm -f test/4.txtcp backup-0.snap backup-1.snaptar -g backup-1.snap -zcf backup-2.tgz ./test/rm -f backup-1.snapecho &amp;quot;5&amp;quot; &amp;gt; test/5.txtecho &amp;quot;6&amp;quot; &amp;gt; test/6.txtcp backup-0.snap backup-1.snaptar -g backup-1.snap -zcf backup-3.tgz ./test/rm -f backup-1.snap자세히 보면 알겠지만 항상 backup-0.snap 파일을 기준으로 증분 백업을 하고 있다. 자세한 설명은 아래의 복원 과정을 보고 설명하겠다.1234567rm -rf testtar zxvf backup-0.tgzls -al ./test/tar --incremental -zxvf backup-3.tgzls -al ./test/복원 과정이 이전 방법에 비해 대폭 줄었다. 최초 백업본(full 백업)을 복원하고 중간 단계없이 바로 마지막 백업본으로 복원하고 있다. 결과를 보면 알겠지만 정상적으로 복원되었다. 어떻게 이게 가능할까? 앞서 설명했던 것과 같이 이 방법은 증분 백업을 항상 최초 백업본을 기준으로 증분 백업을 했으므로 최초와 마지막 백업본만 있으면 복구가 가능하다.짧게 설명하려던 것이 어쩌다보니 길어졌다. 그렇지만 정확한 내용이 전달되었을지 모르겠다. 나름 예시를 들어 설명한다고 했는데.요약하자면 이렇다. tar를 이용한 증분 백업은 2가지가 있다. 지속적 증분 백업(level 0~max)과 1차 증분 백업(level 0~1). 이 이름들은 정식 명칭이 아니라 그냥 내가 설명하려고 붙인 이름이다.지속적 증분 백업은 용량 효율이 좋을 수 있으나 복원 과정에서 모든 백업본이 필요하다. 그리고 원하는 지점까지만 복원하는 것이 가능하고 지속적인 변경만 백업하므로 효율(시간/공간)이 높다.그러나 1차 증분 백업은 최초 백업과 마지막 백업만 있으면 복원이 가능하므로 관리가 용이하나 중간 지점으로의 복원이 불가능(중간 백업본도 모두 유지한다면 가능)하며 효율이 떨어질 수 있다.그런데 이런 차이는 상황에 따라 다를 수 있으므로 차이를 이해하고 선택적으로 사용하면 된다. 그리고 내용이 길어질까봐 압축/복원시 사용하는 옵션들의 사용법에 대해서는 설명하지 않았으니 메뉴얼을 참고하자. 압축/복원시 다양한 옵션을 활용하면 보다 정교한 백업을 할 수 있다.</summary>
-</entry>
-<entry>
-<title>Octopress 2에서 Jekyll로 전환</title>
-<link href="http://blog.asamaru.net/2015/12/23/moving-from-octopress-to-jekyll/" rel="alternate" type="text/html" title="Octopress 2에서 Jekyll로 전환" />
-<published>2015-12-23T21:41:33+09:00</published>
-<updated>2015-12-23T21:41:33+09:00</updated>
-<id>http://blog.asamaru.net/2015/12/23/moving-from-octopress-to-jekyll</id>
-<content type="html" xml:base="http://blog.asamaru.net/2015/12/23/moving-from-octopress-to-jekyll/">&lt;p&gt;최근 이틀동안 현재 운영중인 블로그에서 사용중인 옥토프레스를 걷어내고 순수 &lt;a href=&quot;https://jekyllrb.com/&quot;&gt;Jekyll&lt;/a&gt;로 전환하는 작업을 했다. 사실 처음엔 지금 사용중인 옥토프레스를 3버전으로 버전업 하려고 했다. 그래서 &lt;a href=&quot;http://samwize.com/2015/09/30/migrating-octopress-2-to-octopress-3/&quot;&gt;Migrating Octopress 2 to Octopress 3&lt;/a&gt;를 따라 전환을 시도했다. 이 글에서도 나와 있는 것처럼 옥토프레스 제작자가 &lt;a href=&quot;http://octopress.org/2015/01/15/octopress-3.0-is-coming/&quot;&gt;Octopress 3.0 Is Coming&lt;/a&gt;이라고만 해두고 정식 릴리즈를 하지 않아 기다림에 지쳐 작업을 시작했다(이때까지만 하더라도 일이 간단하리라 생각했다).&lt;/p&gt;
-
-&lt;p&gt;아래의 글은 체계적인 설치 안내서 보다는 전환 경험담에 가깝다. 아래의 과정을 따라 설치하면 동일하게 안될 확률이 높으므로 참고만 하길 바란다. 사실 처음엔 잘 정리해 두려고 했는데 워낙에 이리저리 시도를 많이 하면서 정리하는 것을 포기했다.&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://jekyllrb.com/&quot;&gt;Jekyll&lt;/a&gt; 전환에 앞서 octopress 버전업 시도 과정부터 이야기하려고 한다.&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/octopress/octopress&quot;&gt;Octopress 3 - Github&lt;/a&gt;에 가면 최신 옥토프레스를 확인할 수 있다. 현재 시점을 기준으로 3.0.11이 최신이다. 정식 릴리즈를 공식적으로 출시하지 않았지만 개발을 나름 활발히 진행중이다. 나중에 버전업을 진행해 보니 왜 정식 릴리즈를 하지 못하고 있는지 알 것도 같다. &lt;a href=&quot;https://jekyllrb.com/&quot;&gt;Jekyll&lt;/a&gt; 기반으로 여러가지 플러그인을 사용하고 템플릿의 제작도 프로그램 제작에 준할 정도로 커스텀되는 상황이다보니 체계적인 마이그레이션 방법을 제시하기 어려운 것 같다.&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://samwize.com/2015/09/30/migrating-octopress-2-to-octopress-3/&quot;&gt;Migrating Octopress 2 to Octopress 3&lt;/a&gt;에 나름 잘 설명되어 있기는하나 나의 경우엔 그대로 적용되지 않았다(특별한 플러그인 다수 사용하지도 않았는데). 결국은 여러가지 시도 끝에 남은 거라곤 옥토프레스 3.0.11이 설치되었다는 것 밖에 없다(사실 이건 간단히 설치가 되므로 대부분의 시간을 허비한 것이다).&lt;/p&gt;
-
-&lt;p&gt;이러한 이유로 순수 &lt;a href=&quot;https://jekyllrb.com/&quot;&gt;Jekyll&lt;/a&gt;로 전환을 시작하게 되었다. 사실 이 과정도 옥토프레스를 버전업하는 것과 같이 새로운 블로그를 생성하고 주요 설정을 이전하는 것이다.
-옥토프레스는 원래 Jekyll을 기반으로 확장된 것이라 전환이 간단할 것이라고 생각했다. 이것 또한 착각이었다. 이 과정에서도 여러가지 실패기가 있지만 다 나열하기도 힘들다. 이후부터는 설치 과정을 간략히 요약하려고 한다.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;아래는 Jekyll을 설치하기 위한 &lt;strong&gt;Gemfile&lt;/strong&gt; 의 내용이다. 거의 필수에 가까운 플러그인만으로 구성했다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
-2
-3
-4
-5
-6
-7
-8&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;n&quot;&gt;source&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;https://rubygems.org&amp;#39;&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;gem&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;jekyll&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;= 3.0.1&amp;#39;&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;gem&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;jekyll-paginate&amp;#39;&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;gem&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;jekyll-archives&amp;#39;&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;gem&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;jekyll-sitemap&amp;#39;&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;gem&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;jekyll-feed&amp;#39;&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;gem&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;pygments.rb&amp;#39;&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;&lt;strong&gt;Gemfile&lt;/strong&gt; 을 사용한 설치는 아래와 같이 할 수 있다. 단, ruby 버전 2.1 이상을 요구할 수 있는데 그때는 rvm을 사용해 설치하면 된다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
-2&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo gem install bundler
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;bundle install
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;다음은 &lt;a href=&quot;https://jekyllrb.com/&quot;&gt;Jekyll&lt;/a&gt;에서 가장 중요한 &lt;strong&gt;_config.yml&lt;/strong&gt; 파일의 내용이다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt; 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;l-Scalar-Plain&quot;&gt;gems&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt;
-  &lt;span class=&quot;p-Indicator&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;jekyll-paginate&lt;/span&gt;
-  &lt;span class=&quot;p-Indicator&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;jekyll-archives&lt;/span&gt;
-  &lt;span class=&quot;p-Indicator&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;jekyll-sitemap&lt;/span&gt;
-  &lt;span class=&quot;p-Indicator&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;jekyll-feed&lt;/span&gt;
-  &lt;span class=&quot;p-Indicator&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;pygments.rb&lt;/span&gt;
-
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;exclude&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p-Indicator&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;.idea&amp;quot;&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;.git&amp;quot;&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;README.md&amp;quot;&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;Gemfile&amp;quot;&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;Gemfile.lock&amp;quot;&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;]&lt;/span&gt;
-
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;http://blog.asamaru.net&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;이 세상에 하나는 남기고 가자&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;subtitle&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;내가 할 수 있는 모든 것을...&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;author&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;유영재&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;simple_search&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;https://www.google.com/search&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p-Indicator&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# this means to ignore newlines until &amp;quot;baseurl:&amp;quot;&lt;/span&gt;
-  &lt;span class=&quot;no&quot;&gt;세상에 필요한 소스코드 한줄 남기고 가자.&lt;/span&gt;
-
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;asamaru@asamaru.net&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;baseurl&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;&amp;quot;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# the subpath of your site, e.g. /blog/&lt;/span&gt;
-
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;permalink&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;/:year/:month/:day/:title/&lt;/span&gt;
-
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;markdown&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;KramdownPygments&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;markdown_ext&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;markdown,mkd,mkdn,md&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;textile_ext&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;textile&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;kramdown&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt;
-  &lt;span class=&quot;l-Scalar-Plain&quot;&gt;input&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;GFM&lt;/span&gt;
-  &lt;span class=&quot;l-Scalar-Plain&quot;&gt;auto_ids&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;true&lt;/span&gt;
-  &lt;span class=&quot;l-Scalar-Plain&quot;&gt;footnote_nr&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;1&lt;/span&gt;
-  &lt;span class=&quot;l-Scalar-Plain&quot;&gt;entity_output&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;as_char&lt;/span&gt;
-  &lt;span class=&quot;l-Scalar-Plain&quot;&gt;toc_levels&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;1..6&lt;/span&gt;
-  &lt;span class=&quot;l-Scalar-Plain&quot;&gt;smart_quotes&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;lsquo,rsquo,ldquo,rdquo&lt;/span&gt;
-
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;paginate&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;1&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;paginate_path&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;posts/:num&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;recent_posts&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;5&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;excerpt_link&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;Read&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;on&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;amp;rarr;&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;excerpt_separator&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;&amp;lt;!--more--&amp;gt;&amp;quot;&lt;/span&gt;
-
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;titlecase&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;false&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;# Disqus Comments&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;disqus_short_name&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;asamaru7&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;# Google Analytics&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;google_analytics_tracking_id&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;UA-65749108-2&lt;/span&gt;
-
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;github_username&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;asamaru7&lt;/span&gt;
-
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;feed&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt;
-  &lt;span class=&quot;l-Scalar-Plain&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;atom.xml&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;# archives 생성&lt;/span&gt;
-&lt;span class=&quot;l-Scalar-Plain&quot;&gt;jekyll-archives&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt;
-  &lt;span class=&quot;l-Scalar-Plain&quot;&gt;enabled&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;p-Indicator&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;categories&lt;/span&gt;
-    &lt;span class=&quot;p-Indicator&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;year&lt;/span&gt;
-    &lt;span class=&quot;p-Indicator&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;month&lt;/span&gt;
-    &lt;span class=&quot;p-Indicator&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;day&lt;/span&gt;
-    &lt;span class=&quot;p-Indicator&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;tags&lt;/span&gt;
-  &lt;span class=&quot;l-Scalar-Plain&quot;&gt;layouts&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;l-Scalar-Plain&quot;&gt;year&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;archive-year&lt;/span&gt;
-    &lt;span class=&quot;l-Scalar-Plain&quot;&gt;month&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;archive-month&lt;/span&gt;
-    &lt;span class=&quot;l-Scalar-Plain&quot;&gt;day&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;archive-day&lt;/span&gt;
-    &lt;span class=&quot;l-Scalar-Plain&quot;&gt;tag&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;archive-tag&lt;/span&gt;
-    &lt;span class=&quot;l-Scalar-Plain&quot;&gt;category&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;l-Scalar-Plain&quot;&gt;archive-tag&lt;/span&gt;
-  &lt;span class=&quot;l-Scalar-Plain&quot;&gt;permalinks&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;l-Scalar-Plain&quot;&gt;year&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;/:year/&amp;#39;&lt;/span&gt;
-    &lt;span class=&quot;l-Scalar-Plain&quot;&gt;month&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;/:year/:month/&amp;#39;&lt;/span&gt;
-    &lt;span class=&quot;l-Scalar-Plain&quot;&gt;day&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;/:year/:month/:day/&amp;#39;&lt;/span&gt;
-    &lt;span class=&quot;l-Scalar-Plain&quot;&gt;tag&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;/tag/:name/&amp;#39;&lt;/span&gt;
-    &lt;span class=&quot;l-Scalar-Plain&quot;&gt;category&lt;/span&gt;&lt;span class=&quot;p-Indicator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;/category/:name/&amp;#39;&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;하나씩 설명하자니 너무 많다. 다만 그리 어려운 설정들이 아니므로 보면 이해할 것으로 본다.&lt;/p&gt;
-
-&lt;p&gt;마지막으로 한가지. &lt;a href=&quot;https://github.com/mvdbos/kramdown-with-pygments&quot;&gt;Kramdown with Pygments&lt;/a&gt;라는 플러그인을 사용했다. Jekyll에서 kramdown을 사용하면서 Pygments를 함께 사용(코드 하이라이팅)하기 위한 플러그인이다. 그런데 몇가지 문제가 있어 아래와 같이 변형해서 사용하고 있다. 덤으로 옥토프레스에서 코드 블럭에 사용되던 문법도 호환되게 변경했으나 마지막에 문제에 걸렸다. kramdown에서 그 문법을 정상적으로 인식하지 못했다. 코드에 빈 줄바꿈이 포함되면 정상적으로 인식하지 못한다. 따라서 이 플러그인이 동작하기 이전에 발생되는 문제로 여기서는 아직 처리하지 못했다. 시간을 들여 분석해보면 처리 방법이 있을수도 있지만 일단 두기로 했다. 중요한 문제는 아니므로(게다가 내가 ruby를 모른다. 이 작업도 기본 문법 몇가지만 공부해서 처리한 것이라 깊이있는 수정은 어렵다).&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;kramdown_pygments.rb&lt;/strong&gt;&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;  1
-  2
-  3
-  4
-  5
-  6
-  7
-  8
-  9
- 10
- 11
- 12
- 13
- 14
- 15
- 16
- 17
- 18
- 19
- 20
- 21
- 22
- 23
- 24
- 25
- 26
- 27
- 28
- 29
- 30
- 31
- 32
- 33
- 34
- 35
- 36
- 37
- 38
- 39
- 40
- 41
- 42
- 43
- 44
- 45
- 46
- 47
- 48
- 49
- 50
- 51
- 52
- 53
- 54
- 55
- 56
- 57
- 58
- 59
- 60
- 61
- 62
- 63
- 64
- 65
- 66
- 67
- 68
- 69
- 70
- 71
- 72
- 73
- 74
- 75
- 76
- 77
- 78
- 79
- 80
- 81
- 82
- 83
- 84
- 85
- 86
- 87
- 88
- 89
- 90
- 91
- 92
- 93
- 94
- 95
- 96
- 97
- 98
- 99
-100
-101
-102
-103
-104
-105
-106
-107
-108
-109
-110
-111
-112
-113
-114
-115
-116
-117
-118
-119
-120
-121
-122
-123
-124
-125
-126
-127
-128
-129
-130
-131
-132
-133
-134
-135
-136
-137
-138
-139
-140
-141
-142&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;c1&quot;&gt;# We define the an additional option for the kramdown parser to look for&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;module&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Kramdown&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;module&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Options&lt;/span&gt;
-      &lt;span class=&quot;n&quot;&gt;define&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:kramdown_default_lang&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;Symbol&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kp&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;sh&quot;&gt;Sets the default language for highlighting code blocks&lt;/span&gt;
-
-&lt;span class=&quot;sh&quot;&gt;If no language is set for a code block, the default language is used&lt;/span&gt;
-&lt;span class=&quot;sh&quot;&gt;instead. The value has to be one of the languages supported by pygments&lt;/span&gt;
-&lt;span class=&quot;sh&quot;&gt;or nil if no default language should be used.&lt;/span&gt;
-
-&lt;span class=&quot;sh&quot;&gt;Default: nil&lt;/span&gt;
-&lt;span class=&quot;sh&quot;&gt;Used by: PygmentsHtml converter&lt;/span&gt;
-&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;# This class is a plugin for kramdown, to make it use pygments instead of coderay&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;# It has nothing to do with Jekyll, it is simply used by the custom converter below&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;module&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Kramdown&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;module&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Converter&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;#AllOptions = /([^\s]+)\s+(.+?)\s+(https?:\/\/\S+|\/\S+)\s*(.+)?\n/i&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;#LangCaption = /([^\s]+)\s*(.+)?\n/i&lt;/span&gt;
-    &lt;span class=&quot;no&quot;&gt;AllOptions&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;sr&quot;&gt;/([a-z0-9]+)[[:blank:]]+(.+?)[[:blank:]]+(https?:\/\/\S+|\/\S+)[[:blank:]]*([^\n]+)?\n/i&lt;/span&gt;
-    &lt;span class=&quot;no&quot;&gt;LangCaption&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;sr&quot;&gt;/([a-z0-9]+)[[:blank:]]*([^\n]+)?\n/i&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;PygmentsHtml&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;Html&lt;/span&gt;
-
-      &lt;span class=&quot;k&quot;&gt;begin&lt;/span&gt;
-        &lt;span class=&quot;nb&quot;&gt;require&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;pygments&amp;#39;&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;rescue&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;LoadError&lt;/span&gt;
-        &lt;span class=&quot;no&quot;&gt;STDERR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;You are missing a library required for syntax highlighting. Please run:&amp;#39;&lt;/span&gt;
-        &lt;span class=&quot;no&quot;&gt;STDERR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;  $ [sudo] gem install pygments&amp;#39;&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;raise&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;FatalException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing dependency: Pygments&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-
-      &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;convert_codeblock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;el&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;indent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;codeProc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;el&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;indent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kp&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-
-      &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;convert_codespan&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;el&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;indent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;codeProc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;el&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;indent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kp&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-
-      &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;codeProc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;el&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;indent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isSapn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;kp&quot;&gt;attr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;el&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dup&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;lang&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;extract_code_language!&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kp&quot;&gt;attr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;vi&quot;&gt;@options&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:kramdown_default_lang&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
-        &lt;span class=&quot;c1&quot;&gt;# STDERR.puts &amp;quot;lang #{el.value}&amp;quot;&lt;/span&gt;
-
-        &lt;span class=&quot;n&quot;&gt;codeStr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;el&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;
-        &lt;span class=&quot;c1&quot;&gt;# octopress code 형식 지원&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;caption&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;&amp;quot;&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isSapn&lt;/span&gt;
-          &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;codeStr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=~&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;AllOptions&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;codeStr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=~&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;LangCaption&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;acceptLang&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;Pygments&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Lexer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;find_by_alias&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;vg&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;acceptLang&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;kp&quot;&gt;nil&lt;/span&gt;
-              &lt;span class=&quot;c1&quot;&gt;# STDERR.puts &amp;quot;lang [#{$1}] [#{$2}]&amp;quot;&lt;/span&gt;
-              &lt;span class=&quot;n&quot;&gt;isSapn&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kp&quot;&gt;false&lt;/span&gt;
-              &lt;span class=&quot;n&quot;&gt;lang&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;vg&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;
-
-              &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;codeStr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=~&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;AllOptions&lt;/span&gt;
-                &lt;span class=&quot;c1&quot;&gt;# STDERR.puts &amp;quot;lang all&amp;quot;&lt;/span&gt;
-                &lt;span class=&quot;c1&quot;&gt;# fn = &amp;quot;#{$2}&amp;quot;.gsub(/\s+/, &amp;quot;&amp;quot;)&lt;/span&gt;
-                &lt;span class=&quot;n&quot;&gt;caption&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;&amp;lt;figcaption&amp;gt;&amp;lt;span&amp;gt;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;vg&quot;&gt;$2&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;lt;/span&amp;gt;&amp;lt;a href=&amp;#39;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;vg&quot;&gt;$3&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;#39;&amp;gt;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;vg&quot;&gt;$4&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;link&amp;#39;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;lt;/a&amp;gt;&amp;lt;/figcaption&amp;gt;&amp;quot;&lt;/span&gt;
-              &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-              &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;caption&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;&amp;quot;&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;and&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;codeStr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=~&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;LangCaption&lt;/span&gt;
-                &lt;span class=&quot;c1&quot;&gt;# STDERR.puts &amp;quot;lang lang&amp;quot;&lt;/span&gt;
-                &lt;span class=&quot;n&quot;&gt;caption&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;&amp;lt;figcaption&amp;gt;&amp;lt;span&amp;gt;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;vg&quot;&gt;$2&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;lt;/span&amp;gt;&amp;lt;/figcaption&amp;gt;&amp;quot;&lt;/span&gt;
-              &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-              &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;caption&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;&amp;quot;&lt;/span&gt;
-                &lt;span class=&quot;n&quot;&gt;codeStr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;codeStr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lines&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;to_a&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;join&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;# 첫줄 제거&lt;/span&gt;
-              &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-          &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-
-        &lt;span class=&quot;n&quot;&gt;code&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pygmentize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;codeStr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lang&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;code_attr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isSapn&lt;/span&gt;
-          &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lang&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;code_attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;class&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;highlight notranslate&amp;quot;&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;code_attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;has_key?&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;class&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-              &lt;span class=&quot;n&quot;&gt;code_attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;class&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot; language-&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lang&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
-              &lt;span class=&quot;n&quot;&gt;code_attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;class&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;language-&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lang&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-          &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
-          &lt;span class=&quot;n&quot;&gt;code_attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;class&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;language-&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lang&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lang&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;code&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;kp&quot;&gt;nil&lt;/span&gt;
-          &lt;span class=&quot;n&quot;&gt;code&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;escape_html&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;codeStr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-          &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;code_attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;class&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;kp&quot;&gt;nil&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;code_attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;class&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot; nmcode&amp;quot;&lt;/span&gt;
-          &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;code_attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;class&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;nmcode&amp;quot;&lt;/span&gt;
-          &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isSapn&lt;/span&gt;
-          &lt;span class=&quot;s2&quot;&gt;&amp;quot;&amp;lt;code&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;html_attributes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kp&quot;&gt;attr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;lt;/code&amp;gt;&amp;quot;&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
-          &lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39; &amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;indent&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;lt;figure class=&amp;#39;code&amp;#39;&amp;gt;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;caption&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;lt;div class=&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&amp;quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;highlight notranslate&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&amp;quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;gt;&amp;lt;pre&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;html_attributes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kp&quot;&gt;attr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;gt;&amp;lt;code&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;html_attributes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code_attr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;lt;/code&amp;gt;&amp;lt;/pre&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/figure&amp;gt;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-
-      &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;pygmentize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lang&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lang&lt;/span&gt;
-          &lt;span class=&quot;no&quot;&gt;Pygments&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;highlight&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-            &lt;span class=&quot;ss&quot;&gt;:lexer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lang&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;#            :options =&amp;gt; { :startinline =&amp;gt; true, :encoding =&amp;gt; &amp;#39;utf-8&amp;#39;, :nowrap =&amp;gt; true })&lt;/span&gt;
-            &lt;span class=&quot;ss&quot;&gt;:options&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:startinline&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;kp&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:encoding&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;utf-8&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:linenos&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;table&amp;#39;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;# This class is the actual custom Jekyll converter.&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Jekyll&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Converters&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Markdown&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;KramdownPygments&lt;/span&gt;
-
-  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;initialize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;require&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;kramdown&amp;#39;&lt;/span&gt;
-    &lt;span class=&quot;vi&quot;&gt;@config&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;rescue&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;LoadError&lt;/span&gt;
-    &lt;span class=&quot;no&quot;&gt;STDERR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;You are missing a library required for Markdown. Please run:&amp;#39;&lt;/span&gt;
-    &lt;span class=&quot;no&quot;&gt;STDERR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;  $ [sudo] gem install kramdown&amp;#39;&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;raise&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;FatalException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing dependency: kramdown&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-
-  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;convert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;html&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;Kramdown&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Document&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;ss&quot;&gt;:auto_ids&lt;/span&gt;             &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;vi&quot;&gt;@config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;kramdown&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;auto_ids&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;ss&quot;&gt;:footnote_nr&lt;/span&gt;          &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;vi&quot;&gt;@config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;kramdown&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;footnote_nr&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;ss&quot;&gt;:entity_output&lt;/span&gt;        &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;vi&quot;&gt;@config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;kramdown&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;entity_output&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;ss&quot;&gt;:toc_levels&lt;/span&gt;           &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;vi&quot;&gt;@config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;kramdown&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;toc_levels&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;ss&quot;&gt;:smart_quotes&lt;/span&gt;         &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;vi&quot;&gt;@config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;kramdown&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;smart_quotes&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;ss&quot;&gt;:kramdown_default_lang&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;vi&quot;&gt;@config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;kramdown&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;default_lang&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;ss&quot;&gt;:input&lt;/span&gt;                &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;vi&quot;&gt;@config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;kramdown&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;input&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;ss&quot;&gt;:hard_wrap&lt;/span&gt;            &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;vi&quot;&gt;@config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;kramdown&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;hard_wrap&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;to_pygments_html&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;html&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;보다 자세한 처리 결과를 확인하고 싶다면 이 블로그의 소스를 참고하기 바란다. &lt;a href=&quot;https://github.com/asamaru7/blog&quot;&gt;asamaru7/blog - Github&lt;/a&gt;&lt;/p&gt;
-</content>
-<summary>최근 이틀동안 현재 운영중인 블로그에서 사용중인 옥토프레스를 걷어내고 순수 Jekyll로 전환하는 작업을 했다. 사실 처음엔 지금 사용중인 옥토프레스를 3버전으로 버전업 하려고 했다. 그래서 Migrating Octopress 2 to Octopress 3를 따라 전환을 시도했다. 이 글에서도 나와 있는 것처럼 옥토프레스 제작자가 Octopress 3.0 Is Coming이라고만 해두고 정식 릴리즈를 하지 않아 기다림에 지쳐 작업을 시작했다(이때까지만 하더라도 일이 간단하리라 생각했다).아래의 글은 체계적인 설치 안내서 보다는 전환 경험담에 가깝다. 아래의 과정을 따라 설치하면 동일하게 안될 확률이 높으므로 참고만 하길 바란다. 사실 처음엔 잘 정리해 두려고 했는데 워낙에 이리저리 시도를 많이 하면서 정리하는 것을 포기했다.Jekyll 전환에 앞서 octopress 버전업 시도 과정부터 이야기하려고 한다.Octopress 3 - Github에 가면 최신 옥토프레스를 확인할 수 있다. 현재 시점을 기준으로 3.0.11이 최신이다. 정식 릴리즈를 공식적으로 출시하지 않았지만 개발을 나름 활발히 진행중이다. 나중에 버전업을 진행해 보니 왜 정식 릴리즈를 하지 못하고 있는지 알 것도 같다. Jekyll 기반으로 여러가지 플러그인을 사용하고 템플릿의 제작도 프로그램 제작에 준할 정도로 커스텀되는 상황이다보니 체계적인 마이그레이션 방법을 제시하기 어려운 것 같다.Migrating Octopress 2 to Octopress 3에 나름 잘 설명되어 있기는하나 나의 경우엔 그대로 적용되지 않았다(특별한 플러그인 다수 사용하지도 않았는데). 결국은 여러가지 시도 끝에 남은 거라곤 옥토프레스 3.0.11이 설치되었다는 것 밖에 없다(사실 이건 간단히 설치가 되므로 대부분의 시간을 허비한 것이다).이러한 이유로 순수 Jekyll로 전환을 시작하게 되었다. 사실 이 과정도 옥토프레스를 버전업하는 것과 같이 새로운 블로그를 생성하고 주요 설정을 이전하는 것이다.옥토프레스는 원래 Jekyll을 기반으로 확장된 것이라 전환이 간단할 것이라고 생각했다. 이것 또한 착각이었다. 이 과정에서도 여러가지 실패기가 있지만 다 나열하기도 힘들다. 이후부터는 설치 과정을 간략히 요약하려고 한다.아래는 Jekyll을 설치하기 위한 Gemfile 의 내용이다. 거의 필수에 가까운 플러그인만으로 구성했다.12345678source &amp;#39;https://rubygems.org&amp;#39;gem &amp;#39;jekyll&amp;#39;, &amp;#39;= 3.0.1&amp;#39;gem &amp;#39;jekyll-paginate&amp;#39;gem &amp;#39;jekyll-archives&amp;#39;gem &amp;#39;jekyll-sitemap&amp;#39;gem &amp;#39;jekyll-feed&amp;#39;gem &amp;#39;pygments.rb&amp;#39;Gemfile 을 사용한 설치는 아래와 같이 할 수 있다. 단, ruby 버전 2.1 이상을 요구할 수 있는데 그때는 rvm을 사용해 설치하면 된다.12$ sudo gem install bundler$ bundle install다음은 Jekyll에서 가장 중요한 _config.yml 파일의 내용이다.```yamlgems:  - jekyll-paginate  - jekyll-archives  - jekyll-sitemap  - jekyll-feed  - pygments.rbexclude: [“.idea”, “.git”, “README.md”, “Gemfile”, “Gemfile.lock”]url: http://blog.asamaru.nettitle: 이 세상에 하나는 남기고 가자subtitle: 내가 할 수 있는 모든 것을…author: 유영재simple_search: https://www.google.com/searchdescription: &amp;gt; # this means to ignore newlines until “baseurl:”  세상에 필요한 소스코드 한줄 남기고 가자.email: asamaru@asamaru.netbaseurl: “” # the subpath of your site, e.g. /blog/permalink: /:year/:month/:day/:title/markdown: KramdownPygmentsmarkdown_ext: markdown,mkd,mkdn,mdtextile_ext: textilekramdown:  input: GFM  auto_ids: true  footnote_nr: 1  entity_output: as_char  toc_levels: 1..6  smart_quotes: lsquo,rsquo,ldquo,rdquopaginate: 1paginate_path: “posts/:num”recent_posts: 5excerpt_link: “Read on →”excerpt_separator: “</summary>
 </entry>
 </feed>

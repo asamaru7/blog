@@ -104,82 +104,23 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/09/02/decoding-byte-escaped-strings-in-php/">
-								PHP에서 Byte-escaped(\xFF)된 문자열 decode하기
+							<a class="title" href="http://blog.asamaru.net/2015/09/03/android-http-ping/">
+								안드로이드에서 android.os.NetworkOnMainThreadException을 발생시키지 않고 HTTP Ping 보내기
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/09/02/decoding-byte-escaped-strings-in-php/">2015.09.02.</span></a>
+								<a href="http://blog.asamaru.net/2015/09/03/android-http-ping/">2015.09.03.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>어제 회사 직원 한명이 협력사에서 데이터 전달을 위해 생성해서 알려준 URL에서 데이터를 받지 못해 고생을 하고 있었다. 협력사는 PC용 어플리케이션을 만드는 회사(Delphi 사용)로 웹에 대해서 잘 모른다.</p>
+							<p>오늘은 작업을 하던 중간에 서버로 ping을 보내야 하는 작업이 생겼다. 정확하게는 서버에 간단한 값을 전송해서 로그로 쌓기 위한 작업이다.
+우선 안드로이드는 main thread에서 network 작업을 할 수 없도록 되어있다. 억지로 하려고하면 android.os.NetworkOnMainThreadException이 발생한다.</p>
 
-<p>처리하고자 하는 일은 다음과 같았다. PC용 어플리케이션에서 버튼을 누르면 해당 어플리케이션에서 가지고 있던 데이터를 특정 URL로 호출(전달)해주는 것이었다.</p>
+<p>간단히 생각해서 handler를 사용하는 방법도 있으나 메인 handler를 사용하면 마찬가지다.
+그래서 가장 간단한 방법은 AsyncTask를 사용하는 것이다.</p>
 
-<p>처음엔 데이터를 “뭐뭐 주세요” 했더니 그냥 넘겨주는 바람에 특수문자가 들어가 내용이 정상적으로 전달되지 않았다. 당연히 POST 방식으로 값을 전달해주면 문제가 없겠지만 그렇게는 더 어렵다고하니… 그냥 GET으로 달라고 했다. 그 바람에 이런 일들이 벌어진 것이다.</p>
+<p>아래는 url을 인자로 받아 http로 접속한 후 response가 200이 나왔는지를 반환한다.</p>
 
-<p>그리하여 우여곡절 끝에 문자열을 인코딩해서 보내달라는 요청을하고 받은 결과가 다시 문제가 되었다. 분명 인코딩은 되어 있는데 일반적으로 웹에서 쓰는 인코딩이 아니었다.</p>
-
-<blockquote>
-  <p>\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</p>
-</blockquote>
-
-<p>뭐 이런식이다. 어딘가 낯익은 모양이면서도 흔히 보지못한 형태였다.</p>
-
-<p>검색을 해보니 javascript escape sequences라고 부르는 사람도 있고 Byte-escaped string이라고 하기도 하고.. 어쨌든 byte 단위로 변환된 문자열이다.</p>
-
-<p>이 문장을 decode 하려면 다음의 코드를 참조하면 된다. (인터넷에서 다른 소스를 참조해서 조금 개선했다.)</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nb">preg_replace_callback</span><span class="p">(</span>
-    <span class="s1">&#39;/\\\x([0-9a-f]{2})/i&#39;</span><span class="p">,</span>
-    <span class="k">function</span><span class="p">(</span><span class="nv">$matches</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">hexdec</span><span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">1</span><span class="p">]));</span>
-    <span class="p">},</span>
-    <span class="nv">$string</span>
-<span class="p">);</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>어땠든 이렇게 decode를 했는데도 글자가 깨졌다. 이런… 문자열이 UTF-8이 아니라 EUC-KR이다.
-그래서 조금더 추가. 여기서 UHC는 euc-kr과 거의 유사하다. 조금 더 확장되었다고 알고있는데 오래전 기억이라 확실치 않다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nb">iconv</span><span class="p">(</span><span class="s2">&quot;UHC&quot;</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nb">preg_replace_callback</span><span class="p">(</span>
-    <span class="s1">&#39;/\\\x([0-9a-f]{2})/i&#39;</span><span class="p">,</span>
-    <span class="k">function</span><span class="p">(</span><span class="nv">$matches</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">hexdec</span><span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">1</span><span class="p">]));</span>
-    <span class="p">},</span>
-    <span class="nv">$string</span>
-<span class="p">));</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>이렇게 해피앤딩이 되면 좋겠지만 현실을 그렇지 않다. 문제는 이 인코딩이 특수문자는 인코딩하지 않는다는 것.(비 ascii 코드만 인코딩)
-따라서 웹에서 데이터로 URL에 사용해서는 안되는 &amp;, # 등이 그대로 남아있어 데이터가 잘려서 넘어오는 문제는 해결되지 않는다. 가장 좋은 해결책은 urlencode를 해서 넘겨 벋는 것이지만 협력사를 내맘대로 할 수는 없고…</p>
-
-<p>자체적인 해결을 위한 해결법(꼼수)은 다음과 같다.
-특히 #이 가장 큰 문제를 일으키므로 초출된 URL에서 데이터를 즉시 처리하지 않고 javascript로 현재 브라우저의 URL을 받아 다른 처리 페이지로 직접 넘겨서 파싱한다. 이렇게하면 일이 많이 번거로워지지만 협력사의 변경없이 여기서 모두 해결된다.
-다만.. urlencode만 제대로 해줘도 되는걸 이런 꼼수를 써가며 억지로 해야하는가? 하는…</p>
-
-<p>이왕 이 일로 글을 적는 김에 몇가지 함수도 덤으로…
-php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등을 사용하면되나 javascript에서 인코딩된 문자열을 그대로 전달받는 경우 등에 사용할 수 있다. 쉽게 말해서 javascript 문자열 인코딩 함수 php 대응 함수다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
  4
@@ -191,134 +132,32 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
 10
 11
 12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">/**</span>
-<span class="sd"> * @desc javascript의 encodeURIComponent함수와 같은기능으로 문자열을 변환한다.</span>
-<span class="sd"> * @param mixed $str 처리할 배열변수나 단일변수</span>
-<span class="sd"> * @param String $fromEncofing 입력 인코딩</span>
-<span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
-<span class="sd"> * @exam $arr = String::encodeURI($arr);</span>
-<span class="sd"> *       String::encodeURI($arr);</span>
-<span class="sd"> */</span>
-<span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">encodeURI</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$fromEncofing</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nb">is_array</span><span class="p">(</span><span class="nv">$str</span><span class="p">))</span> <span class="p">{</span>
-        <span class="nx">String</span><span class="o">::</span><span class="na">arrayProc</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;String::encodeURI&#39;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">is_null</span><span class="p">(</span><span class="nv">$fromEncofing</span><span class="p">))</span> <span class="p">{</span>
-        <span class="nv">$trans</span> <span class="o">=</span> <span class="nb">iconv</span><span class="p">(</span><span class="nv">$fromEncofing</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nv">$str</span><span class="p">);</span> <span class="c1">// UHC 확장 완성형 한글</span>
-    <span class="p">}</span>
-    <span class="nv">$trans</span> <span class="o">=</span> <span class="nb">rawurlencode</span><span class="p">(</span><span class="nv">$trans</span><span class="p">);</span>
-
-    <span class="nv">$str</span> <span class="o">=</span> <span class="nv">$trans</span><span class="p">;</span>
-    <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="sd">/**</span>
-<span class="sd"> * @desc javascript의 decodeURIComponent함수와 같은기능으로 문자열을 변환한다.</span>
-<span class="sd"> * @param mixed $str 처리할 배열변수나 단일변수</span>
-<span class="sd"> * @param String $toEncofing 반환 인코딩</span>
-<span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
-<span class="sd"> * @exam $arr = String::decodeURI($arr);</span>
-<span class="sd"> *       String::decodeURI($arr); //리턴받지 않아도 입력변수에 저장되어 나옴.</span>
-<span class="sd"> */</span>
-<span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">decodeURI</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$toEncofing</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nb">is_array</span><span class="p">(</span><span class="nv">$str</span><span class="p">))</span> <span class="p">{</span>
-        <span class="nx">String</span><span class="o">::</span><span class="na">arrayProc</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;String::decodeURI&#39;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="c1">//  euc-kr의 경우 확장완성형 한글에 대한 처리가 불가능함(예 : ㅂ ㅞ ㄺ)</span>
-    <span class="c1">//  return iconv(&quot;UTF-8&quot;, &quot;EUC-KR&quot;, rawurldecode($text));</span>
-    <span class="nv">$str</span> <span class="o">=</span> <span class="nb">rawurldecode</span><span class="p">(</span><span class="nv">$str</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">is_null</span><span class="p">(</span><span class="nv">$toEncofing</span><span class="p">))</span> <span class="p">{</span>
-        <span class="nv">$str</span> <span class="o">=</span> <span class="nb">iconv</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nv">$toEncofing</span><span class="p">,</span> <span class="nv">$str</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="sd">/**</span>
-<span class="sd"> * @desc javascript의 escape함수로 인코딩된 문자를 디코딩한다.(encodeURIComponent추천)</span>
-<span class="sd"> * @param String $str 처리할 배열변수나 단일변수</span>
-<span class="sd"> * @param String $toEncofing 반환 인코딩</span>
-<span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
-<span class="sd"> * @exam $decStr = String::unescape($str);</span>
-<span class="sd"> */</span>
-<span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">unescape</span><span class="p">(</span><span class="nv">$text</span><span class="p">,</span> <span class="nv">$toEncofing</span> <span class="o">=</span> <span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="c1">//return urldecode(preg_replace_callback(&#39;/%u([[:alnum:]]{4})/&#39;, array(&#39;self&#39;, &#39;tostring&#39;), $text));</span>
-    <span class="k">return</span> <span class="nb">urldecode</span><span class="p">(</span>
-        <span class="nb">preg_replace_callback</span><span class="p">(</span>
-            <span class="s1">&#39;/%u([[:alnum:]]{4})/&#39;</span><span class="p">,</span>
-            <span class="nb">create_function</span><span class="p">(</span>
-                <span class="s1">&#39;$text&#39;</span><span class="p">,</span>
-                <span class="s2">&quot;echo &#39;123&#39;; return iconv(&#39;UTF-16LE&#39;, &#39;&quot;</span> <span class="o">.</span> <span class="nv">$toEncofing</span> <span class="o">.</span> <span class="s2">&quot;&#39;, chr(hexdec(substr(</span><span class="se">\$</span><span class="s2">text[1], 2, 2))).chr(hexdec(substr(</span><span class="se">\$</span><span class="s2">text[1], 0, 2))));&quot;</span>
-            <span class="p">),</span>
-            <span class="nv">$text</span>
-        <span class="p">)</span>
-    <span class="p">);</span>
-<span class="p">}</span>
+13</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">static</span> <span class="kd">class</span> <span class="nc">HttpPingAsyncTask</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Boolean</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="n">Boolean</span> <span class="nf">doInBackground</span><span class="o">(</span><span class="n">String</span><span class="o">...</span> <span class="n">urls</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">HttpURLConnection</span><span class="o">.</span><span class="na">setFollowRedirects</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+            <span class="n">HttpURLConnection</span> <span class="n">con</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="k">new</span> <span class="nf">URL</span><span class="o">(</span><span class="n">urls</span><span class="o">[</span><span class="mi">0</span><span class="o">]).</span><span class="na">openConnection</span><span class="o">();</span>
+            <span class="n">con</span><span class="o">.</span><span class="na">setRequestMethod</span><span class="o">(</span><span class="s">&quot;HEAD&quot;</span><span class="o">);</span>
+            <span class="k">return</span> <span class="o">(</span><span class="n">con</span><span class="o">.</span><span class="na">getResponseCode</span><span class="o">()</span> <span class="o">==</span> <span class="n">HttpURLConnection</span><span class="o">.</span><span class="na">HTTP_OK</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
+<p>사용법은 다음과 같다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">(</span><span class="k">new</span> <span class="nf">HttpPingAsyncTask</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">url</span><span class="o">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>이는 가장 간단한 형태로 구현된 코드로 할 수 있는 일이 url을 호출하고 응답을 확인하는 것 밖에 없다. 하지만 조금만 응용하면 여러가지로 활용할 수 있다.
+url에 GET 인자로 전달하고자 하는 값을 넘기고 서버에서는 해당 값을 로그로 남기거나 필요한 처리를 한다. 그리고 정상처리가 되었다면 200을 반환하고 실패하면 500을 반환함으로써 처리 결과를 알 수 있다. 이러한 형태를 이용하면 간단한 구현으로 여러가지 일을 할 수 있다.</p>
+
+<p>또한 위의 코드에 필요한 기능을 조금씩 덧붙이면 보다 다양한 일을 할 수 있는 코드를 만들수도 있을 것이다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -332,8 +171,8 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/09/02/decoding-byte-escaped-strings-in-php/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/09/02/decoding-byte-escaped-strings-in-php/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/09/03/android-http-ping/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/09/03/android-http-ping/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

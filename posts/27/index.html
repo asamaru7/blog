@@ -104,99 +104,59 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/11/24/swift-background-threads-gcd-grand-central-dispatch/">
-								Swift : Async - Background Threads - GCD(Grand Central Dispatch)
+							<a class="title" href="http://blog.asamaru.net/2015/11/25/protobuf-protocol-buffers/">
+								protobuf (Protocol Buffers)를 PHP에서 사용하기
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/11/24/swift-background-threads-gcd-grand-central-dispatch/">2015.11.24.</span></a>
+								<a href="http://blog.asamaru.net/2015/11/25/protobuf-protocol-buffers/">2015.11.25.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>오늘은 swift에 비동기 처리에 사용하는 <a href="https://github.com/duemunk/Async">Async</a>라는 라이브러리를 소개하고자 한다. <a href="https://github.com/duemunk/Async">Async</a>는 “Syntactic sugar in Swift for asynchronous dispatches in Grand Central Dispatch”라고 소개되어 있다. <a href="https://github.com/duemunk/Async">Async</a>를 소개하기 전에 swift에서의 기본적인 비동기 처리에 대해 먼저 설명한다.</p>
+							<p><a href="https://developers.google.com/protocol-buffers/">Protocol Buffers</a>는 무엇일까?
+공식 사이트에서 아래와 같이 설명하고 있다.</p>
 
-<p>swift는 비동기(Asynchronous) 처리에 사용하는 <a href="https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/">GCD(Grand Central Dispatch)</a>를 사용할 수 있다. GCD(Grand Central Dispatch)는 C로 구성된 스레드 관리 기술로 iOS4 부터 지원한다. NSThread, NSOperation 보다 쉽게 쉽게 사용할 수 있다.</p>
+<blockquote>
+  <p>Protocol buffers are a language-neutral, platform-neutral extensible mechanism for serializing structured data.</p>
+</blockquote>
 
-<p>스레드는 다양한 병렬 작업에 사용하지만 특히 앱 개발시에는 더욱 자주 사용하게 된다. 안드로이드와 iOS는 UI처리 등의 앱의 실행을 main 스레드에서 처리한다. 그런데 이 main 스레드에서 무거운 작업을 하게 된다면 UI의 갱신이 지연되므로 화면의 멈춤 현상이 발생한다. 특히 안드로이드의 경우는 main 스레드에서 네트워크 처리 등을 할 수 없도록 제한이 걸려있다(제한을 풀 수 있으나 ANR 문제 등으로 결국은 사용하지 못하는 것과 같다). 이러한 문제를 해결하기 위해서는 스레드의 사용이 필수다.</p>
+<p>간단히 말하면 언어와 플랫폼에 중립적이며 확장 가능한 구조화된 데이터 직렬화 도구라고 할 수 있겠다. XML과 유사하지만 더 작고, 더 빠르며, 더 단순하다고 소개하고 있다.</p>
 
-<p>그럼 <a href="https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/">GCD(Grand Central Dispatch)</a>에 대해서 알아보자.</p>
-
-<p>GCD는 기본적으로 아래의 queue를 가지고 있다.</p>
+<p>이번 글에서는 <a href="https://developers.google.com/protocol-buffers/">Protocol Buffers</a> 자체에 대한 연구가 목적이 아니므로 참고할 만한 글을 아래에 소개하는 것으로 자세한 설명을 대체한다.</p>
 
 <ul>
   <li>
-    <p><strong>Main</strong>: tasks execute serially on your application’s main thread</p>
+    <p><a href="https://developers.google.com/protocol-buffers/docs/overview">Protocol Buffers Developer Guide</a></p>
   </li>
+  <li><a href="https://github.com/eishay/jvm-serializers/wiki">Benchmark comparing serialization libraries on the JVM</a></li>
   <li>
-    <p><strong>Concurrent</strong>: tasks are dequeued in FIFO order, but run concurrently and can finish in any order.</p>
+    <p><a href="http://www.cgcii.co.kr/index.php?document_srl=2017&amp;mid=board_eLHH13">Tips - C++, C#, protobuf, JSON직렬화 성능 얼마나 차이날까?</a></p>
   </li>
-  <li>
-    <p><strong>Serial</strong>: tasks execute one at a time in FIFO order</p>
-  </li>
+  <li><a href="http://egloos.zum.com/javawork/v/2720889">Google Protocol Buffers 기본 사용법</a></li>
+  <li><a href="http://knight76.tistory.com/1366">구글 프로토콜 버퍼 (Google Protocl Buffer)</a></li>
 </ul>
 
-<p>GCD에 대한 자세한 설명은 워낙에 많으니 자세히 설명하지 않고 간단한 예시만 보여주고자 한다.</p>
+<hr />
 
-<p>일단 swift 이전에 objective-c에서는 아래와 같이 사용한다.</p>
+<p>본론으로 들어가자면 이번에 개인적인 작업을 하는 과정에서 <a href="https://developers.google.com/protocol-buffers/">Protocol Buffers</a>를 사용할 일이 생겼다. 정확히 이야기하자면 Google Play를 대상으로 몇가지 실험을 하고 있다. 그런데 이 작업을 하다보니 Google Play 서버와 통신을 하려면 <a href="https://developers.google.com/protocol-buffers/">Protocol Buffers</a>를 사용 해야만 했다. <a href="https://developers.google.com/protocol-buffers/">Protocol Buffers</a>가 너무 길어서 이하에서는 그냥 PB라고 하겠다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-objective-c"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_global_queue</span><span class="p">(</span><span class="n">DISPATCH_QUEUE_PRIORITY_DEFAULT</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">^</span><span class="p">{</span>
-	<span class="c1">// do some task</span>
-	<span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
-		<span class="c1">// update some UI</span>
-	<span class="p">});</span>
-<span class="p">});</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p>이번 작업에 필요한 몇가지 요소들을 지원하는 오픈소스 라이브러리들이 몇가지 있었으나 개발이 오래동안 멈춰진 것들이 대부분이라 기존 오픈소스들을 참고해서 직접 구현하기로 했다(사실 이 부분이 나의 최대 실수다. 생각보다 작업이 만만치 않아 시간을 많이 소요했다). 기존 오픈소스들은 java와 python, ruby로 구성된 것이 많았다. 그런데 나는 PHP로 구성하고 싶었다. 지금 생각하면 왜 그런 결정을 했는지 모르겠다. python이야 아직 익숙치 않아 패스하더라도 java로 작업하면 생각보다 빠르게 작업이 완료될 수 있었는데… 이야기가 갑자기 옆으로 샜는데 다시 본론으로…</p>
 
-<p>동일한 동작을 swift에서 사용하면 아래와 같다.</p>
+<p>어쨌든 PHP로 PB를 사용하는 것부터 시작해야 했다. 그런데 PB는 기본적으로 C++, JAVA, PYTHON을 지원한다. PHP를 공식 지원하지 않으므로 지원 라이브러리부터 찾아야 한다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">let</span> <span class="n">priority</span> <span class="o">=</span> <span class="n">DISPATCH_QUEUE_PRIORITY_DEFAULT</span>
-<span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_global_queue</span><span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="p">{</span>
-	<span class="c1">// do some task</span>
-	<span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">())</span> <span class="p">{</span>
-		<span class="c1">// update some UI</span>
-	<span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p>아래의 사이트들을 참고하자. 이 외에도 찾아보면 여러가지가 있다.</p>
 
-<p>block object의 표현만 차이가 날 뿐 사실상 거의 차이가 없다.</p>
+<ul>
+  <li><a href="http://stuporglue.org/using-google-protcol-buffers-with-php-and-protoc-gen-php/">Using Google Protcol Buffers with PHP and protoc-gen-php</a></li>
+  <li><a href="http://phptrends.com/dig_in/protobuf">Php Trends.com : protobuf</a></li>
+</ul>
 
-<p>위 코드를 간단히 설명하자면 global queue에서 작업을 수행하고 main queue에서 UI 변경 작업을 하도록 한 코드다.</p>
+<p>PHP에서 PB를 사용하는 오픈소스 중 그런대로 가장 이름이 알려진 프로젝트는 <a href="https://github.com/drslump/Protobuf-PHP">drslump/Protobuf-PHP</a> 였다(주관적인 생각이다). 그런데 설치 과정과 사용법이 간단하게 설명되어 있었지만 실제로는 그리 간단하지 않았다. 그래서 일단 접어두고 다른 라이브러리들도 하나씩 테스트 했다. 두서없이 작업하다보니 일일이 기록을 남기지 못했다. 잘 정리해 두었다면 비교에 도움이 되었을텐데 그 당시에는 정신이 없었다. 생각대로 되지 않아 닥치는대로 막 적용을 해보고 있었던지라.</p>
 
-<p>뭐 크게 사용이 어렵지도 않고 크게 불편하지는 않다. 하지만 이런 과정을 더욱 쉽게 구성할 수 있도록 도와주는 것이 <a href="https://github.com/duemunk/Async">Async</a>다. 상세한 예시는 해당 사이트를 방문하면 다양하게 소개하고 있다.</p>
+<p>결국 현재는 <a href="https://github.com/chobie/protoc-gen-php">chobie/protoc-gen-php</a>로 정착했다. 사실 이 라이브러리도 문제가 많긴하다. php에 모듈을 별도 설치해야하고 기타 의존 라이브러리도 설치해야 한다(간단하게 사용하려고 php를 선택한 것인데). 그리고 이 라이브러리는 <a href="https://pecl.php.net/package/protocolbuffers">PECL:protocolbuffers</a>에 등록되어 있어서 PECL을 사용해 설치도 가능하다. 하지만 나는 직접 설치했다. 이 라이브러리가 업데이트가 된지 오래되서 오류가 있는 부분을 몇가지 수정해서 사용하게 되면서 모듈을 그대로 사용할 수 없었다.</p>
 
-<p>그 중에서 Async의 장점을 잘 보여주는 예시를 하나 소개한다.</p>
+<p>아래는 사용에 필요한 모듈들을 설치하는 과정을 bash shell로 작성해 둔 것이다. 실제 사용시에는 자신의 환경에 맞춰서 사용하면 된다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">let</span> <span class="n">seconds</span> <span class="o">=</span> <span class="mf">0.5</span>
-<span class="n">Async</span><span class="p">.</span><span class="n">main</span><span class="p">(</span><span class="nl">after</span><span class="p">:</span> <span class="n">seconds</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">println</span><span class="p">(</span><span class="s">&quot;Is called after 0.5 seconds&quot;</span><span class="p">)</span>
-<span class="p">}.</span><span class="n">background</span><span class="p">(</span><span class="nl">after</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">println</span><span class="p">(</span><span class="s">&quot;At least 0.4 seconds after previous block, and 0.9 after Async code is called&quot;</span><span class="p">)</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>“Is called after 0.5 seconds” 메시지를 main 스레드에서 0.5초 뒤에 출력한 후 0.4초 뒤 background 스레드에서 “At least 0.4 seconds after previous block, and 0.9 after Async code is called”를 출력하는 예시다. 이 예시를 보면 알 수 있듯이 <a href="https://github.com/duemunk/Async">Async</a>는 chaining을 지원하며 스레드를 작업 완료에 따라 순차적으로 실행 할 수 있도록 도와준다.</p>
-
-<p>스레드 작업을 취소하는 예시 하나만 더 아래에 소개한다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
  4
@@ -210,27 +170,115 @@
 12
 13
 14
-15</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// Cancel blocks not yet dispatched</span>
-<span class="k">let</span> <span class="n">block1</span> <span class="o">=</span> <span class="n">Async</span><span class="p">.</span><span class="n">background</span> <span class="p">{</span>
-    <span class="c1">// Heavy work</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mf">0.</span><span class="p">.</span><span class="mf">.1000</span> <span class="p">{</span>
-        <span class="n">println</span><span class="p">(</span><span class="s">&quot;A \(i)&quot;</span><span class="p">)</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-<span class="k">let</span> <span class="n">block2</span> <span class="o">=</span> <span class="n">block1</span><span class="p">.</span><span class="n">background</span> <span class="p">{</span>
-    <span class="n">println</span><span class="p">(</span><span class="s">&quot;B – shouldn&#39;t be reached, since cancelled&quot;</span><span class="p">)</span>
-<span class="p">}</span>
-<span class="n">Async</span><span class="p">.</span><span class="n">main</span> <span class="p">{</span>
-    <span class="c1">// Cancel async to allow block1 to begin</span>
-    <span class="n">block1</span><span class="p">.</span><span class="n">cancel</span><span class="p">()</span> <span class="c1">// First block is _not_ cancelled</span>
-    <span class="n">block2</span><span class="p">.</span><span class="n">cancel</span><span class="p">()</span> <span class="c1">// Second block _is_ cancelled</span>
+15
+16
+17</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
+
+su -c <span class="s2">&quot;yum install -y php56w-mbstring php56w-bcmath&quot;</span>
+
+<span class="c"># protobuf 설치</span>
+<span class="c"># https://github.com/chobie/protoc-gen-php</span>
+su -c <span class="s2">&quot;yum install -y protobuf-compiler&quot;</span>
+
+<span class="c"># https://github.com/chobie/php-protocolbuffers</span>
+<span class="nb">cd </span>libs/bin/
+git clone https://github.com/chobie/php-protocolbuffers.git
+<span class="nb">cd </span>php-protocolbuffers
+su -c <span class="s2">&quot;yum install -y php56w-devel&quot;</span>
+phpize
+./configure
+make
+su -c <span class="s2">&quot;make install ; echo \&quot;extension=protocolbuffers.so\&quot; &gt;&gt; /etc/php.ini&quot;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>아래는 composer.json 설정 부분이다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-json"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nt">&quot;require&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;asamaru7/protoc-gen-php&quot;</span><span class="p">:</span> <span class="s2">&quot;~0.1.1&quot;</span>
+  <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>위에서 소개한 것처럼 <a href="https://github.com/duemunk/Async">Async</a>는 swift에서의 thread 작업을 아주 쉽게 할 수 있도록 도와준다.</p>
+<p>갑자기 모듈명이 asamaru7로 변경된 것에 유의하자. <a href="https://github.com/chobie/protoc-gen-php">chobie/protoc-gen-php</a>의 fork 프로젝트에서 변경 부분을 내가 따로 fork한 프로젝트에 merge하고 내가 필요한 부분을 수정해서 <a href="https://packagist.org/packages/asamaru7/protoc-gen-php">Packagist</a>에 등록했다.</p>
 
-<p>한가지 라이브러리를 더 소개하자면 위 라이브러리와는 성격이 조금 다르지만 안드로이드의 AsyncTask 같은 작업이 필요하다면 <a href="https://github.com/ReactKit/SwiftTask">SwiftTask</a>를 참고해보면 도움이 될 것 같다. <a href="https://github.com/ReactKit/SwiftTask">SwiftTask</a>는 “Promise + progress + pause + cancel + retry for Swift.”라고 소개하고 있다.</p>
+<p>다음으로 proto 파일로 실제 php 파일을 만드는 과정이다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre>protoc <span class="se">\</span>
+    --plugin<span class="o">=</span>protoc-gen-php<span class="o">=</span><span class="s1">&#39;../vendor/asamaru7/protoc-gen-php/bin/protoc-gen-php&#39;</span> <span class="se">\</span>
+    --proto_path<span class="o">=</span><span class="s1">&#39;/home/web/project/libs/protobuf/&#39;</span> <span class="se">\</span>
+    --php_out<span class="o">=</span><span class="s1">&#39;:../Class/Protobuf&#39;</span> <span class="se">\</span>
+    <span class="s1">&#39;/home/web/project/libs/protobuf/logs.proto&#39;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>이상하게 <code>--proto_path</code>를 사용함에도 full path를 지정해만 정상적으로 생성이 된다. 자주 사용할 부분이 아니므로 일단 패스했다.</p>
+
+<p>마지막으로 php에서의 사용.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ch</span> <span class="o">=</span> <span class="nb">curl_init</span><span class="p">();</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_URL</span><span class="p">,</span> <span class="s2">&quot;https://android.clients.google.com/~~&quot;</span><span class="p">);</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_HEADER</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_RETURNTRANSFER</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_POST</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_POSTFIELDS</span><span class="p">,</span> <span class="nv">$request</span><span class="o">-&gt;</span><span class="na">serializeToString</span><span class="p">());</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_FOLLOWLOCATION</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_SSL_VERIFYPEER</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_HTTPHEADER</span><span class="p">,</span> <span class="p">[</span>
+	<span class="s2">&quot;Content-type: application/x-protobuffer&quot;</span>
+<span class="p">]);</span>
+<span class="nv">$content</span> <span class="o">=</span> <span class="nb">curl_exec</span><span class="p">(</span><span class="nv">$ch</span><span class="p">);</span>
+<span class="nb">curl_close</span><span class="p">(</span><span class="nv">$ch</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p><code>$request-&gt;serializeToString()</code> 이 부분이 중요한 부분이다. <code>$request</code>는 protoc에 의해 생성된 class의 인스턴스다. 전송시에는 <code>serializeToString()</code>를 사용해서 직렬화하는 것이다.</p>
+
+<p>다음은 수신시.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$response</span> <span class="o">=</span> <span class="nx">\Response</span><span class="o">::</span><span class="na">parseFromString</span><span class="p">(</span><span class="nv">$content</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p><code>parseFromString()</code>를 사용해서 수신된 PB 직렬화 데이터를 역직렬화 할 수 있다.</p>
+
+<hr />
+
+<p>그런데 가급적 PHP에서는 PB를 사용하지 말자. “이제까지 사용 방법을 설명해놓고 이게 무슨 말이야?”라고 생각할 수 있는데 이유를 설명하겠다.</p>
+
+<p>이번에 설명한 라이브러리뿐 아니라 <a href="https://github.com/drslump/Protobuf-PHP">drslump/Protobuf-PHP</a> 외에도 테스트한 모든 라이브러리가 group type을 지원하지 않는다. PB v2에서 deprecated 된 type이긴 하지만 Google Play에서는 group type을 사용하고 있었다. 다행히 내가 하고자하는 부분에서는 group이 필요없어서 proto 파일에서 제거하고 작업했지만 group type을 사용하게 되면 오류가 난다. 내가 테스트 해보지 못한 라이브러리에서 지원하는 것이 있을지는 모르겠지만 내가 본 것은 없다. 또한 int의 길이 문제과 같이 데이터 타입에 대한 처리에 신경을 써줘야하는 부분들이 있다.</p>
+
+<p>pure php로 만들어진 라이브러리가 아닌 이상 어짜피 외부 모듈의 설치가 필요하니 아예 이 부분을 python이나 java로 처리하는게 나을지도 모른다. 게다가 pure php로 제작된 모듈은 성능 상의 문제에 대한 이야기도 있다(어짜피 나의 경우는 성능은 중요하지 않은 경우이지만).</p>
+
+<p>그 외에도 작업중에 PB 때문에 고생한 것을 생각하면… 정말 권하고 싶지 않다. 사실 내가 사용을 잘못해서 그런 것일 수 있지만… 어쨌든 JSON 등에 비해 PHP에서의 이득은 없는 것 같다.</p>
+
+<p>그럼에도 나의 경우처럼 상대 서버가 PB를 사용해서 어쩔 수 없다면 위 글을 참고하길 바란다.</p>
+
+<hr />
+
+<p>이번 작업에 대해서는 자세히 설명하고자 하면 너무 길어져서 중간중간 필요한 부분만 적었다. 그러다 보니 “이게 무슨 말인가?”라는 생각이 들 수 있는데 양해 바란다. 이해가 안되는 부분은 질문한다면 따로 설명하도록 하겠다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -244,8 +292,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/11/24/swift-background-threads-gcd-grand-central-dispatch/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/11/24/swift-background-threads-gcd-grand-central-dispatch/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/11/25/protobuf-protocol-buffers/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/11/25/protobuf-protocol-buffers/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

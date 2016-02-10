@@ -104,15 +104,196 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2016/02/10/a/">
-								메타블로그 인증 테스트
+							<a class="title" href="http://blog.asamaru.net/2016/02/10/php-stdin/">
+								PHP CLI 사용자 입력(STDIN) 받기
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2016/02/10/a/">2016.02.10.</span></a>
+								<a href="http://blog.asamaru.net/2016/02/10/php-stdin/">2016.02.10.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>6f33a1e692638fbcc3f280c0434212a5</p>
+							<p>PHP CLI를 사용해서 Shell Script를 생성하다보면 사용자에게 어떤 데이터를 입력 받아야 상황이 발생할 수 있다. 이런 경우에 사용할 수 있는 몇가지 방법에 대해 설명하고자 한다.</p>
+
+<p>우선 PHP 메뉴얼 중 <a href="http://php.net/manual/kr/features.commandline.io-streams.php">Input/output streams</a>에 있는 예시에 약간의 코드를 더해서 설명하겠다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="nv">$stdin</span> <span class="o">=</span> <span class="nb">fopen</span><span class="p">(</span><span class="s1">&#39;php://stdin&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">);</span>
+<span class="nv">$fileContents</span> <span class="o">=</span> <span class="nb">fread</span><span class="p">(</span><span class="nv">$stdin</span><span class="p">,</span> <span class="mi">1024</span><span class="p">);</span>
+<span class="nb">fclose</span><span class="p">(</span><span class="nv">$stdin</span><span class="p">);</span>
+
+<span class="k">echo</span> <span class="nv">$fileContents</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<table>
+  <tbody>
+    <tr>
+      <td>우선 위 방법은 fopen을 사용해서 사용자에게 입력 받는 방법이다. 이 방법은 사용자의 입력이 완료될 때(Enter 입력시)까지 대기하게 하거나 pipe(</td>
+      <td>)를 이용해 입력이 가능하다. 위 내용을 <code>fopenTest.php</code>로 저장했다면 아래와 같이 실행해 볼 수 있다. 그리고 1024는 입력의 최대 길이로 그 이상의 입력이 들어오면 무시된다.</td>
+    </tr>
+  </tbody>
+</table>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>php fopenTest.php
+<span class="nb">test</span> <span class="c"># 입력 후 Enter</span>
+<span class="nb">test</span>
+
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;test&quot;</span> <span class="p">|</span> php fopenTest.php
+<span class="nb">test</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>이와 동일한 역할로 다음과 같이 사용할 수도 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="k">echo</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">fgets</span><span class="p">(</span><span class="nx">STDIN</span><span class="p">));</span> <span class="c1">// reads one line from STDIN</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>처음 코드와 동일하게 동작한다. 그리고 특정 형식으로 데이터를 입력받고 싶다면 아래와 같이 사용할 수도 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="nb">fscanf</span><span class="p">(</span><span class="nx">STDIN</span><span class="p">,</span> <span class="s2">&quot;%d</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nv">$number</span><span class="p">);</span> <span class="c1">// reads number from STDIN</span>
+<span class="k">echo</span> <span class="nv">$number</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>위 코드는 실행 결과는 약간 다른점이 있으니 아래의 실행 예시를 참고하자.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>php fopenTest.php
+<span class="nb">test</span> <span class="c"># 입력 후 Enter</span>
+<span class="c"># 입력값이 무시되어 아무값도 출력되지 않음</span>
+
+<span class="nv">$ </span>php fopenTest.php
+2test3 <span class="c"># 입력 후 Enter</span>
+<span class="m">2</span> <span class="c"># 2 이후의 입력값이 무시됨</span>
+
+<span class="nv">$ </span>php fopenTest.php
+<span class="m">123</span> <span class="c"># 입력 후 Enter</span>
+<span class="m">123</span> <span class="c"># 유효한 입력으로 123이 출력됨</span>
+
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;123&quot;</span> <span class="p">|</span> php fopenTest.php
+<span class="m">123</span> <span class="c"># 유효한 입력으로 123이 출력됨</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<hr />
+
+<p>PHP에서는 다른 방법으로 <a href="http://php.net/manual/kr/function.readline.php">readline</a>을 사용하는 것이 가능하다. 예를들면 아래와 같이 확인해 볼 수 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="c1">//get 3 commands from user</span>
+<span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$line</span> <span class="o">=</span> <span class="nb">readline</span><span class="p">(</span><span class="s2">&quot;Command: &quot;</span><span class="p">);</span>
+        <span class="nb">readline_add_history</span><span class="p">(</span><span class="nv">$line</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">//dump history</span>
+<span class="nb">print_r</span><span class="p">(</span><span class="nb">readline_list_history</span><span class="p">());</span>
+
+<span class="c1">//dump variables</span>
+<span class="nb">print_r</span><span class="p">(</span><span class="nb">readline_info</span><span class="p">());</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>그런데 이 함수는 제약조건이 있다. 메뉴얼에 따르면 <a href="http://php.net/manual/kr/function.readline-list-history.php">readline_list_history</a>는 <code>libreadline</code>과 함께 컴파일되어야만 사용할 수 있다고 되어 있다. 그래서 위 예시는 제대로 테스트 해보지 못했다.</p>
+
+<hr />
+
+<p>그렇다면 사용자에게 한글자의 입력만 받고 싶다면 어떻게하면 될까? 아래의 예시를 보자.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="k">echo</span> <span class="s1">&#39;변경 후에는 복구할 수 없습니다. 변경하시겠습니까? (y/n) &#39;</span><span class="p">;</span>
+<span class="nv">$input</span> <span class="o">=</span> <span class="nb">fgetc</span><span class="p">(</span><span class="nx">STDIN</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>위 코드를 실행하면 한글자만 입력을 받게 되지만 한글자를 입력하고 Enter를 눌러야 한다. 그럼 그냥 한글자를 입력하면 바로 입력을 완료하고자 한다면 어떻게 할까? 아래에 그 답이 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+<span class="k">echo</span> <span class="s1">&#39;변경 후에는 복구할 수 없습니다. 변경하시겠습니까? (y/n) &#39;</span><span class="p">;</span>
+
+<span class="nb">readline_callback_handler_install</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="k">function</span> <span class="p">()</span> <span class="p">{</span>
+<span class="p">});</span>
+<span class="k">while</span> <span class="p">(</span><span class="k">true</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nv">$r</span> <span class="o">=</span> <span class="p">[</span><span class="nx">STDIN</span><span class="p">];</span>
+  <span class="nv">$w</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
+  <span class="nv">$e</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
+  <span class="nv">$n</span> <span class="o">=</span> <span class="nb">stream_select</span><span class="p">(</span><span class="nv">$r</span><span class="p">,</span> <span class="nv">$w</span><span class="p">,</span> <span class="nv">$e</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nv">$n</span> <span class="o">&amp;&amp;</span> <span class="nb">in_array</span><span class="p">(</span><span class="nx">STDIN</span><span class="p">,</span> <span class="nv">$r</span><span class="p">))</span> <span class="p">{</span>
+    <span class="nv">$c</span> <span class="o">=</span> <span class="nb">stream_get_contents</span><span class="p">(</span><span class="nx">STDIN</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">strcasecmp</span><span class="p">(</span><span class="nv">$c</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">작업을 취소함</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+      <span class="k">exit</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">break</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">echo</span> <span class="s2">&quot;변경 완료</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>나의 경우엔 위 스크립트를 사용해야하는 상황이 가장 많은 것 같다. 위험한 동작을 실행하기전 다시 한번 확인하는 것이 정신 건강에 이롭다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -126,8 +307,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2016/02/10/a/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2016/02/10/a/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2016/02/10/php-stdin/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2016/02/10/php-stdin/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

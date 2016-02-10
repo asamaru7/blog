@@ -104,28 +104,17 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/09/29/android-gradle-builds-speed-up/">
-								Android Gradle 빌드 속도 높이기
+							<a class="title" href="http://blog.asamaru.net/2015/09/30/service-not-available-geocoder-android/">
+								안드로이드 Geocoder 사용시 Service not Available 오류
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/09/29/android-gradle-builds-speed-up/">2015.09.29.</span></a>
+								<a href="http://blog.asamaru.net/2015/09/30/service-not-available-geocoder-android/">2015.09.30.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>안드로이드 개발을 하면서 여러가지 불만이 있지만 그중에 가장 맘에 들지않는 것 중 하나가 빌드 속도이다. 프로젝트의 규모에 따라 다르겠지만 xcode와의 빌드 시간을 비교하면 전체 빌드의 시간은 비슷한 것 같으나 수시로 하게되는 빌드는 안드로이드 스튜디오가 훨씬 느리게 느껴진다. 안드로이드 개발시 빌드에 사용되는 Gradle은 많은 유연성을 제공하지만 빌드에 많은 프로세스 비용이 든다는 것이 단점이다. 그래서 빌드 속도를 높일 수 있는 방법을 찾아서 적용해 보았다.</p>
+							<p>안드로이드에서 특정 지점의 좌표를 주소로 변환하는 것이 필요해서 Geocoder 사용했다. 대략적인 코드는 아래와 같다.</p>
 
-<p>그리고 빌드 시간에 크게 영향을 주는 것 중에는 proguard와 multidex가 포함된다. proguard는 코드 최적화/난독화 등을 위한 처리이며 multidex는 65K이상의 메소드를 사용할 경우에 대한 대응책으로 사용되며 자세한 내용은 <a href="https://developer.android.com/intl/ko/tools/building/multidex.html">Building Apps with Over 65K Methods</a>에서 참고하면 된다. 메소드 수가 어떻게하면 65K를 넘나 싶을 수 있지만 금방 넘어선다. 라이브러리를 막 추가하다보면 금방 문제를 만나게 된다(proguard 등을 통해 메소드 수를 줄일 수 있다). 이 글에서도 나와있는 것이지만 빌드 속도 문제를 떠나서도 최대한 multidex를 사용하는 상황을 만들지 않는 것이 좋다. 그리고 나는 proguard를 항상 켜둔 상태도 개발을 하는 편이다. 프로젝트 막판에 proguard를 적용하게되면 proguard로 인한 여러가지 문제를 만날 수 있기 때문에 충돌을 미리 발견하기 위해서다. 하지만 이렇게하다보면 빌드 속도가 너무 떨어진다. 그래서 켰다가 껐다가 하긴하는데 너무 귀찮다.</p>
-
-<p>그럼 본격적으로 설정을 시작해보자.</p>
-
-<h2 id="gradleproperties--">1. gradle.properties 파일을 변경</h2>
-
-<p>프로젝트 Root에 있는 gradle.properties을 편집한다. 기존에 파일이 없다면 추가한다. 여기에는 gradle 빌드 할 때 인수를 설정할 수 있다.
-한가지 더 알려주자면 프로젝트별로 설정하는 것외에도 모든 프로젝트에 설정을 추가할 수도 있다. 해당 파일의 경로는 OSX 기준으로 <code>~/.gradle/gradle.properties</code> 이다. 윈도우나 리눅스도 비슷한 경로에 있을 것으로 생각된다.</p>
-
-<p><strong>gradle.properties</strong></p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ini"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
  4
@@ -149,88 +138,251 @@
 22
 23
 24
-25</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1"># Project-wide Gradle settings.</span>
-<span class="c1"># IDE (eg Android Studio) users :</span>
-<span class="c1"># Settings specified in this file will override any Gradle settings</span>
-<span class="c1"># configured through the IDE.</span>
-<span class="c1"># For more details on how to configure your build environment visit</span>
-<span class="c1"># http : // www.gradle.org/docs/current/userguide/build_environment.html</span>
-<span class="c1"># The Gradle daemon aims to improve the startup and execution time of Gradle.</span>
-<span class="c1"># When set to true the Gradle daemon is to run the build.</span>
-<span class="c1"># TODO : disable daemon on CI, Since Builds should BE clean and Reliable on servers</span>
-<span class="na">org.gradle.daemon</span> <span class="o">=</span> <span class="s">true</span>
-
-<span class="c1"># Specifies the JVM arguments used for the daemon process.</span>
-<span class="c1"># The setting is particularly useful for tweaking memory settings.</span>
-<span class="c1"># Default value : -Xmx10248m -XX : MaxPermSize = 256M</span>
-<span class="na">org.gradle.jvmargs</span> <span class="o">=</span> <span class="s">-Xmx2048m -XX : MaxPermSize = 512m -XX + HeapDumpOnOutOfMemoryError -Dfile.encoding = UTF-8</span>
-
-<span class="c1"># When configured, Gradle will run in incubating parallel mode.</span>
-<span class="c1"># This option should only be used with decoupled projects. More details, visit</span>
-<span class="c1"># http://www.gradle.org/docs/current/userguide/multi_project_builds.html#sec : decoupled_projects</span>
-<span class="na">org.gradle.parallel</span> <span class="o">=</span> <span class="s">true</span>
-
-<span class="c1"># Enables new incubating mode that makes Gradle selective when configuring projects.</span>
-<span class="c1"># Only relevant projects are configured which results in faster builds for large multi-projects.</span>
-<span class="c1"># http://www.gradle.org/docs/current/userguide/multi_project_builds.html #sec : configuration_on_demand</span>
-<span class="na">org.gradle.configureondemand</span> <span class="o">=</span> <span class="s">true</span>
+25
+26
+27
+28
+29
+30</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">static</span> <span class="kd">abstract</span> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">GeoCoderTask</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">LatLng</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Address</span><span class="o">[]&gt;</span> <span class="o">{</span>
+	<span class="nd">@Override</span>
+	<span class="kd">protected</span> <span class="n">Address</span><span class="o">[]</span> <span class="nf">doInBackground</span><span class="o">(</span><span class="n">LatLng</span><span class="o">...</span> <span class="n">arg0</span><span class="o">)</span> <span class="o">{</span>
+		<span class="n">List</span><span class="o">&lt;</span><span class="n">Address</span><span class="o">&gt;</span> <span class="n">res</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+		<span class="k">if</span> <span class="o">(</span><span class="n">arg0</span><span class="o">.</span><span class="na">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+			<span class="k">try</span> <span class="o">{</span>
+				<span class="n">Geocoder</span> <span class="n">geocoder</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Geocoder</span><span class="o">(</span><span class="n">Helper</span><span class="o">.</span><span class="na">getAppContext</span><span class="o">(),</span> <span class="n">Locale</span><span class="o">.</span><span class="na">KOREA</span><span class="o">);</span>
+				<span class="n">List</span><span class="o">&lt;</span><span class="n">android</span><span class="o">.</span><span class="na">location</span><span class="o">.</span><span class="na">Address</span><span class="o">&gt;</span> <span class="n">addresses</span> <span class="o">=</span> <span class="n">geocoder</span><span class="o">.</span><span class="na">getFromLocation</span><span class="o">(</span><span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">latitude</span><span class="o">,</span> <span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">longitude</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+				<span class="k">if</span> <span class="o">((</span><span class="n">addresses</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">addresses</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">))</span> <span class="o">{</span>
+					<span class="n">android</span><span class="o">.</span><span class="na">location</span><span class="o">.</span><span class="na">Address</span> <span class="n">result</span> <span class="o">=</span> <span class="n">addresses</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+					<span class="n">Address</span> <span class="n">resultAddress</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Address</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">address</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getAddressLine</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">lat</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getLatitude</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">lng</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getLongitude</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">premise</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getPremises</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">administrative_area_level_1</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getAdminArea</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_1</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getSubLocality</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">country</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getCountryName</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">postal_code</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getPostalCode</span><span class="o">();</span>
+					<span class="n">res</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">resultAddress</span><span class="o">);</span>
+				<span class="o">}</span>
+			<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+				<span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+			<span class="o">}</span>
+		<span class="o">}</span>
+		<span class="n">Address</span><span class="o">[]</span> <span class="n">array</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Address</span><span class="o">[</span><span class="n">res</span><span class="o">.</span><span class="na">size</span><span class="o">()];</span>
+		<span class="n">res</span><span class="o">.</span><span class="na">toArray</span><span class="o">(</span><span class="n">array</span><span class="o">);</span>
+		<span class="k">return</span> <span class="n">array</span><span class="o">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>위 설정에 대한 간략한 설명은 아래와 같다.</p>
+<p>위 코드는 데이터를 다른 클래스로 넘겨서 반환하는 형태로 그대로 사용할 수는 없다. 그냥 이렇게 사용했다는 것을 보여주고자 넣은 코드니 참고만하기 바란다.</p>
 
-<ul>
-  <li><strong>org.gradle.daemon</strong> : 데몬 프로세스를 사용할지 여부 설정한다. true 설정시 gradle을 daemon 모드로 실행하여 빌드시 gradle을 다시 실행하는 시간을 줄여준다.</li>
-  <li><strong>org.gradle.jvmargs</strong> : 실행시 JVM 인수로 메모리를 설정을 늘려 메모리 부족으로 인한 속도저하를 막는 것이 목적이다. 따라서 적절한 양의 메모리를 할당해 주면 된다.</li>
-  <li><strong>org.gradle.parallel</strong> : gradle 병렬 빌드 모드를 설정한다. 여러 프로젝트를 빌드 할 때 효과가 있다.</li>
-  <li><strong>org.gradle.configureondemand</strong> : 관련 프로젝트가 있다면 필요한 부분만 빌드 설정한다.</li>
-</ul>
+<p>어쨌든 중요한 것은 잘 동작하던 코드가 테스트 기기에서 Service not Available 오류가 난다는 것이다. 테스트 기기는 nexus s에 4.0.4로 오래된 기기다. 처음엔 OS 버전 문제로 생각했다. 그래서 일단 검색해 봤다. 결론은 아래의 링크를 보고 해결했다.</p>
 
-<p>크게 성능이 향상되는 것 같지는 않지만 조금의 성능 향상은 있는 것 같다. 사실 다음에 소개할 gradle 버전 업이 훨씬 체감 성능 향상에 도움을 준다.</p>
+<p><a href="http://stackoverflow.com/a/13856839">Service not Available - Geocoder Android</a></p>
 
-<h2 id="android-studio-13--gradle-24--">2. Android Studio 1.3 / Gradle 2.4 이상 사용</h2>
+<p>해결 방법은 <strong>기기 재부팅</strong>. 어의없다. 정말 안드로이드는 정이 안간다.</p>
 
-<p>Android Studio 1.3 / Gradle 2.4 이상으로 버전업되면서 대폭 성능 향상이 있었다. 실제로 나의 경우엔 상당한 속도 향상이 있었다. 그래도 proguard를 적용하게되면 느리긴 마찬가지긴 하다.
-구글의 설명을 보려면 <a href="https://www.youtube.com/watch?t=502&amp;v=f7ihSQ44WO0">Google I/O 2015 - What’s New in Android Development Tools</a>을 참고하면 된다. 단, 주의할 것은 Android Studio 1.3 이상을 사용한다고 Gradle 2.4 이상을 무조건 사용하는 것은 아니라는 것이다. 신규 프로젝트가 아니어서 그런지 나의 프로젝트에서는 2.2.1을 그대로 사용하고 있었다(File &gt; Project Structure &gt; Project &gt; Gradle version에서 2.4로 변경함으로써 적용할 수 있다).</p>
+<p>사실 동일한 오류를 만났을 때 위의 방법으로 해결되지 않을 수 있다. 원인은 다양할 수 있으니… 그래서 조금 더 찾아보니 여러가지 이슈가 있는 것을 확인 했다. 해결되지 않는다면 구글에서 검색해 보면 여러가지 정보를 얻을 수 있다.</p>
 
-<h2 id="gradle---">3. gradle를 오프라인 모드로 변경</h2>
+<p>이러한 정보 중에서 한가지는 Geocoder를 사용하지 않고 웹으로 호출해서 결과를 받는 것이다. 사실 나의 경우는 오류 때문이 아니라 api 사용량 때문에 사용하던 코드(API 키를 전달하지 않는 코드로 사용량에 제한을 받지 않는 것으로 보임)였는데 참고할 사람이 있을까하고 남겨본다. 그리고 한가지. 조금 전에 API key를 전달하지 않는다고 했는데 기존에는 이 방법으로 정상 동작했다. 그런데 최근 WIFI에서는 이상이 없는데 LTE 상태에서는 api 한계량 초과라는 메시지를 반환하고 있어서 사용하고 있지 않다. 이 부분은 이유를 정확히 확인해보지 못했다.</p>
 
-<p>다른 사람들은 이 방법이 아주 효과적이었다고 하는데 나의 경우는 크게 차이가 나지 않았다(proguard로 인한 속도 저하라서 이 방법에 큰 도움이 되지 않았던 것 같다). 어쨌든 이 설정을 적용하면 gradle에서 매번 최신 버전을 확인하러가는 것을 생략 해 준다. 단, 신규 dependency를 추가하거나 변경하는 경우는 이 설정을 해제해야 한다. 약간은 귀찮을 수 있지만 dependency 변경은 크게 자주 발생하는 경우는 아니므로 문제되지 않을 것으로 생각된다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">static</span> <span class="kd">abstract</span> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">WebGeoCoderTask</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">LatLng</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Address</span><span class="o">[]&gt;</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">final</span> <span class="kd">protected</span> <span class="n">Address</span><span class="o">[]</span> <span class="nf">doInBackground</span><span class="o">(</span><span class="n">LatLng</span><span class="o">...</span> <span class="n">arg0</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">Address</span><span class="o">&gt;</span> <span class="n">res</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">arg0</span><span class="o">.</span><span class="na">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">String</span> <span class="n">address</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="n">Locale</span><span class="o">.</span><span class="na">getDefault</span><span class="o">(),</span> <span class="s">&quot;https://maps.googleapis.com/maps/api/geocode/json?latlng=%1$f,%2$f&amp;sensor=false&amp;language=&quot;</span> <span class="o">+</span> <span class="n">Locale</span><span class="o">.</span><span class="na">getDefault</span><span class="o">(),</span> <span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">latitude</span><span class="o">,</span> <span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">longitude</span><span class="o">);</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">URL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">URL</span><span class="o">(</span><span class="n">address</span><span class="o">);</span>
+                <span class="n">HttpURLConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="n">url</span><span class="o">.</span><span class="na">openConnection</span><span class="o">();</span>
+                <span class="n">InputStreamReader</span> <span class="n">in</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">InputStreamReader</span><span class="o">(</span><span class="n">conn</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">());</span>
+                <span class="n">StringBuilder</span> <span class="n">jsonResults</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StringBuilder</span><span class="o">();</span>
 
-<p><img src="/img/2015-09-29-android-gradle-builds-speed-up-1.png" alt="Offline work" />
-Android Studio&gt; Preferences&gt; Gradle 의 Offline work에 체크.</p>
+                <span class="kt">int</span> <span class="n">read</span><span class="o">;</span>
+                <span class="kt">char</span><span class="o">[]</span> <span class="n">buff</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[</span><span class="mi">1024</span><span class="o">];</span>
+                <span class="k">while</span> <span class="o">((</span><span class="n">read</span> <span class="o">=</span> <span class="n">in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buff</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">jsonResults</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">buff</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">read</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="n">String</span> <span class="n">json</span> <span class="o">=</span> <span class="n">jsonResults</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+                <span class="n">JSONObject</span> <span class="n">jsonObject</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">JSONObject</span><span class="o">(</span><span class="n">json</span><span class="o">);</span>
+                <span class="n">AFLog</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="n">json</span><span class="o">);</span>
 
-<h2 id="speeding-up-gradle-buildshttpkevinpelgrimscomblog20150611speeding-up-your-gradle-builds">4. <a href="http://kevinpelgrims.com/blog/2015/06/11/speeding-up-your-gradle-builds/">Speeding up Gradle builds</a></h2>
+                <span class="k">if</span> <span class="o">(</span><span class="s">&quot;OK&quot;</span><span class="o">.</span><span class="na">equalsIgnoreCase</span><span class="o">(</span><span class="n">jsonObject</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">&quot;status&quot;</span><span class="o">)))</span> <span class="o">{</span>
+                    <span class="n">JSONArray</span> <span class="n">results</span> <span class="o">=</span> <span class="n">jsonObject</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">&quot;results&quot;</span><span class="o">);</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">results</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">,</span> <span class="n">iCnt</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="na">length</span><span class="o">();</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">iCnt</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+                            <span class="k">try</span> <span class="o">{</span>
+                                <span class="n">JSONObject</span> <span class="n">result</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="na">getJSONObject</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
 
-<p><a href="http://kevinpelgrims.com/blog/2015/06/11/speeding-up-your-gradle-builds/">Speeding up Gradle builds</a>에서는 몇가지 방법을 더 안내하고 있다. 간략하게 요약하면 아래와 같다(위의 설명들과 유사한 부분도 많다). 상세한 설명은 위 링크를 참조하기 바란다.</p>
+                                <span class="n">Address</span> <span class="n">resultAddress</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Address</span><span class="o">();</span>
+                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">address</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">&quot;formatted_address&quot;</span><span class="o">);</span>
+                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">placeId</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;place_id&quot;</span><span class="o">);</span>
+                                <span class="n">JSONObject</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">optJSONObject</span><span class="o">(</span><span class="s">&quot;geometry&quot;</span><span class="o">);</span>
+                                <span class="k">if</span> <span class="o">(</span><span class="n">geometry</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                                    <span class="n">geometry</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="na">optJSONObject</span><span class="o">(</span><span class="s">&quot;location&quot;</span><span class="o">);</span>
+                                    <span class="k">if</span> <span class="o">(</span><span class="n">geometry</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                                        <span class="n">resultAddress</span><span class="o">.</span><span class="na">lat</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="na">getDouble</span><span class="o">(</span><span class="s">&quot;lat&quot;</span><span class="o">);</span>
+                                        <span class="n">resultAddress</span><span class="o">.</span><span class="na">lng</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="na">getDouble</span><span class="o">(</span><span class="s">&quot;lng&quot;</span><span class="o">);</span>
+                                    <span class="o">}</span>
+                                <span class="o">}</span>
 
-<h3 id="maven-central-vs-jcenter">Maven Central vs. JCenter</h3>
-
-<p>mavenCentral() 대신 jcenter()를 사용해라.</p>
-
-<h3 id="get-the-latest-version-of-gradle">Get the latest version of Gradle</h3>
-
-<p>최신 버전의 Gradle을 사용하라.</p>
-
-<h3 id="gradle-properties">Gradle properties</h3>
-
-<p>아래의 Gradle properties를 적용하라(위의 설명이 더 상세하다).</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ini"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="na">org.gradle.parallel</span><span class="o">=</span><span class="s">true</span>
-<span class="na">org.gradle.daemon</span><span class="o">=</span><span class="s">true</span>
-<span class="na">org.gradle.jvmargs</span><span class="o">=</span><span class="s">-Xms256m -Xmx1024m</span>
+                                <span class="n">JSONArray</span> <span class="n">components</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">&quot;address_components&quot;</span><span class="o">);</span>
+                                <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">components</span><span class="o">.</span><span class="na">length</span><span class="o">();</span> <span class="n">a</span><span class="o">++)</span> <span class="o">{</span>
+                                    <span class="n">JSONObject</span> <span class="n">component</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="na">getJSONObject</span><span class="o">(</span><span class="n">a</span><span class="o">);</span>
+                                    <span class="n">JSONArray</span> <span class="n">types</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">&quot;types&quot;</span><span class="o">);</span>
+                                    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">types</span><span class="o">.</span><span class="na">length</span><span class="o">();</span> <span class="n">j</span><span class="o">++)</span> <span class="o">{</span>
+                                        <span class="n">String</span> <span class="n">type</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="n">j</span><span class="o">);</span>
+                                        <span class="k">switch</span> <span class="o">(</span><span class="n">type</span><span class="o">)</span> <span class="o">{</span>
+                                            <span class="k">case</span> <span class="s">&quot;premise&quot;</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">premise</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">&quot;administrative_area_level_1&quot;</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">administrative_area_level_1</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">&quot;sublocality_level_1&quot;</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_1</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">&quot;sublocality_level_2&quot;</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_2</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">&quot;sublocality_level_3&quot;</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_3</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">&quot;sublocality_level_4&quot;</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_4</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">&quot;country&quot;</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">country</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">&quot;postal_code&quot;</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">postal_code</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">&quot;political&quot;</span><span class="o">:</span>
+                                            <span class="k">case</span> <span class="s">&quot;sublocality&quot;</span><span class="o">:</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">default</span><span class="o">:</span>
+<span class="c1">//													AFLog.d(&quot;Not catched : &quot; + type);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                        <span class="o">}</span>
+                                    <span class="o">}</span>
+                                <span class="o">}</span>
+                                <span class="n">res</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">resultAddress</span><span class="o">);</span>
+                            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">JSONException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                                <span class="n">AFLog</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+                            <span class="o">}</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">AFLog</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="n">Address</span><span class="o">[]</span> <span class="n">array</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Address</span><span class="o">[</span><span class="n">res</span><span class="o">.</span><span class="na">size</span><span class="o">()];</span>
+        <span class="n">res</span><span class="o">.</span><span class="na">toArray</span><span class="o">(</span><span class="n">array</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">array</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<h3 id="how-to-use-gradle-properties">How to use Gradle properties</h3>
-
-<p>Gradle properties를 프로젝트별로 설정하기보다 전역으로 설정하라.</p>
-
-<h3 id="section">다중 모듈 빌드</h3>
-
-<p>다중 모뮬을 사용하는 경우에 속도 향상 방법이 안내되어 있으니 필요한 경우에 원본글에 가서 참조 바란다.</p>
+<p>이 코드도 마찬가지로 참고만 하기 바란다. 내부적으로 사용중인 클래스들이 있어서 그대로 넣으면 동작하지 않는다. 하지만 코드를 보면 반환 클래스에 관련된 부분이므로 어디를 수정해야 할지 바로 알 수 있을 것으로 보인다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -244,8 +396,8 @@ Android Studio&gt; Preferences&gt; Gradle 의 Offline work에 체크.</p>
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/09/29/android-gradle-builds-speed-up/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/09/29/android-gradle-builds-speed-up/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/09/30/service-not-available-geocoder-android/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/09/30/service-not-available-geocoder-android/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

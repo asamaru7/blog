@@ -9,7 +9,7 @@ cd $base
 jekyll build
 
 cd _site
-ln -s sitemap.xml sitemap-naver.xml
+#ln -s sitemap.xml sitemap-naver.xml
 git add .
 git commit -am "deploy"
 git push 

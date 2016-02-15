@@ -3,7 +3,7 @@ layout: post
 title: "Google Apps Gmail에서 '다른 주소에서 메일 보내기' 사용시 'Functionality Not Enabled.' 오류 해결"
 date: 2015-10-06 08:01:10 +0900
 comments: true
-categories: Tip
+categories: tip
 ---
 지금은 구글 앱스의 무료 계정이 없지만 예전에는 사용자 50명 이내에 한해서 무료 계정을 제공했다. 그때 나의 개인 계정과 회사 계정을 등록해 두어서 현재까지 무료로 사용중이다. 요즘에는 다음 등에서도 비슷한 서비스를 제공하지만 역시 구글이 훨씬 다양한 기능을 제공한다.
 

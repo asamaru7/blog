@@ -3,7 +3,7 @@ layout: post
 title: "CCProxy를 사용해서 Windows Proxy Server 만들기"
 date: 2016-02-02T14:27:19+09:00
 comments: true
-categories: Tip
+categories: tip
 ---
 Proxy Server를 사용할 일이 생겼는데 필요한 프로그램이 윈도우용 프로그램이라 윈도우 PC에 프록서 서버를 구성해야하는 상황이었다. 정확히 이야기하자면 외부 Proxy 서비스를 사용하고 있는데 서비스 제공자가 접속 프로그램을 윈도우용으로만 제공해서 어쩔 수 없이 윈도우에서 사용중이었다. 그런데 이 Proxy 서비스를 사용해야하는 프로그램은 linux 환경에서 동작해서 기존에는 윈도우 PC에 [Vagrant](https://www.vagrantup.com/)로 linux 환경을 구성해서 사용했다. 그런데 문제는 proxy를 선택적으로 사용해야 하는데 [Vagrant](https://www.vagrantup.com/) 내부에서는 가상망으로 구성되어 무조건 부모망을 사용해서 선택적으로 사용할 수 없었다. NIC을 추가해서 망을 이중화하면 되지만 여러가지 이유로 그냥 윈도우 PC는 중개(Proxy)용으로만 사용하고 별도의 서버를 구성하기로 했다. 그래서 윈도우용 Proxy Server를 구성하게된 것이다. 다시말해 Proxy를 Proxy를 통해 사용하는 것. 사설이 길었는데 이건 중요한 것은 아니고.
 

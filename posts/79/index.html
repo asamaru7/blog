@@ -104,122 +104,115 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/10/05/google-play-services-and-dex-method-limits/">
-								Google Play services 와 DEX method limits 문제
+							<a class="title" href="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/">
+								Swift 2 : &#39;lastPathComponent&#39; is unavailable: Use lastPathComponent on NSURL instead. 오류 해결
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/10/05/google-play-services-and-dex-method-limits/">2015.10.05.</span></a>
+								<a href="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/">2015.10.05.</span></a>
 							</p>
 						</header>
 						<p>
-							<p><a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>에서 잠시 언급했던 multidex와 <a href="https://developers.google.com/android/guides/overview">Google Play services</a>와의 관계에 대해서 잠시 이야기 하고자 한다. 그 당시에도 설명했던 것과 같이 multidex를 사용해야 하는 상황은 가급적 피하는 것이 좋다. 하지만 오래된 버전의 Google Play services를 사용하면 65K이상의 method를 사용하게될 확률이 높다. 이 라이브러리에서 사용하고 있는 method의 수가 상당하기 때문에 proguard를 통해 사용하지 않는 함수를 제거하지 않는 이상 65K개를 넘어설 확률이 높은 것이다(대부분 여러가지 라이브러리를 사용해서 앱을 개발하므로). 문제는 proguard를 적용하게되면 빌드 시간이 증가하기 때문에 작업시 불편하다. <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>에서 언급 했던 내용들을 적용한다면 상당한 속도 향상을 가져올 수 있지만 그래도 1초라도 시간을 줄이는 것이 좋지 않은가? 하루에 한번만 빌드할 것도 아닌데.</p>
-
-<p>이와 관련해서는 <a href="http://android-developers.blogspot.kr/2014/12/google-play-services-and-dex-method.html">Google Play services and DEX method limits</a>라는 글에 잘 설명하고 있다.</p>
-
-<p>Google Play services의 버전을 6.5(2015.10.05. 기준 8.1이 최신) 이상 사용한다면 아래와 같이 필요한 부분만 적용함으로써 이 문제를 어느 정도 해결할 수 있다(6.5 미만에서는 무조건 통째로 불러서 사용할 수 밖에 없다).</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">// 기존
-compile 'com.google.android.gms:play-services:6.5.87'
-
-// 6.5 이후
-compile 'com.google.android.gms:play-services-maps:6.5.87'
-compile 'com.google.android.gms:play-services-base:6.5.87'
-</code></pre></div></figure>
-
-<p><a href="https://developers.google.com/android/guides/setup">Setting Up Google Play Services</a> 문서를 참고하면 사용할 수 있는 전체 목록을 확인할 수 있다. 아래는 현재 기준 목록이다.</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Google Play services API</th>
-      <th>Description in build.gradle</th>
-    </tr>
-  </thead>
+							<table>
   <tbody>
     <tr>
-      <td>Google+</td>
-      <td>com.google.android.gms:play-services-plus:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Account Login</td>
-      <td>com.google.android.gms:play-services-identity:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Actions, Base Client Library</td>
-      <td>com.google.android.gms:play-services-base:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google App Indexing</td>
-      <td>com.google.android.gms:play-services-appindexing:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google App Invites</td>
-      <td>com.google.android.gms:play-services-appinvite:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Analytics</td>
-      <td>com.google.android.gms:play-services-analytics:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Cast</td>
-      <td>com.google.android.gms:play-services-cast:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Cloud Messaging</td>
-      <td>com.google.android.gms:play-services-gcm:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Drive</td>
-      <td>com.google.android.gms:play-services-drive:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Fit</td>
-      <td>com.google.android.gms:play-services-fitness:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Location, Activity Recognition, and Places</td>
-      <td>com.google.android.gms:play-services-location:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Maps</td>
-      <td>com.google.android.gms:play-services-maps:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Mobile Ads</td>
-      <td>com.google.android.gms:play-services-ads:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Mobile Vision</td>
-      <td>com.google.android.gms:play-services-vision:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Nearby</td>
-      <td>com.google.android.gms:play-services-nearby:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Panorama Viewer</td>
-      <td>com.google.android.gms:play-services-panorama:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Play Game services</td>
-      <td>com.google.android.gms:play-services-games:8.1.0</td>
-    </tr>
-    <tr>
-      <td>SafetyNet</td>
-      <td>c m.google.android.gms:play-services-safetynet:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Google Wallet</td>
-      <td>com.google.android.gms:play-services-wallet:8.1.0</td>
-    </tr>
-    <tr>
-      <td>Android Wear</td>
-      <td>com.google.android.gms:play-services-wearable:8.1.0</td>
+      <td>[Swift 2 : Binary operator ‘</td>
+      <td>’ cannot be applied to two ‘UIViewAutoresizing’ operands 오류 해결](/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/)에 이어 Swift 2로 넘어가면서 만난 또 다른 오류.</td>
     </tr>
   </tbody>
 </table>
 
-<p>어쨌든 java라는 언어의 특성상 method의 수가 많을 수 밖에 없는데 65K limit은 최초의 설계부터 잘못된 것이 아닌가? 하는 생각이다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">'lastPathComponent' is unavailable: Use lastPathComponent on NSURL instead.
+</code></pre></div></figure>
+
+<p>관련해서 찾아보니 <a href="https://forums.developer.apple.com/thread/13580">No more stringByAppendingPathComponent in Xcode 7 beta 5?</a>라는 글이 있었다. 내용을 보니 해당 함수가 없어져서 다른 방법으로 수정해야 한다는 것. 내용중 <a href="https://forums.developer.apple.com/people/tieferbegabt">tieferbegabt</a>라는 사람이 간단히 해결할 수 있는 코드를 올려 놓았다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">extension</span> <span class="n">String</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nl">lastPathComponent</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">lastPathComponent</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">var</span> <span class="nl">pathExtension</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">pathExtension</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">var</span> <span class="nl">stringByDeletingLastPathComponent</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingLastPathComponent</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">var</span> <span class="nl">stringByDeletingPathExtension</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingPathExtension</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">var</span> <span class="nl">pathComponents</span><span class="p">:</span> <span class="p">[</span><span class="n">String</span><span class="p">]</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">pathComponents</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">func</span> <span class="n">stringByAppendingPathComponent</span><span class="p">(</span><span class="nl">path</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">String</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">nsSt</span> <span class="o">=</span> <span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span>
+        <span class="k">return</span> <span class="n">nsSt</span><span class="p">.</span><span class="n">stringByAppendingPathComponent</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">func</span> <span class="n">stringByAppendingPathExtension</span><span class="p">(</span><span class="nl">ext</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">String</span><span class="o">?</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">nsSt</span> <span class="o">=</span> <span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span>
+        <span class="k">return</span> <span class="n">nsSt</span><span class="p">.</span><span class="n">stringByAppendingPathExtension</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>Objective-C의 category나 swift의 extension은 개인적으로 정말 좋은 기능이라고 생각한다. 하지만 위의 코드는 임시로 사용하고 가급적 위 코드의 내용을 참고해서 오류가 나는 부분을 직접 변경하는 것을 권장하고 싶다. 어짜피 나중에는 애플에서 권장하는대로 코딩을 해야할테니 정확한 방법을 익히도록 처리하는 것이 좋다는 얘기다.</p>
+
+<p>아래는 내가 사용한 코드의 일부를 예시로 남긴다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// before</span>
+<span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">file</span><span class="p">.</span><span class="n">lastPathComponent</span><span class="p">.</span><span class="n">stringByDeletingPathExtension</span>
+<span class="c1">// after</span>
+<span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="p">((</span><span class="n">file</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">lastPathComponent</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingPathExtension</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -233,8 +226,8 @@ compile 'com.google.android.gms:play-services-base:6.5.87'
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/10/05/google-play-services-and-dex-method-limits/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/10/05/google-play-services-and-dex-method-limits/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -104,82 +104,60 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/">
-								안드로이드 TabLayout에서 setupWithViewPager() 사용시 Swipe 후 Tab 클릭시 ViewPager가 변경되지 않는 버그 수정
+							<a class="title" href="http://blog.asamaru.net/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/">
+								안드로이드 ViewPager.setOnPageChangeListener() Deprecated 대응
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/">2015.09.21.</span></a>
+								<a href="http://blog.asamaru.net/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/">2015.09.21.</span></a>
 							</p>
 						</header>
 						<p>
-							<p><a href="http://android-developers.blogspot.kr/2015/05/android-design-support-library.html">Android Design Support Library</a>에 있는 <a href="https://developer.android.com/intl/ko/reference/android/support/design/widget/TabLayout.html">TabLayout</a>과 ViewPager를 연동해서 사용하기 위해 <a href="https://developer.android.com/intl/ko/reference/android/support/design/widget/TabLayout.html#setupWithViewPager%28android.support.v4.view.ViewPager%29">setupWithViewPager()</a> 함수를 사용한다.</p>
+							<p><a href="https://developer.android.com/intl/ko/tools/support-library/index.html">Android Support Library 22.2.0</a> 이후부터 ViewPager.setOnPageChangeListener() 함수가 Deprecated 되었다. 안드로이드는 무슨 Deprecated가 이렇게 빈번한지… 하지만 이번 변경은 옳은 결정이라고 생각한다. 그냥 Deprecated된 것이 아니라 대체할 수 있는 함수가 함께 추가되었다(더 유연한).</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setupWithViewPager</span> <span class="o">(</span><span class="n">ViewPager</span> <span class="n">viewPager</span><span class="o">)</span>
+<p><strong><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#setOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.setOnPageChangeListener() - Deprecated</a></strong></p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setOnPageChangeListener</span> <span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">OnPageChangeListener</span> <span class="n">listener</span><span class="o">)</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 <blockquote>
-  <p>TabLayout와 ViewPager를 연동한다.</p>
+  <p>ViewPager의 페이지가 변경(선택된 페이지의 변경 : UI의 변경이 아닌)되거나 스크롤이 이동될 때 불려지는 listener를 지정한다.</p>
 </blockquote>
 
-<p>이 함수는 아래의 동작을 수행한다.</p>
+<p>기존 setOnPageChangeListener의 문제점은 listener를 하나만 사용할 수 있다는 것이다. 그래서 이번에 Deprecated되면서 여러개의 listener를 사용할 수 있도록 변경되었다.</p>
 
-<ul>
-  <li>Add a ViewPager.OnPageChangeListener that will forward events to this TabLayout.</li>
-  <li>Populate the TabLayout’s tabs from the ViewPager’s PagerAdapter.</li>
-  <li>Set our TabLayout.OnTabSelectedListener which will forward selected events to the ViewPager</li>
-</ul>
+<p>대체 방법으로 아래의 함수들이 추가되었다.</p>
 
-<p>결론은 setupWithViewPager()를 사용하면 손쉽게 TabLayout와 ViewPager를 연동할 수 있다. 다시말해 ViewPager를 넘기면 이에 맞추어 TabLayout의 선택이 변경되고 TabLayout에서 Tab을 터치하면 이에 맞게 ViewPager가 변경된다.</p>
+<p><strong><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#addOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.addOnPageChangeListener()</a></strong></p>
 
-<p>하지만 이 기능에는 버그가 있다. 그냥 쉽게 넘어가면 안드로이드가 아니지…
-이 문제도 항상 발생하는 것은 아니나 간헐적으로 ViewPager을 Swipe하여 변경을 하다가 Tab을 터치하면 Tab은 터치에 맞게 변경되나 ViewPaper는 함께 변경되지 않는 문제가 발생한다. 이 문제에 대해서는 https://code.google.com/p/android/issues/detail?id=183123에 버그 리포트 되어 있다.</p>
-
-<p>패치를 기다리기 전에 문제를 해결할 필요가 있어 아래와 같이 직접 수정해서 사용했다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">tabLayout</span><span class="o">.</span><span class="na">setOnTabSelectedListener</span><span class="o">(</span><span class="k">new</span> <span class="n">TabLayout</span><span class="o">.</span><span class="na">OnTabSelectedListener</span><span class="o">()</span> <span class="o">{</span>
-    <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTabSelected</span><span class="o">(</span><span class="n">TabLayout</span><span class="o">.</span><span class="na">Tab</span> <span class="n">tab</span><span class="o">)</span> <span class="o">{</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">()</span> <span class="o">!=</span> <span class="n">viewPager</span><span class="o">.</span><span class="na">getCurrentItem</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">viewPager</span><span class="o">.</span><span class="na">setCurrentItem</span><span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">());</span>
-        <span class="o">}</span>
-    <span class="o">}</span>
-
-    <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTabUnselected</span><span class="o">(</span><span class="n">TabLayout</span><span class="o">.</span><span class="na">Tab</span> <span class="n">tab</span><span class="o">)</span> <span class="o">{}</span>
-
-    <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTabReselected</span><span class="o">(</span><span class="n">TabLayout</span><span class="o">.</span><span class="na">Tab</span> <span class="n">tab</span><span class="o">)</span> <span class="o">{</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">()</span> <span class="o">!=</span> <span class="n">viewPager</span><span class="o">.</span><span class="na">getCurrentItem</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">viewPager</span><span class="o">.</span><span class="na">setCurrentItem</span><span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">getPosition</span><span class="o">());</span>
-        <span class="o">}</span>
-    <span class="o">}</span>
-<span class="o">});</span>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="kt">void</span> <span class="nf">addOnPageChangeListener</span> <span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">OnPageChangeListener</span> <span class="n">listener</span><span class="o">)</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>간단히 원리를 설명하자면 다음과 같다.</p>
+<blockquote>
+  <p>OnPageChangeListener를 추가한다.</p>
+</blockquote>
 
-<p>tab이 변경되었음에도 ViewPager에 반영되지 않는 것이 문제이므로 OnTabSelectedListener를 추가해서 변경된 Tab과 ViewPager의 위치가 맞지 않으면 강제로 ViewPager의 위치를 이동하는 것이다.</p>
+<p><strong><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#clearOnPageChangeListeners%28%29">ViewPager.clearOnPageChangeListeners()</a></strong></p>
 
-<p>그런데 최근 이 버그 이슈에 변경이 생겼는데 내용은 <strong>Android Design Support Library 23.0.1 버전에 패치(2015년 9월 5일자)가 되었다는 것</strong>. 확인해 보니 버그 패치가 되었다. 따라서 23.0.1 이상을 사용한다면 위의 방법을 사용할 필요는 없어졌다. setupWithViewPager를 사용할 수 없는 경우 등을 위해서 기록을 남겨둔다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="kt">void</span> <span class="nf">clearOnPageChangeListeners</span> <span class="o">()</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
+<blockquote>
+  <p>등록된 OnPageChangeListener를 모두 제거한다.</p>
+</blockquote>
+
+<p><strong><a href="https://developer.android.com/intl/ko/reference/android/support/v4/view/ViewPager.html#removeOnPageChangeListener%28android.support.v4.view.ViewPager.OnPageChangeListener%29">ViewPager.removeOnPageChangeListener()</a></strong></p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="kt">void</span> <span class="nf">removeOnPageChangeListener</span> <span class="o">(</span><span class="n">ViewPager</span><span class="o">.</span><span class="na">OnPageChangeListener</span> <span class="n">listener</span><span class="o">)</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<blockquote>
+  <p>지정된 OnPageChangeListener를 제거한다.</p>
+</blockquote>
+
+<p>사용법은 설명하지 않아도 바로 이해할 수 있을 생각된다. setOnPageChangeListener와 addOnPageChangeListener의 인자가 동일하므로 함수명만 바꾸면 그대로 동작한다. 단, 기존 것은 setOnPageChangeListener는 removeOnPageChangeListener와 addOnPageChangeListener 동작을 합친 것처럼 동작했으니 동일한 역할이 필요하다면 removeOnPageChangeListener와 addOnPageChangeListener를 함께 사용해야 한다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -193,8 +171,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/09/21/android-tablayout-with-viewpager-setupwithviewpager-tab-click-not-working-after-swipe/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/09/21/android-viewpager-dot-setonpagechangelistener-deprecated/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

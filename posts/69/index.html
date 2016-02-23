@@ -104,53 +104,32 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/">
-								java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류
+							<a class="title" href="http://blog.asamaru.net/2015/10/12/bookmarklet/">
+								북마클릿(bookmarklet) 생성기
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/">2015.10.12.</span></a>
+								<a href="http://blog.asamaru.net/2015/10/12/bookmarklet/">2015.10.12.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>안드로이드 작업중 <code>java.lang.IllegalStateException: Recursive entry to executePendingTransactions</code> 오류를 만났다. 오류가 발생한 상황은 다음과 같다.</p>
+							<p><a href="https://en.wikipedia.org/wiki/Bookmarklet">Bookmarklet</a>은 브라우저에 새로운 기능을 추가하는 자바스크립트 명령을 포함한 브라우저 북마크다.
+표준으로 정의된 형식은 없으나 일반적으로 아래와 같은 형태를 가진다.</p>
 
-<p>작업중 Fragment에서 하위에 또 다른 Fragment를 추가할 일이 생겼다. 이 작업 중에 하위에 추가되는 Fragment에서 <code>executePendingTransactions()</code> 함수를 호출하니 위 오류가 발생했다. 이해를 위해 처리 과정 중 문제가 발생한 부분만 적는다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-javascript"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getActivity</span><span class="o">().</span><span class="na">getSupportFragmentManager</span><span class="o">();</span>
-<span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">commit</span><span class="o">();</span>
-<span class="n">ft</span><span class="o">.</span><span class="na">executePendingTransactions</span><span class="o">();</span>
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="nx">javascript</span><span class="o">:</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+  <span class="c1">//Statements returning a non-undefined type.</span>
+<span class="p">})();</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>FragmentManager를 얻기 위해 현재 Fragment의 Activity를 가져와 <code>getSupportFragmentManager()</code>를 사용했다. 이 부분이 문제가 생기는 이유다. 이런 경우는 아래와 같이 처리할 수 있다.</p>
+<p>북마클릿에 대해 상세히 설명할 내용은 없다. 북마클릿을 사용해서 할 수 있는 일은 무궁무진하다. 단, 브라우저에 사용자가 직접 추가해야하며 직접 북마크를 눌러 실행해야 한다. 예를들어 핀터레스트에서는 “Pin it” 기능을 <a href="https://about.pinterest.com/en/goodies">The Pin It button</a> 북마클릿으로 제공하고 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
-<span class="n">ft</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">fragmentContainer</span><span class="o">,</span> <span class="o">(</span><span class="n">Fragment</span><span class="o">)</span> <span class="n">fragment</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">commit</span><span class="o">();</span>
-<span class="n">ft</span><span class="o">.</span><span class="na">executePendingTransactions</span><span class="o">();</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p>마지막으로 북마클릿을 쉽게 만들수 있도록 도와주는 도구를 소개하고자 한다.</p>
 
-<p><code>getChildFragmentManager()</code>를 사용해서 FragmentManager를 얻어서 처리하면 위 오류는 발생하지 않는다.</p>
+<p><strong><a href="http://bookmarklet.asamaru.net/">Bookmarklet Generator</a></strong></p>
 
-<p>이와 관련된 설명은 <a href="http://developer.android.com/intl/ru/about/versions/android-4.2.html#NestedFragments">Nested Fragments</a>를 보면 된다. 4.2에 변경된 내용으로 나와 있지만 support library를 사용한다면 하위 호환이 가능한 상황이라 문제되지 않는다.</p>
-
-<p>추가적으로 <a href="http://developer.android.com/intl/ko/reference/android/app/FragmentManager.html#executePendingTransactions%28%29">public abstract boolean executePendingTransactions()</a>에 대해서 궁금하다면 <a href="http://developer.android.com/intl/ko/guide/components/fragments.html#Transactions">프래그먼트 트랜잭션 수행</a>)를 참고하면 된다.</p>
-
-<blockquote>
-  <p>commit()을 호출해도 그 즉시 트랜잭션을 수행하지는 않습니다. 그보다는, 액티비티의 UI 스레드(“주요” 스레드)를 스레드가 할 수 있는 한 빨리 이 트랜잭션을 수행하도록 일정을 예약하는 것에 가깝습니다. 하지만 필요한 경우 UI 스레드로부터 executePendingTransactions()를 호출하면 commit()이 제출한 트랜잭션을 즉시 실행할 수 있습니다. 트랜잭션이 다른 스레드의 작업에 대한 종속성이 아니라면 굳이 이렇게 해야만 하는 것은 아닙니다.</p>
-</blockquote>
+<p>여러가지 도구가 있지만 이게 가장 직관적인 것 같다. 이 도구는 <a href="http://web-development.cc/bookmarklet-generator/">bookmarklet generator</a>을 fork하여 jquery 버전만 수정했다. 기존 프로젝트는 사용중인 jquery의 버전이 낮아서 만들어진 북마크릿이 정상 동작하지 않는다. 향후 시간이 된다면 불편한 부분들을 개선하도록 하겠다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -164,8 +143,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/10/12/bookmarklet/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/10/12/bookmarklet/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

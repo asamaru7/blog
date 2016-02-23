@@ -113,36 +113,45 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/10/23/php-cli-ansi-colors/">
-								PHP를 CLI에서 사용시 ANSI Colors 적용하기
+							<a class="title" href="http://blog.asamaru.net/2015/10/22/setting-swift-compiler-flags-in-cocoapods/">
+								CocoaPods의 Swift compiler flags(DEBUG) 설정하기
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/10/23/php-cli-ansi-colors/">2015.10.23.</span></a>
+								<a href="http://blog.asamaru.net/2015/10/22/setting-swift-compiler-flags-in-cocoapods/">2015.10.22.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>php를 CLI(shell 환경)에서 사용시 처리 과정을 확인하기 위한 로그나 결과를 <code>echo</code> 등을 사용해서 출력하는 방법을 사용할 것이다.</p>
+							<p><a href="http://blog.asamaru.net/2015/10/21/xcode-create-sub-module-using-cocoapods/">Xcode에서 CocoaPods를 이용해 sub module 만들기</a>라는 글에서 Sub Module을 만드는 방법을 설명했었다. 그런데 이렇게 연결된 Module을 사용하는 과정에서 불편한 부분이 생겼다. 다름아닌 <code>#if DEBUG</code>를 Sub Module에서 적용이 되지 않는 것이다. 이 부분은 생각해보면 당연하다 별개의 Module을 빌드에서 연결하는 것이니 <code>DEBUG</code> 상수를 사용하기 위한 설정을 별도로 해야 하는 것이다(<code>DEBUG</code> 상수 설정 방법은 <a href="http://seorenn.blogspot.kr/2014/11/xcode-swift-debug.html">Swift 프로젝트의 디버그(DEBUG) 플래그</a>을 참고하면 된다). 그래서 CocoaPods에서 추가해준 프로젝트에 <code>DEBUG</code> 관련 설정을 해주니 원하는대로 <code>#if DEBUG</code>를 사용할 수 있었다. 그런데 여기서 모든 문제가 해결된 것이 아니었다. <code>pod update</code> 실행시 Module이 재설치 되면서 관련 설정이 다시 초기화 되는 것이다. 이걸 매번 해줄 수도 없고… 그래서 조금 찾아보니 <a href="http://marginalfutility.net/2015/10/11/swift-compiler-flags/">Setting Swift compiler flags in CocoaPods</a>라는 글에서 해결 방법을 제시하고 있었다.</p>
 
-<p>보통 shell script 작성시 python이나 bash script를 많이 사용하지만 php 프로그램과 연결된 작업을 해야 하거나 php가 손에 익어서 편할 경우 등 여러가지 이유로 php를 shell에서 사용하는 경우도 많다.</p>
+<p>결론을 이야기하자면 <code>Podfile</code>에서 <code>post_install</code>을 사용해서 <code>DEBUG</code> 상수를 자동으로 추가하도록 하는 것이다. <code>Podfile</code>에 아래의 내용을 추가하면 된다.</p>
 
-<p>실제로 나는 가급적 프로세스 처리는 bash를 사용하고 간단한 작업은 python으로 하려고 하지만 php가 아무래도 손에 익은지라 조금 복잡한 작업은 php 프로그램과 무관하더라고 php를 사용하는 경우가 많다.</p>
-
-<p>나는 이런 작업 과정에서 출력되는 내용을 보기 좋게 표현하는 부분이 항상 불만이었다. 몇 줄 안나오는 문제면 상관없지만 다량의 로그가 출력되는 작업시에는 중요한 부분을 조금더 잘 보이게 할 방법이 필요했다. 그래서 여러 줄을 띄우거나 탭을 들여쓰는 등의 방법을 주로 사용했었다.</p>
-
-<p>그런데 오늘도 이런 작업을 하던 중에 갑자기 <a href="https://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape code</a> 중 <a href="https://en.wikipedia.org/wiki/ANSI_escape_code#Colors">ANSI Color</a>가 생각났다(왜 이제야 이런 것이 있다는 것을 떠 올렸는지 모르겠다). 직접 구현해도 되겠지만 아무래도 귀찮을 듯해서 검색을 해봤더니 생각보다 많은 자료를 찾을 수 있었다. 역시 사람들은 비슷한 생각을 하나보다.</p>
-
-<p>아래는 이번에 찾은 자료들의 목록이다.</p>
-
-<ul>
-  <li><a href="http://www.if-not-true-then-false.com/2010/php-class-for-coloring-php-command-line-cli-scripts-output-php-output-colorizing-using-bash-shell-colors/">PHP CLI Colors – PHP Class Command Line Colors (bash)</a></li>
-  <li><a href="https://gist.github.com/superbrothers/3431198">superbrothers/ansi-color.php</a></li>
-  <li><a href="http://softkube.com/blog/generating-command-line-colors-with-php">Generating Command Line Colors with PHP</a></li>
-  <li><a href="http://blog.ianty.com/php/ansicolor/">PHP port of Term::ANSIColor</a></li>
-</ul>
-
-<p>나는 이 중에서 맨마지막의 <a href="http://blog.ianty.com/php/ansicolor/">PHP port of Term::ANSIColor</a>를 선택했다. 필요에 맞게 아주 약간의 수정을 해서 사용해 봤는데 다양한 형식을 지원해서 나름 만족스럽다.</p>
-
-<p>혹시 php를 CLI에서 사용할 일이 있다면 한번쯤 사용해 보기를 추천한다. 위의 라이브러리들을 굳이 쓰지 않더라도 소스 코드를 조금만 보면 ANSI를 적용하는 방법을 알 수 있으니 보기 좋은 결과물을 원할때 써보기 바란다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">post_install</span> <span class="k">do</span> <span class="o">|</span><span class="n">installer</span><span class="o">|</span>
+	<span class="n">installer</span><span class="o">.</span><span class="n">pods_project</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">target</span><span class="o">|</span>
+		<span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;{원하는 모듈명}&#39;</span>
+			<span class="n">target</span><span class="o">.</span><span class="n">build_configurations</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+				<span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;Debug&#39;</span>
+					<span class="n">config</span><span class="o">.</span><span class="n">build_settings</span><span class="o">[</span><span class="s1">&#39;OTHER_SWIFT_FLAGS&#39;</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;-DDEBUG&#39;</span>
+					<span class="k">else</span>
+					<span class="n">config</span><span class="o">.</span><span class="n">build_settings</span><span class="o">[</span><span class="s1">&#39;OTHER_SWIFT_FLAGS&#39;</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+				<span class="k">end</span>
+			<span class="k">end</span>
+		<span class="k">end</span>
+	<span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -156,8 +165,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/10/23/php-cli-ansi-colors/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/10/23/php-cli-ansi-colors/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/10/22/setting-swift-compiler-flags-in-cocoapods/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/10/22/setting-swift-compiler-flags-in-cocoapods/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -113,33 +113,87 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/12/16/delta-rpm/">
-								Yum Delta RPM 사용하기
+							<a class="title" href="http://blog.asamaru.net/2015/12/15/android-app-finish/">
+								안드로이드 앱 종료 방법
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/12/16/delta-rpm/">2015.12.16.</span></a>
+								<a href="http://blog.asamaru.net/2015/12/15/android-app-finish/">2015.12.15.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>최근부터 CentOS 7을 사용하면서 yum으로 update를 하면서 아래와 같은 오류가 자주 발생했다. 하지만 항상 나오는 것은 아니다.</p>
+							<p>안드로이드에서 앱의 종료는 보통 Root Activity에서 <a href="http://developer.android.com/reference/android/app/Activity.html#finish%28%29">finish()</a>를 사용한다. 그런데 앱의 종료는 이외에도 여러가지 방법이 있고 각각이 다른 상황을 만들어 낸다. 당연히 구글에서는 <a href="http://developer.android.com/reference/android/app/Activity.html#finish%28%29">finish()</a>를 권장한다고 한다. 하지만 상황적으로 프로세스를 완전히 종료해야 하는 경우가 있을 수 있다. 아래에 설명하고자 하는 것들은 안정적으로 사용할 수 있는 방법이라고 장담하지는 못한다. 충분히 테스트된 코드가 아니라 인터넷 상에서 소개되는 방법들을 정리한 것이다. 물론 기본적인 테스트는 했다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>Error: Delta RPMs disabled because /usr/bin/applydeltarpm not installed.
+<p>우선 Activity만 종료하는 방법부터 알아보자.</p>
+
+<h3 id="finishaffinityhttpdeveloperandroidcomreferenceandroidappactivityhtmlfinishaffinity2829--"><a href="http://developer.android.com/reference/android/app/Activity.html#finishAffinity%28%29">finishAffinity()</a>를 사용하는 방법</h3>
+
+<p>Root Activity에서 <a href="http://developer.android.com/reference/android/app/Activity.html#finish%28%29">finish()</a>를 사용해서 종료하는 것은 굳이 설명하지 않아도 될 것으로 생각한다. 단, 이 방법은 현재 Activity가 Root Activity가 아니면 Root Activity를 찾아가는 과정이 필요하므로 복잡해질 수 있다. 예를들어 아래와 같이 처리한다(이 코드는 테스트하지 않았다. 그리고 호출하는 Activity와 Root Activity에서 각각 처리해야 한다).</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// Root Activity를 호출</span>
+<span class="n">Intent</span> <span class="n">intent</span>  <span class="o">=</span> <span class="k">new</span> <span class="nf">Intent</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">FirstActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<span class="n">intent</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="n">EXTRA_FINISH</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+<span class="n">intent</span><span class="o">.</span><span class="na">setFlags</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">FLAG_ACTIVITY_CLEAR_TOP</span><span class="o">);</span>        
+<span class="n">startActivity</span><span class="o">(</span><span class="n">intent</span><span class="o">);</span>
+<span class="n">finish</span><span class="o">();</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>이 메시지가 나오지만 실제로는 동작에는 이상이 없다. 하지만 계속 메시지가 나오니 보기도 싫고 다른 문제가 생길 수도 있을 것으로 생각되어 좀 찾아봤다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// Root Activity에서 인자를 받아 종료</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">getExtras</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">getIntentExtra</span><span class="o">(</span><span class="n">EXTRA_FINISH</span><span class="o">,</span> <span class="kc">false</span><span class="o">))</span> <span class="o">{</span>
+   <span class="n">finish</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<p>일단 <strong><a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a> 이라고 하는 것은 RPM 패키지 버전별로 변경사항만 가지고 있는 것을 뜻한다.</strong> 다시 말해 update 시에 전체 RPM을 다운 받아서 설치하지 않고 변경사항만 다운 받아서 update를 하게 해준다는 것이다.</p>
+<p>이런 번거로움을 해결해 줄 수 있는 것이 <a href="http://developer.android.com/reference/android/app/Activity.html#finishAffinity%28%29">finishAffinity()</a>다. 이 함수를 사용하면 어느 Activity에서든 모든 부모 Activity를 닫을 수 있다. 단, 이 함수는 API 16부터 사용 가능하다. 하지만 support library v4를 사용하면 이하 버전에서도 이 함수를 사용할 수 있다.</p>
 
-<p>처리 과정을 보자면 yum에서 DRPM(Delta RPM)을 다운 받아 이전 패키지에 변경 사항을 병합하여 새로운 RPM을 빌드한 후 설치가 이루어 진다고 한다. 따라서 다운 받는 시간은 줄어들지만 병합하는 시간이 추가로 소요된다. 하지만 네트워크 비용이 더 크기 때문에 사용하는 것이 더 유리하다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// only API 16+</span>
+<span class="n">activity</span><span class="o">.</span><span class="na">finishAffinity</span><span class="o">();</span>
 
-<p><a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>은 Fedora 11부터 적용되었다고 하며 RPM을 사용하는 다른 Linux에서도 사용중이라고 한다. 그런데 CentOS의 minimal 설치시에는 포함되지 않기 때문에 위 오류가 난다고 한다. 그리고 update 대상이 DRPM을 지원할 경우만 위 오류가 표시되는 것으로 보인다.</p>
+<span class="c1">// support library v4</span>
+<span class="n">ActivityCompat</span><span class="o">.</span><span class="na">finishAffinity</span><span class="o">(</span><span class="n">activity</span><span class="o">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<p>이 오류를 제거하고 <a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>을 사용하는 방법은 간단하다. deltarpm 패키지를 설치하면 된다.</p>
+<h3 id="activity-">홈 화면 Activity 띄우기</h3>
 
-<p>우선 오류에 나와있는 프로그램의 경로(<code>/usr/bin/applydeltarpm</code>)를 이용해서 패키지명을 찾는다. 사실 이 과정은 굳이 할 필요가 없다(이미 패키지명을 알고 있으니).</p>
+<p>이 방법은 Activity의 종료라고 하기에는 조금 애매한 방법이다. 일단 아래의 소스를 보자.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">Intent</span> <span class="n">homeIntent</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Intent</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">ACTION_MAIN</span><span class="o">);</span>
+<span class="n">homeIntent</span><span class="o">.</span><span class="na">addCategory</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">CATEGORY_HOME</span><span class="o">);</span>
+<span class="n">homeIntent</span><span class="o">.</span><span class="na">setFlags</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">FLAG_ACTIVITY_CLEAR_TOP</span><span class="o">);</span>
+<span class="n">startActivity</span><span class="o">(</span><span class="n">homeIntent</span><span class="o">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>소스를 보면 알겠지만 말그대로 홈 화면 Activity를 띄우는 것이다. 어쨌든 사용자가 보기에는 앱이 종료된 것처럼 보인다. 뒤에 남겨진 프로세스가 계속 살아남는지 Activity finish와 동일한 생명주기를 갖는지는 테스트 해보지 않았다.</p>
+
+<h3 id="finishandremovetask-httpdeveloperandroidcomreferenceandroidappactivityhtmlfinishandremovetask2829--"><a href="http://developer.android.com/reference/android/app/Activity.html#finishAndRemoveTask%28%29">finishAndRemoveTask ()</a>를 사용하는 방법</h3>
+
+<p><a href="http://developer.android.com/reference/android/app/Activity.html#finishAndRemoveTask%28%29">finishAndRemoveTask ()</a>는 Activity를 종료하고 Task Manager(최근 앱 사용 목록)에서도 해당 앱을 제거한다. <strong>단, Task를 종료하지만 Process까지 종료하지는 않는다.</strong> 앱을 <a href="http://developer.android.com/reference/android/app/Activity.html#finishAndRemoveTask%28%29">finishAndRemoveTask ()</a>로 종료하고 Task Manager를 보면 해당 앱이 없어 Process가 종료된 것처럼 보이지만 이 상태에서 다시 앱을 실행하면 Application Class의 onCreate()가 실행되지 않는다(Process가 종료되었다면 이 함수가 다시 실행되었을 것이다). 메뉴얼에는 아래와 같이 나와있다.</p>
+
+<blockquote>
+  <p>Call this when your activity is done and should be closed and the task should be completely removed as a part of finishing the Activity.</p>
+</blockquote>
+
+<p>그리고 이 함수는 API 21에서 추가된 함수로 아직까지는 호환성 함수는 없는 것으로 보인다. 그나마 찾아본 바로는 chromium 소스 코드 중 <a href="https://chromium.googlesource.com/chromium/src/base/+/master/android/java/src/org/chromium/base/ApiCompatibilityUtils.java">ApiCompatibilityUtils.java</a>에 있는 아래의 코드가 있다. 하지만 사용에 큰 의미는 없어보이니 참고만 하자.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
  4
@@ -151,29 +205,145 @@
 10
 11
 12
-13</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>yum provides /usr/bin/applydeltarpm
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">finishAndRemoveTask</span><span class="o">(</span><span class="n">Activity</span> <span class="n">activity</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">&gt;</span> <span class="n">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">LOLLIPOP</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">activity</span><span class="o">.</span><span class="na">finishAndRemoveTask</span><span class="o">();</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">==</span> <span class="n">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">LOLLIPOP</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// crbug.com/395772 : Fallback for Activity.finishAndRemoveTask() failing.</span>
+        <span class="k">new</span> <span class="nf">FinishAndRemoveTaskWithRetry</span><span class="o">(</span><span class="n">activity</span><span class="o">).</span><span class="na">run</span><span class="o">();</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="n">activity</span><span class="o">.</span><span class="na">finish</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
 
-Loaded plugins: fastestmirror
-Loading mirror speeds from cached hostfile
- * base: ftp.daumkakao.com
- * epel: ftp.cuhk.edu.hk
- * extras: ftp.daumkakao.com
- * updates: ftp.daumkakao.com
- * webtatic: sp.repo.webtatic.com
-deltarpm-3.6-3.el7.x86_64 : Create deltas between rpms
-Repo        : base
-Matched from:
-Filename    : /usr/bin/applydeltarpm
+<span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">FinishAndRemoveTaskWithRetry</span> <span class="kd">implements</span> <span class="n">Runnable</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">long</span> <span class="n">RETRY_DELAY_MS</span> <span class="o">=</span> <span class="mi">500</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">long</span> <span class="n">MAX_TRY_COUNT</span> <span class="o">=</span> <span class="mi">3</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Activity</span> <span class="n">mActivity</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">mTryCount</span><span class="o">;</span>
+    <span class="n">FinishAndRemoveTaskWithRetry</span><span class="o">(</span><span class="n">Activity</span> <span class="n">activity</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">mActivity</span> <span class="o">=</span> <span class="n">activity</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">mActivity</span><span class="o">.</span><span class="na">finishAndRemoveTask</span><span class="o">();</span>
+        <span class="n">mTryCount</span><span class="o">++;</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">mActivity</span><span class="o">.</span><span class="na">isFinishing</span><span class="o">())</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">mTryCount</span> <span class="o">&lt;</span> <span class="n">MAX_TRY_COUNT</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">ThreadUtils</span><span class="o">.</span><span class="na">postOnUiThreadDelayed</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">RETRY_DELAY_MS</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="n">mActivity</span><span class="o">.</span><span class="na">finish</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>패키지명을 알았으니 이제 설치만 하면 된다.</p>
+<h3 id="process-">Process 종료하기</h3>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>yum install deltarpm
+<p>이제부터는 앱을 종료하고 Process까지 완전히 종료시키는 방법들이다. 이 부분에 대해서는 의견이 다양한데 앱 종료시 처리되어야 할 프로세스들이 정상적으로 동작하지 못할 수 있다는 우려로 사용을 자제하라는 의견도 있고 알아서 처리하므로 상관없다는 의견도 있다. 테스트를 아직 해보지 못해 어떤 문제가 발생하는지에 대해서는 설명할 수 없으니 사용시 유의하자.</p>
+
+<p><a href="http://stackoverflow.com/a/5036668">How to close Android application?</a>에 소개된  Class 소스의 일부를 보자.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">killApp</span><span class="o">(</span><span class="kt">boolean</span> <span class="n">killSafely</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">killSafely</span><span class="o">)</span> <span class="o">{</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Notify the system to finalize and collect all objects of the app</span>
+<span class="cm">         * on exit so that the virtual machine running the app can be killed</span>
+<span class="cm">         * by the system without causing issues. NOTE: If this is set to</span>
+<span class="cm">         * true then the virtual machine will not be killed until all of its</span>
+<span class="cm">         * threads have closed.</span>
+<span class="cm">         */</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">runFinalizersOnExit</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Force the system to close the app down completely instead of</span>
+<span class="cm">         * retaining it in the background. The virtual machine that runs the</span>
+<span class="cm">         * app will be killed. The app will be completely created as a new</span>
+<span class="cm">         * app in a new virtual machine running in a new process if the user</span>
+<span class="cm">         * starts the app again.</span>
+<span class="cm">         */</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Alternatively the process that runs the virtual machine could be</span>
+<span class="cm">         * abruptly killed. This is the quickest way to remove the app from</span>
+<span class="cm">         * the device but it could cause problems since resources will not</span>
+<span class="cm">         * be finalized first. For example, all threads running under the</span>
+<span class="cm">         * process will be abruptly killed when the process is abruptly</span>
+<span class="cm">         * killed. If one of those threads was making multiple related</span>
+<span class="cm">         * changes to the database, then it may have committed some of those</span>
+<span class="cm">         * changes but not all of those changes when it was abruptly killed.</span>
+<span class="cm">         */</span>
+        <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Process</span><span class="o">.</span><span class="na">killProcess</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Process</span><span class="o">.</span><span class="na">myPid</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>끝이다. 이제부터 <a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>이 지원되는 패키지는 DRPM을 이용해서 다운받는 시간이 줄어들 것이다.</p>
+<p>이 함수에서 Process를 종료하는 방법은 크게 두가지로 나뉜다. <code>System.exit()</code>를 사용하는 방법과 <code>android.os.Process.killProcess</code>를 사용하는 방법이다. 함수를 보면 알다시피 <code>System.exit()</code>를 사용하는 것이 더 안전한 방법으로 보인다. 그런데 이 부분에 대해서도 사람들의 의견이 차이가 있다. <code>System.runFinalizersOnExit(true)</code> 대신 <code>System.runFinalization()</code>를 호출하여 강제로 Finalization을 수행하는 방법을 설명하는 사람도 있고 이렇게하면 불안정하게 동작할 수 있으니 그냥 <code>System.exit()</code>만 호출하라는 사람도 있고… 어쨌든 개인적으로는 위 함수가 가장 적절하게 구성되어 있다고 생각한다. <strong>단, 주의사항 한가지. 이 부분은 직접 테스트 해본 것은 아니나 두개 이상의 Activity가 떠 있는 상황에서 Process를 종료시키면 Process가 살아난다는 이야기도 있다.</strong> 그런 이유가 아니더라도 Activity의 종료 프로세스를 제대로 동작시키는 것이 좋다는 생각으로 나는 아래와 같이 처리하고 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">ActivityCompat</span><span class="o">.</span><span class="na">finishAffinity</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">runFinalizersOnExit</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>현재까지는 이 방법으로 이상없이 사용하고 있으나 서두에서 언급한 것처럼 충분한 테스트를 거친 내용들이 아니므로 사용시에는 유의하기 바란다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -187,8 +357,8 @@ Filename    : /usr/bin/applydeltarpm
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/12/16/delta-rpm/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/12/16/delta-rpm/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/12/15/android-app-finish/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/12/15/android-app-finish/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

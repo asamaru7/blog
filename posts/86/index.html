@@ -113,50 +113,22 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/">
-								Gradle DSL method not found: &#39;packageNameSuffix()&#39; 오류 해결
+							<a class="title" href="http://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/">
+								리눅스에서 swap 메모리 초기화
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/">2015.10.05.</span></a>
+								<a href="http://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/">2015.10.02.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>안드로이드에서 빌드시 packageName을 동적으로 변경하기 위해 packageNameSuffix를 사용하는 경우가 있다. 예를들어 배포된 앱과 개발중인 앱을 동시에 사용하기 위해 packageNameSuffix를 사용할 수 있다.</p>
+							<p>리눅스에서 swap 메모리를 초기화하는 것은 아주 간단하다.
+일시적 메모리 사용의 증가로 swap을 사용하게될 경우 메모리에 여유가 생겨도 swap 메모리는 자동으로 초기화되지 않는다. 이것을 수동으로 초기화하려면 아래의 명령을 입력하면 된다. 당연히 root 권한에서 실행해야 한다.</p>
 
-<p>아래의 예시를 보자.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>swapoff -a <span class="o">&amp;&amp;</span> swapon -a
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">android {
-    buildTypes {
-        debug {
-            packageNameSuffix '.debug'
-            versionNameSuffix '-debug'
-        }
-    }
-}
-</code></pre></div></figure>
-
-<p>debug 모드에서 빌드할 경우에는 packageName 뒤에 <code>.debug</code>를 붙이도록 설정한 것이다. 이렇게 함으로써 release와 debug가 packageName이 달라져서 두개의 앱으로 인식되므로 모두를 설치할 수 있다.
-이 방법을 모를때는 매번 앱을 지우고 새로 깔고… 귀찮은 작업을 반복하며 작업을 했었다.</p>
-
-<p>그런데 이렇게 사용하면 아래의 경우를 만날 수 있다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode"> Gradle sync failed: Gradle DSL method not found: 'packageNameSuffix()'
-            Consult IDE log for more details (Help | Show Log)
-</code></pre></div></figure>
-
-<p>이유는 packageNameSuffix라는 속성이 applicationIdSuffix로 변경되었기 때문이다. 관련 메뉴얼은 <a href="http://tools.android.com/tech-docs/new-build-system/applicationid-vs-packagename">ApplicationId versus PackageName</a>에서 볼 수 있다.</p>
-
-<p>그래서 아래와 같이 수정하면 정상적으로 사용이 가능하다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">android {
-    buildTypes {
-        debug {
-            applicationIdSuffix '.debug'
-            versionNameSuffix '-debug'
-        }
-    }
-}
-</code></pre></div></figure>
+<p>swapoff 처리에 시간이 조금 오래 걸릴 수 있는데 서버가 멈춘 것은 아니므로 걱정하지 않아도 된다. swap 메모리에서 필요한 부분을 물리 메모리로 옮기는 처리중인 것이다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -170,8 +142,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -1,7 +1,7 @@
 ---
 layout: "post"
 title: "PHP password_hash() salt option has been deprecated"
-date: "2016-02-24T20:19:31+09:00"
+date: "2016-02-24T20:19:32+09:00"
 comments: true
 categories: php
 ---

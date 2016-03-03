@@ -113,77 +113,34 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2016/01/19/centos-emptying-the-buffers-cache/">
-								linux buffer/cache 비우기
+							<a class="title" href="http://blog.asamaru.net/2016/01/06/xyz-domain-and-cloudflare/">
+								.xyz 도메인을 구매해서 CloudFlare에 연결하다
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2016/01/19/centos-emptying-the-buffers-cache/">2016.01.19.</span></a>
+								<a href="http://blog.asamaru.net/2016/01/06/xyz-domain-and-cloudflare/">2016.01.06.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>예전에 <a href="/2015/10/02/linux-how-to-clear-memory-swap/">리눅스에서 swap 메모리 초기화</a>에서 swap 메모리를 비우는 방법을 남겼다. 이번엔 swap이 아닌 “buff/cache”를 비우는 방법을 남기고자 한다.</p>
+							<p>어제 <a href="/2016/01/05/cloudflare-free-plan/">CloudFlare Free Plan</a>에 대한 글을 쓰면서 CloudFlare를 적용하는 것에 대해 고민중이라고 했었다.</p>
 
-<p>linux에서 <code>top</code> 또는 <code>free</code> 명령으로 메모리 상황을 보면 “buff/cache” 항목이 있다. 이 부분은 실제로 직접 사용하고 있는 메모리가 아니라 말그대로 버퍼와 캐시에 사용된 메모리를 뜻한다. 그렇다면 “굳이 왜 이것을 비우려고 하는가?”하는 의문이 생길 수 있다.</p>
+<p>드디어 오늘 그 고민을 끝내고 CloudFlare를 사용하기 시작했다. 원래 계획은 개인적으로 사용하던 도메인에 적용해서 테스트하는 것이었는데 이 블로그뿐아니라 이메일등 여러 곳에서 사용하고 있어서 새로 도메인을 하나 구매했다. 사실 다른 용도로 도메인이 하나 더 필요하기도 했지만.</p>
 
-<p>일반적으로 캐시는 느린 장치의 데이터를 빠른 장치에 임시 보관해두고 사용함으로써 성능을 높이는 것이 목적이다. 따라서 캐시는 당연히 사용하는게 좋다. 하지만 hit(적중률)가 낮은 경우엔 캐시를 사용하는 것이 부정적인 영향을 미칠 수 있다. 빠른 장치는 당연히 공간이 한정되어 있기 때문에 모든 정보를 캐시할 수 없으므로 캐시를 관리해야 한다. 이 과정에서 발생하는 비용이 캐시를 사용하는 것보다 크다면 캐시는 사용하지 않는 것이 좋다는 것이다. 캐시에 관한 자세한 내용은 여기서 다루고자하는 것이 아니니 이정도만 설명하고 넘어가자.</p>
+<p>새로 구매한 도메인은 .xyz 도메인이다. Wix.com에서는 .xyz 도메인에 대해서 아래와 같이 안내하고 있다.</p>
 
-<p>실질적으로 이것이 어디에 필요한지에 대해 알아보자.</p>
+<blockquote>
+  <p>.xyz – ‘.xyz’는 도메인 이름이 알파벳처럼 XYZ로 끝이 나도록 만드는 독창적인 최상급 도메인(TLD)입니다. 이 최상급 도메인은 짧은 URL 주소로 높은 검색 클릭률을 원하는 회사들에게 적합합니다.</p>
+</blockquote>
 
-<p>linux에서는 기본적으로 디스크 상의 파일을 읽을 경우 해당 파일을 닫아도 free 메모리로 모두가 즉시 반환되지 않는다. 이유는 이 파일의 정보를 다음 사용에 대비해 cache하기 때문이다. 보다 자세한 내용을 확인하고 싶다면 <a href="https://wiki.kldp.org/Translations/html/The_Linux_Kernel-KLDP/tlk3.html">메모리 관리 (Memory Management)</a>를 참고하자. 이런 파일의 cache와 관련하여 os / mysql 등 여러 분야의 성능 튜닝 내용 등을 쉽게 찾을 수 있다.</p>
+<p>간단히 이야기하자면 특별한 의미가 없는 최상위 도메인이다. 구글이 알파벳이라는 회사를 설립하면서 abc.xyz 라는 도메인을 사용하면서 유명해졌다.</p>
 
-<p>대량의 파일이 관리되는 서버의 파일 cache hit가 낮은데 비해 buffer / cache 메모리 사용량이 높을 경우 해당 cache 기능을 끄거나 주기적으로 비움으로써 성능을 개선할 수 있다.</p>
+<p>어쨌든 원래 나는 도메인을 <a href="http://cypack.com">CYPACK</a>에서 사용하고 있었다(그냥 조금 싼편이라). 그런데 여기서는 .xyz 도메인을 구매할 수 없었다. 그래서 할 수없이 비싼 <a href="https://www.gabia.com/">가비아</a>에서 구매했다. 사실 <a href="https://gen.xyz/">XYZ</a>에서 바로 구매하면 $10에 구매할 수 있다. 하지만 해외 사이트라 가비아에서 그냥 샀다. 국제 도메인은 해외에서 사는게 났다는 평이 많지만 그냥 귀찮아서 그냥 샀다.</p>
 
-<p>우선 아래와 같이 선택적으로 cache를 비울 수 있다. <code>sync</code> 명령을 사용하는 이유는 해당 cache 기능을 비우기 전에 사용중인 데이터를 sync하기 위한 것이다.</p>
+<p>그런데 지금 행사중이라 .xyz 도메인이 무척 쌌다. 지금 1,400원이면 도메인을 구매할 수 있다. 부가세 포함 1,540원. 하지만 내년에 연장하려면 20,000원을 내고 연장해야 한다.</p>
 
-<p>pagecache 비우기</p>
+<p>어쟀든 도메인을 구매하고 바로 CloudFlare에 연결했다. 연결은 아주 간단했고 DNS 변경 후 반영되는데 약간의 시간이 걸린 후 바로 적용되기 시작했다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre>sync
-<span class="nb">echo </span><span class="m">1</span> &gt; /proc/sys/vm/drop_caches
-<span class="c"># 또는</span>
-sync
-sysctl -w vm.drop_caches<span class="o">=</span>1
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>dentries, inodes 비우기</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre>sync
-<span class="nb">echo </span><span class="m">2</span> &gt; /proc/sys/vm/drop_caches
-<span class="c"># 또는</span>
-sync
-sysctl -w vm.drop_caches<span class="o">=</span>2
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>pagecache, dentries, inodes 모두 비우기</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre>sync
-<span class="nb">echo </span><span class="m">3</span> &gt; /proc/sys/vm/drop_caches
-<span class="c"># 또는</span>
-sync
-sysctl -w vm.drop_caches<span class="o">=</span>3
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>위에서 1,2,3으로 지정한 값들은 영구적 설정이 아니라 설정되는 그 시점에만 적용된다. 바꿔서 이야기 하자면 <code>/proc/sys/vm/drop_caches</code>는 파일이 아니라 명령어인 셈이다. 실제로 아래와 같이 기본값인 0으로 되돌리려고하면 오류가 난다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">echo </span><span class="m">0</span> &gt; /proc/sys/vm/drop_caches
--bash: <span class="nb">echo</span>: write error: 부적절한 인수
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p>이제부터 CloudFlare를 사용해서 여러가지 테스트를 해봐야 할 것 같다.
+그리고 어제 <a href="/2016/01/05/cloudflare-free-plan/">CloudFlare Free Plan</a>에서 page rule을 사용할 수 없다고 했었는데 오늘 들어가보니 free plan의 경우도 3개까지는 사용이 가능한 것으로 나와있었다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -197,8 +154,8 @@ sysctl -w vm.drop_caches<span class="o">=</span>3
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2016/01/19/centos-emptying-the-buffers-cache/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2016/01/19/centos-emptying-the-buffers-cache/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2016/01/06/xyz-domain-and-cloudflare/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2016/01/06/xyz-domain-and-cloudflare/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

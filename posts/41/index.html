@@ -113,82 +113,160 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/11/05/android-is-not-translated-in-dot-dot-dot-lint-error/">
-								Android : is not translated in ... Lint Error 해결
+							<a class="title" href="http://blog.asamaru.net/2015/11/04/xcode-storyboard-with-uiviewcontroller-using-generics/">
+								Xcode 7.1의 StoryBoard에서 UIViewController(using Generics)를 Custom Class로 연결할 때 발생하는 오류
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/11/05/android-is-not-translated-in-dot-dot-dot-lint-error/">2015.11.05.</span></a>
+								<a href="http://blog.asamaru.net/2015/11/04/xcode-storyboard-with-uiviewcontroller-using-generics/">2015.11.04.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>안드로이드에서 배포를 위한 빌드시에 아래와 같은 오류가 발생하는 경우가 있다. 상황에 따라 언어의 종류(en)는 다를 수 있다.</p>
+							<p>현재 xcode의 최신 버전은 7.1이다. 이 버전에서(이하 버전은 확인하지 못했다) 스토리보드와 <a href="https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/Generics.html">Generics</a>를 사용한 UIViewController를 연결하는 부분에서 버그가 있다. 버그는 인터페이스 빌더에서 찾지 못하는 문제와 강제 추가시 <code>Unknown class &lt;MyClass&gt; in Interface Builder file</code> 오류를 발생시키는 것이다. 자세한 내용은 아래에 설명하겠다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">Error:(65) Error: "..." is not translated in "en" (English) [MissingTranslation]
-</code></pre></div></figure>
+<p>일단 <a href="https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/Generics.html">Generics</a>가 어떤 것인지 정보를 더 얻고 싶다면 <a href="http://minsone.github.io/mac/ios/swift-generics-summary/">Swift - Generics 정리</a>를 참고하자.</p>
 
-<p>이 오류는 말그대로 다국어 지원에 대한 처리가 제대로 되어 있지 않다는 오류이다. 일반적으로 다국어 지원을 위한 별도의 처리를 한적이 없다면 이 오류는 발생하지 않는 것이 당연하다.
-하지만 이번에 이 오류를 만나고 찾아보니 많은 개발자들이 이 문제를 겪는 것 같다. 사실 나는 다국어 지원에 관련된 별도의 처리를 한 상황이었으므로 이 오류를 만나는 것이 당연한 상황이었다.
-어쨌든 인터넷에 찾아보면 대부분 다음과 같이 해결법을 제시하고 있다.</p>
+<p>항상 이런 글을 쓰려고하면 상황을 설명하기가 어렵다. 그렇다고 설명없이 코드만 적어놓으면 어떻게 사용되는지를 알 수 없으니 일단 최선을 다해 보겠다.</p>
 
-<ul>
-  <li>Lint 관련 설정은 이클립스 메뉴의 Window - Preference - Android - Lint 에서 변경할 수 있는데요..  여기서 MissingTranslation 항목을 찾아 Severity를 warning으로 변경하면 됩니다.</li>
-  <li><a href="http://mytalkhome.tistory.com/816">Android Studio “is not translated in “en” (English) [MissingTranslation]” 오류 해결하기</a></li>
-</ul>
+<p>UIPageViewController를 사용하고자 하는 상황을 가정하고 설명한다.</p>
 
-<p>이 방법은 말그대로 제대로 처리되지 않은 부분을 오류에서 경고로 변경하여 빌드를 수행하는 것으로 좋지 못한 방법이다. 게다가 나의 경우는 OSX라서 그런지 안드로이드 스튜디오의 버전 때문인지 위치와 명칭이 많이 달랐다.</p>
+<ol>
+  <li>스토리보드에서 “Page View Controller”를 추가했다.</li>
+  <li>그 다음에 해야할 작업은 UIPageViewController class를 하나 추가한다.</li>
+  <li>추가한 class를 인터페이스 빌더에서 Custom Class로 연결한다.</li>
+</ol>
 
-<p>유사하지만 다른 방법도 있다. build.gradle에서 lint를 제외하는 것이다. <a href="http://stackoverflow.com/questions/20699147/gradle-build-fails-on-lint-task">gradle build fails on lint task</a></p>
+<p>위 상황의 결과가 아래의 이미지다. UIPageViewController class로 PageViewController라는 class를 추가한 것이다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">android {
-  lintOptions {
-      checkReleaseBuilds false
-  }
-}
-</code></pre></div></figure>
+<p><img src="/img/2015-11/04-xcode-storyboard-with-uiviewcontroller-using-generics-1.png" alt="xcode" /></p>
 
-<p>그리고 또 다른 방법 한가지. <a href="http://stackoverflow.com/questions/28106875/missingtranslation-for-default-language-is-not-translated-in-en">MissingTranslation for default language ( “…” is not translated in “en”)</a>
-이 방법은 Strings.xml에서 locale을 아예 미리 입력해 버리는 것이다. 위 오류에 맞추어 en이라고 했지만 자신의 상황에 맞게 입력해야 한다.</p>
+<p>비교를 위해 소스도 추가 한다. 사실 볼 것도 없다. 내부 기능은 설명에 필요하지 않아 모두 제거 했다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-xml"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="nt">&lt;resources</span>
-    <span class="na">xmlns:tools=</span><span class="s">&quot;http://schemas.android.com/tools&quot;</span>
-    <span class="na">tools:locale=</span><span class="s">&quot;en&quot;</span><span class="nt">&gt;</span>
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">import</span> <span class="n">UIKit</span>
+
+<span class="k">class</span> <span class="nl">PageViewController</span><span class="p">:</span> <span class="bp">UIPageViewController</span> <span class="p">{</span>
+<span class="p">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>당연히 문제의 원인을 정확히 파악하여 해결하는 것이 가장 좋은 방법이다.
-당장 급하고 원인을 찾지 못하겠다면 위의 방법들을 쓸 수도 있겠지만 계속 저렇게 사용하는 것은 권장하고 싶지는 않다.</p>
+<p>이 상황에서 빌드하고 실행하면 아무런 문제가 없다. 당연하다. 가장 일반적인 상황이니까.</p>
 
-<p>이제부터는 내가 문제를 만난 상황이다. 사실 나 또한 다국어를 지원할 필요가 있었던 것은 아니다. 다만 사용한 라이브러리 중 하나가 다국어를 지원하고 있었다.
-따라서 한국어 부분은 <code>values-ko/strings.xml</code>파일로 분리되어서 처리되고 있었다. 이 상황에서 내가 필요한 것은 설정된 문장의 일부를 변경하는 것이었다.
-그래서 내 프로젝트의 <code>values/strings.xml</code>에 필요한 문장들을 재정의 했다. 오류는 나지 않지만 적용되지 않는다. 다시 내 프로젝트에도 <code>values-ko/strings.xml</code> 파일을 만들고 필요한 부분을 재정의 했다.
-여기서부터 문제의 시작이다. 아래의 오류가 발생한다.</p>
+<p>이제부터가 내가 버그라고 주장하는 부분의 시작이다. 아래의 코드를 보자.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">Error:(65) Error: "..." is not translated in "ko"
-</code></pre></div></figure>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">import</span> <span class="n">UIKit</span>
 
-<p><code>values-ko/strings.xml</code> 파일에 모든 내용을 넣지 않고 필요한 부분만 넣었으므로 나머지 부분이 번역되지 않았다고 오류가 나는 것이다. 간단한 해결 방법은 <code>values-ko/strings.xml</code> 파일에 <code>values/strings.xml</code>의 내용을 모두 복사해 넣어준다. 그런데 이 방법은 싫다. 둘다 한국어인데 굳이 두군데를 관리하고 싶지 않다. 이런 경우라면 아래와 같이 <code>tools:ignore="MissingTranslation"</code>를 사용해서 문제를 해결할 수 있다.</p>
+<span class="k">class</span> <span class="nl">PageViewController</span><span class="p">:</span> <span class="bp">UIPageViewController</span> <span class="p">{</span>
+<span class="p">}</span>
 
-<p><strong>Strings.xml</strong></p>
+<span class="k">class</span> <span class="nl">PageViewControllerChild</span><span class="p">:</span> <span class="n">PageViewController</span> <span class="p">{</span>
+<span class="p">}</span>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-xml"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="nt">&lt;resources</span>
-    <span class="na">xmlns:tools=</span><span class="s">&quot;http://schemas.android.com/tools&quot;</span>
-    <span class="na">tools:ignore=</span><span class="s">&quot;MissingTranslation&quot;</span><span class="nt">&gt;</span>
+<span class="k">class</span> <span class="n">PageViewControllerT</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;:</span> <span class="bp">UIPageViewController</span> <span class="p">{</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nl">PageViewControllerTChild</span><span class="p">:</span> <span class="n">PageViewControllerT</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="p">{</span>
+<span class="p">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>명확히 이 영역은 다국어 지원이 필요하지 않은 이므로 명시적으로 번역 누락을 무시하도록 하는 것이다. 어떻게 보면 상기 설명했던 오류를 무시하는 것과 같아 보일 수 있으나 이 방법은 무시할 범위를 명확히 인지하고 해당 영역만 필요에 의해 무시하도록 했다는 것이다.
-단, 한가지 추가 작업이 필요하다. <code>values-ko/strings.xml</code> 파일에서 재정의 했던 항목들을 <code>values/strings.xml</code>에도 넣어주어야 한다는 것이다. 안그러면 아래와 같은 오류가 난다.</p>
+<p>3개의 class를 추가했다. 하지만 여전히 아무런 기능은 없다. 이 상황에서 위의 이미지와 동일한 상황을 캡춰한 것이 아래 이미지다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">Error:(3) Error: "XXX" is translated here but not found in default locale [ExtraTranslation]
+<p><img src="/img/2015-11/04-xcode-storyboard-with-uiviewcontroller-using-generics-2.png" alt="xcode" /></p>
+
+<p>비교가 되는가? 달라진 점은 우측의 Custom Class 영역의 Class에서 선택할 수 있는 대상 Class 목록이다.
+그런데 위의 소스를 자세히 보고 이 이미지를 봤다면 뭔가 이상함을 느낄 것이다.</p>
+
+<p><strong>바로 <code>PageViewControllerTChild</code>가 목록에 없다는 것이다.</strong> 내가 캡춰를 잘못한 것이 아니다. 실제로 나타나지 않는다.</p>
+
+<p>그렇다면 이게 내가 말하고자 하는 버그인가? 아니다. 그냥 목록에만 나오지 않는 것이라면 조금 귀찮을 뿐 문제되지는 않는다.
+자 이제 다시 테스트 해보자. 목록에는 없지만 실제로 class는 존재하므로 강제로 타이핑해서 <code>PageViewControllerTChild</code>를 집어 넣자.
+다시 빌드하고 실행. 그런데 기존과 다르게 오류가 난다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">2015-11-04 21:08:24.886 Test[32048:90982] Unknown class _TtC4Test24PageViewControllerTChild in Interface Builder file.
 </code></pre></div></figure>
 
-<p>사실 불편함이 생기는 부분이지만 앞서 설명처럼 반대로 모두를 두군데서 관리하는 것보다 필요한 몇줄만 별도 관리하는 것을 선택했다.</p>
+<p>앱을 죽이지는 않으나 해당 View가 아무것도 나오지 않는다.
+오류의 내용은 인터페이스 빌더에서 알 수 없는 <code>_TtC4Test24PageViewControllerTChild</code> class에 접근 한다는 것.
+이상한 일이다. 분명 해당 class는 존재한다. 오류에 나온 <code>_TtC4Test24PageViewControllerTChild</code>과 이름은 다르지만 분명 같은 class에 접근하려는 것이다.
+이 문제가 바로 내가 버그라고 이야기하는 부분이다.</p>
 
-<p><strong>결론적으로 선택은 자유다. 위 방법들 중 필요에 맞게 선택해서 사용하면 되겠다.</strong></p>
+<p>요약하자면 다음과 같다. <strong>Generics를 사용하는 UIViewController는 인터페이스 빌더에 연결되지 않는다.</strong></p>
+
+<p>이 문제 하나로 인해 인터페이스 빌더와 스토리보드를 다 걷어내거나 이것만 따로 처리하기는 싫다.
+자.. 이제부터 그럼 해결을 해보자. 해결을 위해서는 원인을 알아야 한다.</p>
+
+<p>중요한 내용은 [“Unknown class <myclass> in Interface Builder file” error at runtime](http://stackoverflow.com/a/1725893)에 설명되어 있다.
+이 글은 내가 말하는 Generics와 관련된 상황이 아닌 조금 더 일반적인 상황에 대한 것으로 약간의 차이가 있다. 하지만 거의 유사하므로 해결에 도움을 얻을 수 있었다.
+게다가 기본적인 설명은 Objective-C 기준으로 되어있고 swift의 경우는 `init(coder aDecoder: NSCoder)`를 추가하는 것으로 설명하고 있지만 이 것은 위 문제를 해결하는 것에는 도움이 되지 않는다.
+어쨌든 이 글의 결론을 이야기 하자면 이렇다. 인터페이스 빌더에서 해당 class를 제대로 찾지 못하고 있기 때문에 linking이 제대로 되지 못하고 있다는 것이다.
+따라서 해당 class에 직접 접근하는 코드를 넣어주어야 한다는 것이다. 그래서 이 글에서는 불필요한 함수 하나를 추가하고 사용 전에 강제로 호출함으로써 문제를 해결할 수 있다고 되어 있다.</myclass></p>
+
+<p>위 글에서 설명한 것을 기초로 해결을 위한 코드는 다음과 같다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></div></td><td class="code"><div class="highlight"><pre><span class="p">@</span><span class="n">UIApplicationMain</span>
+<span class="k">class</span> <span class="nl">AppDelegate</span><span class="p">:</span> <span class="bp">UIResponder</span><span class="p">,</span> <span class="bp">UIApplicationDelegate</span> <span class="p">{</span>
+
+	<span class="k">var</span> <span class="nl">window</span><span class="p">:</span> <span class="bp">UIWindow</span><span class="o">?</span>
+<span class="c1">//	let x = PageViewControllerTChild.description()</span>
+
+	<span class="kr">override</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nb">super</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
+
+		<span class="n">PageViewControllerTChild</span><span class="p">.</span><span class="n">description</span><span class="p">()</span>
+	<span class="p">}</span>
+
+	<span class="k">func</span> <span class="n">application</span><span class="p">(</span><span class="nl">application</span><span class="p">:</span> <span class="bp">UIApplication</span><span class="p">,</span> <span class="n">didFinishLaunchingWithOptions</span> <span class="nl">launchOptions</span><span class="p">:</span> <span class="p">[</span><span class="nl">NSObject</span><span class="p">:</span> <span class="n">AnyObject</span><span class="p">]</span><span class="o">?</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bool</span> <span class="p">{</span>
+		<span class="c1">// Override point for customization after application launch.</span>
+
+<span class="c1">//		PageViewControllerTChild.description()</span>
+
+		<span class="k">return</span> <span class="nb">true</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p><strong>해결 방법은 AppDelegate의 <code>init()</code> 내부에서 <code>PageViewControllerTChild</code>의 함수를 하나 호출한다.</strong></p>
+
+<p>호출하는 함수는 어떠한 것이라도 상관없다. 하지만 호출 시점은 아주 중요하다. 호출 시점은 해당 화면이 보여지기 전(초기화 전) 이어야 한다.
+위 코드는 시작 화면으로 사용한 화면을 대상으로 하고 있기 때문에 <code>init()</code>에 추가 했다. 하지만 시작 화면이 아니라면 <code>func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -&gt; Bool</code>에 추가되어도 상관없다. 하지만 어짜피 특별한 기능을 수행할 것이 아니므로 <code>init()</code>에 넣어주는게 속 편할 것이다. 앞서 설명과 같이 어떻게 넣을 수 있는지를 설명하기 위해서 비슷한 코드가 여러군데 있다(대신 주석으로 제외시켜 둔 것이다).</p>
+
+<p>사실 나는 이 해결 방법을 고심해서 찾았지만 실제로는 적용하지 않았다. 설계 구조를 변경해서 Generics를 제거하는 쪽으로 결정했다. 필히 Generics이 필요한 상황이 아니었기 때문에 굳이 이렇게까지 할 필요는 없다고 생각했기 때문이다.</p>
+
+<p>어쨌든 비슷한 문제를 겪고 있다면 위의 설명을 참고로 해결 방법을 찾길 바란다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -202,8 +280,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/11/05/android-is-not-translated-in-dot-dot-dot-lint-error/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/11/05/android-is-not-translated-in-dot-dot-dot-lint-error/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/11/04/xcode-storyboard-with-uiviewcontroller-using-generics/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/11/04/xcode-storyboard-with-uiviewcontroller-using-generics/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

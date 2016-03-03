@@ -113,56 +113,37 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/">
-								Swift 2 : Binary operator &#39;|&#39; cannot be applied to two &#39;UIViewAutoresizing&#39; operands 오류 해결
+							<a class="title" href="http://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/">
+								Gradle applicationIdSuffix 사용시 AndroidAnnotations 설정
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/">2015.10.05.</span></a>
+								<a href="http://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/">2015.10.05.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>이번에 iOS 작업중 Swift 2로 변경을 하면서 아래와 같은 오류를 만났다.</p>
+							<p><a href="/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/">Gradle DSL method not found: ‘packageNameSuffix()’ 오류 해결</a>에서 오류 해결 방법을 안내하면서 언급했던 applicationIdSuffix를 사용시 유의사항이 있다. <strong>applicationId가 debug 모드에서 변경됨에 따라 관련된 부분에서 문제가 일어날 수 있다는 것이다.</strong></p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">Binary operator '|' cannot be applied to two 'UIViewAutoresizing' operands
+<p>나의 경우는 AndroidAnnotations을 함께 사용하는 부분에서 오류를 만났다. AndroidAnnotations에서 applicationId를 기준으로 resource에 접근해서 자동 생성된 class들을 찾지 못하는 문제이다.</p>
+
+<p>이런 경우에 대비해서 AndroidAnnotations에는 resourcePackageName라는 속성을 제공한다.</p>
+
+<p><a href="https://github.com/excilys/androidannotations/wiki/CustomizeAnnotationProcessing">CustomizeAnnotationProcessing</a>에 보면 아래와 같이 안내되어 있다.</p>
+
+<blockquote>
+  <p><strong>resourcePackageName</strong></p>
+
+  <p>Type: string
+By default, AndroidAnnotations try to find the R class by extracting application package from AndroidManifest.xml file. But in some cases you may want to specify a custom package to look for the R class. This is why we added resourcePackageName option.</p>
+</blockquote>
+
+<p>결론은 아래처럼 resourcePackageName에 기존 packageName을 넣어줌으로써 해결이 가능하다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">apt {
+    arguments {
+        resourcePackageName "net.yourdomain"
+    }
+}
 </code></pre></div></figure>
-
-<p>사실 이 부분말고도 여러가지 오류가 나왔지만 기본적으로 swift 버전업을 도와주는 헬프 기능 등을 통해 어느 정도는 쉽게 고칠 수 있었다.</p>
-
-<p>어쨌든 이 오류는 아래의 코드를 보면 해결 방법을 바로 알 수 있다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">let</span> <span class="n">view</span> <span class="o">=</span> <span class="bp">UIView</span><span class="p">(</span><span class="nl">frame</span><span class="p">:</span> <span class="bp">CGRect</span><span class="p">(</span><span class="nl">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nl">y</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nl">width</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="nl">height</span><span class="p">:</span> <span class="mi">100</span><span class="p">))</span>
-<span class="n">addSubview</span><span class="p">(</span><span class="n">view</span><span class="p">)</span>
-<span class="c1">// Swift 2.0 미만</span>
-<span class="n">view</span><span class="p">.</span><span class="n">autoresizingMask</span> <span class="o">=</span> <span class="n">UIViewAutoresizing</span><span class="p">.</span><span class="n">FlexibleWidth</span> <span class="o">|</span> <span class="n">UIViewAutoresizing</span><span class="p">.</span><span class="n">FlexibleHeight</span>
-<span class="c1">// Swift 2.0 이상</span>
-<span class="n">view</span><span class="p">.</span><span class="n">autoresizingMask</span> <span class="o">=</span> <span class="p">[.</span><span class="n">FlexibleWidth</span><span class="p">,</span> <span class="p">.</span><span class="n">FlexibleHeight</span><span class="p">]</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>이와 유사하게 UIUserNotificationType의 경우도 아래와 같이 수정이 필요하다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// Swift 2.0 미만</span>
-<span class="k">let</span> <span class="n">settings</span> <span class="o">=</span> <span class="n">UIUserNotificationSettings</span><span class="p">(</span><span class="nl">forTypes</span><span class="p">:</span> <span class="n">UIUserNotificationType</span><span class="p">.</span><span class="n">Alert</span> <span class="o">|</span> <span class="n">UIUserNotificationType</span><span class="p">.</span><span class="n">Badge</span><span class="p">,</span> <span class="nl">categories</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-<span class="c1">// Swift 2.0 이상</span>
-<span class="k">let</span> <span class="n">settings</span> <span class="o">=</span> <span class="n">UIUserNotificationSettings</span><span class="p">(</span><span class="nl">forTypes</span><span class="p">:</span> <span class="p">[.</span><span class="n">Alert</span><span class="p">,</span> <span class="p">.</span><span class="n">Badge</span><span class="p">],</span> <span class="nl">categories</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-<span class="bp">UIApplication</span><span class="p">.</span><span class="n">sharedApplication</span><span class="p">().</span><span class="n">registerUserNotificationSettings</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">settings</span><span class="p">.</span><span class="n">types</span><span class="p">.</span><span class="n">contains</span><span class="p">(.</span><span class="n">Badge</span><span class="p">)</span> <span class="p">{</span>
-    <span class="c1">// whatever</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -176,8 +157,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

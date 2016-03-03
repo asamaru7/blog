@@ -113,174 +113,57 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/10/21/xcode-create-sub-module-using-cocoapods/">
-								Xcode에서 CocoaPods를 이용해 sub module 만들기
+							<a class="title" href="http://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/">
+								xcode 7 : Alcatraz 와 CocoaPods Xcode plugins
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/10/21/xcode-create-sub-module-using-cocoapods/">2015.10.21.</span></a>
+								<a href="http://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/">2015.10.20.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>이번엔 Xcode로 앱 제작시 Sub Module을 만드는 방법을 설명하고자 한다.</p>
+							<p><a href="/2015/08/28/cocoapods-usage/">CocoaPods 사용법</a>에서 CocoaPods를 설치하고 사용하는 법에 대해 간단하게 안내했었다. 오늘은 이 CocoaPods을 XCode에서 조금이나마 편하게 쓰기 위한 플러그인을 소개 하려고 한다. 덤으로 <a href="http://alcatraz.io/">Alcatraz</a>라고하는 Xcode용 패키지 메니저도 함께 소개한다.</p>
 
-<p>그전에 우선 어떤 경우에 Sub Module을 사용하려고 하는지 부터 이야기를 해야 할 듯하다. 나의 경우는 여러 프로젝트에서 공통적으로 사용 할만한 유틸성 클래스들을 주로 묶어서 별도 모듈을 만들어 사용한다. 이렇게하면 비슷한 작업의 반복을 줄일 수 있고  기능도 통합적으로 관리할 수 있어 유지보수가 편하다. 이것은 예를들어 설명한 것일뿐 여러가지 용도로 사용될 수 있다.</p>
+<p>우선 <a href="http://alcatraz.io/">Alcatraz</a> 부터 소개하려고 한다. CocoaPods Xcode plugins을 직접 설치하는 방법도 있으나 Alcatraz를 사용하면 더 쉽게 할 수 있기 때문이다.</p>
 
-<p>Android Studio의 경우 Module을 추가하고 gradle을 설정함으로써 간단하게 서브 모듈을 만들 수 있다. 그런데 Xcode에서는 그렇게 쉬운 방법을 찾질 못했다. 당연히 방법이 있는데 내가 못 찾은 것일 수 있다. 내가 찾아본 방법은 대부분 Framework 프로젝트를 만들어서 사용할 프로젝트에서 추가해서 사용하는 방법들이었다. 그런데 이 방법들은 초기 설정 과정이 다소 복잡하고 Sub Module의 소스를 수정하려면 따로 build를 해서 넣어야 하는 불편함이 있었다.</p>
+<h2 id="alcatraz">Alcatraz</h2>
 
-<p>그래서 여러가지 글들을 찾아 다니다가 <a href="http://albertodebortoli.github.io/blog/2014/03/11/cocoapods-working-with-internal-pods/">CocoaPods: Working With Internal Pods Without Hassle</a>을 찾았다. 여기서는 <a href="https://cocoapods.org/">CocoaPods</a>를 이용해서 Internal Pods를 만들어 모듈을 적용하는 방법을 설명하고 있다. 내가 찾던 것과 가장 유사한 방법으로 바로 적용해 봤다. 단, 이 글에서 설명하는 것 중 CocoaPods Repository를 설정하는 과정은 필요하지 않아 제외했다(사실 귀찮음이 가장 큰 이유다). 하지만 모듈의 버전을 관리하며 체계적으로 적용할 필요가 있다면 CocoaPods Repository를 만들어 관리하는 것을 권장한다.</p>
+<p>공식 사이트에는 <strong>The package manager for Xcode</strong> 라고 소개하고 있다. 말그대로 Xcode를 위한 패키지 매니저로 여러가지 플러그인, Color 테마, 템플릿들을 바로 설치할 수 있도록 도와준다.</p>
 
-<p>본격적으로 설명에 앞서 이 방법을 사용할 때의 장점에 대해 간략히 설명하고자 한다.</p>
+<h3 id="section">설치</h3>
 
-<ul>
-  <li>Sub Module과 메인 프로젝트를 하나의 Xcode에서 작업 가능하다.</li>
-  <li>Sub Module의 소스 변경이 있어도 별도로 빌드할 필요가 없다(메인 프로젝트 빌드에 바로 반용된다).</li>
-  <li>Sub Module과 메인 프로젝트의 형상 관리는 각각 적용된다.</li>
-</ul>
+<p>공식 사이트에 안내되어 있는대로 아래의 명령을 실행하는 것으로 설치가 완료된다.</p>
 
-<p>이제부터 위 글에서 설명하는 내용을 보고 내가 적용한 방법을 설명하겠다.</p>
-
-<h2 id="section">환경</h2>
-
-<p>일단 내가 설명하기 위해 작업한 환경은 아래와 같다. 하지만 꼭 아래 환경이 맞춰져야하는 것은 아니다. Xcode의 기능을 직접적으로 사용한다기 보다 <a href="https://cocoapods.org/">CocoaPods</a>에 의해서 대부분 처리되기 때문이다.</p>
-
-<ul>
-  <li>OSX 10.11</li>
-  <li>Xcode 7</li>
-  <li>CocoaPods 0.39.0</li>
-  <li>Swift</li>
-  <li>iOS 8 (Deploy Target)</li>
-  <li>Git</li>
-</ul>
-
-<h2 id="sub-module">Sub Module</h2>
-
-<p>이제부터 본격적으로 Sub Module을 만드는 과정을 살펴보자.</p>
-
-<h3 id="cocoapods--git-">CocoaPods / Git 설치</h3>
-
-<p>당연히 이미 설치되어 있다면 다시 설치할 필요는 없다.</p>
-
-<p>CocoaPods 설치는 <a href="/2015/08/28/cocoapods-usage/">CocoaPods 사용법</a>에서 간단히 안내했던 내용이지만 아주 간단하다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span><span class="o">[</span>sudo<span class="o">]</span> gem install cocoapods
-<span class="nv">$ </span>pod setup
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>curl -fsSL https://raw.githubusercontent.com/supermarin/Alcatraz/deploy/Scripts/install.sh <span class="p">|</span> sh
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>Git는 <a href="http://git-scm.com/download">Git Downloads</a>에서 자신의 환경에 맞는 설치 파일을 다운받아 간단히 설치 가능하다. 그리고 Git는 submodule을 사용해서 프로젝트와 Sub Module을 연결하고 함께 형상 관리를 하기 위한 것으로 SVN과 같은 다른 형상 관리 도구를 사용한다면 그것을 그대로 사용해도 된다. 다만 아래의 설명에서 Git 처리 부분을 해당 형상 관리 도구에 맞추어 적용하면 된다(형상 관리를 하지 않겠다면 하지 않아도 된다. 하지만 권장하지는 않는다).</p>
+<p>설치후 Xcode는 재시작 해주면 아래와 같은 화면이 나온다.</p>
 
-<h3 id="xcode--">Xcode 프로젝트 만들기</h3>
+<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-1.png" alt="Alcatraz" /></p>
 
-<p>이 부분은 특별히 설정하지 않아도 될 듯하다. 자신의 필요에 맞는 프로젝트를 만들거나 기존의 프로젝트를 그대로 사용해도 무방하다.
-다만 신규로 개설했다면 git repository에 등록하자. 앞서 설명과 마찬가지로 SVN이라면 SVN에 등록해도 된다.
-나의 경우는 <a href="https://gitlab.com/">gitlab.com</a>을 사용중이라 여기에 맞춰 예를들면 아래와 같은 과정을 거친다.</p>
+<p>설치한 플러그인을 load 할 것인지 물어본다. 당연히 “Load Bundle”을 해주면 이제부터 사용 가능하다. Xcode의 Window 메뉴에 보면 아래와 같이 “Package Manager”라는 메뉴가 추가되어 있다.</p>
 
-<ul>
-  <li>gitlab에서 신규 프로젝트 개설</li>
-  <li>생성한 프로젝트를 아래와 같이 git에 연결한다.</li>
-</ul>
+<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-2.png" alt="Alcatraz" /></p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">cd</span> <span class="o">{</span>프로젝트명<span class="o">}</span>
-<span class="nv">$ </span>git init
-<span class="nv">$ </span>git remote add origin https://gitlab.com/<span class="o">{</span>사용자<span class="o">}</span>/<span class="o">{</span>프로젝트명<span class="o">}</span>.git
-<span class="nv">$ </span>git add .
-<span class="nv">$ </span>git commit
-<span class="nv">$ </span>git push -u origin master
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<h2 id="cocoapods-xcode-plugins-">CocoaPods Xcode plugins 설치</h2>
 
-<h3 id="sub-module-xcode--">Sub Module Xcode 프로젝트 만들기</h3>
+<p>Alcatraz에서 바로 설치 가능한 CocoaPods 플러그인은 현재 2가지가 있는 것으로 보이는데 그 중 <a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a>를 먼저 설치해 보자. 사이트에 보면 설치 방법이 나와 있는데 당연히 Alcatraz를 통해 설치하는 것이 쉽다.</p>
 
-<p>Sub Module로 사용할 프로젝트를 하나 더 생성한다. 나의 경우는 Cocoa Touch Framework로 생성했다. Cocoa Touch Static Library 등의 다른 형식은 적용해보지 않아서 동일하게 적용이 되는지는 모르겠다. 특별한 이유가 없다면 Cocoa Touch Framework로 생성한다.</p>
+<p>“Window &gt; Package Manager” 메뉴를 실행하면 아래와 같은 화면이 나온다. 여기서 cocoapods로 검색하면 두가지의 플러그인이 보인다.</p>
 
-<p><img src="/img/2015-10-21-xcode-create-sub-module-using-cocoapods-1.png" alt="" /></p>
+<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-3.png" alt="Alcatraz" /></p>
 
-<p>이후 부터는 화면에서 안내하는대로 프로젝트를 개설하면 되므로 자세한 설명은 생략하겠다. 생성을 마쳤다면 이 프로젝트도 “Xcode 프로젝트 만들기” 부분에서 예를 들었던 내용처럼 git에 연결한다.</p>
+<p>이 중에서 위에 CocoaPods를 먼저 설치해 보자. 그냥 “INSTALL”이라고 되어 있는 버튼을 누르면 설치가 완료된다. 그리고 Xcode를 재시작하면 다시 아래와 같은 화면이 나온다. 당연히 “Load Bundle”을 선택한다.</p>
 
-<h4 id="podspec-">podspec 생성</h4>
+<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-4.png" alt="Alcatraz" /></p>
 
-<p>Sub Module을 만들었다면 CocoaPods을 통해 연결할 수 있도록 podspec을 생성해야 한다.
-Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하고 아래와 같이 내용을 넣어준다. 이 부분도 상황에 따라 내용을 변경해도 상관없다.</p>
+<p>이제는 플러그인이 설치가 완료되었기 때문에 “Product &gt; CocoaPods” 메뉴를 볼 수 있다. 이 메뉴를 열어보면 아래와 같은 화면이 나온다. 여기서 유의할 점은 GEM_PATH를 자신의 환경에 맞게 바꿔야 한다는 점이다. 기본은 “/usr/bin”인 것 같은데 나의 경우는 “/usr/local/bin”에 있어서 지정을 했다. 경로를 모른다면 <code>which pod</code>라는 명령을 shell에서 실행해보면 확인 할 수 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12</pre></div></td><td class="code"><div class="highlight"><pre><span class="no">Pod</span><span class="o">::</span><span class="no">Spec</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">s</span><span class="o">|</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">name</span>     <span class="o">=</span> <span class="s1">&#39;{모듈명}&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">version</span>  <span class="o">=</span> <span class="s1">&#39;1.0.0&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="s1">&#39;MIT&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">summary</span>  <span class="o">=</span> <span class="s1">&#39;{설명}&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">homepage</span> <span class="o">=</span> <span class="s1">&#39;https://gitlab.com/subva/SUBiOSFramework&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">author</span>   <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;{작성자}&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;{작성자}{도메인}&#39;</span> <span class="p">}</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">source</span>   <span class="o">=</span> <span class="p">{</span> <span class="ss">:git</span> <span class="o">=&gt;</span> <span class="s1">&#39;{git repository}&#39;</span><span class="p">,</span> <span class="ss">:tag</span> <span class="o">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">version</span> <span class="p">}</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">ios</span><span class="o">.</span><span class="n">deployment_target</span> <span class="o">=</span> <span class="s1">&#39;8.0&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">source_files</span> <span class="o">=</span> <span class="s1">&#39;{모듈명}/*.swift&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">requires_arc</span> <span class="o">=</span> <span class="kp">true</span>
-<span class="k">end</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-5.png" alt="Alcatraz" /></p>
 
-<h3 id="sub-module-">Sub Module 연결</h3>
+<p>다음은 <a href="https://github.com/Galeas/CocoaPodUI">CocoaPodUI</a> 플러그인이다. 설치 과정은 위의 플러그인 설치 과정과 동일하다. 그런데 문제는 현재 시점에서 확인해보니 정상적인 설치가 되지 않는다. Xcode 7과의 호환성 문제인지 플러그인은 정상 설치가 된 것으로 나오는데 설치 경로에 가보면 폴더가 비어 있다. 스샷만 보면 이 플러그인이 기능이 더 다양해 보이는데 사용을 해보지 못해 아쉽다.</p>
 
-<p>위 과정을 문제없이 진행했다면 git에 연결된 두개의 프로젝트(메인 프로젝트, Sub Module 프로젝트)를 가지고 있을 것이다. 이제는 본격적으로 둘을 연결하는 과정이다.</p>
-
-<h4 id="git-submodule-">git submodule 추가</h4>
-
-<p>메인 프로젝트 폴더로 이동하여 git submodule로 Sub Module을 clone한다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">cd</span> <span class="o">{</span>프로젝트명<span class="o">}</span>
-<span class="nv">$ </span>git submodule add https://gitlab.com/<span class="o">{</span>사용자<span class="o">}</span>/<span class="o">{</span>프로젝트명<span class="o">}</span>.git <span class="o">{</span>Sub Module명<span class="o">}</span>
-<span class="nv">$ </span>git submodule init
-<span class="nv">$ </span>git submodule update
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<h4 id="cocoapods-sub-module-">CocoaPods로 Sub Module 연결</h4>
-
-<p>메인 프로젝트 폴더에 <code>Podfile</code>을 생성하고 아래와 같이 내용을 입력한다. Pods에 대한 설정 내용은 프로젝트에 따라 달라 질 수 있다. 중요한 부분은 <code>use_frameworks!</code>, <code>pod '{Sub Module명}', :path =&gt; './{Sub Module명}'</code> 이다. 그리고 platform의 ‘8.0’ 부분도 빠지면 오류가 날 수 있는데 이 부분은 Sub Module의 deploy target에 맞춰져야 한다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">source</span> <span class="s1">&#39;https://github.com/CocoaPods/Specs.git&#39;</span>
-<span class="n">platform</span> <span class="ss">:ios</span><span class="p">,</span> <span class="s1">&#39;8.0&#39;</span>
-<span class="n">use_frameworks!</span>
-
-<span class="n">pod</span> <span class="s1">&#39;{Sub Module명}&#39;</span><span class="p">,</span> <span class="ss">:path</span> <span class="o">=&gt;</span> <span class="s1">&#39;./{Sub Module명}&#39;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>파일을 생성했다면 아래의 명령을 실행해서 Pod를 실행한다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>pod install
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<h3 id="section-1">설정 확인</h3>
-
-<p>이제 정상적으로 연결되었는지 확인하면 된다. CocoaPods을 사용해 봤다면 알겠지만 CocoaPods을 사용 할 때는 xcodeproj가 아닌 xcworkspace로 프로젝트를 열어야 한다. 위 과정이 정상적이었다면 아래와 같이 Pods 영역에 “Development Pods”라는 것이 추가되어 있고 그 안애 추가한 Sub Module이 보일 것이다. 여기까지 확인되었다면 Sub Module 연결 과정은 모두 끝났다.</p>
-
-<p>마지막으로 한가지만 더 이야기하겠다. 프로젝트를 열어서 해당 모듈을 사용하려면 당연히 소스에서 <code>import</code>를 해야하는데 처음엔 연결이 되지 않는 것처럼 보일 수 있다. 이 부분은 모듈이 아직 빌드가 되지 않아서 그런 것이니 빌드를 한번 해주고나면 정상적으로 사용이 가능할 것이다.</p>
-
-<p>위에서 Git나 CocoaPods에 대한 설명을 하느라 조금 길어졌지만 이 두가지를 사용할 줄 알고 있다면 설정 과정은 생각보다 아주 간단하다. Android Studio와 비교하면 과정도 거의 유사하다는 것을 알 것이다.</p>
+<p>하지만 <a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a>만 사용하더라도 기존 보다는 편하다(굳이 따로 shell을 열지 않아도 되니).</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -294,8 +177,8 @@ Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/10/21/xcode-create-sub-module-using-cocoapods/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/10/21/xcode-create-sub-module-using-cocoapods/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

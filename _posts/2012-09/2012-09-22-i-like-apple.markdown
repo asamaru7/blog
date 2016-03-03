@@ -3,7 +3,7 @@ layout: post
 title: "나는 애플빠다"
 date: 2012-09-22 09:24:15 +0900
 comments: true
-categories: 잡념
+categories: thinking
 ---
 
 나는 나를 흔히들 말하는 애플빠라고 생각한다.

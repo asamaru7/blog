@@ -3,7 +3,7 @@ layout: post
 title: "chicken game"
 date: 2012-09-27 22:32:14 +0900
 comments: true
-categories: 잡념
+categories: thinking
 ---
 팟케스트에서 애플과 삼성의 특허 전쟁을 빗대어 치킨게임이라고 표현하는 것을 들었는데 치킨게임이 무엇인지 몰라 궁금해졌다.
 

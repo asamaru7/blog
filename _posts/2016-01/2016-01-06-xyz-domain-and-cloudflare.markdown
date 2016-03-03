@@ -3,7 +3,7 @@ layout: post
 title: ".xyz 도메인을 구매해서 CloudFlare에 연결하다"
 date: 2016-01-06T16:22:28+09:00
 comments: true
-categories: 잡념
+categories: thinking
 ---
 어제 [CloudFlare Free Plan](/2016/01/05/cloudflare-free-plan/)에 대한 글을 쓰면서 CloudFlare를 적용하는 것에 대해 고민중이라고 했었다.
 

@@ -3,13 +3,80 @@
 <generator uri="http://jekyllrb.com" version="3.0.1">Jekyll</generator>
 <link href="http://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" />
 <link href="http://blog.asamaru.net/" rel="alternate" type="text/html" />
-<updated>2016-03-03T21:21:13+09:00</updated>
+<updated>2016-03-07T20:45:40+09:00</updated>
 <id>http://blog.asamaru.net/</id>
 <subtitle>세상에 필요한 소스코드 한줄 남기고 가자.
 </subtitle>
 <author>
 <name>유영재</name>
 </author>
+<entry>
+<title>ssh proxy를 이용한 git 사용하기</title>
+<link href="http://blog.asamaru.net/2016/03/07/git-socks5-proxy/" rel="alternate" type="text/html" title="ssh proxy를 이용한 git 사용하기" />
+<published>2016-03-07T20:28:24+09:00</published>
+<updated>2016-03-07T20:28:24+09:00</updated>
+<id>http://blog.asamaru.net/2016/03/07/git-socks5-proxy</id>
+<content type="html" xml:base="http://blog.asamaru.net/2016/03/07/git-socks5-proxy/">&lt;p&gt;앞서 &lt;a href=&quot;/2015/09/21/how-to-install-gogs-on-centos/&quot;&gt;CentOS에 gogs 설치하기&lt;/a&gt;,
+&lt;a href=&quot;/2015/09/22/how-to-install-gitlib-on-centos/&quot;&gt;CentOS에 Gitlab 설치하기&lt;/a&gt;, &lt;a href=&quot;/2015/10/12/gitlab-ce-to-gitlab-dot-com/&quot;&gt;자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다&lt;/a&gt;에서 언급했던 것처럼 git 저장소로 &lt;a href=&quot;https://gitlab.com/&quot;&gt;gitlab.com&lt;/a&gt;을 사용중이다. 한동안은 아무 문제없이 잘 사용하고 있었다. 아니 사실 gitlab.com에 접속이 되지 않는 문제가 간헐적으로 발생했었다. 얼마전까지만 하더라도 해외 서비스에서 서비스되는 사이트라서 그런가보다 했다.&lt;/p&gt;
+
+&lt;p&gt;그런데 몇일 전부터 회사 네트워크에서 &lt;a href=&quot;https://gitlab.com/&quot;&gt;gitlab.com&lt;/a&gt;에 접속할 수 없었다. 웹사이트뿐 아니라 git push/pull도 할 수가 없었다. 처음엔 회사 네트워크 방화벽 문제인 줄 알고 확인했으나 아니었다. 그래서 tracepath로 확인해 보니 SK Broadband 네트워크를 벗어나지 못하고 있었다(회사 네트워크가 SK다). 이상해서 조금 검색해보니 예전부터 SK Broadband의 해외 사이트 접속 문제가 유명했던 것 같다. 사람들의 이야기를 봐도 SK에 이야기한다고 해결될 문제는 아닌 것 같고… 그렇다고 git를 사용하지 않을 수 없어서 다른 방법을 찾아야 했다.&lt;/p&gt;
+
+&lt;p&gt;다행히 회사엔 외부망(SK가 아닌)에 연결된 Proxy가 하나 있다. 그래서 그 Proxy를 사용해서 급한대로 gitlab.com에 push/pull 하고 있다. 조금 더 기다려볼 생각이지만 빠른 시일 내에 접속이 복구되지 않는다면 다시 설치형 gitlab을 검토해야 할 것 같다.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;본론으로 들어가서 위의 이유로 인해 사용하게된 ssh proxy에 대한 처리 방법을 설명하려고 한다. 이번에 필요에 의해 적용한 환경은 CentOS 7과 OSX 10.11 이다.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;CentOS 7&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;~/.ssh/config&lt;/code&gt; 파일에 아래의 내용을 추가 한다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;Host gitlab.com
+    User                    git
+    ProxyCommand            socat STDIO SOCKS4:[proxy ip]:%h:%p,socksport=[proxy port]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;여기서 중요한 부분. &lt;code&gt;socat&lt;/code&gt;이 설치되어 있어야 한다. 설치되어 있지 않다면 간단히 &lt;code&gt;yum install socat&lt;/code&gt;을 통해 설치할 수 있다.&lt;/p&gt;
+
+&lt;p&gt;그리고 &lt;code&gt;SOCKS4&lt;/code&gt;는 Proxy의 프로토콜에 따라 변경되어야 한다. 사실 내가 사용한 Proxy는 &lt;code&gt;SOCKS5&lt;/code&gt;를 사용하는데 &lt;code&gt;SOCKS5&lt;/code&gt;를 지정하면 오류가 나고 &lt;code&gt;SOCKS4&lt;/code&gt;를 지정해야만 정상 동작했다. 기타 프로토콜의 경우는 &lt;a href=&quot;http://www.dest-unreach.org/socat/&quot;&gt;socat&lt;/a&gt;를 참고.&lt;/p&gt;
+
+&lt;p&gt;위 처리를 하고나면 “gitlab.com” 도메인에 대해서는 ssh 접속시 지정한 Proxy를 사용한다. 따라서 git 명령을 사용하면 Proxy를 통해서 데이터가 전달된다. 단, ssh를 사용해서 git remote가 연결된 경우에.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;OSX&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;OSX 또한 &lt;code&gt;~/.ssh/config&lt;/code&gt; 파일에 아래의 내용을 추가 한다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;Host gitlab.com
+    User                    git
+    ProxyCommand            nc -X 5 -x [proxy ip]:[proxy port] %h %p
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;OSX도 CentOS와 방법은 동일하나 socat 대신 nc(&lt;a href=&quot;http://netcat.sourceforge.net/&quot;&gt;netcat&lt;/a&gt;)를 사용하고 있다. nc가 기본적으로 설치되어 있어서 그냥 nc를 사용했다. 어짜피 원리는 같다.
+nc의 경우는 -X 뒤에 있는 5가 Proxy 프로토콜을 뜻한다.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;-X proxy_version
+            Requests that nc should use the specified protocol when talking to the proxy server.  Supported protocols are “4” (SOCKS v.4), “5”
+            (SOCKS v.5) and “connect” (HTTPS proxy).  If the protocol is not specified, SOCKS version 5 is used.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;PHPStorm&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;덤으로 PHPStorm과 같은 IntelliJ IDE에서의 설정을 설명한다. 기본적으로 IntelliJ는 Git의 ssh 클라이언트를 Built-in을 사용한다. 이 설정을 Native로 바꿔주면 위에서 설정한 &lt;code&gt;~/.ssh/config&lt;/code&gt; 파일의 설정을 그대로 적용시킬 수 있다. 메뉴의 위치는 “Preference &amp;gt; Version Control &amp;gt; Git”에서 “SSH executable”를 찾으면 된다.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;위 방법은 ssh의 설정을 이용한 방법이지만 git의 설정한 방법도 있다. 개인적으로 git에 설정하는게 더 복잡해서 그냥 ssh에 설정하는 것을 선택했을 뿐이다.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;참고글&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;http://cms-sw.github.io/tutorial-proxy.html&quot;&gt;Tutorial: how to use git through a proxy&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.jones.ec/blogs/a/entry/using_git_through_a_socks/&quot;&gt;Using git through a SOCKS proxy (or SSH tunnel)&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+<summary>앞서 CentOS에 gogs 설치하기,CentOS에 Gitlab 설치하기, 자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다에서 언급했던 것처럼 git 저장소로 gitlab.com을 사용중이다. 한동안은 아무 문제없이 잘 사용하고 있었다. 아니 사실 gitlab.com에 접속이 되지 않는 문제가 간헐적으로 발생했었다. 얼마전까지만 하더라도 해외 서비스에서 서비스되는 사이트라서 그런가보다 했다.그런데 몇일 전부터 회사 네트워크에서 gitlab.com에 접속할 수 없었다. 웹사이트뿐 아니라 git push/pull도 할 수가 없었다. 처음엔 회사 네트워크 방화벽 문제인 줄 알고 확인했으나 아니었다. 그래서 tracepath로 확인해 보니 SK Broadband 네트워크를 벗어나지 못하고 있었다(회사 네트워크가 SK다). 이상해서 조금 검색해보니 예전부터 SK Broadband의 해외 사이트 접속 문제가 유명했던 것 같다. 사람들의 이야기를 봐도 SK에 이야기한다고 해결될 문제는 아닌 것 같고… 그렇다고 git를 사용하지 않을 수 없어서 다른 방법을 찾아야 했다.다행히 회사엔 외부망(SK가 아닌)에 연결된 Proxy가 하나 있다. 그래서 그 Proxy를 사용해서 급한대로 gitlab.com에 push/pull 하고 있다. 조금 더 기다려볼 생각이지만 빠른 시일 내에 접속이 복구되지 않는다면 다시 설치형 gitlab을 검토해야 할 것 같다.본론으로 들어가서 위의 이유로 인해 사용하게된 ssh proxy에 대한 처리 방법을 설명하려고 한다. 이번에 필요에 의해 적용한 환경은 CentOS 7과 OSX 10.11 이다.CentOS 7~/.ssh/config 파일에 아래의 내용을 추가 한다.Host gitlab.com    User                    git    ProxyCommand            socat STDIO SOCKS4:[proxy ip]:%h:%p,socksport=[proxy port]여기서 중요한 부분. socat이 설치되어 있어야 한다. 설치되어 있지 않다면 간단히 yum install socat을 통해 설치할 수 있다.그리고 SOCKS4는 Proxy의 프로토콜에 따라 변경되어야 한다. 사실 내가 사용한 Proxy는 SOCKS5를 사용하는데 SOCKS5를 지정하면 오류가 나고 SOCKS4를 지정해야만 정상 동작했다. 기타 프로토콜의 경우는 socat를 참고.위 처리를 하고나면 “gitlab.com” 도메인에 대해서는 ssh 접속시 지정한 Proxy를 사용한다. 따라서 git 명령을 사용하면 Proxy를 통해서 데이터가 전달된다. 단, ssh를 사용해서 git remote가 연결된 경우에.OSXOSX 또한 ~/.ssh/config 파일에 아래의 내용을 추가 한다.Host gitlab.com    User                    git    ProxyCommand            nc -X 5 -x [proxy ip]:[proxy port] %h %pOSX도 CentOS와 방법은 동일하나 socat 대신 nc(netcat)를 사용하고 있다. nc가 기본적으로 설치되어 있어서 그냥 nc를 사용했다. 어짜피 원리는 같다.nc의 경우는 -X 뒤에 있는 5가 Proxy 프로토콜을 뜻한다.  -X proxy_version            Requests that nc should use the specified protocol when talking to the proxy server.  Supported protocols are “4” (SOCKS v.4), “5”            (SOCKS v.5) and “connect” (HTTPS proxy).  If the protocol is not specified, SOCKS version 5 is used.PHPStorm덤으로 PHPStorm과 같은 IntelliJ IDE에서의 설정을 설명한다. 기본적으로 IntelliJ는 Git의 ssh 클라이언트를 Built-in을 사용한다. 이 설정을 Native로 바꿔주면 위에서 설정한 ~/.ssh/config 파일의 설정을 그대로 적용시킬 수 있다. 메뉴의 위치는 “Preference &amp;gt; Version Control &amp;gt; Git”에서 “SSH executable”를 찾으면 된다.위 방법은 ssh의 설정을 이용한 방법이지만 git의 설정한 방법도 있다. 개인적으로 git에 설정하는게 더 복잡해서 그냥 ssh에 설정하는 것을 선택했을 뿐이다.참고글  Tutorial: how to use git through a proxy  Using git through a SOCKS proxy (or SSH tunnel)</summary>
+</entry>
 <entry>
 <title>PHP password_hash()와 BCrypt</title>
 <link href="http://blog.asamaru.net/2016/03/03/php-password-hash-and-bcrypt/" rel="alternate" type="text/html" title="PHP password_hash()와 BCrypt" />
@@ -632,7 +699,7 @@ sys	0m2.548s
 
 &lt;p&gt;이후 과정을 진행하기 전에 파티션의 변경이 필요하다면 미리 맥 미니 내에서 설정해 두어야 한다. 나의 경우를 보자면 500G의 디스크를 2개의 파티션으로 나누고 복구 파티션까지 3개가 있었다. 처음엔 복구 파티션을 두고 두개의 파티션을 CentOS 설치 과정에서 묶으려고 했는데 복구 파티션이 두개 파티션 사이에 위치해 합칠 수 없었다. 그래서 맥에서 두개의 파티션을 합쳐주고 다시 설치했다. 사실은 이 과정은 복구 파티션을 두려고 했던 것인데 실제 CentOS를 설치하면서 복구 파티션도 날렸다(원하지 않았지만). 이렇게되면 위 과정이 필요없었을 수 있지만 혹시나해서 남겨둔다.&lt;/p&gt;
 
-&lt;p&gt;이제부터는 일반적으로 CentOS를 설치하는 것과 동일하게 설치하면 된다. 설치 방법이 궁금하다면 &lt;a href=&quot;http://blog.asamaru.net/2015/10/14/centos-7-minimal-install/&quot;&gt;CentOS 7 minimal 설치&lt;/a&gt;를  참고해도 된다.&lt;/p&gt;
+&lt;p&gt;이제부터는 일반적으로 CentOS를 설치하는 것과 동일하게 설치하면 된다. 설치 방법이 궁금하다면 &lt;a href=&quot;/2015/10/14/centos-7-minimal-install/&quot;&gt;CentOS 7 minimal 설치&lt;/a&gt;를  참고해도 된다.&lt;/p&gt;
 
 &lt;p&gt;마지막으로 중요한 부분이 있다. 파티션 설치시 &lt;code&gt;/boot/efi&lt;/code&gt;을 별도로 지정해야 한다는 것이다. 일반적인 설치에서는 하지 않던 작업인데 맥 미니의 경우 해당 파티션이 기본적으로 없어서 그런 것인지 지정하지 않으면 파티셔닝이 완료되지 않았다. &lt;code&gt;/boot/efi&lt;/code&gt;의 용량은 최소 100MB를 지정하도록 권장하는 것 같다. 이 부분 또한 자동 파티셔닝이 아닌 사용자 지정 파티션을 사용해서 발생한 문제일지도 모르겠다. 하지만 개인적인 생각으로 “맥 미니에서 다른 CentOS 설치시 잘 안되는 경우는 이것 때문이지 않을까?”해서 경험을 남겨둔다.&lt;/p&gt;
 
@@ -660,106 +727,5 @@ mysqldump를 사용하고자 할 경우 mysql client가 설치되어 있어야 �
 &lt;p&gt;지난 글과 겹치는 내용이긴하나 이렇게도 사용할 수 있다는 소개 차원에서 글을 남긴다.&lt;/p&gt;
 </content>
 <summary>SSH 비밀번호 입력없이 로그인하기에 이어서 ssh를 이용해서 MySql 원격 서버의 데이터를 로컬로 dump 받는 방법을 소개하려고 한다.“굳이 이런 방법이 왜 필요한가?”에 대한 의문이 생길 수 있으니 상황부터 설명해야 할 것 같다.mysqldump를 사용하고자 할 경우 mysql client가 설치되어 있어야 한다. CentOS기준으로 mysql은 “mysql”, mariadb 기준으로 보자면 “MariaDB-client” 패키지가 설치되어 있어야 한다. 그런데 이 패키지가 설치되지 않은 상태에서 mysqldump를 사용하고자 하는 것이다. 간단히 생각하면 위 패키지를 설치하면 끝인데 굳이 자주 사용되지 않을 기능 때문에 패키지를 설치하고 싶지 않다면 아래에 소개할 내용이 필요하다. 굳이 필요할까 싶지만 성격 문제인지 패키지를 설치하는 것이 싫어서 이렇게 하고 있다.1ssh [user]@[host] &amp;quot;mysqldump -uroot --default-character-set=utf8 --skip-triggers --compress [db name] [table name]&amp;quot; &amp;gt; [save file]SSH 비밀번호 입력없이 로그인하기에서 설명했던 공개키 등록이 선행되어 있어야 한다. 아니면 sshpass를 활용하는 방법도 당연히 가능하다.지난 글과 겹치는 내용이긴하나 이렇게도 사용할 수 있다는 소개 차원에서 글을 남긴다.</summary>
-</entry>
-<entry>
-<title>SSH 비밀번호 입력없이 로그인하기</title>
-<link href="http://blog.asamaru.net/2016/01/26/ssh-login-without-password/" rel="alternate" type="text/html" title="SSH 비밀번호 입력없이 로그인하기" />
-<published>2016-01-26T21:15:08+09:00</published>
-<updated>2016-01-26T21:15:08+09:00</updated>
-<id>http://blog.asamaru.net/2016/01/26/ssh-login-without-password</id>
-<content type="html" xml:base="http://blog.asamaru.net/2016/01/26/ssh-login-without-password/">&lt;p&gt;ssh 사용시 매번 비밀번호를 입력하는 것은 귀찮은 일이다. 그럼에도 불구하고 ssh의 기본 기능에 비밀번호를 미리 입력하는 기능을 제공하지 않는 것은 보안 상의 이유 때문일 것이다. 하지만 비밀번호를 입력하는 귀찮음을 해소하는 것 외에도 스케쥴링 처리 스크립트 등에서 사용자의 비밀번호 입력없이 ssh 접속을 해야할 경우가 있다. 이런 경우에 대비해서 ssh에서는 클라이언트의 공개키를 원격 서버에 미리 등록 시켜두는 방식으로 비밀번호 없이 접속할 수 있는 방법을 제공한다. 사실 이 방법이 보안 상으로도 안전한 편이고 등록하는 과정도 크게 복잡하지 않으므로 가장 권장되는 방법이라고 할 수 있다.&lt;/p&gt;
-
-&lt;p&gt;그렇다고 이 방법 외에는 대안이 없는 것은 아니다. &lt;code&gt;expect&lt;/code&gt; 명령을 이용해서 비밀번호 입력을 자동화하는 방법과 &lt;a href=&quot;http://sourceforge.net/projects/sshpass/&quot;&gt;sshpass&lt;/a&gt;를 사용하는 방법이 있다. 사실 &lt;a href=&quot;http://sourceforge.net/projects/sshpass/&quot;&gt;sshpass&lt;/a&gt;를 몰랐을 때는 &lt;code&gt;expect&lt;/code&gt;를 주로 사용했는데 &lt;a href=&quot;http://sourceforge.net/projects/sshpass/&quot;&gt;sshpass&lt;/a&gt;를 사용하면 훨씬 쉽게 다양한 일을 할 수 있다.&lt;/p&gt;
-
-&lt;p&gt;자.. 이제부터 하나씩 방법을 설명하고자 한다. 아래는 CentOS 기준이며 기타 리눅스에서도 거의 동일한 것으로 알고 있다.&lt;/p&gt;
-
-&lt;h3 id=&quot;section&quot;&gt;1. 공개키 등록 방식&lt;/h3&gt;
-
-&lt;p&gt;우선 &lt;code&gt;~/.ssh/id_rsa.pub&lt;/code&gt;에 파일이 존재하는지 확인한다. 없다면 아래와 같이 &lt;code&gt;ssh-keygen&lt;/code&gt;을 사용해서 개인용 개인키/공개키를 생성한다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;ssh-keygen -t rsa
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;위 명령을 입력하면 몇가지를 물어보는데 특별한 이유가 없다면 그냥 엔터를 계속 눌러서 완료하면 된다.
-이렇게 생성하고나면 개인키는 &lt;code&gt;~/.ssh/id_rsa&lt;/code&gt;로 공개키는 &lt;code&gt;~/.ssh/id_rsa.pub&lt;/code&gt;로 생성된다.&lt;/p&gt;
-
-&lt;p&gt;이제는 공개키를 접속하려는 원격 서버에 등록해야 한다.
-아래와 같이 직접 해당 서버로 복사하는 방법이 있다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;scp ~/.ssh/id_rsa.pub &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;user&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;@&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;host&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;:~/.ssh/authorized_keys
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;그런데 이렇게하면 기존 파일이 존재할 경우 덮어쓰게 되므로 권장하지 않는다. 대신 아래와 같이 &lt;code&gt;ssh-copy-id&lt;/code&gt;를 사용하는 것을 권장한다. &lt;code&gt;ssh-copy-id&lt;/code&gt;를 사용하면 원격 서버에 &lt;code&gt;authorized_keys&lt;/code&gt; 파일이 없다면 생성해주고 있다면 공개키를 추가해 준다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;ssh-copy-id -i ~/.ssh/id_rsa.pub &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;user&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;@&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;host&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;여기까지 완료 했다면 비밀번호 없이 ssh 접속이 가능해야 한다.
-그런데 간혹 작업을 완료했음에도 불구하고 계속 비밀번호를 물어보는 경우가 있다. 그런 경우는 대부분 원격 서버의 &lt;code&gt;authorized_keys&lt;/code&gt; 파일 퍼미션 문제다. 원격 서버에서 퍼미션을 아래와 같은지 확인하고 맞지 않다면 변경해 준다. 대부분의 경우는 접속 문제가 해결된다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
-2&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;chmod &lt;span class=&quot;m&quot;&gt;700&lt;/span&gt; ~/.ssh/
-chmod &lt;span class=&quot;m&quot;&gt;600&lt;/span&gt; ~/.ssh/authorized_keys
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;h3 id=&quot;sshpasshttpsourceforgenetprojectssshpass--&quot;&gt;2. &lt;a href=&quot;http://sourceforge.net/projects/sshpass/&quot;&gt;sshpass&lt;/a&gt;를 사용하는 방식&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://sourceforge.net/projects/sshpass/&quot;&gt;sshpass&lt;/a&gt;는 ssh와는 직접적인 관련이 없는 프로그램으로 별도 설치가 필요하다. 설치되어 있지 않다면 아래와 같이 설치한다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;yum --enablerepo&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;epel -y install sshpass
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;기본적인 사용은 아래와 같이 할 수 있다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;sshpass -p&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;password&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; ssh -o &lt;span class=&quot;nv&quot;&gt;StrictHostKeyChecking&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;no &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;user&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;@&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;host&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;위 방식은 서두에서도 이야기 했듯이 비밀번호가 명령 상에 노출되므로 보안상으로는 좋지는 않다. 하지만 필요할 때가 있으니 알아두면 요긴하게 쓰이리라 생각한다. 그리고 &lt;a href=&quot;http://sourceforge.net/projects/sshpass/&quot;&gt;sshpass&lt;/a&gt;는 접속시 비밀번호를 자동 입력해주는 역할 외에 다음과 같은 일도 할 수 있다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
-2
-3
-4&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;c&quot;&gt;# 원격 서버에서 command 실행&lt;/span&gt;
-sshpass -p&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;password&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; ssh -o &lt;span class=&quot;nv&quot;&gt;StrictHostKeyChecking&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;no &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;user&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;@&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;host&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;command&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# 원격 서버로 test.txt 파일 복사(scp)&lt;/span&gt;
-sshpass -p&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;password&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; scp -o &lt;span class=&quot;nv&quot;&gt;StrictHostKeyChecking&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;no test.txt &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;user&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;@&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;host&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;:~/test.txt
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;h3 id=&quot;expect--&quot;&gt;3. expect를 사용하는 방식&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://sourceforge.net/projects/sshpass/&quot;&gt;sshpass&lt;/a&gt;를 사용하면 이 방식은 크게 의미가 없다. 하지만 sshpass를 사용할 수 없는 상황이다. expect를 활용해서 다른 곳에 응용할 수 있으니 참고 차원에서 ssh 자동 로그인 스크립트를 남긴다.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;sshlogin&lt;/strong&gt; 파일로 아래의 내용을 저장하고 실행 권한을 준다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
-2
-3
-4
-5
-6
-7&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;c&quot;&gt;#! /usr/bin/expect&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;idNhost &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;lrange &lt;span class=&quot;nv&quot;&gt;$argv&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; 0&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;password &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;lindex &lt;span class=&quot;nv&quot;&gt;$argv&lt;/span&gt; 1&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
-spawn ssh &lt;span class=&quot;nv&quot;&gt;$idNhost&lt;/span&gt;
-expect -re &lt;span class=&quot;s2&quot;&gt;&amp;quot;password: &amp;quot;&lt;/span&gt;
-send &lt;span class=&quot;s2&quot;&gt;&amp;quot;$password\r&amp;quot;&lt;/span&gt;
-interact
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;사용법은 다음과 같다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;./sshlogin &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;user&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;@&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;host&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;[password]&amp;quot;&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-</content>
-<summary>ssh 사용시 매번 비밀번호를 입력하는 것은 귀찮은 일이다. 그럼에도 불구하고 ssh의 기본 기능에 비밀번호를 미리 입력하는 기능을 제공하지 않는 것은 보안 상의 이유 때문일 것이다. 하지만 비밀번호를 입력하는 귀찮음을 해소하는 것 외에도 스케쥴링 처리 스크립트 등에서 사용자의 비밀번호 입력없이 ssh 접속을 해야할 경우가 있다. 이런 경우에 대비해서 ssh에서는 클라이언트의 공개키를 원격 서버에 미리 등록 시켜두는 방식으로 비밀번호 없이 접속할 수 있는 방법을 제공한다. 사실 이 방법이 보안 상으로도 안전한 편이고 등록하는 과정도 크게 복잡하지 않으므로 가장 권장되는 방법이라고 할 수 있다.그렇다고 이 방법 외에는 대안이 없는 것은 아니다. expect 명령을 이용해서 비밀번호 입력을 자동화하는 방법과 sshpass를 사용하는 방법이 있다. 사실 sshpass를 몰랐을 때는 expect를 주로 사용했는데 sshpass를 사용하면 훨씬 쉽게 다양한 일을 할 수 있다.자.. 이제부터 하나씩 방법을 설명하고자 한다. 아래는 CentOS 기준이며 기타 리눅스에서도 거의 동일한 것으로 알고 있다.1. 공개키 등록 방식우선 ~/.ssh/id_rsa.pub에 파일이 존재하는지 확인한다. 없다면 아래와 같이 ssh-keygen을 사용해서 개인용 개인키/공개키를 생성한다.1ssh-keygen -t rsa위 명령을 입력하면 몇가지를 물어보는데 특별한 이유가 없다면 그냥 엔터를 계속 눌러서 완료하면 된다.이렇게 생성하고나면 개인키는 ~/.ssh/id_rsa로 공개키는 ~/.ssh/id_rsa.pub로 생성된다.이제는 공개키를 접속하려는 원격 서버에 등록해야 한다.아래와 같이 직접 해당 서버로 복사하는 방법이 있다.1scp ~/.ssh/id_rsa.pub [user]@[host]:~/.ssh/authorized_keys그런데 이렇게하면 기존 파일이 존재할 경우 덮어쓰게 되므로 권장하지 않는다. 대신 아래와 같이 ssh-copy-id를 사용하는 것을 권장한다. ssh-copy-id를 사용하면 원격 서버에 authorized_keys 파일이 없다면 생성해주고 있다면 공개키를 추가해 준다.1ssh-copy-id -i ~/.ssh/id_rsa.pub [user]@[host]여기까지 완료 했다면 비밀번호 없이 ssh 접속이 가능해야 한다.그런데 간혹 작업을 완료했음에도 불구하고 계속 비밀번호를 물어보는 경우가 있다. 그런 경우는 대부분 원격 서버의 authorized_keys 파일 퍼미션 문제다. 원격 서버에서 퍼미션을 아래와 같은지 확인하고 맞지 않다면 변경해 준다. 대부분의 경우는 접속 문제가 해결된다.12chmod 700 ~/.ssh/chmod 600 ~/.ssh/authorized_keys2. sshpass를 사용하는 방식sshpass는 ssh와는 직접적인 관련이 없는 프로그램으로 별도 설치가 필요하다. 설치되어 있지 않다면 아래와 같이 설치한다.1yum --enablerepo=epel -y install sshpass기본적인 사용은 아래와 같이 할 수 있다.1sshpass -p[password] ssh -o StrictHostKeyChecking=no [user]@[host]위 방식은 서두에서도 이야기 했듯이 비밀번호가 명령 상에 노출되므로 보안상으로는 좋지는 않다. 하지만 필요할 때가 있으니 알아두면 요긴하게 쓰이리라 생각한다. 그리고 sshpass는 접속시 비밀번호를 자동 입력해주는 역할 외에 다음과 같은 일도 할 수 있다.1234# 원격 서버에서 command 실행sshpass -p[password] ssh -o StrictHostKeyChecking=no [user]@[host] [command]# 원격 서버로 test.txt 파일 복사(scp)sshpass -p[password] scp -o StrictHostKeyChecking=no test.txt [user]@[host]:~/test.txt3. expect를 사용하는 방식sshpass를 사용하면 이 방식은 크게 의미가 없다. 하지만 sshpass를 사용할 수 없는 상황이다. expect를 활용해서 다른 곳에 응용할 수 있으니 참고 차원에서 ssh 자동 로그인 스크립트를 남긴다.sshlogin 파일로 아래의 내용을 저장하고 실행 권한을 준다.1234567#! /usr/bin/expectset idNhost [lrange $argv 0 0]set password [lindex $argv 1]spawn ssh $idNhostexpect -re &amp;quot;password: &amp;quot;send &amp;quot;$password\r&amp;quot;interact사용법은 다음과 같다.1./sshlogin [user]@[host] &amp;quot;[password]&amp;quot;</summary>
 </entry>
 </feed>

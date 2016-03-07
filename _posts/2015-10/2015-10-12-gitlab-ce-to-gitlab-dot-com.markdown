@@ -12,7 +12,7 @@ categories: git
 
 그런데 [gitlab](https://gitlab.com/)에서도 무료 호스팅을 해주고 있었다. 전에 gitlab을 다운 받을 때는 자세히 보지 않아서 몰랐지만 이미 제공되고 있었던 것이다. 게대가 bitbucket과 같은 제약 사항도 없다. 앞으로도 유료화하지 않을 것이라는 안내도 되어있다. 그래서 다시 옮겼다.
 
-옮기는 과정은 굳이 설명하지 않아도 될것 같다. gitlab에서 기능을 잘 제공하고 있다. bitbucket에서 자동이전할 수 있는 기능을 제공한다(github, bitbucket, gitorious.org, google code, fogbugz, any repo by url을 제공한다).
+옮기는 과정은 굳이 설명하지 않아도 될것 같다. gitlab에서 기능을 잘 제공하고 있다. bitbucket에서 자동 이전할 수 있는 기능을 제공한다(github, bitbucket, gitorious.org, google code, fogbugz, any repo by url을 제공한다).
 
 결과는 나른 만족스럽다. 이전도 아주 단순하고 gitlab의 ce 버전 이상의 기능을 제공하며 속도도 그럭저럭 쓸만하다. 아주 쾌적한 속도는 아니지만 bitbucket에 비하면 아주 빠르다.
 

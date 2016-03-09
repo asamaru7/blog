@@ -8,7 +8,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="author" content="유영재">
 	<meta name="keywords" content="PhantomJS 2.1.1: render PDF / pageSize format 버그 해결,js,이 세상에 하나는 남기고 가자"/>
-	<meta name="description" content="PhantomJS 2.1.1: render PDF / pageSize format 버그 해결,js,이번에 작업을 하면서 PhantomJS로 웹페이지를 PDF로 저장하는 부분을 처리하게 되었다. 기본적으로 PhantomJS는 보여지는 페이지를 render 함수를 사용해서 파일로 저장하는 기능을 기본적으로 제공한다. render에서 제공하는 포멧은 PDF, PNG, JPEG, BM..."/>
+	<meta name="description" content="PhantomJS 2.1.1: render PDF / pageSize format 버그 해결,js,이번에 작업을 하면서 PhantomJS로 웹페이지를 PDF로 저장(캡춰)하는 부분을 처리하게 되었다. 기본적으로 PhantomJS는 보여지는 페이지를 render 함수를 사용해서 파일로 저장하는 기능을 기본적으로 제공한다. render에서 제공하는 포멧은 PDF, PNG, JPEG..."/>
 
 	<!-- http://t.co/dKP3o1e -->
 	<meta name="HandheldFriendly" content="True">
@@ -134,7 +134,7 @@
 								</section>
 				-->
 
-				<p>이번에 작업을 하면서 <a href="http://phantomjs.org/">PhantomJS</a>로 웹페이지를 PDF로 저장하는 부분을 처리하게 되었다. 기본적으로 PhantomJS는 보여지는 페이지를 <a href="http://phantomjs.org/api/webpage/method/render.html">render</a> 함수를 사용해서 파일로 저장하는 기능을 기본적으로 제공한다. <code>render</code>에서 제공하는 포멧은 PDF, PNG, JPEG, BMP, PPM
+				<p>이번에 작업을 하면서 <a href="http://phantomjs.org/">PhantomJS</a>로 웹페이지를 PDF로 저장(캡춰)하는 부분을 처리하게 되었다. 기본적으로 PhantomJS는 보여지는 페이지를 <a href="http://phantomjs.org/api/webpage/method/render.html">render</a> 함수를 사용해서 파일로 저장하는 기능을 기본적으로 제공한다. <code>render</code>에서 제공하는 포멧은 PDF, PNG, JPEG, BMP, PPM
 , GIF 이다. 따라서 원하는 기능을 아주 간단하게 구현할 수 있다.</p>
 
 <blockquote>
@@ -381,7 +381,10 @@
 <p>여기서 중요한 것은 width와 height이다. width의 경우는 페이지를 랜더링할 width를 기준으로 주면되고 height의 경우는 A4 용지 비율에 맞게 넣어야 한다. <code>(2339/1654)</code>가 A4 용지의 세로 비율이다(참고 : <a href="http://www.a4papersize.org/a4-paper-size-in-pixels.php">A4PaperSize.org
 </a>).</p>
 
-<p>그리고 한가지. 여기서는 페이지가 잘려나가지 않고 비율을 맞추는데 초첨을 맞춘 해결 방법이므로 완벽한 방법은 아니다(완벽한 해결은 PhantomJS가 버전업되어야 되지 않을까). 일례로 OSX의 크롬에서는 브라우저에서 PDF를 열어 출력해도 깔끔하게 나오나 사파리에서는 50% 비율로 출력해야 정확히 나온다. 이것은 DPI 문제인 것 같으나 아직 해결하진 못했다. 단, 브라우저가 아닌 파일 다운로드 후 출력하면 당연히 정상적으로 출력된다.</p>
+<p>그리고 한가지. 여기서는 페이지가 잘려나가지 않고 비율을 맞추는데 초첨을 맞춘 해결 방법이므로 완벽한 방법은 아니다. 일례로 OSX의 크롬에서는 브라우저에서 PDF를 열어 출력해도 깔끔하게 나오나 사파리에서는 50% 비율로 출력해야 정확히 나온다. 단, 브라우저가 아닌 파일 다운로드 후 출력하면 당연히 정상적으로 출력된다.
+이것은 DPI 문제인 것 같으나 아직 해결하진 못했다. 기본 DPI가 72 DPI로 설정된 것으로 보인다. 이 경우 사이즈가 595px X 842px가 되므로 페이지가 잘려나가는 것이다. 하지만 페이지를 595px로 랜더링하면 웹페이지의 가로가 너무 좁으니 이렇게 사용할 수도 없다.</p>
+
+<p>정확한 해결을 위해서는 <a href="http://phantomjs.org/api/webpage/property/zoom-factor.html">zoomFactor</a>에 DPI 비율을 넣어줘야 하는데 지금 zoomFactor가 정상적으로 적용되지를 않는다.</p>
 
 <figure class='code'><div class="highlight notranslate"><pre><code class="language-javascript"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2

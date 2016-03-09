@@ -113,55 +113,23 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/">
-								java setChunkedStreamingMode를 php-fpm 서버와 연결할 때 발생하는 문제
+							<a class="title" href="http://blog.asamaru.net/2015/10/29/google-apps-admin-password-reset/">
+								구글앱스 관리자 비밀번호 초기화
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/">2015.10.29.</span></a>
+								<a href="http://blog.asamaru.net/2015/10/29/google-apps-admin-password-reset/">2015.10.29.</span></a>
 							</p>
 						</header>
 						<p>
-							<p><a href="/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/">ACRA : Please configure ‘buildConfigClass’ in your ACRA config 오류</a>에서  http 접속시 <code>setChunkedStreamingMode</code>를 사용하면 request의 body가 수신되지 못하는 문제를 언급하고 Github에 <a href="https://github.com/ACRA/acra/issues/310#issuecomment-151826809">issue로 등록</a> 했었다. 그런데 어제 ACRA로 부터 답변을 받았다.
-간단히 요약하자면 “일반적인 상황에 대한 문제가 아니므로 수정 해 줄 수 없다.”라는 것이다. 게다가 자신의 생각을 바꾸려면 정당한 근거를 제시하란다. 안그래도 영어가 안되서 겨우 report했는데 근거를 달라니…
-현재로써는 ACRA를 대체할만한 라이브러리를 찾지 못했기 때문에 어떻게든 방법을 찾아보려고 노력했다. 우선 proxy 상황에서만 문제가 되므로 apache에서 해결 방법이 있을 것이라고 생각하고 자료를 찾아봤다. 이와 관련된 문제와 해결 방법은 무수히 많았지만 정작 해결이 되는 자료는 찾을 수 없었다. 찾았던 정보 중에 도움이 될만한  것들을 링크하고 싶지만 다시 찾으려니 못찾겠다. 구글에서 “http chunked proxy”와 같은 키워드들로 검색하면 무지하게 나온다. 그중 그나마 기억에 남아있는 것 몇가지만 아래에 언급하려고 한다.</p>
+							<p>얼마 전에 구글앱스의 관리자 비밀번호를 초기화 해야 할 일이 있었다. 지금은 이미 <a href="https://admin.google.com/scanmon.net/VerifyAdminAccountPasswordReset">구글앱스가 유료화</a>되었지만 예전에 50인 이하에 대해서는 무료였다. 그 당시에 내 개인적으로 사용하기 위한 구글앱스와 회사용으로 1개를 만들어 두었었다. 그런데 회사용으로 만들어 두었던 것을 사용하지 않다가 다시 사용하려고 했더니 비밀번호를 알 수가 없었다. 더 정확히는 관리자 아이디도 뭐로 했었는지도 기억이 나지 않았다. 그래서 관리자를 초기화하려고 했으나 도저히 메뉴를 찾을 수가 없었다.</p>
 
-<p>일단 nginx를 web 서버로 사용하는 경우라면 <a href="http://serverfault.com/a/408131">Enabling Chunked Uploading in Nginx</a>를 참고하면 해결이 될지도 모르겠다. nginx는 현재 사용을 검토중이고 서비스 서버에 적용되지 않은 상황이라 적용해서 테스트해보지는 못했다.</p>
+<p>관련된 정보를 한참을 찾아다니다가 겨우 방법을 찾아서 기록해둔다.</p>
 
-<p>내가 사용하는 apache에 대해서는 해결 방법을 찾지는 못했지만 관련된 bug report가 된 것이 있었다. <a href="https://bz.apache.org/bugzilla/show_bug.cgi?id=55475">mod_proxy breaks HTTP chunked transfer coding</a>. 사실 정확히 동일한 문제는 아니지만 mod_proxy와 관련이 있어서 내용을 봤다. 2.4.8버전에 수정되었다는 말이 있어서 apache도 버전업해서 확인 했지만 도움이 되지는 못했다. php-fpm을 사용하면서 mod_proxy_fcgi를 사용하고 있는데 여기에 문제인 것으로 추정만 하고 있다.</p>
+<p>방법은 간단하다. 아래의 주소에서 “YOUR_APPS_DOMAIN.COM” 대신에 개설시 사용했던 도메인을 넣고 방문하면 소유주 확인을 위한 “도메인 확인” 화면이 나온다.</p>
 
-<p><a href="https://gnunet.org/book/export/html/1932">Configuring HTTP(S) reverse proxy functionality using Apache or nginx</a>라는 글도 있으나 역시 도움이 되지 않았다.</p>
+<p><code>https://admin.google.com/YOUR_APPS_DOMAIN.COM/VerifyAdminAccountPasswordReset</code></p>
 
-<p>그 외에도 무수히 많은 자료를 봤지만 대부분 SenEnv를 사용해서 인자를 넘겨주는 방법들을 제시했는데 모두 해결에 도움이 되지 않았다. 결국 내 서버를 수정하는 것은 방법이 없다는 결론을 내리고 ACRA에 다시 요청했다.</p>
-
-<p>요청 내용은 이렇다.
-&gt; <code>setChunkedStreamingMode</code>를 사용하는 것은 proxy 상황에서 정상적인 동작을 하지 않는 웹 서버들이 많으니 <code>setFixedLengthStreamingMode</code> 함수로 교체하는 것이 어떠냐?</p>
-
-<p>사실 ACRA의 경우는 소스를 보면 굳이 <code>setChunkedStreamingMode</code>를 사용할 필요는 없다. 전송할 내용을 미리 다 생성해 놓았기 때문에 길이를 알 수 있는 상황이기 때문이다. 따라서 <code>setFixedLengthStreamingMode</code>를 사용해도 되며 실제로 테스트 결과 정상적으로 값을 받을 수 있었다. 가급적 ACRA를 custom해서 사용하는 것은 피하고 싶으므로 이 요구를 ACRA 측에서 받아들여 줬으면 한다.</p>
-
-<p>마지막으로 <code>setChunkedStreamingMode</code>와 <code>setFixedLengthStreamingMode</code>에 관련된 내용은 <a href="https://byunsooblog.wordpress.com/2013/03/26/urlconnection-httpurlconnection/">URLConnection &amp; HttpURLConnection</a>에서 <code>HttpURLconnection</code>를 설명하는 과정에 나와있다.</p>
-
-<p>내용을 일부를 발췌하여 아래에 추가해 둔다.</p>
-
-<blockquote>
-  <p><strong>Posting Content</strong></p>
-
-  <p>데이터를 웹 서버로 보내기 위해, setDoOutput(true)를 써서 커넥션을 구성한다.</p>
-
-  <p>setFixedLengthStreamingMode(int),setChunkedStreamingMode(int)</p>
-
-  <ul>
-    <li>좋은 성능을 위해서, 이 둘 중 하나의 함수를 불러야 한다.</li>
-    <li>setFixedLengthStreamingMode() : body의 길이를 미리 알고있을때 쓴다.</li>
-    <li>setChunkedStreamingMode(int) : body의 길이를 모를 때 쓴다.</li>
-    <li>안그러면 HttpURLConnection은 전송되기전에 완성된 request body를 메모리 buffer에 넣도록 강요된다.
-      <ul>
-        <li>이건 heap을 낭비하는 일이고 지연시간을 늘리는 일이다.</li>
-      </ul>
-    </li>
-  </ul>
-</blockquote>
-
-<p>첨언 : 방금 ACRA 측의 답변을 받았다. 다행히 나의 요구사항을 수용해서 패치를 완료했단다. <a href="https://github.com/ACRA/acra/pull/318">Configuring request length instead of using chunked streaming mode.</a></p>
+<p>이 화면에서 안내하는대로 따라가면 관리자 비밀번호를 초기화 할 수 있다. 스샷을 넣으려고 하다가 도메인 등을 지우기 귀찮아서 넣지 않았다. 사실 화면도 단순해서 큰 어려움은 없다. 게다가 화면이 언제 바뀔지도 모르고.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -175,8 +143,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/10/29/google-apps-admin-password-reset/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/10/29/google-apps-admin-password-reset/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

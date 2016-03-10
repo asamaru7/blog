@@ -15,7 +15,7 @@ categories: android
 ## 1. gradle.properties 파일을 변경
 
 프로젝트 Root에 있는 gradle.properties을 편집한다. 기존에 파일이 없다면 추가한다. 여기에는 gradle 빌드 할 때 인수를 설정할 수 있다.
-한가지 더 알려주자면 프로젝트별로 설정하는 것외에도 모든 프로젝트에 설정을 추가할 수도 있다. 해당 파일의 경로는 OSX 기준으로 `~/.gradle/gradle.properties` 이다. 윈도우나 리눅스도 비슷한 경로에 있을 것으로 생각된다.
+한가지 더 알려주자면 프로젝트별로 설정하는 것외에도 모든 프로젝트에 설정을 추가할 수도 있다. 해당 파일의 경로는 OSX 기준으로 `~/.gradle/gradle.properties` 이다. 윈도우나 리눅스도 비슷한 경로에 있을 것으로 생각된다(없다면 추가해도 된다).
 
 **gradle.properties**
 
@@ -34,7 +34,7 @@ org.gradle.daemon = true
 # Specifies the JVM arguments used for the daemon process.
 # The setting is particularly useful for tweaking memory settings.
 # Default value : -Xmx10248m -XX : MaxPermSize = 256M
-org.gradle.jvmargs = -Xmx2048m -XX : MaxPermSize = 512m -XX + HeapDumpOnOutOfMemoryError -Dfile.encoding = UTF-8
+org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8
 
 # When configured, Gradle will run in incubating parallel mode.
 # This option should only be used with decoupled projects. More details, visit
@@ -68,7 +68,11 @@ Android Studio 1.3 / Gradle 2.4 이상으로 버전업되면서 대폭 성능 �
 ![Offline work](/img/2015-09-29-android-gradle-builds-speed-up-1.png)
 Android Studio> Preferences> Gradle 의 Offline work에 체크.
 
-## 4. [Speeding up Gradle builds](http://kevinpelgrims.com/blog/2015/06/11/speeding-up-your-gradle-builds/)
+## 4. jcenter Maven Repository 사용
+
+[jcenter](https://bintray.com/bintray/jcenter)와 [Maven Central](http://search.maven.org/)은 모두 Java / Android 라이브러리들을 배포한다. 초기 안드로이드 스튜디오에서 프로젝트를 생성하면 기본적으로 Maven Central를 사용(`repositories { mavenCentral() }`)하도록 세팅되었다. 하지만 이제는 안드로이드 스튜디오에서 프로젝트를 생성하면 jcenter가 사용(`repositories { jcenter() }`)되도록 세팅된다. 이 부분이 변경된 이유는 여러가지가 있다고 하지만 그중에서 빌드 속도에 영향을 줄 수 있는 부분이 있다. jcenter는 CDN을 통해 라이브러리를 배포하기 때문에 Maven Central에 비해 빠르다는 것이다. 자세한 내용은 [Android Studio – Migration from Maven Central to JCenter](http://blog.bintray.com/2015/02/09/android-studio-migration-from-maven-central-to-jcenter/)를 참고하자.
+
+## 5. [Speeding up Gradle builds](http://kevinpelgrims.com/blog/2015/06/11/speeding-up-your-gradle-builds/)
 
 [Speeding up Gradle builds](http://kevinpelgrims.com/blog/2015/06/11/speeding-up-your-gradle-builds/)에서는 몇가지 방법을 더 안내하고 있다. 간략하게 요약하면 아래와 같다(위의 설명들과 유사한 부분도 많다). 상세한 설명은 위 링크를 참조하기 바란다.
 

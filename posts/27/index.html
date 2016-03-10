@@ -113,63 +113,157 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/12/10/realm/">
-								안드로이드 Realm 0.82.2 -&gt; 0.86.0 버전업
+							<a class="title" href="http://blog.asamaru.net/2015/12/15/android-app-finish/">
+								안드로이드 앱 종료 방법
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/12/10/realm/">2015.12.10.</span></a>
+								<a href="http://blog.asamaru.net/2015/12/15/android-app-finish/">2015.12.15.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>모바일 앱 개발시에 DB는 주로 Sqlite 또는 Core Data를 많이 사용한다. 그런데 Sqlite 등을 사용하는 것이 조금 불편한 부분들이 많아서 지난 앱 개발시 <a href="https://realm.io/kr/">Realm</a>을 사용했다. <a href="https://realm.io/kr/">Realm</a>을 사용하면 개발이 용이해지기는 한데 간혹 다루기가 까다로워지는 경우가 있다. 사실 그런 문제 상황은 내가 사용시 뭔가를 잘못했을 확률이 높지만 개인적으로 다소 예민한 라이브러리라고 생각한다. 어찌보면 당연할 수도 있는 것이 아직 1.0 버전이 되지도 못한 라이브러리니 그럴만도 하다. 실제로 아직은 버전업이 자주 발생하고 버전업시에 변경 사항이 다소 있는 편이다. 중요 변경이 있을 때 마이그레이션을 잘못하거나 하면 앱 크래시의 원인이 되기도 하니 버전업시에는 유의해야 한다.
-<strong>그렇지만 다행인 것은 <a href="https://realm.io/kr/docs/java/latest/">문서화</a>가 잘되어 있고 한글본도 번역도 빠르게 올라온다.</strong></p>
+							<p>안드로이드에서 앱의 종료는 보통 Root Activity에서 <a href="http://developer.android.com/reference/android/app/Activity.html#finish%28%29">finish()</a>를 사용한다. 그런데 앱의 종료는 이외에도 여러가지 방법이 있고 각각이 다른 상황을 만들어 낸다. 당연히 구글에서는 <a href="http://developer.android.com/reference/android/app/Activity.html#finish%28%29">finish()</a>를 권장한다고 한다. 하지만 상황적으로 프로세스를 완전히 종료해야 하는 경우가 있을 수 있다. 아래에 설명하고자 하는 것들은 안정적으로 사용할 수 있는 방법이라고 장담하지는 못한다. 충분히 테스트된 코드가 아니라 인터넷 상에서 소개되는 방법들을 정리한 것이다. 물론 기본적인 테스트는 했다.</p>
 
-<hr />
+<p>우선 Activity만 종료하는 방법부터 알아보자.</p>
 
-<p>얼마전 기존 프로젝트의 Realm의 0.82.2에서 0.86.0으로 버전업을 했다(버전을 확인한지 그리 오래되지 않았는데 그 사이 많이도 버전업되었다). 그랬더니 아래와 같은 오류가 발생했다.</p>
+<h3 id="finishaffinityhttpdeveloperandroidcomreferenceandroidappactivityhtmlfinishaffinity2829--"><a href="http://developer.android.com/reference/android/app/Activity.html#finishAffinity%28%29">finishAffinity()</a>를 사용하는 방법</h3>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">Field 'date' is required. Either set @Required to field 'date' or migrate using io.realm.internal.Table.convertColumnToNullable(). : io.realm.exceptions.RealmMigrationNeededException: Field 'date' is required. Either set @Required to field 'date' or migrate using io.realm.internal.Table.convertColumnToNullable().
-</code></pre></div></figure>
-
-<p>사용하는 테이블의 <code>date</code> 필드가 <code>required</code>이니 <code>@Required</code> 어노테이션을 붙이거나 테이블을 마이그레이션하라는 안내다. 이미 Realm에서 해결 방법을 친절히도 안내해주고 있다. <code>@Required</code>는 기존에 사용하지 않던 것이라 찾아봤다. <a href="https://realm.io/kr/news/realm-java-0.83.0/">Realm 자바 0.83 — Null 지원!</a>를 보니 0.83 버전에서 데이터값으로 null을 사용할 수 있게 됨에 따라 추가된 어노테이션이다. 그러니 기존 0.82.2의 데이터는 null이 될 수 없었으므로 required 타입으로 인식하는 것이다. 그외에도 다른 변경 사항을 보고 싶다면 <a href="https://github.com/realm/realm-java/blob/master/changelog.txt">changelog</a>를 참고하자.</p>
-
-<p>기존에도 null이 들어올 수 없는 구조로 프로그램되어 있었으니 <code>@Required</code>를 해당 필드(변수)에 붙이는 것으로 해결하는 것이 맞겠다. 나는 여기서 다른 문제를 겪었었는데 <code>@Required</code>만 붙이면 될 것을 스키마 버전 정보까지 올리는 바람에 엉망이 되었었다. 어쨌든 결론은 이 문제에 대해서는 <code>@Required</code>를 붙이는 방법으로 간단히 해결된다.</p>
-
-<hr />
-
-<p>그런데 문제는 여기서 끝나지 않았다. <a href="https://realm.io/docs/java/latest/api/io/realm/RealmMigration.html">RealmMigration</a> 클래스도 방식이 변경되어 맞춰줬다.</p>
-
-<p>그리고 또 하나. 기존에는 아래와 같이 인스턴스를 생성해서 사용했다.</p>
+<p>Root Activity에서 <a href="http://developer.android.com/reference/android/app/Activity.html#finish%28%29">finish()</a>를 사용해서 종료하는 것은 굳이 설명하지 않아도 될 것으로 생각한다. 단, 이 방법은 현재 Activity가 Root Activity가 아니면 Root Activity를 찾아가는 과정이 필요하므로 복잡해질 수 있다. 예를들어 아래와 같이 처리한다(이 코드는 테스트하지 않았다. 그리고 호출하는 Activity와 Root Activity에서 각각 처리해야 한다).</p>
 
 <figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">RealmConfiguration</span><span class="o">.</span><span class="na">Builder</span> <span class="n">realmBuilder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">RealmConfiguration</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="n">context</span><span class="o">).</span><span class="na">name</span><span class="o">(</span><span class="n">realmName</span><span class="o">)</span> <span class="o">.</span><span class="na">schemaVersion</span><span class="o">(</span><span class="n">SCHEME_VERSION</span><span class="o">);</span>
-<span class="n">RealmConfiguration</span> <span class="n">config</span> <span class="o">=</span> <span class="n">realmBuilder</span><span class="o">.</span><span class="na">build</span><span class="o">();</span>
-<span class="n">Realm</span> <span class="n">realm</span> <span class="o">=</span> <span class="n">Realm</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">config</span><span class="o">);</span>
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// Root Activity를 호출</span>
+<span class="n">Intent</span> <span class="n">intent</span>  <span class="o">=</span> <span class="k">new</span> <span class="nf">Intent</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">FirstActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<span class="n">intent</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="n">EXTRA_FINISH</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+<span class="n">intent</span><span class="o">.</span><span class="na">setFlags</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">FLAG_ACTIVITY_CLEAR_TOP</span><span class="o">);</span>        
+<span class="n">startActivity</span><span class="o">(</span><span class="n">intent</span><span class="o">);</span>
+<span class="n">finish</span><span class="o">();</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>그런데 여기서 문제가 발생하기 시작했다. 이 부분은 realm 접속을 생성하는 과정으로 사용하는 시점에 처리하고 있었다. 기존에 사용처 자체가 워낙에 간단한 부분이라서 그랬는지는 몰라도 문제가 없었다. 그런데 버전업 이후 이상하게 앱 크래시가 발생했다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// Root Activity에서 인자를 받아 종료</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">getExtras</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">getIntentExtra</span><span class="o">(</span><span class="n">EXTRA_FINISH</span><span class="o">,</span> <span class="kc">false</span><span class="o">))</span> <span class="o">{</span>
+   <span class="n">finish</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">E/AndroidRuntime: FATAL EXCEPTION: main
-                  Process: ~~~, PID: 21532
-                  java.lang.RuntimeException: Unable to start activity ComponentInfo{~~~/~~~}: java.lang.IllegalArgumentException: Configurations cannot be different if used to open the same file.
-...
-</code></pre></div></figure>
+<p>이런 번거로움을 해결해 줄 수 있는 것이 <a href="http://developer.android.com/reference/android/app/Activity.html#finishAffinity%28%29">finishAffinity()</a>다. 이 함수를 사용하면 어느 Activity에서든 모든 부모 Activity를 닫을 수 있다. 단, 이 함수는 API 16부터 사용 가능하다. 하지만 support library v4를 사용하면 이하 버전에서도 이 함수를 사용할 수 있다.</p>
 
-<p>오류 내용은 이렇다. 동일 table 파일을 다른 Configurations으로 열 수 없다. 이 오류는 처음에 앱이 열릴 때는 발생하지 않다가 종료 후 다시 들어오면 발생했다. 이상했다. 분명이 앱을 종료 했음에도 불구하고 왜 다른 Configurations을 넣고 있다는 것인지.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// only API 16+</span>
+<span class="n">activity</span><span class="o">.</span><span class="na">finishAffinity</span><span class="o">();</span>
 
-<p>이번에 알게 되었는데 root activity에서의 finish()는 앱의 종료를 의미하는 것이 아니었다. 마지막 activity가 finish()되면 화면에서는 즉시 종료된 것으로 보이나 프로세스는 살아 남는다. 아마도 시스템 자원이 부족해지면 프로세스가 OS에 의해 죽을 수는 있다. 이와 관련해서 앱을 완전히 종료하는 방법에 대해서는 ~~조만간 별도로 글을 남기려고 한다.~~ <a href="/2015/12/15/android-app-finish/">안드로이드 앱 종료 방법</a>에서 설명하고 있다.</p>
+<span class="c1">// support library v4</span>
+<span class="n">ActivityCompat</span><span class="o">.</span><span class="na">finishAffinity</span><span class="o">(</span><span class="n">activity</span><span class="o">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<p>어쨌든 이러한 상황이 발생하는 것으로 보아 기존 버전과 최신 버전의 Realm 생명 주기를 관리하는 방법이 변경된 것으로 보인다. 메뉴얼에 보면 <a href="https://realm.io/kr/docs/java/0.86.0/#section-52">모범 사용예 - Realm 인스턴스들의 생명주기 관리하기</a>라는 부분이 있다. “모범 사용예”라는 항목 자체가 0.85.0 버전부터 있는 것으로 보아 그 시점에 변경이 된 것으로 생각한다. 그런데 여기서 사용하는 함수는 <a href="https://realm.io/news/realm-java-0.81.1/">Realm Java 0.81.1</a>에서 추가된 것으로 소개하고 있다. 기존에 내가 사용하던 것이 0.82.2 였지만 위 문제가 발생하지 않았던 것으로 보아 앞선 예상대로 그 후에 관리 방법이 변경된 것 같기는 하다. 어쨌든 이 부분에 관련된 정보가 있어 발췌한다.</p>
+<h3 id="activity-">홈 화면 Activity 띄우기</h3>
+
+<p>이 방법은 Activity의 종료라고 하기에는 조금 애매한 방법이다. 일단 아래의 소스를 보자.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">Intent</span> <span class="n">homeIntent</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Intent</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">ACTION_MAIN</span><span class="o">);</span>
+<span class="n">homeIntent</span><span class="o">.</span><span class="na">addCategory</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">CATEGORY_HOME</span><span class="o">);</span>
+<span class="n">homeIntent</span><span class="o">.</span><span class="na">setFlags</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">FLAG_ACTIVITY_CLEAR_TOP</span><span class="o">);</span>
+<span class="n">startActivity</span><span class="o">(</span><span class="n">homeIntent</span><span class="o">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>소스를 보면 알겠지만 말그대로 홈 화면 Activity를 띄우는 것이다. 어쨌든 사용자가 보기에는 앱이 종료된 것처럼 보인다. 뒤에 남겨진 프로세스가 계속 살아남는지 Activity finish와 동일한 생명주기를 갖는지는 테스트 해보지 않았다.</p>
+
+<h3 id="finishandremovetask-httpdeveloperandroidcomreferenceandroidappactivityhtmlfinishandremovetask2829--"><a href="http://developer.android.com/reference/android/app/Activity.html#finishAndRemoveTask%28%29">finishAndRemoveTask ()</a>를 사용하는 방법</h3>
+
+<p><a href="http://developer.android.com/reference/android/app/Activity.html#finishAndRemoveTask%28%29">finishAndRemoveTask ()</a>는 Activity를 종료하고 Task Manager(최근 앱 사용 목록)에서도 해당 앱을 제거한다. <strong>단, Task를 종료하지만 Process까지 종료하지는 않는다.</strong> 앱을 <a href="http://developer.android.com/reference/android/app/Activity.html#finishAndRemoveTask%28%29">finishAndRemoveTask ()</a>로 종료하고 Task Manager를 보면 해당 앱이 없어 Process가 종료된 것처럼 보이지만 이 상태에서 다시 앱을 실행하면 Application Class의 onCreate()가 실행되지 않는다(Process가 종료되었다면 이 함수가 다시 실행되었을 것이다). 메뉴얼에는 아래와 같이 나와있다.</p>
 
 <blockquote>
-  <p><strong>Realm 인스턴스들의 생명주기 관리하기</strong></p>
-
-  <p>RealmObjects과 RealmResults는 데이터 전체를 느긋하게 가져옵니다. 이런 이유로 Realm 오브젝트나 질의 결과를 접근할 때 가능한 오래 Realm 인스턴스를 유지하는 것이 중요합니다. Realm 데이터 커넥션을 열고 닫는 추가 비용을 줄이기 위해 레퍼런스 카운트화된 캐시를 가집니다. 이는 Realm.getDefaultInstance()를 같은 스레드에서 여러번 호출하는 것은 비용이 들지 않고 내부의 리소스는 자체적으로 모든 인스턴스가 닫히면 해제됨을 의미합니다.</p>
-
-  <p>모든 액티비티와 프래그먼트의 UI 스레드에서 Realm 인스턴스를 열고 Activity나 Fragment가 파괴될 때 닫는 것은 쉽고 안전한 접근 법입니다.</p>
+  <p>Call this when your activity is done and should be closed and the task should be completely removed as a part of finishing the Activity.</p>
 </blockquote>
+
+<p>그리고 이 함수는 API 21에서 추가된 함수로 아직까지는 호환성 함수는 없는 것으로 보인다. 그나마 찾아본 바로는 chromium 소스 코드 중 <a href="https://chromium.googlesource.com/chromium/src/base/+/master/android/java/src/org/chromium/base/ApiCompatibilityUtils.java">ApiCompatibilityUtils.java</a>에 있는 아래의 코드가 있다. 하지만 사용에 큰 의미는 없어보이니 참고만 하자.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">finishAndRemoveTask</span><span class="o">(</span><span class="n">Activity</span> <span class="n">activity</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">&gt;</span> <span class="n">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">LOLLIPOP</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">activity</span><span class="o">.</span><span class="na">finishAndRemoveTask</span><span class="o">();</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">==</span> <span class="n">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">LOLLIPOP</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// crbug.com/395772 : Fallback for Activity.finishAndRemoveTask() failing.</span>
+        <span class="k">new</span> <span class="nf">FinishAndRemoveTaskWithRetry</span><span class="o">(</span><span class="n">activity</span><span class="o">).</span><span class="na">run</span><span class="o">();</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="n">activity</span><span class="o">.</span><span class="na">finish</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">FinishAndRemoveTaskWithRetry</span> <span class="kd">implements</span> <span class="n">Runnable</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">long</span> <span class="n">RETRY_DELAY_MS</span> <span class="o">=</span> <span class="mi">500</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">long</span> <span class="n">MAX_TRY_COUNT</span> <span class="o">=</span> <span class="mi">3</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Activity</span> <span class="n">mActivity</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">mTryCount</span><span class="o">;</span>
+    <span class="n">FinishAndRemoveTaskWithRetry</span><span class="o">(</span><span class="n">Activity</span> <span class="n">activity</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">mActivity</span> <span class="o">=</span> <span class="n">activity</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">mActivity</span><span class="o">.</span><span class="na">finishAndRemoveTask</span><span class="o">();</span>
+        <span class="n">mTryCount</span><span class="o">++;</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">mActivity</span><span class="o">.</span><span class="na">isFinishing</span><span class="o">())</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">mTryCount</span> <span class="o">&lt;</span> <span class="n">MAX_TRY_COUNT</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">ThreadUtils</span><span class="o">.</span><span class="na">postOnUiThreadDelayed</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">RETRY_DELAY_MS</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="n">mActivity</span><span class="o">.</span><span class="na">finish</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="process-">Process 종료하기</h3>
+
+<p>이제부터는 앱을 종료하고 Process까지 완전히 종료시키는 방법들이다. 이 부분에 대해서는 의견이 다양한데 앱 종료시 처리되어야 할 프로세스들이 정상적으로 동작하지 못할 수 있다는 우려로 사용을 자제하라는 의견도 있고 알아서 처리하므로 상관없다는 의견도 있다. 테스트를 아직 해보지 못해 어떤 문제가 발생하는지에 대해서는 설명할 수 없으니 사용시 유의하자.</p>
+
+<p><a href="http://stackoverflow.com/a/5036668">How to close Android application?</a>에 소개된  Class 소스의 일부를 보자.</p>
 
 <figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
@@ -203,67 +297,53 @@
 30
 31
 32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// 애플리케이션에서 Realm 설정하기</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyApplication</span> <span class="kd">extends</span> <span class="n">Application</span> <span class="o">{</span>
-    <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">()</span> <span class="o">{</span>
-        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">();</span>
-        <span class="n">RealmConfiguration</span> <span class="n">realmConfiguration</span> <span class="o">=</span> <span class="k">new</span> <span class="n">RealmConfiguration</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="k">this</span><span class="o">).</span><span class="na">build</span><span class="o">();</span>
-        <span class="n">Realm</span><span class="o">.</span><span class="na">setDefaultConfiguration</span><span class="o">(</span><span class="n">realmConfiguration</span><span class="o">);</span>
-    <span class="o">}</span>
-<span class="o">}</span>
+33</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">killApp</span><span class="o">(</span><span class="kt">boolean</span> <span class="n">killSafely</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">killSafely</span><span class="o">)</span> <span class="o">{</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Notify the system to finalize and collect all objects of the app</span>
+<span class="cm">         * on exit so that the virtual machine running the app can be killed</span>
+<span class="cm">         * by the system without causing issues. NOTE: If this is set to</span>
+<span class="cm">         * true then the virtual machine will not be killed until all of its</span>
+<span class="cm">         * threads have closed.</span>
+<span class="cm">         */</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">runFinalizersOnExit</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
 
-<span class="c1">// 액티비티들을 전환하며 onCreate()/onDestroy()가 중첩되면 Activity 2의 onCreate가</span>
-<span class="c1">// Activity 1의 onDestroy()보다 먼저 호출 됩니다.</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyActivity</span> <span class="kd">extends</span> <span class="n">Activity</span> <span class="o">{</span>
-    <span class="kd">private</span> <span class="n">Realm</span> <span class="n">realm</span><span class="o">;</span>
-
-    <span class="nd">@Override</span>
-    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
-        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
-        <span class="n">realm</span> <span class="o">=</span> <span class="n">Realm</span><span class="o">.</span><span class="na">getDefaultInstance</span><span class="o">();</span>
-    <span class="o">}</span>    
-
-    <span class="nd">@Override</span>
-    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onDestroy</span><span class="o">()</span> <span class="o">{</span>
-        <span class="kd">super</span><span class="o">.</span><span class="na">onDestroy</span><span class="o">();</span>
-        <span class="n">realm</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
-    <span class="o">}</span>
-<span class="o">}</span>
-
-<span class="c1">// 프래그먼트에서 onStart()/onStop()를 사용합니다.</span>
-<span class="c1">// 프래그먼트의 onDestroy()는 호출되지 않을 수 있습니다.</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyFragment</span> <span class="kd">extends</span> <span class="n">Fragment</span> <span class="o">{</span>
-    <span class="kd">private</span> <span class="n">Realm</span> <span class="n">realm</span><span class="o">;</span>
-
-    <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onStart</span><span class="o">()</span> <span class="o">{</span>
-        <span class="kd">super</span><span class="o">.</span><span class="na">onStart</span><span class="o">();</span>
-        <span class="n">realm</span> <span class="o">=</span> <span class="n">Realm</span><span class="o">.</span><span class="na">getDefaultInstance</span><span class="o">();</span>
-    <span class="o">}</span>
-
-    <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onStop</span><span class="o">()</span> <span class="o">{</span>
-        <span class="kd">super</span><span class="o">.</span><span class="na">onStop</span><span class="o">();</span>
-        <span class="n">realm</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Force the system to close the app down completely instead of</span>
+<span class="cm">         * retaining it in the background. The virtual machine that runs the</span>
+<span class="cm">         * app will be killed. The app will be completely created as a new</span>
+<span class="cm">         * app in a new virtual machine running in a new process if the user</span>
+<span class="cm">         * starts the app again.</span>
+<span class="cm">         */</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Alternatively the process that runs the virtual machine could be</span>
+<span class="cm">         * abruptly killed. This is the quickest way to remove the app from</span>
+<span class="cm">         * the device but it could cause problems since resources will not</span>
+<span class="cm">         * be finalized first. For example, all threads running under the</span>
+<span class="cm">         * process will be abruptly killed when the process is abruptly</span>
+<span class="cm">         * killed. If one of those threads was making multiple related</span>
+<span class="cm">         * changes to the database, then it may have committed some of those</span>
+<span class="cm">         * changes but not all of those changes when it was abruptly killed.</span>
+<span class="cm">         */</span>
+        <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Process</span><span class="o">.</span><span class="na">killProcess</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Process</span><span class="o">.</span><span class="na">myPid</span><span class="o">());</span>
     <span class="o">}</span>
 <span class="o">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>그렇다. 이제는 앱 생성시 <code>Realm.setDefaultConfiguration()</code>를 이용해서 Configuration을 지정하고 필요한 곳에서 <code>Realm.getDefaultInstance()</code>으로 인스턴스를 받아 사용하는 것을 권장한다. 위에 이야기한 문제도 이 방식을 사용하면 발생하지 않는다.</p>
+<p>이 함수에서 Process를 종료하는 방법은 크게 두가지로 나뉜다. <code>System.exit()</code>를 사용하는 방법과 <code>android.os.Process.killProcess</code>를 사용하는 방법이다. 함수를 보면 알다시피 <code>System.exit()</code>를 사용하는 것이 더 안전한 방법으로 보인다. 그런데 이 부분에 대해서도 사람들의 의견이 차이가 있다. <code>System.runFinalizersOnExit(true)</code> 대신 <code>System.runFinalization()</code>를 호출하여 강제로 Finalization을 수행하는 방법을 설명하는 사람도 있고 이렇게하면 불안정하게 동작할 수 있으니 그냥 <code>System.exit()</code>만 호출하라는 사람도 있고… 어쨌든 개인적으로는 위 함수가 가장 적절하게 구성되어 있다고 생각한다. <strong>단, 주의사항 한가지. 이 부분은 직접 테스트 해본 것은 아니나 두개 이상의 Activity가 떠 있는 상황에서 Process를 종료시키면 Process가 살아난다는 이야기도 있다.</strong> 그런 이유가 아니더라도 Activity의 종료 프로세스를 제대로 동작시키는 것이 좋다는 생각으로 나는 아래와 같이 처리하고 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">ActivityCompat</span><span class="o">.</span><span class="na">finishAffinity</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">runFinalizersOnExit</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>현재까지는 이 방법으로 이상없이 사용하고 있으나 서두에서 언급한 것처럼 충분한 테스트를 거친 내용들이 아니므로 사용시에는 유의하기 바란다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -277,8 +357,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/12/10/realm/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/12/10/realm/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/12/15/android-app-finish/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/12/15/android-app-finish/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

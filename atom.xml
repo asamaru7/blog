@@ -3,13 +3,127 @@
 <generator uri="http://jekyllrb.com" version="3.0.1">Jekyll</generator>
 <link href="http://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" />
 <link href="http://blog.asamaru.net/" rel="alternate" type="text/html" />
-<updated>2016-03-16T20:15:03+09:00</updated>
+<updated>2016-03-17T22:31:23+09:00</updated>
 <id>http://blog.asamaru.net/</id>
 <subtitle>세상에 필요한 소스코드 한줄 남기고 가자.
 </subtitle>
 <author>
 <name>유영재</name>
 </author>
+<entry>
+<title>php composer speed up</title>
+<link href="http://blog.asamaru.net/2016/03/17/php-composer-speed-up/" rel="alternate" type="text/html" title="php composer speed up" />
+<published>2016-03-17T19:20:39+09:00</published>
+<updated>2016-03-17T19:20:39+09:00</updated>
+<id>http://blog.asamaru.net/2016/03/17/php-composer-speed-up</id>
+<content type="html" xml:base="http://blog.asamaru.net/2016/03/17/php-composer-speed-up/">&lt;p&gt;&lt;a href=&quot;https://getcomposer.org/&quot;&gt;Composer&lt;/a&gt;(컴포저)는 PHP의 의존성 관리도구이다. 이 Composer를 사용하면서 가장 큰 단점으로 꼽을 수 있는 것은 느린 속도다. 나만 그렇게 느끼는 것은 아닌지 국내외에 많은 이야기가 있다. 오늘은 그 이야기들을 정리해 보려고 한다.&lt;/p&gt;
+
+&lt;p&gt;우선 Composer에 대한 상세한 내용은 &lt;a href=&quot;https://xpressengine.github.io/Composer-korean-docs/&quot;&gt;Composer 한국어 매뉴얼&lt;/a&gt;을 참고하면 도움이 될 것 같다.&lt;/p&gt;
+
+&lt;p&gt;그리고 Composer 속도에 관련된 참고글이다.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;http://findstar.pe.kr/archives/532&quot;&gt;composer.phar 의 동작이 느릴 때 조치할 수 있는 것들.&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.lesstif.com/pages/viewpage.action?pageId=30277898&quot;&gt;컴포저(PHP Composer) 속도 향상 시키기&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;그럼 하나씩 살펴보자.&lt;/p&gt;
+
+&lt;h3 id=&quot;composer-&quot;&gt;Composer 진단&lt;/h3&gt;
+
+&lt;p&gt;우선 &lt;code&gt;composer diagnose&lt;/code&gt; 명령을 이용해서 Composer의 상태를 진단할 수 있다. 진단 결과에 따라 개선이 필요한 부분들을 확인하고 개선할 수 있다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;$ composer diagnose
+
+Checking composer.json: OK
+require.~~~/~~~ : unbound version constraints (dev-master) should be avoided
+Checking platform settings: OK
+Checking git settings: OK
+Checking http connectivity to packagist: OK
+Checking https connectivity to packagist: OK
+Checking github.com oauth access: OK
+Checking disk free space: OK
+Checking pubkeys:
+Tags Public Key Fingerprint: ~~~
+Dev Public Key Fingerprint: ~~~
+OK
+Checking composer version: OK
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;h3 id=&quot;composer--&quot;&gt;Composer 최신버전 사용&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;composer diagnose&lt;/code&gt;에서도 Composer의 최신 버전을 사용중인지 알려준다. 가급적 최신 버전의 Composer를 사용하는 것이 속도에 조금이나마 도움이 될 수 있다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;$ sudo /usr/local/bin/composer self-update
+
+Updating to version 7c62e2b5346a6a656dd9587203719e35bb768056.
+    Downloading: 100%
+Use composer self-update --rollback to return to version d6d0435c5437111e42a123b06e4071e26ba7cb6e
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;h3 id=&quot;prestissimo--&quot;&gt;prestissimo 플러그인 사용&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/hirak/prestissimo&quot;&gt;prestissimo&lt;/a&gt; 이라는 Composer 플러그인이 있다. “composer parallel install plugin”이라고 소개하고 있는 플러그인으로 의존성 라이브러리 설치시 병렬 처리를 지원하여 속도를 대폭 개선해 준다고 한다. 확실히 다운로드가 필요한 상황(신규 설치, 버전업)에서는 병렬 처리로 속도가 개선된다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;composer global require hirak/prestissimo
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;설치 후 Composer를 사용(install, update)하면 아래와 같이 다른 모습을 볼 수 있다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;Loading composer repositories with package information
+Updating dependencies
+    Prefetch start: total: 6
+    1/6:    https://codeload.github.com/symfony/polyfill-util/legacy.zip/8de62801aa12bc4dfcf85eef5d21981ae7bb3cc4
+    2/6:    https://codeload.github.com/symfony/polyfill-php56/legacy.zip/4d891fff050101a53a4caabb03277284942d1ad9
+    3/6:    https://codeload.github.com/Imangazaliev/DiDOM/legacy.zip/e492feae44321e2f4882f6e9466614732822f008
+    4/6:    https://codeload.github.com/symfony/polyfill-mbstring/legacy.zip/1289d16209491b584839022f29257ad859b8532d
+    5/6:    https://codeload.github.com/paragonie/random_compat/legacy.zip/b3313b618f4edd76523572531d5d7e22fe747430
+    6/6:    https://codeload.github.com/Seldaek/monolog/legacy.zip/a5f2734e8c16f3aa21b3da09715d10e15b4d2d45
+    Finished: success:6, skipped:0, failure:0, total: 6
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;h3 id=&quot;prefer-dist-&quot;&gt;–prefer-dist 사용&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://stackoverflow.com/a/20827631&quot;&gt;Faster composer install&lt;/a&gt;에 보면 &lt;code&gt;--prefer-dist&lt;/code&gt; 옵션을 사용함으로써 속도를 향상 시킬 수 있다고 한다.&lt;/p&gt;
+
+&lt;h3 id=&quot;hhvmhttphhvmcom--php-7-&quot;&gt;&lt;a href=&quot;http://hhvm.com/&quot;&gt;HHVM&lt;/a&gt; 또는 PHP 7 사용&lt;/h3&gt;
+
+&lt;p&gt;Composer는 PHP로 제작된 프로그램으로 PHP의 성능에 영향을 많이 받는다. 따라서 보다 빠른 실행기를 사용하는 것이 속도에 도움이 된다. PHP 7을 사용할 수 없다면 &lt;a href=&quot;http://hhvm.com/&quot;&gt;HHVM&lt;/a&gt;을 사용하는 것이 도움이 될 수 있다. 하지만 Prebuilt Packages를 지원하는 ubuntu나 debian을 사용하는 것이 아니라면 직접 빌드를 해야하므로 귀찮을 수 있다(개인적 생각).&lt;/p&gt;
+
+&lt;h3 id=&quot;disable-xdebug&quot;&gt;Disable Xdebug&lt;/h3&gt;
+
+&lt;p&gt;Xdebug가 켜진 상태에서 Composer를 사용하면 아래와 같은 경고가 나온다. Xdebug를 켠 상태에서는 성능에 매우 큰 영향이 있으니 Xdebug를 끄고 사용하라는 것이다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
+2
+3&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;composer update
+
+You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;h3 id=&quot;packagist--&quot;&gt;packagist 미러 사용&lt;/h3&gt;
+
+&lt;p&gt;아래와 같이 packagist의 레포지토리를 http://packagist.jp로 설정함으로써 약간의 속도 향상(일본이 아무래도 더 가까우니)을 얻을 수 있다고 한다. 하지만 자칫 잘못하면 더 느려질수도 있으므로 테스트를 해서 결정할 것을 권장한다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;$ composer config -g repositories.packagist composer http://packagist.jp
+# 제거는 아래와 같이
+$ composer config -g --unset repositories.packagist
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;h3 id=&quot;disable-enablegc&quot;&gt;Disable enable_gc&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://laracasts.com/discuss/channels/tips/tip-speed-up-composer&quot;&gt;[Tip] Speed Up Composer&lt;/a&gt;에 보면 &lt;code&gt;enable_gc&lt;/code&gt;를 disable 함으로써 속도를 향상시키는 방법을 안내하고 있다. 하지만 &lt;a href=&quot;https://github.com/composer/composer/commit/ac676f47f7bbc619678a29deae097b6b0710b799&quot;&gt;Disable GC when computing deps, refs #3482&lt;/a&gt;에서 보면 이와 관련된 패치는 이미 Composer에 반영되어 있으므로 효과가 없다.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;사실 서두에서 이야기한 것처럼 위 내용들은 여러 곳의 이야기를 나름대로 요약 정리한 것이다. 하지만 모두 효과가 있다고는 말하지 못하겠다. 현재 PHP 7을 사용하고 있는 상황에서 여러가지를 시도 해봐도 Composer의 속도는 느리기만 하다(약간씩의 도움은 되는 것들도 있다).&lt;/p&gt;
+
+&lt;p&gt;느린 Composer로 인해 답답한 마음을 달래고자 시간이 되는대로 방법을 찾아보고 있으나 아직은 결론을 얻지 못했다. 그나마 prestissimo를 사용하는 것이 가장 효과적인 것 같다. 앞으로도 여러가지를 시도하여 도움이 될만한 방법을 발견하면 다시 글을 쓰도록 하겠다.&lt;/p&gt;
+</content>
+<summary>Composer(컴포저)는 PHP의 의존성 관리도구이다. 이 Composer를 사용하면서 가장 큰 단점으로 꼽을 수 있는 것은 느린 속도다. 나만 그렇게 느끼는 것은 아닌지 국내외에 많은 이야기가 있다. 오늘은 그 이야기들을 정리해 보려고 한다.우선 Composer에 대한 상세한 내용은 Composer 한국어 매뉴얼을 참고하면 도움이 될 것 같다.그리고 Composer 속도에 관련된 참고글이다.  composer.phar 의 동작이 느릴 때 조치할 수 있는 것들.  컴포저(PHP Composer) 속도 향상 시키기그럼 하나씩 살펴보자.Composer 진단우선 composer diagnose 명령을 이용해서 Composer의 상태를 진단할 수 있다. 진단 결과에 따라 개선이 필요한 부분들을 확인하고 개선할 수 있다.$ composer diagnoseChecking composer.json: OKrequire.~~~/~~~ : unbound version constraints (dev-master) should be avoidedChecking platform settings: OKChecking git settings: OKChecking http connectivity to packagist: OKChecking https connectivity to packagist: OKChecking github.com oauth access: OKChecking disk free space: OKChecking pubkeys:Tags Public Key Fingerprint: ~~~Dev Public Key Fingerprint: ~~~OKChecking composer version: OKComposer 최신버전 사용composer diagnose에서도 Composer의 최신 버전을 사용중인지 알려준다. 가급적 최신 버전의 Composer를 사용하는 것이 속도에 조금이나마 도움이 될 수 있다.$ sudo /usr/local/bin/composer self-updateUpdating to version 7c62e2b5346a6a656dd9587203719e35bb768056.    Downloading: 100%Use composer self-update --rollback to return to version d6d0435c5437111e42a123b06e4071e26ba7cb6eprestissimo 플러그인 사용prestissimo 이라는 Composer 플러그인이 있다. “composer parallel install plugin”이라고 소개하고 있는 플러그인으로 의존성 라이브러리 설치시 병렬 처리를 지원하여 속도를 대폭 개선해 준다고 한다. 확실히 다운로드가 필요한 상황(신규 설치, 버전업)에서는 병렬 처리로 속도가 개선된다.1$ composer global require hirak/prestissimo설치 후 Composer를 사용(install, update)하면 아래와 같이 다른 모습을 볼 수 있다.Loading composer repositories with package informationUpdating dependencies    Prefetch start: total: 6    1/6:    https://codeload.github.com/symfony/polyfill-util/legacy.zip/8de62801aa12bc4dfcf85eef5d21981ae7bb3cc4    2/6:    https://codeload.github.com/symfony/polyfill-php56/legacy.zip/4d891fff050101a53a4caabb03277284942d1ad9    3/6:    https://codeload.github.com/Imangazaliev/DiDOM/legacy.zip/e492feae44321e2f4882f6e9466614732822f008    4/6:    https://codeload.github.com/symfony/polyfill-mbstring/legacy.zip/1289d16209491b584839022f29257ad859b8532d    5/6:    https://codeload.github.com/paragonie/random_compat/legacy.zip/b3313b618f4edd76523572531d5d7e22fe747430    6/6:    https://codeload.github.com/Seldaek/monolog/legacy.zip/a5f2734e8c16f3aa21b3da09715d10e15b4d2d45    Finished: success:6, skipped:0, failure:0, total: 6–prefer-dist 사용Faster composer install에 보면 --prefer-dist 옵션을 사용함으로써 속도를 향상 시킬 수 있다고 한다.HHVM 또는 PHP 7 사용Composer는 PHP로 제작된 프로그램으로 PHP의 성능에 영향을 많이 받는다. 따라서 보다 빠른 실행기를 사용하는 것이 속도에 도움이 된다. PHP 7을 사용할 수 없다면 HHVM을 사용하는 것이 도움이 될 수 있다. 하지만 Prebuilt Packages를 지원하는 ubuntu나 debian을 사용하는 것이 아니라면 직접 빌드를 해야하므로 귀찮을 수 있다(개인적 생각).Disable XdebugXdebug가 켜진 상태에서 Composer를 사용하면 아래와 같은 경고가 나온다. Xdebug를 켠 상태에서는 성능에 매우 큰 영향이 있으니 Xdebug를 끄고 사용하라는 것이다.123$ composer updateYou are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebugpackagist 미러 사용아래와 같이 packagist의 레포지토리를 http://packagist.jp로 설정함으로써 약간의 속도 향상(일본이 아무래도 더 가까우니)을 얻을 수 있다고 한다. 하지만 자칫 잘못하면 더 느려질수도 있으므로 테스트를 해서 결정할 것을 권장한다.$ composer config -g repositories.packagist composer http://packagist.jp# 제거는 아래와 같이$ composer config -g --unset repositories.packagistDisable enable_gc[Tip] Speed Up Composer에 보면 enable_gc를 disable 함으로써 속도를 향상시키는 방법을 안내하고 있다. 하지만 Disable GC when computing deps, refs #3482에서 보면 이와 관련된 패치는 이미 Composer에 반영되어 있으므로 효과가 없다.사실 서두에서 이야기한 것처럼 위 내용들은 여러 곳의 이야기를 나름대로 요약 정리한 것이다. 하지만 모두 효과가 있다고는 말하지 못하겠다. 현재 PHP 7을 사용하고 있는 상황에서 여러가지를 시도 해봐도 Composer의 속도는 느리기만 하다(약간씩의 도움은 되는 것들도 있다).느린 Composer로 인해 답답한 마음을 달래고자 시간이 되는대로 방법을 찾아보고 있으나 아직은 결론을 얻지 못했다. 그나마 prestissimo를 사용하는 것이 가장 효과적인 것 같다. 앞으로도 여러가지를 시도하여 도움이 될만한 방법을 발견하면 다시 글을 쓰도록 하겠다.</summary>
+</entry>
 <entry>
 <title>android gradle provided와 org.apache.http.legacy</title>
 <link href="http://blog.asamaru.net/2016/03/16/android-gradle-provided-and-org-apache-http-legacy/" rel="alternate" type="text/html" title="android gradle provided와 org.apache.http.legacy" />
@@ -949,114 +1063,5 @@ nc의 경우는 -X 뒤에 있는 5가 Proxy 프로토콜을 뜻한다.&lt;/p&gt;
 &lt;p&gt;결론은 나와 같은 착각을 하고 있는 것이라면 걱정을 뒤로하고 그냥 “salt” 옵션을 사용하지 않도록 변경함으로써 모든 문제는 해결된다. 다만, 다른 이유로 hash가 항상 동일한 값이 필요한 상황이라면 앞서 제시안 대안들을 검토하길 바란다. 비밀번호의 hash가 같은 것은 보안상으로도 좋지않고 다른 값의 hash로 사용하는 것이라면 SHA1 등을 사용하는 것이 맞을테니 대부분의 경우에 나와 같은 착각에서 이 문제를 고민하고 있을 것 같다.&lt;/p&gt;
 </content>
 <summary>php에서 비밀번호를 암호화해서 저장하기 위해서 password_hash()를 사용하고 있다. 다른 곳에서도 오래전에는 MD5, SHA1과 같은 hash 함수를 사용하는 경우들도 있었지만 요즘은 대부분 password_hash()을 사용하고 있을 것이라고 생각한다.이번에 사용중이던 PHP를 7버전으로 버전업하려고 Vagrant에서 먼저 테스트 중이다. 이야기하려는 주제와는 맞지 않지만 PHP 7을 사용하는 것은 필수적인 선택이라고 생각한다. 실제로 테스트 해보니 실행 성능이 향상되며 메모리 사용량도 40% 가량 줄었다. 이 부분은 상황에 따라 다른 결과를 가져올 수 있으나 확실한 것은 성능의 향상이 기대 이상이라는 것이다. 게다가 PHP는 버전업시에 하위 호환에 대해 보수적이라 PHP 7로 버전업하더라도 심각한 호환성 문제를 일으키는 경우는 거의 없을 것으로 생각된다.다시 본론으로 돌아와서 password_hash()를 보면 PHP 7로 버전업되면서 변경 사항이 있다. 그중 하나가 “salt” 옵션이 Deprecated 되었다는 것이다.  Warning : The salt option has been deprecated as of PHP 7.0.0. It is now preferred to simply use the salt that is generated by default.이와 관련해서 사용중이던 코드는 아래와 같다.1234public function encryptPassword($str){	return password_hash($str, PASSWORD_BCRYPT, [&amp;quot;salt&amp;quot; =&amp;gt; &amp;quot;abcdefghijklmnopqrstuvwxyz&amp;quot;]);}이 함수를 PHP 7에서 실행하면 아래와 같은 오류를 만나게 된다.1PHP Deprecated:  password_hash(): Use of the &amp;#39;salt&amp;#39; option to password_hash is deprecated그럼 이 문제를 해결하려면 어떻게 할까? 아래의 함수를 보자.12345678function password_hash_compat($str, $salt) {	$salt = base64_encode($salt);  if (strlen($salt) &amp;lt; 22) {      return false;  }	$salt = str_replace(&amp;#39;+&amp;#39;, &amp;#39;.&amp;#39;, $salt);	return crypt($str, &amp;#39;$2y$10$&amp;#39;.$salt.&amp;#39;$&amp;#39;);}PHP 7에서 password_hash()와 동일한 동작을 하도록 만들어진 함수다. 다만, BCrypt에 한정되며 cost 등의 옵션을 사용할 수 없지만 샘플로 제시한 코드와는 동일한 결과를 반환한다. 주의할 것은 salt의 길이가 22자 이상이어야 한다는 것(실제값이 아니라 base64_encode된 문자열의 길이가 22자 이상).이 함수가 맘에 들지 않는다면 ircmaxell/password_compat을 사용할 수 있다. 단, 이 라이브러리는 password_hash()가 지원되지 않는 구버전 PHP를 위한 함수로 PHP 7에서 동작하게 하려면 약간의 수정이 필요하다. 하지만 소스를 볼 수 있으니 내부 동작 원리를 파악할 수 있으므로 유용하다.그런데 Deprecated 된 옵션을 굳이 compat 함수를 만들어가면서까지 유지 해야할 이유가 뭘까? 항상 동일한 hash를 얻어야 하는 것이 아니라면 굳이 필요가 없다. 비밀번호의 경우는 항상 동일한 hash를 만들어 비교하는 것이 목적이 아니라 비밀번호가 같은지만 비교하면 되기 때문에 동일한 hash는 필요치 않다.다시 이야기하자면 나의 경우는 맨 처음 적었던 코드를 사용했던 이유는 password_hash()를 제대로 이해하지 못했기 때문이다. “salt를 넣지 않으면 생성시마다 다른 hash를 반환하니 추후에 다른 환경(언어)에서 해당 값을 비교할 수 없는 것이 아닌가?” 하는 걱정 때문에 salt를 사용했던 것이다. 이 부분이 착각이었던 것이다. password_hash()와 짝을 이루는 password_verify()에서는 salt 값이 필요하지 않다. 그렇다면 어떻게 검증을 하는 것일까? password_hash()의 결과에 이미 salt 값이 포함되어 있기 때문에 salt를 따로 넣어줄 필요가 없는 것이다. 이와 관련된 자세한 정보는 “PHP password_hash()와 BCrypt“에 따로 남긴다.결론은 나와 같은 착각을 하고 있는 것이라면 걱정을 뒤로하고 그냥 “salt” 옵션을 사용하지 않도록 변경함으로써 모든 문제는 해결된다. 다만, 다른 이유로 hash가 항상 동일한 값이 필요한 상황이라면 앞서 제시안 대안들을 검토하길 바란다. 비밀번호의 hash가 같은 것은 보안상으로도 좋지않고 다른 값의 hash로 사용하는 것이라면 SHA1 등을 사용하는 것이 맞을테니 대부분의 경우에 나와 같은 착각에서 이 문제를 고민하고 있을 것 같다.</summary>
-</entry>
-<entry>
-<title>jQuery $.ajax에서 응답 Content-Type을 application/json 사용시 응답 내용이 파일로 다운로드 처리되는 문제</title>
-<link href="http://blog.asamaru.net/2016/02/23/jquery-ajax-ie8-content-type-application-json/" rel="alternate" type="text/html" title="jQuery $.ajax에서 응답 Content-Type을 application/json 사용시 응답 내용이 파일로 다운로드 처리되는 문제" />
-<published>2016-02-23T21:24:34+09:00</published>
-<updated>2016-02-23T21:24:34+09:00</updated>
-<id>http://blog.asamaru.net/2016/02/23/jquery-ajax-ie8-content-type-application-json</id>
-<content type="html" xml:base="http://blog.asamaru.net/2016/02/23/jquery-ajax-ie8-content-type-application-json/">&lt;p&gt;jQuery의 $.ajax 함수를 사용해서 JSON 응답을 받고자 할 때 응답값을 배열(객체)로 받는 방법으로 서버 응답시 header 정보에 &lt;code&gt;Content-Type:application/json; charset=utf-8&lt;/code&gt;을 포함하는 방법을 주로 사용한다. 다른 방법도 있지만 응답 데이터의 유형을 명시적으로 지정해서 반환하는 것이 더 나은 방법이라는 생각이다. 실제로 이 방법으로 이제까지 잘 사용해 왔다.&lt;/p&gt;
-
-&lt;p&gt;그런데 얼마전 간단한 작업을 하던 중 이상한 상황에 부딪혔다.
-IE8/9에서 &lt;code&gt;Content-Type:application/json; charset=utf-8&lt;/code&gt;을 정상적으로 인식하지 못해 ajax 호출시 응답값을 파일로 저장(다운로드)하려고 하는 것이다(IE10에서 이상없음). 그래서 관련 내용을 찾아보니 &lt;a href=&quot;http://stackoverflow.com/questions/8892819/ie8-treats-json-response-as-file-and-tries-to-download-it&quot;&gt;IE8 treats json response as file and tries to download it&lt;/a&gt;라는 글이 있었다. 여기서의 설명처럼 &lt;code&gt;application/json&lt;/code&gt; 대신 &lt;code&gt;text/plain&lt;/code&gt;을 사용하면 다운로드를 시도하는 현상은 없어진다. 하지만 $.ajax의 done(success) 함수에서 받은 응답값이 배열(객체)가 아니라 text다. 어떻게보면 당연하다. 서버에서 text라고 보냈으니.&lt;/p&gt;
-
-&lt;p&gt;그럼 이 문제는 어떻게 해결할까? 간단한 방법은 $.ajax 사용시 dataType을 ‘json’으로 지정하는 방법을 사용하면 해결된다. 위 링크에서 질문자가 올린 코드를 예시로 아래에 남긴다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt; 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ajax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;url_string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;dataType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;json&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;success&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;alert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;all is well&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;status&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;alert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;alert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;status&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;alert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;위 처럼 해결할 수는 있으나 매번 &lt;code&gt;dataType: &quot;json&quot;&lt;/code&gt;을 사용하는 것은 맘에 들지 않는다. 다른 방법으로 response가 text로 넘어왔으니 직접 JSON을 parse 하면 되지만 이것도 맘에 들지 않는다. 하지만 현재까지 확인한 바로는 다른 해결 방법을 찾지 못했다.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;사실 위 내용을 보고 이상하다는 생각을 할 수도 있다. 실제로 굳이 &lt;code&gt;dataType: &quot;json&quot;&lt;/code&gt;를 사용하지 않아도 IE8/9에서 이상없이 &lt;code&gt;application/json&lt;/code&gt; header를 사용하고 있는 사람이 있을 것이다. 나도 얼마전까지는 아무 문제없이 사용해오고 있었기 때문이다. 혹시나 싶어 기존 코드들 중 몇가지를 IE8에서 다시 테스트 해 봤으나 역시나 아무 문제가 없었다(아마도 구버전의 jQuery에서는 이 문제를 가지고 있었으나 현재는 관련 문제를 jQuery에서 해결해주고 있는 것으로 보인다.)&lt;/p&gt;
-
-&lt;p&gt;정확히 이야기하자면 나의 경우는 &lt;a href=&quot;http://malsup.com/jquery/form/&quot;&gt;jQuery Form Plugin&lt;/a&gt;을 사용하면서 이 문제가 발생했다. 이번 작업에서 AJAX 파일업로드를 처리 할 일이 있어서 위 라이브러리를 사용했다. 그런데 이 라이브러리의 문제인 것인지 &lt;code&gt;$.ajaxForm&lt;/code&gt; 함수를 사용하면 위 문제가 발생한다.&lt;/p&gt;
-
-&lt;p&gt;해결 방법은 jQuery와 동일하다. 서버 응답시 header에 &lt;code&gt;text/plain&lt;/code&gt;를 사용하고 &lt;code&gt;dataType: &quot;json&quot;&lt;/code&gt;을 옵션으로 추가하면 해결된다. 아래의 예시를 보자.&lt;/p&gt;
-
-&lt;p&gt;우선 PHP 샘플 코드다. IE의 버전을 검사해서 필요시에만 &lt;code&gt;text/plain&lt;/code&gt;를 적용한다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
-2
-3
-4
-5
-6
-7&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$returnData&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;preg_match&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;/(?i)msie [5-9]/&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$_SERVER&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;HTTP_USER_AGENT&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nb&quot;&gt;header&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;Content-Type:text/plain; charset=utf-8&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nb&quot;&gt;header&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;Content-Type:application/json; charset=utf-8&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;json_encode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$returnData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;다음은 javascript 샘플 코드다. &lt;code&gt;dataType: &quot;json&quot;&lt;/code&gt;를 추가해서 사용한다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt; 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;#form&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ajaxForm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
-	&lt;span class=&quot;nx&quot;&gt;dataType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;json&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-	&lt;span class=&quot;nx&quot;&gt;beforeSubmit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;formData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;jqForm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-		&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-	&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
-	&lt;span class=&quot;nx&quot;&gt;success&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;statusText&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;xhr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;$form&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-		&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;success&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;statusText&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-			&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;typeof&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!==&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;object&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-				&lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;parseJSON&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-			&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-		&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-	&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
-	&lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;추가적으로 응답값의 데이터 타입을 검사해서 text이면 &lt;code&gt;$.parseJSON&lt;/code&gt; 또는 &lt;code&gt;JSON.parse&lt;/code&gt;를 수행해 주도록 한다. 위 코드대로라면 IE9 이하에서는 response가 “string”으로 넘어오고 기타 브라우저에서는 “object”로 넘어올 것이기 때문이다.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;이 글에서는 조금 두서없이 설명을 했다. 상황적으로 그런 것이 jQuery를 사용할 때는 굳이 부수적인 처리가 필요없지만(경험상으로는) 기타 AJAX를 사용하는 상황에서 위와 비슷한 문제가 발생할 수 있어 원인과 해결 방법의 힌트를 설명하고자 여러가지 이야기를 섞어서 설명할 수 밖에 없었으니 양해 바란다. 더욱 상세히 설명하지 못한 부분이 더 문제일수도… 하지만 일일이 설명하자니 너무 글이 길어질 것 같아 기본적인 부분만 언급하고 넘어가니 혹시 더 필요한 부분이 있다면 따로 요청 바란다.&lt;/p&gt;
-</content>
-<summary>jQuery의 $.ajax 함수를 사용해서 JSON 응답을 받고자 할 때 응답값을 배열(객체)로 받는 방법으로 서버 응답시 header 정보에 Content-Type:application/json; charset=utf-8을 포함하는 방법을 주로 사용한다. 다른 방법도 있지만 응답 데이터의 유형을 명시적으로 지정해서 반환하는 것이 더 나은 방법이라는 생각이다. 실제로 이 방법으로 이제까지 잘 사용해 왔다.그런데 얼마전 간단한 작업을 하던 중 이상한 상황에 부딪혔다.IE8/9에서 Content-Type:application/json; charset=utf-8을 정상적으로 인식하지 못해 ajax 호출시 응답값을 파일로 저장(다운로드)하려고 하는 것이다(IE10에서 이상없음). 그래서 관련 내용을 찾아보니 IE8 treats json response as file and tries to download it라는 글이 있었다. 여기서의 설명처럼 application/json 대신 text/plain을 사용하면 다운로드를 시도하는 현상은 없어진다. 하지만 $.ajax의 done(success) 함수에서 받은 응답값이 배열(객체)가 아니라 text다. 어떻게보면 당연하다. 서버에서 text라고 보냈으니.그럼 이 문제는 어떻게 해결할까? 간단한 방법은 $.ajax 사용시 dataType을 ‘json’으로 지정하는 방법을 사용하면 해결된다. 위 링크에서 질문자가 올린 코드를 예시로 아래에 남긴다. 1 2 3 4 5 6 7 8 9101112$.ajax({  url: url_string,  dataType: &amp;quot;json&amp;quot;,  success: function(response){    alert(&amp;#39;all is well&amp;#39;);  },  error: function(request, status, error){    alert(request);    alert(status);    alert(error);  }});위 처럼 해결할 수는 있으나 매번 dataType: &quot;json&quot;을 사용하는 것은 맘에 들지 않는다. 다른 방법으로 response가 text로 넘어왔으니 직접 JSON을 parse 하면 되지만 이것도 맘에 들지 않는다. 하지만 현재까지 확인한 바로는 다른 해결 방법을 찾지 못했다.사실 위 내용을 보고 이상하다는 생각을 할 수도 있다. 실제로 굳이 dataType: &quot;json&quot;를 사용하지 않아도 IE8/9에서 이상없이 application/json header를 사용하고 있는 사람이 있을 것이다. 나도 얼마전까지는 아무 문제없이 사용해오고 있었기 때문이다. 혹시나 싶어 기존 코드들 중 몇가지를 IE8에서 다시 테스트 해 봤으나 역시나 아무 문제가 없었다(아마도 구버전의 jQuery에서는 이 문제를 가지고 있었으나 현재는 관련 문제를 jQuery에서 해결해주고 있는 것으로 보인다.)정확히 이야기하자면 나의 경우는 jQuery Form Plugin을 사용하면서 이 문제가 발생했다. 이번 작업에서 AJAX 파일업로드를 처리 할 일이 있어서 위 라이브러리를 사용했다. 그런데 이 라이브러리의 문제인 것인지 $.ajaxForm 함수를 사용하면 위 문제가 발생한다.해결 방법은 jQuery와 동일하다. 서버 응답시 header에 text/plain를 사용하고 dataType: &quot;json&quot;을 옵션으로 추가하면 해결된다. 아래의 예시를 보자.우선 PHP 샘플 코드다. IE의 버전을 검사해서 필요시에만 text/plain를 적용한다.1234567$returnData = [1,2,3];if (preg_match(&amp;#39;/(?i)msie [5-9]/&amp;#39;, $_SERVER[&amp;#39;HTTP_USER_AGENT&amp;#39;])) {  header(&amp;#39;Content-Type:text/plain; charset=utf-8&amp;#39;);} else {  header(&amp;#39;Content-Type:application/json; charset=utf-8&amp;#39;);}echo json_encode($returnData);다음은 javascript 샘플 코드다. dataType: &quot;json&quot;를 추가해서 사용한다. 1 2 3 4 5 6 7 8 9101112131415$(&amp;#39;#form&amp;#39;).ajaxForm({	dataType: &amp;quot;json&amp;quot;,	beforeSubmit: function (formData, jqForm, options) {		return true;	},	success: function (response, statusText, xhr, $form) {		if (&amp;#39;success&amp;#39; == statusText) {			if ((response) &amp;amp;&amp;amp; (typeof response !== &amp;quot;object&amp;quot;)) {				response = $.parseJSON(response);			}		}	},	error: function () {	}});추가적으로 응답값의 데이터 타입을 검사해서 text이면 $.parseJSON 또는 JSON.parse를 수행해 주도록 한다. 위 코드대로라면 IE9 이하에서는 response가 “string”으로 넘어오고 기타 브라우저에서는 “object”로 넘어올 것이기 때문이다.이 글에서는 조금 두서없이 설명을 했다. 상황적으로 그런 것이 jQuery를 사용할 때는 굳이 부수적인 처리가 필요없지만(경험상으로는) 기타 AJAX를 사용하는 상황에서 위와 비슷한 문제가 발생할 수 있어 원인과 해결 방법의 힌트를 설명하고자 여러가지 이야기를 섞어서 설명할 수 밖에 없었으니 양해 바란다. 더욱 상세히 설명하지 못한 부분이 더 문제일수도… 하지만 일일이 설명하자니 너무 글이 길어질 것 같아 기본적인 부분만 언급하고 넘어가니 혹시 더 필요한 부분이 있다면 따로 요청 바란다.</summary>
 </entry>
 </feed>

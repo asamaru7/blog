@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>php composer speed up</title>
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="author" content="유영재">
+	<meta name="keywords" content="php composer speed up,php,이 세상에 하나는 남기고 가자"/>
+	<meta name="description" content="php composer speed up,php,Composer(컴포저)는 PHP의 의존성 관리도구이다. 이 Composer를 사용하면서 가장 큰 단점으로 꼽을 수 있는 것은 느린 속도다. 나만 그렇게 느끼는 것은 아닌지 국내외에 많은 이야기가 있다. 오늘은 그 이야기들을 정리해 보려고 한다.우선 Composer에 대한 상세한 ..."/>
+
+	<!-- http://t.co/dKP3o1e -->
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- http://opengraphprotocol.org/ -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="http://blog.asamaru.net/2016/03/17/php-composer-speed-up/">
+	<meta property="og:title" content="php composer speed up">
+	
+
+	<link rel="canonical" href="http://blog.asamaru.net/2016/03/17/php-composer-speed-up/"/>
+	<link rel="shortcut icon" type="image/x-icon" media="screen" href="http://blog.asamaru.net/favicon.ico"/>
+	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="http://blog.asamaru.net/atom.xml"/>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="http://blog.asamaru.net/static/css/style.css"/>
+	<link rel="stylesheet" type="text/css" href="http://blog.asamaru.net/static/css/highlight.css"/>
+
+	
+	<link rel="stylesheet" type="text/css" href="http://blog.asamaru.net/static/css/post.css"/>
+	
+	
+
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+					(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65749108-2', 'auto');
+		ga('send', 'pageview');
+
+	</script>
+</head>
+
+
+<body>
+<div class="main">
+
+	<nav class="navbar navbar-default" role="navigation">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" title="toggle navbar" data-toggle="collapse" data-target=".navbar-collapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="/">이 세상에 하나는 남기고 가자</a>
+		</div>
+
+		<div class="navbar-collapse collapse">
+			
+			<ul class="nav navbar-nav">
+				<li class="active">
+				<a rel="index" href="/">Blog</a>
+				</li>
+				<li >
+				<a href="/archives/">Archives</a>
+				</li>
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a class="subscribe-rss" href="http://blog.asamaru.net/atom.xml" title="subscribe via RSS">
+						<span class="visible-xs">RSS</span>
+						<img class="hidden-xs" src="/static/img/rss.png" alt="RSS">
+					</a>
+				</li>
+			</ul>
+			
+			<!-- <form class="navbar-form navbar-right" action="http://www.google.co.kr" id="cse-search-box" target="_blank">
+			  <div class="form-group">
+			    <input type="hidden" name="cx" value="partner-pub-8163803188491150:6044663021" />
+			    <input type="hidden" name="ie" value="UTF-8" />
+			    <input type="text" name="q" class="form-control" />
+			    <input type="submit" name="sa" value="&#xac80;&#xc0c9;" />
+			  </div>
+			</form>
+			<script type="text/javascript" src="http://www.google.co.kr/coop/cse/brand?form=cse-search-box&amp;lang=ko"></script> -->
+			<form class="navbar-form navbar-right" action="https://www.google.com/search" method="GET">
+				<input type="hidden" name="sitesearch" value="http://blog.asamaru.net">
+				<div class="form-group">
+					<input class="form-control" type="text" name="q" placeholder="Search">
+				</div>
+			</form>
+			
+		</div>
+	</div>
+</nav>
+
+
+	<div class="container">
+		<div class="row">
+	<div class="content col-lg-9">
+		<div class="sheet post">
+			<header>
+				<h2>php composer speed up</h2>
+				<p class="post-meta">
+					<!--<span class="glyphicon glyphicon-calendar"></span>--> 2016.03.17.
+					
+					&nbsp;&nbsp;&nbsp;
+					<span>
+						<a href="http://blog.asamaru.net/category/php/"><span class="glyphicon glyphicon-list"></span>&nbsp;php</a>
+					</span>
+					<span>
+                </span>
+				</p>
+			</header>
+			<hr class="boundary">
+			<article>
+				<!-- Topic of Contents -->
+				<!--
+								<section class="panel panel-default cToc">
+									<div class="panel-heading">
+										<h3 class="panel-title">Topic of Contents</h3>
+									</div>
+									<ul class="list-group">
+										<li class="list-group-item toc">
+										</li>
+									</ul>
+								</section>
+				-->
+
+				<p><a href="https://getcomposer.org/">Composer</a>(컴포저)는 PHP의 의존성 관리도구이다. 이 Composer를 사용하면서 가장 큰 단점으로 꼽을 수 있는 것은 느린 속도다. 나만 그렇게 느끼는 것은 아닌지 국내외에 많은 이야기가 있다. 오늘은 그 이야기들을 정리해 보려고 한다.</p>
+
+<p>우선 Composer에 대한 상세한 내용은 <a href="https://xpressengine.github.io/Composer-korean-docs/">Composer 한국어 매뉴얼</a>을 참고하면 도움이 될 것 같다.</p>
+
+<p>그리고 Composer 속도에 관련된 참고글이다.</p>
+
+<ul>
+  <li><a href="http://findstar.pe.kr/archives/532">composer.phar 의 동작이 느릴 때 조치할 수 있는 것들.</a></li>
+  <li><a href="https://www.lesstif.com/pages/viewpage.action?pageId=30277898">컴포저(PHP Composer) 속도 향상 시키기</a></li>
+</ul>
+
+<p>그럼 하나씩 살펴보자.</p>
+
+<h3 id="composer-">Composer 진단</h3>
+
+<p>우선 <code>composer diagnose</code> 명령을 이용해서 Composer의 상태를 진단할 수 있다. 진단 결과에 따라 개선이 필요한 부분들을 확인하고 개선할 수 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">$ composer diagnose
+
+Checking composer.json: OK
+require.~~~/~~~ : unbound version constraints (dev-master) should be avoided
+Checking platform settings: OK
+Checking git settings: OK
+Checking http connectivity to packagist: OK
+Checking https connectivity to packagist: OK
+Checking github.com oauth access: OK
+Checking disk free space: OK
+Checking pubkeys:
+Tags Public Key Fingerprint: ~~~
+Dev Public Key Fingerprint: ~~~
+OK
+Checking composer version: OK
+</code></pre></div></figure>
+
+<h3 id="composer--">Composer 최신버전 사용</h3>
+
+<p><code>composer diagnose</code>에서도 Composer의 최신 버전을 사용중인지 알려준다. 가급적 최신 버전의 Composer를 사용하는 것이 속도에 조금이나마 도움이 될 수 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">$ sudo /usr/local/bin/composer self-update
+
+Updating to version 7c62e2b5346a6a656dd9587203719e35bb768056.
+    Downloading: 100%
+Use composer self-update --rollback to return to version d6d0435c5437111e42a123b06e4071e26ba7cb6e
+</code></pre></div></figure>
+
+<h3 id="prestissimo--">prestissimo 플러그인 사용</h3>
+
+<p><a href="https://github.com/hirak/prestissimo">prestissimo</a> 이라는 Composer 플러그인이 있다. “composer parallel install plugin”이라고 소개하고 있는 플러그인으로 의존성 라이브러리 설치시 병렬 처리를 지원하여 속도를 대폭 개선해 준다고 한다. 확실히 다운로드가 필요한 상황(신규 설치, 버전업)에서는 병렬 처리로 속도가 개선된다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>composer global require hirak/prestissimo
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>설치 후 Composer를 사용(install, update)하면 아래와 같이 다른 모습을 볼 수 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">Loading composer repositories with package information
+Updating dependencies
+    Prefetch start: total: 6
+    1/6:    https://codeload.github.com/symfony/polyfill-util/legacy.zip/8de62801aa12bc4dfcf85eef5d21981ae7bb3cc4
+    2/6:    https://codeload.github.com/symfony/polyfill-php56/legacy.zip/4d891fff050101a53a4caabb03277284942d1ad9
+    3/6:    https://codeload.github.com/Imangazaliev/DiDOM/legacy.zip/e492feae44321e2f4882f6e9466614732822f008
+    4/6:    https://codeload.github.com/symfony/polyfill-mbstring/legacy.zip/1289d16209491b584839022f29257ad859b8532d
+    5/6:    https://codeload.github.com/paragonie/random_compat/legacy.zip/b3313b618f4edd76523572531d5d7e22fe747430
+    6/6:    https://codeload.github.com/Seldaek/monolog/legacy.zip/a5f2734e8c16f3aa21b3da09715d10e15b4d2d45
+    Finished: success:6, skipped:0, failure:0, total: 6
+</code></pre></div></figure>
+
+<h3 id="prefer-dist-">–prefer-dist 사용</h3>
+
+<p><a href="http://stackoverflow.com/a/20827631">Faster composer install</a>에 보면 <code>--prefer-dist</code> 옵션을 사용함으로써 속도를 향상 시킬 수 있다고 한다.</p>
+
+<h3 id="hhvmhttphhvmcom--php-7-"><a href="http://hhvm.com/">HHVM</a> 또는 PHP 7 사용</h3>
+
+<p>Composer는 PHP로 제작된 프로그램으로 PHP의 성능에 영향을 많이 받는다. 따라서 보다 빠른 실행기를 사용하는 것이 속도에 도움이 된다. PHP 7을 사용할 수 없다면 <a href="http://hhvm.com/">HHVM</a>을 사용하는 것이 도움이 될 수 있다. 하지만 Prebuilt Packages를 지원하는 ubuntu나 debian을 사용하는 것이 아니라면 직접 빌드를 해야하므로 귀찮을 수 있다(개인적 생각).</p>
+
+<h3 id="disable-xdebug">Disable Xdebug</h3>
+
+<p>Xdebug가 켜진 상태에서 Composer를 사용하면 아래와 같은 경고가 나온다. Xdebug를 켠 상태에서는 성능에 매우 큰 영향이 있으니 Xdebug를 끄고 사용하라는 것이다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>composer update
+
+You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="packagist--">packagist 미러 사용</h3>
+
+<p>아래와 같이 packagist의 레포지토리를 http://packagist.jp로 설정함으로써 약간의 속도 향상(일본이 아무래도 더 가까우니)을 얻을 수 있다고 한다. 하지만 자칫 잘못하면 더 느려질수도 있으므로 테스트를 해서 결정할 것을 권장한다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">$ composer config -g repositories.packagist composer http://packagist.jp
+# 제거는 아래와 같이
+$ composer config -g --unset repositories.packagist
+</code></pre></div></figure>
+
+<h3 id="disable-enablegc">Disable enable_gc</h3>
+
+<p><a href="https://laracasts.com/discuss/channels/tips/tip-speed-up-composer">[Tip] Speed Up Composer</a>에 보면 <code>enable_gc</code>를 disable 함으로써 속도를 향상시키는 방법을 안내하고 있다. 하지만 <a href="https://github.com/composer/composer/commit/ac676f47f7bbc619678a29deae097b6b0710b799">Disable GC when computing deps, refs #3482</a>에서 보면 이와 관련된 패치는 이미 Composer에 반영되어 있으므로 효과가 없다.</p>
+
+<hr />
+
+<p>사실 서두에서 이야기한 것처럼 위 내용들은 여러 곳의 이야기를 나름대로 요약 정리한 것이다. 하지만 모두 효과가 있다고는 말하지 못하겠다. 현재 PHP 7을 사용하고 있는 상황에서 여러가지를 시도 해봐도 Composer의 속도는 느리기만 하다(약간씩의 도움은 되는 것들도 있다).</p>
+
+<p>느린 Composer로 인해 답답한 마음을 달래고자 시간이 되는대로 방법을 찾아보고 있으나 아직은 결론을 얻지 못했다. 그나마 prestissimo를 사용하는 것이 가장 효과적인 것 같다. 앞으로도 여러가지를 시도하여 도움이 될만한 방법을 발견하면 다시 글을 쓰도록 하겠다.</p>
+
+			</article>
+			<hr class="boundary">
+		</div>
+
+		<!-- adsense -->
+		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<!-- 블로그 하단 -->
+		<ins class="adsbygoogle"
+			 style="display:block; margin-bottom:20px;"
+			 data-ad-client="ca-pub-8163803188491150"
+			 data-ad-slot="7841851420"
+			 data-ad-format="auto"></ins>
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>
+		<!-- adsense -->
+
+		<div class="pad-min"></div>
+		<div id="post-comment" class="sheet post">
+			<div id="disqus_thread"></div>
+		</div>
+	</div>
+	<div class="content-navigation col-lg-3">
+		<!-- I made it -->
+		<section class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">I made it</h3>
+			</div>
+			<ul class="list-group">
+				<li class="list-group-item"><a href="http://sprite.asamaru.net/" target="_blank">Sprite CSS/Image</a></li>
+				<li class="list-group-item"><a href="http://loan.asamaru.net/" target="_blank">대출이자계산기</a></li>
+				<li class="list-group-item"><a href="http://bookmarklet.asamaru.net/" target="_blank">북마클릿 생성기</a></li>
+			</ul>
+		</section>
+
+		<!-- Categories -->
+		
+		
+		<section class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Categories</h3>
+			</div>
+			<ul class="list-group">
+				
+				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">3</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/css/">Css <span class="badge">3</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/js/">Js <span class="badge">7</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/android/">Android <span class="badge">43</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/octopress/">Octopress <span class="badge">8</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/ios/">Ios <span class="badge">18</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/php/">Php <span class="badge">17</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/java/">Java <span class="badge">3</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/db/">Db <span class="badge">5</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/html/">Html <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/git/">Git <span class="badge">6</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/blog/">Blog <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/tip/">Tip <span class="badge">12</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/linux/">Linux <span class="badge">20</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/swift/">Swift <span class="badge">6</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/iOS/">Ios <span class="badge">2</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/vagrant/">Vagrant <span class="badge">5</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/jekyll/">Jekyll <span class="badge">1</span></a></li>
+				
+			</ul>
+		</section>
+		
+		
+
+		<!-- Tags -->
+		
+		
+		
+
+		<!-- adsense -->
+		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<!-- 블로그 우측 -->
+		<ins class="adsbygoogle"
+			 style="display:block; margin-bottom:20px;"
+			 data-ad-client="ca-pub-8163803188491150"
+			 data-ad-slot="1934918622"
+			 data-ad-format="auto"></ins>
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>
+		<!-- adsense -->
+
+		<!-- Related -->
+		
+
+		
+
+		
+		<section class="panel panel-default dRelatedPosts">
+			<div class="panel-heading">
+				<h3 class="panel-title">Related</h3>
+			</div>
+			<ul class="list-group">
+				
+				<li class="list-group-item"><a href="http://blog.asamaru.net/2016/03/11/upgrade-to-php-5-6-or-7-on-mac-osx-10-11-el-capitan-and-osx-10-6-10-10/">Mac OSX(10.6 – 10.11)에서 PHP(5.6 / 7) 업그레이드</a></li>
+				
+				<li class="list-group-item"><a href="http://blog.asamaru.net/2016/03/03/php-password-hash-and-bcrypt/">PHP password_hash()와 BCrypt</a></li>
+				
+				<li class="list-group-item"><a href="http://blog.asamaru.net/2016/02/24/php-password-hash-salt-option-has-been-deprecated/">PHP password_hash() salt option has been deprecated</a></li>
+				
+				<li class="list-group-item"><a href="http://blog.asamaru.net/2016/02/10/php-stdin/">PHP CLI 사용자 입력(STDIN) 받기</a></li>
+				
+				<li class="list-group-item"><a href="http://blog.asamaru.net/2016/01/05/composer-github-token/">composer 사용시 github token을 요구할 때</a></li>
+				
+			</ul>
+		</section>
+		
+
+		<section class="panel panel-default">
+			<style>
+				#google_translate_country { text-align:center; padding-top:5px; }
+				#google_translate_element > div { text-align:center; padding:5px 0; }
+				#google_translate_element > div > div { display:inline-block; *display:inline; *zoom:1; margin-right:10px; }
+			</style>
+			<div id="google_translate_country">
+				<a href="#googtrans(ko|en)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/English.gif?w=660" alt="English"/></a>
+				<!-- <a href="#googtrans(ko|ko)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Korean.gif?w=660" alt="Korean"/></a> -->
+				<a href="#googtrans(ko|zh-CN)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Chinese.gif?w=660" alt="Chinese"/></a>
+				<a href="#googtrans(ko|ja)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Japanese.gif?w=660" alt="Japanese"/></a>
+				<a href="#googtrans(ko|fr)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/French.gif?w=660" alt="French"/></a>
+				<a href="#googtrans(ko|de)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/German.gif?w=660" alt="German"/></a>
+				<a href="#googtrans(ko|it)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Italian.gif?w=660" alt="Italian"/></a>
+			</div>
+			<div id="google_translate_element"></div>
+			<script type="text/javascript">
+				function googleTranslateElementInit() {
+					new google.translate.TranslateElement({pageLanguage: 'ko'}, 'google_translate_element');
+				}
+			</script>
+			<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+		</section>
+	</div>
+</div>
+
+
+		
+		<div id="disqus_thread"></div>
+		<script type="text/javascript">
+			/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+			var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+			// var disqus_developer = 1; // Comment out when the site is live
+			var disqus_identifier = "/2016/03/17/php-composer-speed-up/";
+
+			/* * * DON'T EDIT BELOW THIS LINE * * */
+			(function () {
+				var dsq = document.createElement('script');
+				dsq.type = 'text/javascript';
+				dsq.async = true;
+				dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+				(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+		<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		
+	</div>
+
+	<div class="page-scrollTop" data-toggle="tooltip" data-placement="top" title="Top">
+		<a href="javascript:void(0);">
+			<div class="arrow"></div>
+			<div class="stick"></div>
+		</a>
+	</div>
+</div>
+
+<footer class="footnote footnote-tiffany">
+	<div class="container">
+		<a class="foot-item" href="mailto:asamaru@asamaru.net" target="_blank"><img src="/static/img/bottom-email.png" alt="Email"></a>
+		<a class="foot-item" href="https://github.com/asamaru7" target="_blank"><img src="/static/img/bottom-github.png" alt="Github"></a>
+		<a class="foot-item" href="http://blog.asamaru.net/atom.xml" target="_blank"><img src="/static/img/bottom-rss.png" alt="RSS"></a>
+		&nbsp;
+		<a href="http://blog.asamaru.net"><span class="word-keep">&copy; 유영재</span></a>
+	</div>
+</footer>
+
+
+<div class="scriptHub">
+	<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="http://blog.asamaru.net/static/js/script.js"></script>
+
+	
+	<script type="text/javascript" src="http://blog.asamaru.net/static/js/post.js"></script>
+	
+	
+</div>
+
+
+
+</body>
+</html>

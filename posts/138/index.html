@@ -113,66 +113,87 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/08/28/cocoapods-usage/">
-								CocoaPods 사용법
+							<a class="title" href="http://blog.asamaru.net/2015/08/28/octopress-category-list-plugin-install/">
+								옥토프레스 category list 플러그인 설치
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/08/28/cocoapods-usage/">2015.08.28.</span></a>
+								<a href="http://blog.asamaru.net/2015/08/28/octopress-category-list-plugin-install/">2015.08.28.</span></a>
 							</p>
 						</header>
 						<p>
-							<h2 id="section">설치</h2>
+							<p>이번엔 옥토프레스에 category list 플러그인을 추가해 보았다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">[</span>sudo<span class="o">]</span> gem install cocoapods
-pod setup
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p>사실 현재 시점에서 쓰고 있는 테마를 선택한 이유가 우측에 나오는 카테고리 목록이었다. 그런데 막상 테마를 설치한 후에도 카테고리 목록이 보이지 않았다. 처음엔 설정이 누락되어서 그렇다고 생각했고 시간이 없어서 그냥 두다가 오늘에서야 추가를 하고자 확인해 봤다.</p>
 
-<h2 id="section-1">사용법</h2>
+<p>현재 시점에 사용하고 있는 테마는 “<a href="https://github.com/kAworu/octostrap3">octostrap3</a>“다. 해당 소스를 뒤져서 aside에 추가하는 부분은 찾았으나 테마엔 그 파일이 없었다. 그럼 이사람은 없는 파일을 어떻게 불러서 쓴단 말인가?</p>
 
-<h3 id="section-2">패키지 검색</h3>
+<p>알아보니 별도 플러그인을 추가해야만 했다.
+https://github.com/ctdk/octopress-category-list
+현재 내가 적용한 플러그인이다. 최근 업데이트가 시점이 오래되어 조금 미심쩍지만 대안이 없다.</p>
 
-<blockquote>
-  <p>http://cocoapods.org/</p>
-</blockquote>
-
-<h3 id="podfile-">Podfile 설정</h3>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span class="nb">cd</span> 프로젝트 폴더
-vi Podfile
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>아래의 내용처럼 필요한 pod을 설정.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">platform :ios, '7.0'
-pod 'HZWebViewController', '~&gt; 0.0.2'
-</code></pre></div></figure>
-
-<h3 id="pod-">Pod 설치</h3>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>pod install
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<h3 id="pod--1">Pod 업데이트</h3>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>pod update
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<h2 id="section-3">실행</h2>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">프로젝트명.xcworkspace
-</code></pre></div></figure>
-
-<p>프로젝트명.xcodeproj가 아닌 프로젝트명.xcworkspace로 프로젝트를 열어야 정상적으로 빌드 및 실행이 된다.</p>
+<p>일단 설명이 된대로 소스를 받아서 안내하는 경로에 집어 넣었다.
+그리고 octostrap3에서 사용하던것 처럼 _config.xml 파일에 추가 했다.일단 사이드 영역에 “custom/asides/category_list.html”를 추가.</p>
 
 <blockquote>
-  <p>참고 : http://www.shako.net/blog/archives/224</p>
+  <p>default_asides: [asides/recent_posts.html, custom/asides/category_list.html, asides/github.html, asides/delicious.html, asides/pinboard.html, asides/googleplus.html]</p>
 </blockquote>
+
+<p>그리고는 정상적으로 적용이 되는지 확인.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>rake generate
+<span class="c">## Generating Site with Jekyll</span>
+Configuration file: /Volumes/Data/DropBox/blog/_config.yml
+            Source: <span class="nb">source</span>
+<span class="nb">       </span>Destination: public/blog
+      Generating...
+  Liquid Exception: undefined method <span class="sb">`</span>+<span class="s1">&#39; for nil:NilClass in _layouts/page.html</span>
+<span class="s1">jekyll 2.5.3 | Error:  undefined method `+&#39;</span> <span class="k">for</span> nil:NilClass
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>하지만 오류.. 이런.. 불친절하게 어디가 문제인지 명확히 알려주지 않는다. 무작정 소스를 봤다. ruby를 아예 모르는 관계로 봐도 모르겠다. 하지만 nil 오류라고 하니 값이 없는 것이 문제라는 생각에 의심되는 부분들을 보다가 발견한 부분..</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+  <span class="n">lists</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="n">max</span><span class="p">,</span> <span class="n">min</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="n">config</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">registers</span><span class="o">[</span><span class="ss">:site</span><span class="o">].</span><span class="n">config</span>
+  <span class="n">category_dir</span> <span class="o">=</span> <span class="n">config</span><span class="o">[</span><span class="s1">&#39;root&#39;</span><span class="o">]</span> <span class="o">+</span> <span class="n">config</span><span class="o">[</span><span class="s1">&#39;category_dir&#39;</span><span class="o">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span>
+  <span class="n">categories</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">registers</span><span class="o">[</span><span class="ss">:site</span><span class="o">].</span><span class="n">categories</span>
+  <span class="n">categories</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">sort_by</span><span class="p">{</span> <span class="o">|</span><span class="n">str</span><span class="o">|</span> <span class="n">str</span><span class="o">.</span><span class="n">downcase</span> <span class="p">}</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">category</span><span class="o">|</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">categories</span><span class="o">[</span><span class="n">category</span><span class="o">].</span><span class="n">count</span>
+    <span class="n">lists</span><span class="o">[</span><span class="n">category</span><span class="o">]</span> <span class="o">=</span> <span class="n">count</span>
+    <span class="n">max</span> <span class="o">=</span> <span class="n">count</span> <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="n">max</span>
+  <span class="k">end</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>여기서 config[‘root’] 이 부분이 문제 였다. 내 _config.xml 파일에서는 “root:” 부분을 비워두었다. 하위 폴더를 사용하지 않기 때문에. 여기에 값이 없어서 오류. 그래서 “root: /”로 수정.</p>
+
+<p>다시 시도.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>rake generate
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>이젠 된다. 카테고리 목록도 잘 나온다.</p>
+
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -186,8 +207,8 @@ pod 'HZWebViewController', '~&gt; 0.0.2'
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/08/28/cocoapods-usage/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/08/28/cocoapods-usage/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/08/28/octopress-category-list-plugin-install/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/08/28/octopress-category-list-plugin-install/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

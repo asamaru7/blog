@@ -3,13 +3,67 @@
 <generator uri="http://jekyllrb.com" version="3.0.1">Jekyll</generator>
 <link href="http://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" />
 <link href="http://blog.asamaru.net/" rel="alternate" type="text/html" />
-<updated>2016-03-18T14:16:49+09:00</updated>
+<updated>2016-03-21T11:46:03+09:00</updated>
 <id>http://blog.asamaru.net/</id>
 <subtitle>세상에 필요한 소스코드 한줄 남기고 가자.
 </subtitle>
 <author>
 <name>유영재</name>
 </author>
+<entry>
+<title>PHP 7에서 Gearman 모듈 사용하기</title>
+<link href="http://blog.asamaru.net/2016/03/21/php7-and-gearman/" rel="alternate" type="text/html" title="PHP 7에서 Gearman 모듈 사용하기" />
+<published>2016-03-21T11:22:49+09:00</published>
+<updated>2016-03-21T11:22:49+09:00</updated>
+<id>http://blog.asamaru.net/2016/03/21/php7-and-gearman</id>
+<content type="html" xml:base="http://blog.asamaru.net/2016/03/21/php7-and-gearman/">&lt;p&gt;PHP 7로 마이그레이션시에 걸림돌이 될 수 있는 것 중 하나가 PHP 모듈의 호환성 문제다. 나의 경우는 대부분 문제가 없었으나 &lt;a href=&quot;http://gearman.org/&quot;&gt;Gearman&lt;/a&gt;이 걸렸다. 아직 Gearman의 PHP 모듈이 정식으로 PHP 7을 지원하지 않아서 공식 지원을 기다리고 있었다. 그런데 시간을 두고 기다려봐도 지원을 기대하기 어려워(버전업이 오래전부터 멈춰있음) 자체적으로 방법을 찾기로 했다.&lt;/p&gt;
+
+&lt;p&gt;Gearman 외에도 PHP 7과 모듈들의 호환성을 확인하려면 &lt;a href=&quot;https://gist.github.com/lewisgoddard/459b450106cf1e5b754e&quot;&gt;PHP 7 Extensions&lt;/a&gt;을 참고하기 바란다.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;우선 나의 경우는 PHP 7을 소스 설치하지 않고 &lt;a href=&quot;https://webtatic.com/packages/php70/&quot;&gt;Webtatic.com&lt;/a&gt;에서 제공하는 바이너리를 yum으로 설치해서 사용중이다. CentOS에서 해당 레포지토리를 사용하려면 아래와 같이 webtatic 레포지토리를 yum에 추가하면 된다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;PECL에 등록된 Gearman 모듈은 &lt;a href=&quot;http://pecl.php.net/package/gearman&quot;&gt;PECL - Gearman&lt;/a&gt;에서 확인할 수 있고 소스는 &lt;a href=&quot;https://github.com/hjr3/pecl-gearman&quot;&gt;hjr3/pecl-gearman&lt;/a&gt;에서 확인할 수 있다. 보면 알겠지만 꽤 오래전부터 변경이 전혀 없다. 그래서 해당 라이브러리를 fork해서 문제를 개선하고 있는 &lt;a href=&quot;https://github.com/wcgallego/pecl-gearman/network&quot;&gt;wcgallego/pecl-gearman&lt;/a&gt;을 사용해서 컴파일하기로 했다.&lt;/p&gt;
+
+&lt;p&gt;설치는 아래와 같이 할 수 있다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
+2
+3
+4
+5
+6&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;yum install -y php70w-devel libgearman-devel
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;git clone https://github.com/wcgallego/pecl-gearman.git
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;pecl-gearman/
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;./configure
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;make
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;make install
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;앞서 언급했던 것과 같이 나의 경우는 &lt;a href=&quot;https://webtatic.com/packages/php70/&quot;&gt;Webtatic.com&lt;/a&gt;의 바이너리를 사용한 경우이므로 상황에 따라 아래의 명령은 차이가 난다. 하지만 중요한 부분은 &lt;a href=&quot;https://github.com/wcgallego/pecl-gearman/network&quot;&gt;wcgallego/pecl-gearman&lt;/a&gt;의 소스를 받아서 빌드하는 것이므로 자신의 환경에 맞춰 빌드하는 것에는 큰 문제가 없을 것으로 생각한다.&lt;/p&gt;
+
+&lt;p&gt;빌드에 오류가 없다면 &lt;code&gt;/usr/lib64/php/modules/&lt;/code&gt;에 &lt;code&gt;gearman.so&lt;/code&gt; 파일이 만들어져 있을 것이다. modules의 경로 또한 차이가 날 수 있으나 설치 마지막 메시지를 보면 자신의 위치는 확인 할 수 있을 것이다. 이 파일이 만들어 졌다면 이제 거의 끝이다. 이제는 php에서 해당 모듈을 load 하도록 연결하면 된다.&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;/etc/php.d/gearman.ini&lt;/code&gt; 파일을 열어서 아래의 내용을 넣는다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;; Enable gearman extension module
+extension = gearman.so
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;&lt;code&gt;php.ini&lt;/code&gt; 파일에 &lt;code&gt;extension = gearman.so&lt;/code&gt;를 추가해도 된다. 나의 경우는 ini 파일들이 분리되어 관리되기 때문에 따로 파일을 만든 것이다.&lt;/p&gt;
+
+&lt;p&gt;이제는 php를 재시작(&lt;code&gt;service php-fpm restart&lt;/code&gt;)하고 &lt;code&gt;phpinfo();&lt;/code&gt;로 확인해보면 Gearman 모듈이 연결된 것을 확인 할 수 있다.&lt;/p&gt;
+</content>
+<summary>PHP 7로 마이그레이션시에 걸림돌이 될 수 있는 것 중 하나가 PHP 모듈의 호환성 문제다. 나의 경우는 대부분 문제가 없었으나 Gearman이 걸렸다. 아직 Gearman의 PHP 모듈이 정식으로 PHP 7을 지원하지 않아서 공식 지원을 기다리고 있었다. 그런데 시간을 두고 기다려봐도 지원을 기대하기 어려워(버전업이 오래전부터 멈춰있음) 자체적으로 방법을 찾기로 했다.Gearman 외에도 PHP 7과 모듈들의 호환성을 확인하려면 PHP 7 Extensions을 참고하기 바란다.우선 나의 경우는 PHP 7을 소스 설치하지 않고 Webtatic.com에서 제공하는 바이너리를 yum으로 설치해서 사용중이다. CentOS에서 해당 레포지토리를 사용하려면 아래와 같이 webtatic 레포지토리를 yum에 추가하면 된다.1$ rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpmPECL에 등록된 Gearman 모듈은 PECL - Gearman에서 확인할 수 있고 소스는 hjr3/pecl-gearman에서 확인할 수 있다. 보면 알겠지만 꽤 오래전부터 변경이 전혀 없다. 그래서 해당 라이브러리를 fork해서 문제를 개선하고 있는 wcgallego/pecl-gearman을 사용해서 컴파일하기로 했다.설치는 아래와 같이 할 수 있다.123456$ yum install -y php70w-devel libgearman-devel$ git clone https://github.com/wcgallego/pecl-gearman.git$ cd pecl-gearman/$ ./configure$ make$ make install앞서 언급했던 것과 같이 나의 경우는 Webtatic.com의 바이너리를 사용한 경우이므로 상황에 따라 아래의 명령은 차이가 난다. 하지만 중요한 부분은 wcgallego/pecl-gearman의 소스를 받아서 빌드하는 것이므로 자신의 환경에 맞춰 빌드하는 것에는 큰 문제가 없을 것으로 생각한다.빌드에 오류가 없다면 /usr/lib64/php/modules/에 gearman.so 파일이 만들어져 있을 것이다. modules의 경로 또한 차이가 날 수 있으나 설치 마지막 메시지를 보면 자신의 위치는 확인 할 수 있을 것이다. 이 파일이 만들어 졌다면 이제 거의 끝이다. 이제는 php에서 해당 모듈을 load 하도록 연결하면 된다./etc/php.d/gearman.ini 파일을 열어서 아래의 내용을 넣는다.; Enable gearman extension moduleextension = gearman.sophp.ini 파일에 extension = gearman.so를 추가해도 된다. 나의 경우는 ini 파일들이 분리되어 관리되기 때문에 따로 파일을 만든 것이다.이제는 php를 재시작(service php-fpm restart)하고 phpinfo();로 확인해보면 Gearman 모듈이 연결된 것을 확인 할 수 있다.</summary>
+</entry>
 <entry>
 <title>iptables을 이용한 port forwarding</title>
 <link href="http://blog.asamaru.net/2016/03/18/iptables-port-forwarding/" rel="alternate" type="text/html" title="iptables을 이용한 port forwarding" />
@@ -988,68 +1042,5 @@ nc의 경우는 -X 뒤에 있는 5가 Proxy 프로토콜을 뜻한다.&lt;/p&gt;
 &lt;/ul&gt;
 </content>
 <summary>앞서 CentOS에 gogs 설치하기,CentOS에 Gitlab 설치하기, 자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다에서 언급했던 것처럼 git 저장소로 gitlab.com을 사용중이다. 한동안은 아무 문제없이 잘 사용하고 있었다. 아니 사실 gitlab.com에 접속이 되지 않는 문제가 간헐적으로 발생했었다. 얼마전까지만 하더라도 해외 서비스에서 서비스되는 사이트라서 그런가보다 했다.그런데 몇일 전부터 회사 네트워크에서 gitlab.com에 접속할 수 없었다. 웹사이트뿐 아니라 git push/pull도 할 수가 없었다. 처음엔 회사 네트워크 방화벽 문제인 줄 알고 확인했으나 아니었다. 그래서 tracepath로 확인해 보니 SK Broadband 네트워크를 벗어나지 못하고 있었다(회사 네트워크가 SK다). 이상해서 조금 검색해보니 예전부터 SK Broadband의 해외 사이트 접속 문제가 유명했던 것 같다. 사람들의 이야기를 봐도 SK에 이야기한다고 해결될 문제는 아닌 것 같고… 그렇다고 git를 사용하지 않을 수 없어서 다른 방법을 찾아야 했다.다행히 회사엔 외부망(SK가 아닌)에 연결된 Proxy가 하나 있다. 그래서 그 Proxy를 사용해서 급한대로 gitlab.com에 push/pull 하고 있다. 조금 더 기다려볼 생각이지만 빠른 시일 내에 접속이 복구되지 않는다면 다시 설치형 gitlab을 검토해야 할 것 같다.본론으로 들어가서 위의 이유로 인해 사용하게된 ssh proxy에 대한 처리 방법을 설명하려고 한다. 이번에 필요에 의해 적용한 환경은 CentOS 7과 OSX 10.11 이다.CentOS 7~/.ssh/config 파일에 아래의 내용을 추가 한다.Host gitlab.com    User                    git    ProxyCommand            socat STDIO SOCKS4:[proxy ip]:%h:%p,socksport=[proxy port]여기서 중요한 부분. socat이 설치되어 있어야 한다. 설치되어 있지 않다면 간단히 yum install socat을 통해 설치할 수 있다.그리고 SOCKS4는 Proxy의 프로토콜에 따라 변경되어야 한다. 사실 내가 사용한 Proxy는 SOCKS5를 사용하는데 SOCKS5를 지정하면 오류가 나고 SOCKS4를 지정해야만 정상 동작했다. 기타 프로토콜의 경우는 socat를 참고.위 처리를 하고나면 “gitlab.com” 도메인에 대해서는 ssh 접속시 지정한 Proxy를 사용한다. 따라서 git 명령을 사용하면 Proxy를 통해서 데이터가 전달된다. 단, ssh를 사용해서 git remote가 연결된 경우에.OSXOSX 또한 ~/.ssh/config 파일에 아래의 내용을 추가 한다.Host gitlab.com    User                    git    ProxyCommand            nc -X 5 -x [proxy ip]:[proxy port] %h %pOSX도 CentOS와 방법은 동일하나 socat 대신 nc(netcat)를 사용하고 있다. nc가 기본적으로 설치되어 있어서 그냥 nc를 사용했다. 어짜피 원리는 같다.nc의 경우는 -X 뒤에 있는 5가 Proxy 프로토콜을 뜻한다.  -X proxy_version            Requests that nc should use the specified protocol when talking to the proxy server.  Supported protocols are “4” (SOCKS v.4), “5”            (SOCKS v.5) and “connect” (HTTPS proxy).  If the protocol is not specified, SOCKS version 5 is used.PHPStorm덤으로 PHPStorm과 같은 IntelliJ IDE에서의 설정을 설명한다. 기본적으로 IntelliJ는 Git의 ssh 클라이언트를 Built-in을 사용한다. 이 설정을 Native로 바꿔주면 위에서 설정한 ~/.ssh/config 파일의 설정을 그대로 적용시킬 수 있다. 메뉴의 위치는 “Preference &amp;gt; Version Control &amp;gt; Git”에서 “SSH executable”를 찾으면 된다.위 방법은 ssh의 설정을 이용한 방법이지만 git의 설정한 방법도 있다. 개인적으로 git에 설정하는게 더 복잡해서 그냥 ssh에 설정하는 것을 선택했을 뿐이다.참고글  Tutorial: how to use git through a proxy  Using git through a SOCKS proxy (or SSH tunnel)</summary>
-</entry>
-<entry>
-<title>PHP password_hash()와 BCrypt</title>
-<link href="http://blog.asamaru.net/2016/03/03/php-password-hash-and-bcrypt/" rel="alternate" type="text/html" title="PHP password_hash()와 BCrypt" />
-<published>2016-03-03T21:18:01+09:00</published>
-<updated>2016-03-03T21:18:01+09:00</updated>
-<id>http://blog.asamaru.net/2016/03/03/php-password-hash-and-bcrypt</id>
-<content type="html" xml:base="http://blog.asamaru.net/2016/03/03/php-password-hash-and-bcrypt/">&lt;p&gt;Naver D2에 &lt;a href=&quot;http://d2.naver.com/helloworld/318732&quot;&gt;안전한 패스워드 저장&lt;/a&gt;이란 글을 보면 비밀번호 저장을 위한 해시 함수에 대한 소개를 하고 있다. 그 중에서 bcrypt에 대해서는 아래와 같이 설명하고 있다.&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;&lt;strong&gt;bcrypt&lt;/strong&gt;&lt;/p&gt;
-
-  &lt;p&gt;bcrypt는 애초부터 패스워드 저장을 목적으로 설계되었다. Niels Provos와 David Mazières가 1999년 발표했고 현재까지 사용되는 가장 강력한 해시 메커니즘 중 하나이다. bcrypt는 보안에 집착하기로 유명한 OpenBSD에서 기본 암호 인증 메커니즘으로 사용되고 있고 미래에 PBKDF2보다 더 경쟁력이 있다고 여겨진다.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;실제로 PHP의 &lt;a href=&quot;http://php.net/manual/kr/function.password-hash.php&quot;&gt;password_hash()&lt;/a&gt;는 암호화 알고리즘으로 bcrypt를 기본으로 사용하고 있다. 하지만 이는 현재 시점 기준이다. 메뉴얼에 따르면 향후 PHP에서 보다 강력한 알고리즘이 추가되면 변경된다고 한다(&lt;code&gt;PASSWORD_DEFAULT&lt;/code&gt; 알고리즘 사용시, &lt;code&gt;PASSWORD_BCRYPT&lt;/code&gt; 옵션을 사용해서 강제로 지정하는 것도 가능하다).&lt;/p&gt;
-
-&lt;p&gt;이 시점에서 한가지만 짚고 넘어가자.&lt;/p&gt;
-
-&lt;p&gt;“&lt;code&gt;PASSWORD_DEFAULT&lt;/code&gt; 사용시 향후 알고리즘이 변경될 수 있는데 그렇다면 기존 데이터는 어떻게 해야하나?”&lt;/p&gt;
-
-&lt;p&gt;당연히 단방향 해시 알고리즘이므로 원래 값으로 복구할 수 없으므로 새로운 알고리즘으로 해시값을 만들 수 없다. 그렇다면 위의 의문처럼 기존 데이터와의 호환은 어떻게 되는가? 사실 걱정할 것은 없다. &lt;a href=&quot;http://php.net/manual/kr/function.password-hash.php&quot;&gt;password_hash()&lt;/a&gt;로 만들어진 해시값은  &lt;a href=&quot;http://php.net/manual/kr/function.password-verify.php&quot;&gt;password_verify()&lt;/a&gt;를 사용해서 검증하게 되는데 &lt;a href=&quot;http://php.net/manual/kr/function.password-verify.php&quot;&gt;password_verify()&lt;/a&gt;가 위 문제를 모두 해결해 준다.&lt;/p&gt;
-
-&lt;p&gt;그럼 &lt;a href=&quot;http://php.net/manual/kr/function.password-verify.php&quot;&gt;password_verify()&lt;/a&gt;는 어떻게 이문제를 해결하는가? 이 부분을 이해하고나면 php에서 만들어진 해시값을 다른 언어(플랫폼)에서 검증하는 것도 가능하다는 것을 알 수 있다.&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://stackoverflow.com/a/20927202&quot;&gt;Determining the salt from a password_hash()&lt;/a&gt;에 설명된 내용 중 아래에 발췌한 내용이 그 답을 가지고 있다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;$2y$10$nOUIs5kJ7naTuTFkBy1veuK0kSxUFXfuaOKdOKf9xYT0KKIGSJwFa
- |  |  |                     |
- |  |  |                     hash-value = K0kSxUFXfuaOKdOKf9xYT0KKIGSJwFa
- |  |  |
- |  |  salt = nOUIs5kJ7naTuTFkBy1veu (22 characters)
- |  |
- |  cost-factor = 10 = 2^10 iterations
- |
- hash-algorithm = 2y = BCrypt
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://php.net/manual/kr/function.password-verify.php&quot;&gt;password_verify()&lt;/a&gt;에서 만들어진 해시값은 위의 설명과 같이 구성되므로 검증에 필요한 모든 정보를 가지고 있다는 것을 알 수 있다.&lt;/p&gt;
-
-&lt;p&gt;따라서 특별한 이유가 없다면 &lt;code&gt;PASSWORD_DEFAULT&lt;/code&gt; 옵션을 사용하는 것이 바람직하다는 생각이다.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://php.net/manual/kr/function.password-hash.php&quot;&gt;password_hash()&lt;/a&gt;에 관련된 몇가지 추가적 안내가 있다.&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;이 함수는 php 5.5 이상에서만 사용할 수 있다. 그렇다면 이하 버전에서는 어떻게 할까? 당연히 해결방법은 있다. 친절하게도 &lt;a href=&quot;https://github.com/ircmaxell/password_compat&quot;&gt;ircmaxell/password_compat&lt;/a&gt;에 호환 라이브러리가 있다.&lt;/li&gt;
-  &lt;li&gt;scrypt 알고리즘이 훨씬 더 강력하다고 알려져 있으나 아직 PHP에서 공식적으로 지원하지 않고 있다. 단, &lt;a href=&quot;https://pecl.php.net/package/scrypt&quot;&gt;PECL::scrypt&lt;/a&gt;, &lt;a href=&quot;https://github.com/DomBlack/php-scrypt&quot;&gt;DomBlack/php-scrypt&lt;/a&gt;를 사용할 수 있다.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;참조하면 도움이 될만한 글들을 아래에 소개한다.&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;/2016/02/24/php-password-hash-salt-option-has-been-deprecated/&quot;&gt;PHP password_hash() salt option has been deprecated&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://www.hanbit.co.kr/network/view.html?bi_id=1960&quot;&gt;PHP에서의 더 안전한 암호 구축 : Bycrpt를 이용한 안전한 패스워드 저장&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://hiun.github.io/2013/08/bcrypt.html&quot;&gt;bcrypt를 이용한 PHP기반 서비스의 비밀번호 암호화&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://www.phpschool.com/gnuboard4/bbs/board.php?bo_table=tipntech&amp;amp;wr_id=78316&quot;&gt;비밀번호 암호화의 정석&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</content>
-<summary>Naver D2에 안전한 패스워드 저장이란 글을 보면 비밀번호 저장을 위한 해시 함수에 대한 소개를 하고 있다. 그 중에서 bcrypt에 대해서는 아래와 같이 설명하고 있다.  bcrypt  bcrypt는 애초부터 패스워드 저장을 목적으로 설계되었다. Niels Provos와 David Mazières가 1999년 발표했고 현재까지 사용되는 가장 강력한 해시 메커니즘 중 하나이다. bcrypt는 보안에 집착하기로 유명한 OpenBSD에서 기본 암호 인증 메커니즘으로 사용되고 있고 미래에 PBKDF2보다 더 경쟁력이 있다고 여겨진다.실제로 PHP의 password_hash()는 암호화 알고리즘으로 bcrypt를 기본으로 사용하고 있다. 하지만 이는 현재 시점 기준이다. 메뉴얼에 따르면 향후 PHP에서 보다 강력한 알고리즘이 추가되면 변경된다고 한다(PASSWORD_DEFAULT 알고리즘 사용시, PASSWORD_BCRYPT 옵션을 사용해서 강제로 지정하는 것도 가능하다).이 시점에서 한가지만 짚고 넘어가자.“PASSWORD_DEFAULT 사용시 향후 알고리즘이 변경될 수 있는데 그렇다면 기존 데이터는 어떻게 해야하나?”당연히 단방향 해시 알고리즘이므로 원래 값으로 복구할 수 없으므로 새로운 알고리즘으로 해시값을 만들 수 없다. 그렇다면 위의 의문처럼 기존 데이터와의 호환은 어떻게 되는가? 사실 걱정할 것은 없다. password_hash()로 만들어진 해시값은  password_verify()를 사용해서 검증하게 되는데 password_verify()가 위 문제를 모두 해결해 준다.그럼 password_verify()는 어떻게 이문제를 해결하는가? 이 부분을 이해하고나면 php에서 만들어진 해시값을 다른 언어(플랫폼)에서 검증하는 것도 가능하다는 것을 알 수 있다.Determining the salt from a password_hash()에 설명된 내용 중 아래에 발췌한 내용이 그 답을 가지고 있다.$2y$10$nOUIs5kJ7naTuTFkBy1veuK0kSxUFXfuaOKdOKf9xYT0KKIGSJwFa |  |  |                     | |  |  |                     hash-value = K0kSxUFXfuaOKdOKf9xYT0KKIGSJwFa |  |  | |  |  salt = nOUIs5kJ7naTuTFkBy1veu (22 characters) |  | |  cost-factor = 10 = 2^10 iterations | hash-algorithm = 2y = BCryptpassword_verify()에서 만들어진 해시값은 위의 설명과 같이 구성되므로 검증에 필요한 모든 정보를 가지고 있다는 것을 알 수 있다.따라서 특별한 이유가 없다면 PASSWORD_DEFAULT 옵션을 사용하는 것이 바람직하다는 생각이다.password_hash()에 관련된 몇가지 추가적 안내가 있다.  이 함수는 php 5.5 이상에서만 사용할 수 있다. 그렇다면 이하 버전에서는 어떻게 할까? 당연히 해결방법은 있다. 친절하게도 ircmaxell/password_compat에 호환 라이브러리가 있다.  scrypt 알고리즘이 훨씬 더 강력하다고 알려져 있으나 아직 PHP에서 공식적으로 지원하지 않고 있다. 단, PECL::scrypt, DomBlack/php-scrypt를 사용할 수 있다.참조하면 도움이 될만한 글들을 아래에 소개한다.  PHP password_hash() salt option has been deprecated  PHP에서의 더 안전한 암호 구축 : Bycrpt를 이용한 안전한 패스워드 저장  bcrypt를 이용한 PHP기반 서비스의 비밀번호 암호화  비밀번호 암호화의 정석</summary>
 </entry>
 </feed>

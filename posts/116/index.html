@@ -113,117 +113,97 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/">
-								안드로이드에서 구글맵 사용시 맵의 보여지는 영역의 좌표를 원하는 pixel만큼 제외하고 가져오기
+							<a class="title" href="http://blog.asamaru.net/2015/09/17/datetime-from-php-to-java-android/">
+								PHP의 DateTime을 Java (Android)로 전달하기
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/">2015.09.17.</span></a>
+								<a href="http://blog.asamaru.net/2015/09/17/datetime-from-php-to-java-android/">2015.09.17.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>이 글의 제목이 참 길고 어렵다. 나름대로 정하긴 했지만 어떻게 해야 내용을 설명할 수 있을지 잘 모르겠기에 그냥 필요한 상황을 차례로 적어보려 한다.</p>
-
-<ol>
-  <li>
-    <p>안드로이드에서 구글맵을 사용하면서 현재 맵에서 보여지는 영역의 좌표를 얻고 싶을 때가 있다. 
-중심 좌표와 확대 비율은 center와 zoom을 통해 쉽게 구할 수 있다. 하지만 필요한 것은 보여지는 영역을 모두 포함하는 좌표들이다.
-이 좌표들은 대부분 보여지는 화면 내부에 해당하는 데이터를 query 하기 위해서 사용될 것이다. 다른 경우도 당연히 있을 수 있고…</p>
-  </li>
-  <li>
-    <p>위의 목적대로 좌표를 가져오긴 했는데 일부 영역을 제외하고 싶을 때가 있다. 예를들어 지도 상단에 버튼들이 나열되어 있다고 가정할 때 이 영역은 query에서 제외하고 싶을 때가 해당된다. 이 문제는 간단하지가 않은게 버튼들이 차지하는 공간이야 pixel로 얼마든지 계산 가능하지만 이 pixel 사이즈를 좌표에 반영해야 원하는 값을 얻을 수 있기 때문이다.</p>
-  </li>
-</ol>
-
-<p>위의 상황들의 목적은 결국 하나다. 구글 지도에서 원하는 영역의 평면 좌표를 얻고 싶다는 것이다.</p>
-
-<p>우선 해결 방법을 설명하기 전에 필요한 함수에 대한 설명부터 보자. 이 처리를 하기 위해 가장 중요한 요소는 Projection 이다.</p>
-
-<h2 id="google-apis-for-android---projectionhttpsdevelopersgooglecomandroidreferencecomgoogleandroidgmsmapsprojectionhtml"><a href="https://developers.google.com/android/reference/com/google/android/gms/maps/Projection.html">Google APIs for Android - Projection</a></h2>
-
-<p>위 링크를 참고하면 자세한 설명이 나와있지만 간단하게 필요한 것들에 대해서 정리하자면 다음과 같다.</p>
-
-<h3 id="projection">Projection</h3>
+							<p>안드로이드 앱을 개발하게되면 많은 경우에 서버와의 데이터 연결이 필요하다. 대부분의 데이터 타입은 이 과정에서 큰 문제를 일으키지 않는다(데이터 타입만 명확히 한다면). 하지만 DateTime은 조금 까다로울 수 있다. 프로그램에서 시간은 TimeZone을 가지고 있기 때문에 이 부분을 명확히 하지 않으면 의도치 않은 시간으로 표시된다. 게다가 형식이 맞지 않는다면 제대로 전달되지 않을 수도 있다.</p>
 
 <blockquote>
-  <p>Projection은 화면상의 위치와 위경도 좌표(LatLng) 간의 변환하는데 사용된다. 그리고 화면의 위치는 항상 맵 화면의 좌상단(top left)을 기준으로 한다.</p>
+  <p>네이버 D2에 있는 <a href="http://d2.naver.com/helloworld/645609">Java의 날짜와 시간 API</a>를 보면 Java에서의 Date 처리가 불편하다는 얘기가 있다.</p>
 </blockquote>
 
-<h3 id="getvisibleregion">getVisibleRegion()</h3>
+<p>이번 작업에서는 서버는 PHP를 사용하고 있는 상황이었고 클라이언트는 <a href="http://androidannotations.org/">AndroidAnnotations</a>의 <a href="https://github.com/excilys/androidannotations/wiki/Rest-API#rest">Rest-API</a>를 사용했다. 수신 데이터의 파싱은 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>를 사용하는 상황이다. 이 글의 주제에서 벗어나므로 <a href="http://androidannotations.org/">AndroidAnnotations</a>나 <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/http/converter/json/GsonHttpMessageConverter.html">GsonHttpMessageConverter</a>에 대한 부분은 설명하지 않겠다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="n">VisibleRegion</span> <span class="nf">getVisibleRegion</span> <span class="o">()</span>
+<p>GsonHttpMessageConverter를 사용해서 데이터를 파싱하는 경우 대상이되는 class의 멤버변수의 데이터 타입에 맞추어 데이터를 채워준다. 당연히 전송되는 데이터가 JSON 형식이어야 한다. 다른 데이터 타입의 경우 앞서 설명한 것과 같이 데이터 타입만 맞춰준다면 아주 쉽게 데이터를 받을 수 있다(그것이 이것을 사용하는 주요 목적이다). 그런데 DateTime 타입은 조금 신경을 써줘야 한다.</p>
+
+<p>자 그럼 서버에서 데이터를 보낼 수 있는 방법에 어떤 것이 있을까? 가장 일반적인 방법으로는 timestamp(int), string, Date가 있다. 어떤 것을 쓰더라도 무방하지만 앞서 얘기한 것처럼 GsonHttpMessageConverter를 써서 간단히 데이터를 정확한 형식으로 받는 것이 편리하기 때문에 전송시 데이터 타입을 맞추는 것이 좋다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// string 타입으로 전송</span>
+<span class="nv">$date</span> <span class="o">=</span> <span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">;</span>
+<span class="c1">// int 타입으로 전송</span>
+<span class="nv">$date</span> <span class="o">=</span> <span class="p">(</span><span class="k">new</span> <span class="nx">\DateTime</span><span class="p">(</span><span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">getTimestamp</span><span class="p">();</span>
+<span class="c1">// Date 타입으로 전송</span>
+<span class="nv">$date</span> <span class="o">=</span> <span class="p">(</span><span class="k">new</span> <span class="nx">\DateTime</span><span class="p">(</span><span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">setTimeZone</span><span class="p">(</span><span class="k">new</span> <span class="nx">\DateTimeZone</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">format</span><span class="p">(</span><span class="s1">&#39;Y-m-d\TH:i:s\Z&#39;</span><span class="p">);</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<blockquote>
-  <p>화면상의 좌표와 위경도 좌표 간의 변환을 위한 Projection을 가져온다.</p>
-</blockquote>
+<p>위의 코드를 보면 PHP에서 전송할 때 넘겨줄 데이터의 예시를 타입별로 제시했다. 앞서 강조했던대로 안드로이드 클라이언트에서 GsonHttpMessageConverter를 이용해 Date 타입으로 바로 받으려면 마지막에 있는 “Date 타입으로 전송” 방식을 사용하면 된다.</p>
 
-<h3 id="toscreenlocation-latlng-location">toScreenLocation (LatLng location)</h3>
+<p>해당 부분을 보면 두가지 처리를 해주고 있다. 첫번째로 TimeZone을 설정한 것이고, 두번째로 Date Format을 지정한 것이다. 사실 이 부분들을 잘 몰라서 삽질을 조금 했었다. 처음엔 Date Format을 어떻게 전달해야할지 몰라 해맸다. 제대로 수신을 하지 못했던 것이다. Format을 맞추고 나니 이젠 보낸 시간과 받은 시간이 달랐다. 이 부분은 TimeZone의 문제이므로 TimeZone을 지정해서 해결했다. TimeZone에 사용한 UTC는 <a href="https://ko.wikipedia.org/wiki/%ED%98%91%EC%A0%95_%EC%84%B8%EA%B3%84%EC%8B%9C">협정 세계시</a>라는 뜻이다. 이것과 세트로 format에서 끝에 \Z를 붙여 데이터가 <a href="https://ko.wikipedia.org/wiki/ISO_8601">ISO 8601</a>에 따라 UTC를 따르고 있음을 표시한 것이다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="n">Point</span> <span class="nf">toScreenLocation</span> <span class="o">(</span><span class="n">LatLng</span> <span class="n">location</span><span class="o">)</span>
+<p>결론적으로 위의 형식을 사용하면 GSON으로 바로 받아도 정확한 시간을 사용할 수 있다.</p>
+
+<p>사실 위의 경우는 GsonHttpMessageConverter를 사용한다는 상황을 가정한 것으로 이것을 사용하지 않고 직접 데이터를 받아 GSON을 통해 파싱한다면 아래의 방법을 쓸 수도 있다. Format을 보면 알겠지만 UTC Date여야 한다(정확한 시간 처리를 위해). “yyyy-MM-dd HH:mm:ss”이 Format을 쓸 수도 있으나 TimeZone 명시되지 않으므로 시간이 다르게 보일 수 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">Gson</span> <span class="n">gson</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">GsonBuilder</span><span class="o">().</span><span class="na">setDateFormat</span><span class="o">(</span><span class="s">&quot;yyyy-MM-dd&#39;T&#39;HH:mm:ssZ&quot;</span><span class="o">).</span><span class="na">create</span><span class="o">();</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<blockquote>
-  <p>인자로 넘겨준 위경도 좌표가 화면 상에서 어디에 위치하는지를 Point 객체로 반환해 준다. 반환되는 단위는 화면 상의 Pixel(화소가 아닌)이다.</p>
-</blockquote>
+<p>아래는 추가적으로 다른 타입으로 수신했을 때 안드로이드 클라이언트에서 Date 타입으로 변환하고자 할때 사용할 수 있는 참고 코드들이다.</p>
 
-<h3 id="fromscreenlocation-point-point">fromScreenLocation (Point point)</h3>
+<p><strong>string 타입으로 수신시</strong></p>
 
-<p>public LatLng fromScreenLocation (Point point)</p>
-
-<blockquote>
-  <p>인자로 넘겨준 화면 상의 좌표에 해당하는 위경도를 LatLng 객체로 반환해 준다.</p>
-</blockquote>
-
-<h2 id="section">구현</h2>
-
-<p>위와 같이 기본적인 함수들에 대해서 알아보았고 이제는 실제 사용 사례를 살펴보자.</p>
-
-<p>아래는 서두에 얘기한 기능을 수행하게 하기 위해 만들어 본 함수이다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="n">LatLngBounds</span> <span class="nf">getBoundsWithoutSpacing</span><span class="o">(</span><span class="kt">int</span> <span class="n">top</span><span class="o">,</span> <span class="kt">int</span> <span class="n">right</span><span class="o">,</span> <span class="kt">int</span> <span class="n">bottom</span><span class="o">,</span> <span class="kt">int</span> <span class="n">left</span><span class="o">)</span> <span class="o">{</span>
-	<span class="n">Projection</span> <span class="n">projection</span> <span class="o">=</span> <span class="n">googleMap</span><span class="o">.</span><span class="na">getProjection</span><span class="o">();</span>
-	<span class="n">LatLngBounds</span> <span class="n">bounds</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="na">getVisibleRegion</span><span class="o">().</span><span class="na">latLngBounds</span><span class="o">;</span>
-	<span class="n">Point</span> <span class="n">northeast</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="na">toScreenLocation</span><span class="o">(</span><span class="n">bounds</span><span class="o">.</span><span class="na">northeast</span><span class="o">);</span>
-	<span class="n">Point</span> <span class="n">toNortheast</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Point</span><span class="o">(</span><span class="n">northeast</span><span class="o">.</span><span class="na">x</span> <span class="o">-</span> <span class="n">right</span><span class="o">,</span> <span class="n">northeast</span><span class="o">.</span><span class="na">y</span> <span class="o">+</span> <span class="n">top</span><span class="o">);</span>
-	<span class="n">Point</span> <span class="n">southwest</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="na">toScreenLocation</span><span class="o">(</span><span class="n">bounds</span><span class="o">.</span><span class="na">southwest</span><span class="o">);</span>
-	<span class="n">Point</span> <span class="n">toSouthwest</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Point</span><span class="o">(</span><span class="n">southwest</span><span class="o">.</span><span class="na">x</span> <span class="o">+</span> <span class="n">left</span><span class="o">,</span> <span class="n">southwest</span><span class="o">.</span><span class="na">y</span> <span class="o">-</span> <span class="n">bottom</span><span class="o">);</span>
-
-	<span class="n">LatLngBounds</span><span class="o">.</span><span class="na">Builder</span> <span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LatLngBounds</span><span class="o">.</span><span class="na">Builder</span><span class="o">();</span>
-	<span class="n">builder</span><span class="o">.</span><span class="na">include</span><span class="o">(</span><span class="n">projection</span><span class="o">.</span><span class="na">fromScreenLocation</span><span class="o">(</span><span class="n">toNortheast</span><span class="o">));</span>
-	<span class="n">builder</span><span class="o">.</span><span class="na">include</span><span class="o">(</span><span class="n">projection</span><span class="o">.</span><span class="na">fromScreenLocation</span><span class="o">(</span><span class="n">toSouthwest</span><span class="o">));</span>
-	<span class="k">return</span> <span class="n">builder</span><span class="o">.</span><span class="na">build</span><span class="o">();</span>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">try</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="n">dateTime</span> <span class="o">=</span> <span class="s">&quot;2015-09-17 10:00:00&quot;</span><span class="o">;</span>
+    <span class="n">SimpleDateFormat</span> <span class="n">dateParser</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SimpleDateFormat</span><span class="o">(</span><span class="s">&quot;yyyy-MM-dd HH:mm:ss&quot;</span><span class="o">,</span> <span class="n">Locale</span><span class="o">.</span><span class="na">KOREA</span><span class="o">);</span>
+    <span class="n">Date</span> <span class="n">date</span> <span class="o">=</span> <span class="n">dateParser</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="n">dateTime</span><span class="o">);</span>
+<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ParseException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
 <span class="o">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>설명하자면 다음과 같다.</p>
+<p><strong>timestamp(int) 타입으로 수신시</strong></p>
 
-<p>우선 googleMap 개체에서 Projection을 가져와서 VisibleRegion을 통해 좌표를 받아온다. 당연히 googleMap은 따로 구성되어 있어야 한다. 함수를 고쳐서 인자로 넘겨주어도 당연히 상관없다.
-getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound를 알 수 있는데 사용할 수 있는 값은 두가지다. northeast(북동좌표)와 southwest(서남좌표)다. 이 두점은 bound의 최외곽 좌표이므로 전체 박스 영역을 얻은 것이다.</p>
+<p>PHP에서의 TimeStamp는 초단위(s)지만 Java에서는 밀리초(ms) 단위이므로 1000을 곱해서 넣어 주어야 한다.
+그리고 Java에서는 Date가 Deprecated되어 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>를 더 권장한다고 한다. <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Date.html">정확하게는 완전히 Deprecated된 것은 아니고 일부 생성자가 그렇다는 것</a>이지만 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>가 더 다양한 기능을 제공하므로 더 권장된다는 것이다. 자세한 이유는 검색해보면 많이 나온다.</p>
 
-<p>1차적으로는 이 값을 바로 사용해서 원하는 영역에 대한 검색을 수행할 수 있다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// Calendar 사용</span>
+<span class="n">Calendar</span> <span class="n">c</span> <span class="o">=</span> <span class="n">Calendar</span><span class="o">.</span><span class="na">getInstance</span><span class="o">();</span>
+<span class="n">c</span><span class="o">.</span><span class="na">setTimeInMillis</span><span class="o">(</span><span class="n">timestamp</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">);</span>
+<span class="n">Date</span> <span class="n">date</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">getTime</span><span class="o">();</span>
 
-<p>하지만 정말로 원하는 것은 두번째 문제이다. 이 좌표에서 화면의 특정 영역을 제외한 부분의 위경도 bound를 구하고 싶은 것이다.</p>
+<span class="c1">// OR</span>
 
-<p>원하는 결과를 얻기 위해 toScreenLocation() 함수를 이용해서 북동,서남 좌표를 화면 상의 좌표(Point)로 변환한다. 여기에 원하는 pixel만큼씩을 증감하여 fromScreenLocation() 함수를 통해 다시 위경도 좌표(LatLng)로 변환하면 최종적인 결과를 얻을 수 있다.</p>
+<span class="c1">// Date 사용</span>
+<span class="n">Date</span> <span class="n">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Date</span><span class="o">(</span><span class="n">timestamp</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<p>사실 결과를 보면 아주 간단한 작업이다. 하지만 이 함수들의 역할을 모를때는 어떻게 그 값을 구할 수 있을지 막막했다. 처음엔 구글의 zoom 레벨을 가져와서 pixel 비율을 계산하여 적용하려고 했으나 만만치 않았다.</p>
-
-<p>결론은 위의 함수를 바탕으로 원하는 목적을 달성할 수 있으니 필요에 맞게 사용하면 된다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -237,8 +217,8 @@ getVisibleRegion()에서 latLngBounds를 받아오면 위경도 좌표의 bound�
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/09/17/android-google-map-getvisibleregion-toscreenlocation-toscreenlocation/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/09/17/datetime-from-php-to-java-android/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/09/17/datetime-from-php-to-java-android/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

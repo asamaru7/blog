@@ -113,42 +113,71 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/11/11/from-acra-to-fabric/">
-								안드로이드 Crash Report 도구 : ACRA에서 Fabric(Crashlytics)으로의 전환
+							<a class="title" href="http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/">
+								XCode에서 storyboard 선택시 Crash가 발생할 경우
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/11/11/from-acra-to-fabric/">2015.11.11.</span></a>
+								<a href="http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/">2015.11.16.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>지난 글 <a href="/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/">ACRA : Please configure ‘buildConfigClass’ in your ACRA config 오류</a>와 <a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>에서 언급했던 것처럼 안드로이드 Crash Report 도구로 ACRA를 사용중이었다.
-ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원인을 찾고 개발자에게 전달해서 개선을 요청할 정도로 나름 애용하려던 도구였는데 오늘 <a href="https://fabric.io">Fabric(Crashlytics)</a>으로 바꿔버렸다.</p>
+							<p>최근엔 XCode로 작업하는 일이 많아졌다. 안드로이드 개발과 웹 개발도 함께하지만 iOS 작업이 급하다 보니 주로 이 일을 하고 있다.
+XCode는 사용하면 할수록 잘 만들었다는 생각이 든다. 단, 코드 포멧팅 기능이 없다거나 소스 선택이 조금 부자연스럽다거나(이건 적응의 문제일 수 있다) 하는 것처럼 안드로이드 스튜디오에 비해 불편한 부분들이 있긴하다. 하지만 인터페이스 빌더 등의 도구들은 아주 잘 만들어져 있으며 결정적으로 빌드 속도가 무척 빨라서 좋다. 안드로이드 스튜디오도 지난 번에 적었던 <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>에서 설명했던 것처럼 빌드 속도가 다소 개선되었지만 XCode에 비교도 되지 않는다.</p>
 
-<p>사실 처음부터 대체할 목적이 있었던 것은 아니었다. 안드로이드용으로 제작된 앱을 iOS용으로도 제작할 일이 있어 개발을 진행하던 중 안드로이드의 ACRA 같은 도구가 iOS에도 있을 것이라는 생각에 몇가지를 찾아보고 있었다. 그때 눈에 띄는 것이 <a href="https://try.crashlytics.com/">Crashlytics</a> 였다(<a href="https://gist.github.com/rino0601/018c7f22aeb23cf2e2a0">Crashlytics 소개 + Android Studio에서 적용하는 방법</a>).</p>
+<p>인터페이스 빌더의 사용에 대해서는 개발자들 사이에서도 논란이 많다. 개발시 인터페이스 빌더를 사용할 것인가 하드 코딩으로 UI를 개발할 것인가? 둘 다 장단점이 있는 것은 명확하지만 개인적으로는 최대한 인터페이스 빌더를 사용하는 것이 옳다고 생각한다. 스토리보드와 같은 기능을 사용해서 앱 전체의 흐름을 파악하기 쉽도록 개발할 수 있으며 보여질 화면을 바로 보면서 작업하므로 개발 및 유지보수도 용이하다. 다만 인터페이스 빌더의 설정이 코드상에서 보여지지 못하므로 코드를 볼 때 혼란스럽게 보일 수는 있다. 그래서 나는 코드 흐름 상에서 중요한 요소는 인터페이스와 별개로 소스에서도 설정을 해주는 편이다(아주 중요할 경우만).</p>
 
-<p>그런데 이 Crashlytics라는 서비스를 운영하는 회사가 트위터에 인수가 되었다(<a href="http://besuccess.com/2013/01/28496/">앱 충돌 리포트 서비스 Crashlytics, 트위터에 인수되다</a>). 그래서 조금 더 알아보니 트위터에서 <a href="https://fabric.io">Fabric</a>이라는 것을 새로 내놓았다.</p>
+<p>서론이 길어졌는데 오늘 이야기는 지금 부터다. 나름 선호하는 이 인터페이스 빌더에는 치명적인 약점이 있다. 이건 내가 XCode를 처음 접한 3버전대에서부터 현재의 7버전까지도 완전히 해결되지 않는 문제다. 그 약점은 바로 Crash가 잘 발생한다는 점과 설정이 엉키면 정말 난해한 상황을 만나게 된다는 것이다.</p>
 
-<p><a href="https://fabric.io">Fabric</a>이 무엇인지에 대해서는 트위터 한글 블로그의 “<a href="https://blog.twitter.com/ko/2014/introducing-fabric-kr">패브릭(Fabric)을 소개합니다.</a>“를 보면 잘 설명되어 있다.</p>
+<p>현재까지의 나의 해결법은 해당 부분을 통째로 지우고 새로 설정하는 것이다. 정말 최악의 방법이지만 항상 오랜 시간을 해결해 보려고 애써봐도 결론은 대부분 새로 작성하는 것이었다. 사실 이런 문제가 아주 빈번한 것은 아니지만 한번씩 발생하면 치명적이다(환장한다).</p>
 
-<blockquote>
-  <p>패브릭(Fabric)은 앱 개발자들이 흔히 직면하는 안정성, 사용자 확보, 수익성, 사용자 인증의 이슈들&gt;을 해결해 줄 세 가지의 모듈형 키트들로 이루어져 있습니다. 패브릭은 크래시리틱스(Crashlytics), 모펍(MoPub), 트위터 등의 서비스를 통합해 개발자들이 더 안정적인 앱을 만들도록 돕습니다. 패브릭은 앱 개발자들이 세계 최고의 모바일 애드 익스체인지(ad exchange)를 통해 수익을 확보할 수 있게 하며, 트위터 로그인 기능과 실시간 콘텐츠 스트림 기능을 통해 더 많은 사용자에 콘텐츠를 전달할 수 있게 하거나 더욱 간단히 사용자를 인증할 수 있도록 해줍니다.</p>
-</blockquote>
+<p>최근에는 작업을 하면서 <a href="https://www.jetbrains.com/objc/">AppCode</a>를 함께 사용하는 편인데 아무래도 jetbrains에서 만들다보니 단축키도 익숙하고 결정적인 코드 포멧팅 기능 때문에…
+어쨌든 AppCode에서도 storyboard를 수정하려고하면 결국 XCode를 띄워준다.</p>
 
-<p>나는 우선 최초 목적이었던 iOS를 위한 Crash Report 도구의 설치를 위해 xcode 프로젝트에 <a href="https://fabric.io">Fabric</a>을 추가했다. 설치 과정은 복잡하지는 않으나 몇가지 설정할 부분들이 있어서 자칫 까다로워질 수 있지만 <a href="https://fabric.io">Fabric</a>에서 관련 도구를 워낙에 잘 제공 해줘서 시키는대로 따라만 하면 큰 무리없이 적용할 수 있다. “기회가 되면 설치 과정을 글로 남길까?” 생각했었지만 설치 도구가 워낙 잘되어 있어 “굳이 내가 다시 설명할 필요가 있을까?”라는 생각이다. 그 정도로 잘 되어있다. 다만 기본 설치 후 Debug 모드에서는 로그 수집을 하지 않도록 설정하는 등의 몇가지 안내가 필요한 부분들이 있는데 이건 시간이되면 따로 글을 남기려고 한다. 사실 이 부분도 메뉴얼로 모두 제공되고 있으나 막상 찾으려니 귀찮은 것들이다.</p>
+<p>이렇게 개발 도구를 섞어써서 그런건지 내가 뭔가를 잘못했는지는 몰라도 이번에 제대로 일이 벌어졌다. 옛날 같으면 nib파일이 따로 있어서 문제가 발생해도 그 파일만 새로 작업하면 되는데 이번엔 스토리보드로 작업되어 있었는데 그 파일을 선택만 해도 XCode가 죽는 것이다. 도저히 새로 작성한다는 것은 불가능 했다. 아직 개발 초기라 화면이 엄청 많은 것은 아니었지만 그래도 주요 화면들을 다 작성해 둔 상태라 다시 작성하기엔 무리였다.</p>
 
-<p>결론적으로는 아주 만족스러웠다. Crash Report가 잘되는 것은 물론이고 Hook을 걸 수 있도록 하는 기능도 제공되고 있어서 기존에 ACRA에서 연결해 두었던 자체 로그 수집기로도 기존처럼 정보를 전달하는 것이 가능했다(정확히 이야기 하자면 기존과 동일한 내용을 전달하는 것은 아니고 오류 발생 이벤트만 전달된다). 그리고 <a href="https://fabric.io">Fabric</a>에는 <a href="https://try.crashlytics.com/">Crashlytics</a> 외에도 <a href="https://answers.io/">Answers</a>라는 모듈도 함께 제공된다(사실 더 많은 것들이 있다). 이 모듈은 구글 어날리틱스 처럼 앱에 대한 이벤트를 수집하여 보고서를 제공해 준다. 결정적으로 이 모든 것이 무료.</p>
+<p>그래서 인터넷에서 또 다시 해결 방법들을 찾아봤다. 사실 결론을 미리 이야기하자면 나는 아래의 방법들을 모두 시도해 보았으나 성공하지 못했다.  하지만 이 방법들로 효과를 봤다는 사람들이 있어서 기록성으로 한번 남겨두려고 한다.</p>
 
-<p>그래서 안드로이드용 앱에서도 ACRA를 걷어내고 Fabric을 적용했다. 역시 아주 만족스럽다. ACRA에서 보내주는 무지막지한 Crash 로그 대신 잘 정리된 로그를 확인할 수 있게 되었다.</p>
+<p><strong>1. XML로 열기</strong></p>
 
-<p>앞선 설명처럼 <a href="https://fabric.io">Fabric</a>에는 여러가지 모듈들이 있는데 이들 중 일부는 각각 독립적인 서비스를 가지고 있다(<a href="https://try.crashlytics.com/">Crashlytics</a>와 <a href="https://answers.io/">Answers</a> 처럼). 이 부분에 관련해서는 트위터 한글 블로그의 “<a href="https://blog.twitter.com/ko/2014/introducing-fabric-kr">패브릭(Fabric)을 소개합니다.</a>“의 내용 마지막에 아래와 같이 안내 되어있다.</p>
+<ul>
+  <li>스토리보드 파일을 오른쪽 클릭해서 “Open As” &gt; “Source Code” 메뉴를 이용해 XML 코드를 편집기에서 연다.</li>
+  <li>의미없는 글자를 넣었다가 빼고 저장한다.</li>
+  <li>다시 스토리보드 파일을 오른쪽 클릭해서 “Open As” &gt; “Interface Builder - Storyboard”로 다시 연다.</li>
+</ul>
 
-<blockquote>
-  <p>패브릭(Fabric)은 트위터만의 작품이 아닙니다. 패브릭(Fabric)이 가능하도록 키트(Kits)들의 관리, 설치, 업데이트에 관여하는 모든 SDK 벤더들이 만들어낸 것이라고 생각합니다. 당신이 SDK를 관리하는 사람이고, 트위터와 함께 일하고 싶다면 패브릭 파트너십 담당(partners@fabric.io)에 메일을 보내 주시길 바랍니다. 개발자 여러분들의 연락을 기다리고 있겠습니다.</p>
-</blockquote>
+<p><strong>2. Autolayout 기능 끄기</strong></p>
 
-<p>따라서 각각의 서비스를 사용해도 무방할 것으로 보인다. 하지만 <a href="https://fabric.io">Fabric</a>을 사용함으로써 통합 관리를 할 수 있으며 설치 과정이 아주 단순해진다.</p>
+<p>이 Autolayout에 대한 사람들의 이야기가 많았다. Autolayout이 새로 나오면서 많은 문제들이 있었던 것으로 보인다. 이제는 문제가 많이 줄어든 것으로 보이나 혹시나 도움이 될지도 모르겠다.</p>
 
-<p><strong>결론 : Crash Report 도구가 필요하다면, iOS와 Android 모두 한 곳에서 관리하고 싶다면, 사용자 이벤트 로깅도 하고 싶다면, <a href="https://fabric.io">Fabric</a>을 적극 추천하고 싶다.</strong></p>
+<ul>
+  <li>스토리보드 파일을 오른쪽 클릭해서 “Open As” &gt; “Source Code” 메뉴를 이용해 XML 코드를 편집기에서 연다.</li>
+  <li><code>useAutolayout="YES"</code> 부분을 찾아 <code>useAutolayout="NO"</code>로 변경한다.</li>
+  <li>다시 스토리보드 파일을 오른쪽 클릭해서 “Open As” &gt; “Interface Builder - Storyboard”로 다시 연다.</li>
+</ul>
+
+<p><strong>3. xcuserdata 삭제</strong></p>
+
+<ul>
+  <li>Xcode를 닫는다.</li>
+  <li>.xcodeproj, .xcworkspace 파일을 우클릭하여 “패키지 내용보기”를 선택한다.</li>
+  <li>xcuserdata 폴더를 삭제한다.</li>
+</ul>
+
+<p><strong>4. XCode 초기화</strong></p>
+
+<p>이 방법은 XCode 설정을 초기화하는 것으로 권장하지는 않는다. 터미널에서 아래의 명령을 입력한다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>defaults delete com.apple.dt.Xcode
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p><strong>5. 오류 발생 부분 찾아 제거하기</strong></p>
+
+<p>이 방법은 최후의 방법으로 내가 사용한 방법이다. storyboard 파일을 소스 상태(XML)로 열어 scene 단위로 삭제 해본다. 단, 삭제하기 전 원본 백업은 필수. 이렇게 하나씩 제거하면서 XCode에서 파일을 열어 시도해보면서 원인이 되는 scene을 찾는다. 원인이 되는 scene을 찾았다면 부분적으로 코드들을 제거해가면서 정확한 오류 지점을 찾는다. 운이 좋아 부분적 오류였다면 이 방법으로 최소한의 손실로 문제를 해결할 수 있다. 단, 찾을 수 없다면 해당 scene을 통째로 버려야 한다.</p>
+
+<hr />
+
+<p>결론적으로 명쾌한 답을 주지 못해 미안하지만 나도 아직은 답을 찾지 못했다. 오류가 발생할 때마다 열심히 애플에 오류 보고를 보내고 있지만 당연히 신속한 해결은 없다. 어쨌든 이런 문제를 만나지 않기를 바라며 혹시라도 문제가 발생한다면 위 방법들을 시도해보길 바란다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -162,8 +191,8 @@ ACRA 사용중에 만난 오류를 해결하기 위해 시간을 들여서 원�
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/11/11/from-acra-to-fabric/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/11/11/from-acra-to-fabric/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/11/16/xcode-crashes-when-selecting-the-main-storyboard/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

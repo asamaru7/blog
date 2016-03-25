@@ -113,197 +113,42 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="http://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/">
-								Nginx(stable / mainline) 설치 - CentOS 6.5 / 7
+							<a class="title" href="http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/">
+								selinux + PHP : Session Permission denied 오류
 							</a>
 							<p class="post-meta">
-								<a href="http://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/">2015.11.27.</span></a>
+								<a href="http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/">2015.12.02.</span></a>
 							</p>
 						</header>
 						<p>
-							<p><a href="http://nginx.org/">Nginx</a>는 <a href="https://ko.wikipedia.org/wiki/Nginx">위키피디아</a>에서 아래와 같이 설명하고 있다.</p>
+							<p>서버를 새로 세팅하면서 CentOS 7에서 selinux와 함께 PHP 5.6을 설치했다. 기존에는 selinux를 사용하지 않도록 했었는데 이번에는 사용하도록 설정해서 설치를 완료했다. 그런데 세션을 사용하려고 <code>session_start();</code>를 하면 아래와 유사한 오류가 발생했다.</p>
 
-<blockquote>
-  <p>Nginx(엔진 x라 읽는다)는 웹 서버 소프트웨어로, 가벼움과 높은 성능을 목표로 한다. 웹 서버, 리버스 프록시 및 메일 프록시 기능을 가진다.</p>
-
-  <p>Netcraft의 2011년 1월 웹서버 설문조사에 따르면, nginx는 전체 도메인에서 4번째(7.50%)로 많이 쓰이는 웹서버이며, 활성화된 웹 사이트에 대한 통계에서도 역시 4번째(8.23%)로 많이 사용된다[1].</p>
-
-  <p>Nginx는 요청에 응답하기 위해 비동기 이벤트 기반 구조를 가진다. 이것은 아파치 HTTP 서버의 스레드/프로세스 기반 구조를 가지는 것과는 대조적이다. 이러한 구조는 서버에 많은 부하가 생길 경우의 성능을 예측하기 쉽게 해준다.</p>
-</blockquote>
-
-<p>기존에는 Apache를 사용하고 있었다. Apache의 다양한 기능 때문이라기 보다는 익숙함 때문이었다. 그런데 예전부터 <a href="http://nginx.org/">Nginx</a>에 대한 사람들의 평가(Apache의 튜닝 상태에 따라 다른 결과를 보이기도 한다)를 볼 때마다 언젠가는 갈아타야지 싶었는데 최근에야 이 생각을 실천하게 되었다. 그레서 <a href="http://nginx.org/">Nginx</a>를 설치하는 과정을 정리하고자 한다.</p>
-
-<hr />
-
-<p>CentOS에서 Nginx의 설치는 크게 소스를 컴파일해서 설치하는 방법과 YUM을 통해 설치하는 방법이 있다. Nginx의 경우 Apache와 다르게 모듈을 추가할 경우엔 무조건 소스 설치를 해야한다(모듈을 포함시켜 컴파일 해야 한다). 따라서 mod_pagespeed나 pagespeed 등을 사용하고자 하는 경우에는 소스 설치를 해야 한다. 오늘은 YUM 설치를 기준으로 설명하고자 하니 모듈을 추가해서 설치하는 방법은 아래의 링크들을 참고하자.</p>
-
-<ul>
-  <li><a href="http://www.nginxtips.com/how-to-install-mod_security-on-nginx/">How to install Mod_Security on Nginx</a>
-<a href="https://developers.google.com/speed/pagespeed/module/build_ngx_pagespeed_from_source">Build ngx_pagespeed From Source</a></li>
-  <li><a href="http://d2.naver.com/helloworld/192785">NGINX 모듈 제작하기</a></li>
-</ul>
-
-<p>사실 기본적인 설치는 <a href="https://www.nginx.com/resources/wiki/start/topics/tutorials/install/">공식 메뉴얼</a>에 아주 잘 설명되어 있고 간단하다. 내용을 옮겨 적자면 아래와 같다.</p>
-
-<p><code>/etc/yum.repos.d/nginx.repo</code> 파일을 생성해서 아래의 내용을 넣는다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">[nginx]
-name=nginx repo
-baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
-gpgcheck=0
-enabled=1
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">FastCGI sent in stderr: "PHP message: PHP Warning: session_start(): open(/var/lib/php/session/sess_sk456vdemnp391spiv3i622i96, O_RDWR) failed: Permission denied
 </code></pre></div></figure>
 
-<p>그리고는 아래와 같이 yum 으로 설치한다.</p>
+<p>당연히 원인은 selinux이다. selinux가 적용된 상태라면 아무리 777 권한을 부여해도 접근을 할 수 없다. 그 해결법은 <a href="http://stackoverflow.com/a/33030627">(nginx/selinux) Permission denied error for sessions but files are created</a>에 잘 설명되어 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>sudo yum install nginx
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>혹시 EPEL을 이용해서 설치하고 싶다면 <code>/etc/yum.repos.d/nginx.repo</code> 파일을 생성할 필요없이 아래와 같이하면 된다.</p>
+<p>결과적으로 아래의 방법을 통해 문제를 해결할 수 있다.</p>
 
 <figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre>sudo yum install epel-release
-sudo yum install nginx
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>mkdir /var/lib/php/session
+<span class="nv">$ </span>mkdir /var/lib/php/wsdlcache
+<span class="nv">$ </span>chmod <span class="m">777</span> /var/lib/php/session /var/lib/php/wsdlcache
+
+<span class="nv">$ </span>restorecon -v <span class="s2">&quot;/var/lib/php/session&quot;</span>
+<span class="nv">$ </span>semanage fcontext -a -t httpd_sys_rw_content_t /var/lib/php/session
+<span class="nv">$ </span>restorecon -v <span class="s2">&quot;/var/lib/php/wsdlcache&quot;</span>
+<span class="nv">$ </span>semanage fcontext -a -t httpd_sys_rw_content_t /var/lib/php/wsdlcache
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>끝이다. 정말 간단하다. 설명할 것도 없다. 하지만 사실 이 글을 적는 이유는 이제부터다.</p>
-
-<p>Nginx는 기본적으로 두가지 버전이 존재한다. stable 버전과 mainline 버전이다. 사실상 최신 버전은 mainline 이다. 2015-11-27일 기준으로 stable은 nginx-1.8.0, mainline은 1.9.7이다. 말그대로 stable 버전이 안정 버전이므로 사용이 권장되기는 하나 mainline도 불안정한 것은 아니다.</p>
-
-<p><a href="http://serverfault.com/a/715126">What’s the difference between the “mainline” and “stable” branches of nginx?</a>의 설명대로라면 mainline을 더 권장한다. stable 버전이라고 버그가 없는 것이 아니며 버그 패치는 mainline에 먼저 된다는 이유 때문이다.</p>
-
-<p>그래서 나는 mainline으로 설치하기로 했다. 설치 방법은 위의 stable과 별반 다르지 않으나 repository의 url만 차이가 난다.</p>
-
-<p><code>/etc/yum.repos.d/nginx.repo</code> 파일을 생성해서 아래의 내용을 넣는다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">[nginx]
-name=nginx repo
-baseurl=http://nginx.org/packages/mainline/centos/\$releasever/\$basearch/
-gpgcheck=0
-enabled=1
-</code></pre></div></figure>
-
-<p>그리고는 아래와 같이 yum 으로 설치한다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>sudo yum install nginx
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>이것 또한 아주 간단하다. 약간의 부가 작업을 포함해서 bash shell 스크립트를 하나 만들어 뒀다.</p>
-
-<p>nginx.install.sh</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
-<span class="k">function</span> printTitle <span class="o">{</span>
-    <span class="nb">echo</span> -e <span class="s2">&quot;\e[1;97m=======================================\e[0m&quot;</span>
-    <span class="nb">echo</span> -e <span class="s2">&quot;\e[1;97m* $1\e[0m&quot;</span>
-    <span class="nb">echo</span> -e <span class="s2">&quot;\e[1;97m=======================================\e[0m&quot;</span>
-<span class="o">}</span>
-
-<span class="k">function</span> printJob <span class="o">{</span>
-    <span class="nb">echo</span> -e <span class="s2">&quot;\e[94m* $1\e[0m&quot;</span>
-<span class="o">}</span>
-
-<span class="k">function</span> printSubJob <span class="o">{</span>
-    <span class="nb">echo</span> -e <span class="s2">&quot;\e[96m\t$1\e[0m&quot;</span>
-<span class="o">}</span>
-
-printTitle <span class="s2">&quot;Nginx 설치&quot;</span>
-
-printJob <span class="s2">&quot;httpd.service 종료&quot;</span>
-systemctl stop httpd.service
-
-printJob <span class="s2">&quot;httpd.service 제거&quot;</span>
-yum remove -y httpd
-systemctl disable httpd.service
-
-printJob <span class="s2">&quot;Nginx 설치&quot;</span>
-<span class="k">if</span> <span class="o">[</span> ! -e /etc/yum.repos.d/nginx.repo <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-    printSubJob <span class="s2">&quot;nginx repository 추가&quot;</span>
-    <span class="nb">echo</span> <span class="s2">&quot;[nginx]&quot;</span> &gt; /etc/yum.repos.d/nginx.repo
-    <span class="nb">echo</span> <span class="s2">&quot;name=nginx repo&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
-    <span class="nb">echo</span> <span class="s2">&quot;baseurl=http://nginx.org/packages/mainline/centos/\$releasever/\$basearch/&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
-    <span class="c">#echo &quot;baseurl=http://nginx.org/packages/centos/\$releasever/\$basearch/&quot; &gt;&gt; /etc/yum.repos.d/nginx.repo</span>
-    <span class="nb">echo</span> <span class="s2">&quot;gpgcheck=0&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
-    <span class="nb">echo</span> <span class="s2">&quot;enabled=1&quot;</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
-<span class="k">fi</span>
-
-printSubJob <span class="s2">&quot;nginx package 설치&quot;</span>
-yum install -y nginx
-
-printJob <span class="s2">&quot;Nginx 서비스 활성&quot;</span>
-systemctl <span class="nb">enable </span>nginx.service
-
-printJob <span class="s2">&quot;Nginx 서비스 시작&quot;</span>
-systemctl start nginx.service
-
-printJob <span class="s2">&quot;방화벽 설정&quot;</span>
-<span class="k">if</span> <span class="o">[</span> <span class="sb">`</span>firewall-cmd --zone<span class="o">=</span>public --list-all<span class="p">|</span>grep <span class="s2">&quot;services&quot;</span><span class="p">|</span>grep <span class="s2">&quot;http&quot;</span> <span class="p">|</span> wc -l<span class="sb">`</span> -eq <span class="m">0</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-    printSubJob <span class="s2">&quot;http/https 개방&quot;</span>
-    firewall-cmd --permanent --zone<span class="o">=</span>public --add-service<span class="o">=</span>http
-    firewall-cmd --permanent --zone<span class="o">=</span>public --add-service<span class="o">=</span>https
-
-    printSubJob <span class="s2">&quot;방화벽 rule reload&quot;</span>
-    firewall-cmd --reload
-<span class="k">fi</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>위 소스는 CentOS 7에서 firewalld를 사용하는 것을 기준으로 만들어진 것이니 참고하기 바란다. 그리고 원래 내가 사용하는 소스에서 불필요한 부분을 제거하고 넣은 것이라 <code>print***</code> 함수 같은 부분이 잘못 되었을 수 있는데 오류가 난다면 관련 부분을 모두 제거하면 된다.</p>
+<p>mkdir과 chmod는 필요 없을 수 있다. 나의 경우는 아예 폴더도 만들어져 있지 않아서 폴더를 생성하고 권한도 함께 지정했다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -317,8 +162,8 @@ printJob <span class="s2">&quot;방화벽 설정&quot;</span>
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="http://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="http://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="http://blog.asamaru.net/2015/12/02/selinux-plus-php-session-permission-denied-error/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

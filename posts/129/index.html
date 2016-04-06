@@ -113,103 +113,65 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/">
-								htmlspecialchars_decode와 html_entity_decode의 문자열 처리의 다른 점
+							<a class="title" href="https://blog.asamaru.net/2015/09/13/online-css-image-sprites-generator/">
+								필요해서 만들어본 CSS Image Sprites 생성기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/">2015.09.10.</span></a>
+								<a href="https://blog.asamaru.net/2015/09/13/online-css-image-sprites-generator/">2015.09.13.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>php에서 html 구문을 그대로 출력하기 위해 <a href="http://php.net/manual/kr/function.htmlspecialchars.php">htmlspecialchars</a>를 사용한다. 반대로 출력된 문장(Special HTML entities)을 되돌리기 위해서는 일반적으로 <a href="http://php.net/manual/kr/function.htmlspecialchars-decode.php">htmlspecialchars_decode</a>를 많이 사용한다. 그런데 이 함수를 사용하는데 문제가 있다.
-htmlspecialchars_decode는 <code>&amp;nbsp;</code>를 공백으로 다시 되돌려 주지 않는다.</p>
+							<p>웹 기반 프로그램 개발을 주업으로 하다보니 CSS에 관련된 작업도 많이 하게 된다. 게다가 웹 서비스 성능에 대해 고민을 많이 하게되는 것도 당연하다.
+그중에서도 간혹 필요하지만 마땅한 도구가 없어 고민을 하게되던 것 중 하나가 CSS Image Sprite 도구다.
+얼마전에도 비슷한 작업이 필요하게되어 온라인 도구들을 찾던 중 마땅한 것이 없어 필요에 의해 도구를 하나 만들어 버렸다.</p>
 
-<p>다시 htmlspecialchars로 돌아가서 메뉴얼을 보면 아래와 같이 변환된다고 설명되어 있다.</p>
+<p>일단 이 도구에 대해 설명하기 전에 CSS Image Sprite가 무엇인지 부터 알아보자.</p>
+
+<h2 id="css-image-sprite-">CSS Image Sprite 기법</h2>
+
+<p>간단하게 설명하자면 웹 페이지에서 필요한 이미지들을 한장의 이미지로 묶어 제작/배포하여 HTTP request를 줄임으로써 웹페이지 성능을 높이는 기법이다.
+이 부분을 이해하기 위해서는 왜 HTTP request를 줄이는 것이 성능에 관련이 있는지를 알아야한다.
+일반적으로 복잡한 웹페이지의 경우 페이지를 읽는데 수십에서 수백개의 request(CSS, JS, Image 등)가 발생한다. 이러한 페이지를 브라우저가 로딩할때 한꺼번에 모든 request를 처리하는 것이 아니라 순차적(보통 동시에 2~4개를 동시에 처리 : 브라우저마다 설정에 따라 다름)으로 처리함에 따라 이 수가 많다면 완료 시간이 늘어날 수 밖에 없다. 이와 관련된 자세한 내용은 얘기가 길어지므로 일단 이 정도만 설명하겠다. 조금 더 자세한 내용이 필요하다면 아래의 사이트를 참고하자.</p>
 
 <ul>
-  <li>‘&amp;’(앰퍼샌드)는 ‘<code>&amp;amp;</code>‘가 됩니다</li>
-  <li>’”‘(겹따옴표)는 ENT_NOQUOTES를 설정하지 않았을 때 ‘<code>&amp;quot;</code>‘가 됩니다.</li>
-  <li>’’‘(홑따옴표)는 ENT_QUOTES가 설정되었을 때만 ‘<code>&amp;#039;</code>‘가 됩니다.</li>
-  <li>’&lt;’(미만)은 ‘<code>&amp;lt;</code>‘가 됩니다.</li>
-  <li>’&gt;’(이상)은 ‘<code>&amp;gt;</code>‘가 됩니다.</li>
+  <li>https://css-tricks.com/css-sprites/</li>
+  <li>http://alistapart.com/article/sprites</li>
+  <li>http://windtale.net/blog/css-image-sprite-automation-with-grunt-spritesmith/ (한글)</li>
 </ul>
 
-<p>보다시피 엄밀히 말하자면 htmlspecialchars는 공백을 변환시키지 않는다. 따라서 대응되는 함수인 htmlspecialchars_decode는 <code>&amp;nbsp;</code> 공백 문자열을 되돌리지도 않는다.</p>
+<h2 id="css-image-sprites-">CSS Image Sprites 생성기</h2>
 
-<p>그럼 <code>&amp;nbsp;</code>와 같은 것은 어떻게 처리를 해야할까?
-<a href="http://php.net/manual/en/function.html-entity-decode.php">html_entity_decode</a>를 사용하면 된다. 이 함수는 <a href="http://php.net/manual/kr/function.htmlentities.php">htmlentities</a>와 대응되는 함수이다.</p>
+<p>https://asamaru7.github.io/SpriteImageGenerator/  또는  http://sprite.asamaru.net  으로 접속해서 사용할 수 있다.</p>
 
-<p>그럼 htmlentities 함수는 무엇인가? 메뉴얼에 따르면 다음과 같다.</p>
+<p>Github :  https://github.com/asamaru7/SpriteImageGenerator
+(만들어서 나와 같은 필요을 느끼는 사람이 있을까 싶어 페이지도 개설할 겸 Github에 등록했다.)</p>
 
-<blockquote>
-  <p>htmlentities()는 HTML 문자 엔티티에 존재하는 모든 문자를 엔티티로 변환하는 점을 제외하면, htmlspecialchars()와 완전히 동일합니다.</p>
-</blockquote>
+<p>그리고 만든 김에 크롬 익스텐션도 만들어 올렸다. 사실 그냥 바로가기 링크랑 기능이 동일하다.</p>
 
-<p>중요한 부분은 모든 문자를 변환한다는 점이다. 이 부분이 htmlspecialchars와의 차이라고 한다.</p>
+<p>https://chrome.google.com/webstore/detail/sprite-image-generator/ckdkgoopenkcogopkfpehfcjkkhhofgo?utm_source=gmail</p>
 
-<p>정리하자면</p>
+<p>참고로 사이트는 내용이 크게 어려울 것이 없기 때문에 영어로 만들었다.(사실 영어 잘 못한다. 그래서 오탈자가 많을 수 있다.) 혹시나 다른 나라에서도 사용할까 싶어서 하긴 했는데 아직은 방문자가 거의 없다.</p>
 
-<blockquote>
-  <p>htmlspecialchars와 htmlentities는 유사하나 htmlentities가 더 많은 문자를 변환한다.
-htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode가 더 많은 문자를 되돌린다.</p>
-</blockquote>
+<p>사실 이미 잘만들어진 많은 도구들이 있다. 하지만 굳이 새로 만든 이유는 Export 기능 때문이다. 보통 sprite image를 생성한 후에 사용된 작은 이미지들을 따로 관리하지 않아서 수정하거나 추가할 것이 생겼을 때 골치 아플 수 있다. 그래서 export 기능을 추가 했다. sprite.json 파일을 함께 export하는데 이 파일에서 생성시에 설정한 옵션과 원본 이미지들이 모두 포함되어 있어서 수정이 필요하면 이 파일만 import해서 수정할 수 있다. 나의 경우는 프로그램 소스에 함께 포함시켜 두고 관리한다.</p>
 
-<p>따라서 결론은 <code>&amp;nbsp;</code>와 같은 문자열까지 모두 decode 하려면 html_entity_decode를 사용하면 된다.</p>
+<h3 id="section">특징</h3>
 
-<h2 id="section">주의</h2>
+<ul>
+  <li>Retina/Normal sprites 동시 생성 가능</li>
+  <li>Drag and drop 파일 첨부</li>
+  <li>이미지 이름 변경 가능(CSS 클래스명에 사용됨)</li>
+  <li>이미지 이름별/사이즈별 정렬, drag and drop으로 직접 정렬</li>
+  <li>Support DataURL Export</li>
+  <li>Export: Sprites 이미지 / 설정 파일 다운로드</li>
+  <li>설정 파일 Import 기능 : *.sprite.json File (향후 수정시 기존 export를 첨부하여 재작업 가능)</li>
+</ul>
 
-<p>자.. 이렇게 해피앤딩이 되면 좋겠지만 몇가지 주의 사항이 있다. html_entity_decode 메뉴얼을 보면 다음과 같은 설명이 있다.</p>
+<h3 id="section-1">스크린샷</h3>
 
-<blockquote>
-  <p>You might wonder why trim(html_entity_decode(‘ ’)); doesn’t reduce the string to an empty string, that’s because the ‘ ’ entity is not ASCII code 32 (which is stripped by trim()) but ASCII code 160 (0xa0) in the default ISO 8859-1 encoding.</p>
-</blockquote>
-
-<p>그렇다. html_entity_decode를 사용해서 <code>&amp;nbsp;</code>를 변환하면 공백이 일반적인 공백과는 다른 공백이다. 이게 왜 문제가 되느냐? 아래의 예시를 보자.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="nv">$str</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">html_entity_decode</span><span class="p">(</span><span class="s2">&quot;&amp;nbsp;X&amp;nbsp;&quot;</span><span class="p">));</span>
-<span class="k">echo</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;ok&#39;</span> <span class="o">:</span> <span class="s1">&#39;oops&#39;</span><span class="p">;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>쉽게 생각하면 ‘ok’가 나올것 같지만 위에 설명했던 것과 같이 ‘oops’가 나온다. 그럼 어떻게 해결을 해야할까?</p>
-
-<p>메뉴얼에서 ASCII code 160 (0xa0)로 변경된다고 하니 이것을 참고해서 조금 고쳐보자.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="nv">$str</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">str_replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\xa0</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nb">html_entity_decode</span><span class="p">(</span><span class="s2">&quot;&amp;nbsp;X&amp;nbsp;&quot;</span><span class="p">)));</span>
-<span class="k">echo</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;ok&#39;</span> <span class="o">:</span> <span class="s1">&#39;oops&#39;</span><span class="p">;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>이제 해결이 되었을까? 아니다. 결과는 oops이다.(사실 default_charset에 따라 ok가 나올 수도 있다.) 이유는 위에 메뉴얼에 있다.
-‘default ISO 8859-1’ 인코딩일 때 0xa0로 변환된다고 되어 있다. 사실 나의 환경은 ‘UTF-8’이다. 대부분 그럴 것이라고 생각한다. 일단 맞는지 확인해 보자. 아래와 같이 default_charset을 ISO-8859-1에 맞추고 실행해보자.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="nv">$str</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">str_replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\xa0</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nb">html_entity_decode</span><span class="p">(</span><span class="nb">iconv</span><span class="p">(</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">,</span> <span class="s1">&#39;ISO-8859-1&#39;</span><span class="p">,</span> <span class="s2">&quot;&amp;nbsp;X&amp;nbsp;&quot;</span><span class="p">))));</span>
-<span class="k">echo</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;ok&#39;</span> <span class="o">:</span> <span class="s1">&#39;oops&#39;</span><span class="p">;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>결과는 메뉴얼대로 ‘ok’ 이다. 그럼 ‘UTF-8’에서는 어떻게 하나? 아래의 코드를 보자.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="nv">$str</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">str_replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\xc2\xa0</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nb">html_entity_decode</span><span class="p">(</span><span class="s2">&quot;&amp;nbsp;X&amp;nbsp;&quot;</span><span class="p">)));</span>
-<span class="k">echo</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;ok&#39;</span> <span class="o">:</span> <span class="s1">&#39;oops&#39;</span><span class="p">;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>드디어 ‘ok’가 나온다. 중요한 차이는 “\xc2\xa0” 이다. UTF-8에서는 “\xc2\xa0”는 <a href="http://www.utf8-chartable.de/unicode-utf8-table.pl?start=128&amp;number=128&amp;utf8=string-literal&amp;unicodeinhtml=hex">UTF-8 encoding table and Unicode characters</a>에서 확인해보면 UTF-8에서의 “NO-BREAK SPACE”라고 되어 있다.</p>
-
-<p>참 별것 아닌것 같은 함수가 잘모르고 사용하다보면 예상치 못한 문제들을 일으킨다. 사실 <code>&amp;nbsp;</code>만 처리하면 된다면 더 간단하게 <code>str_replace('&amp;nbsp;', ' ', $str)</code>로 해결해도 된다. 하지만 프로그램에선 항상 어떤 값이 들어올지 모르는 것이니 보다 명확하게 처리하는 것이 낫지 않을까?</p>
+<p><img src="/img/2015-09-13-online-css-image-sprites-generator-1.png" alt="Sprite CSS Image Generator 설정" />
+<img src="/img/2015-09-13-online-css-image-sprites-generator-2.png" alt="Sprite CSS Image Generator 확인" />
+<img src="/img/2015-09-13-online-css-image-sprites-generator-3.png" alt="Sprite CSS Image Generator 생성" />
+<img src="/img/2015-09-13-online-css-image-sprites-generator-4.png" alt="Sprite CSS Image Generator 추출" /></p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -223,8 +185,8 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/09/13/online-css-image-sprites-generator/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/09/13/online-css-image-sprites-generator/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

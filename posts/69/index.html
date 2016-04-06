@@ -113,57 +113,321 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/">
-								xcode 7 : Alcatraz 와 CocoaPods Xcode plugins
+							<a class="title" href="https://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/">
+								Swift 2.0에서 상속 가능한 Singleton 생성하기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/">2015.10.20.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/">2015.10.21.</span></a>
 							</p>
 						</header>
 						<p>
-							<p><a href="/2015/08/28/cocoapods-usage/">CocoaPods 사용법</a>에서 CocoaPods를 설치하고 사용하는 법에 대해 간단하게 안내했었다. 오늘은 이 CocoaPods을 XCode에서 조금이나마 편하게 쓰기 위한 플러그인을 소개 하려고 한다. 덤으로 <a href="http://alcatraz.io/">Alcatraz</a>라고하는 Xcode용 패키지 메니저도 함께 소개한다.</p>
+							<p>오늘은 swift에서 Singleton 객체를 생성하는 방법을 설명하고자 한다.</p>
 
-<p>우선 <a href="http://alcatraz.io/">Alcatraz</a> 부터 소개하려고 한다. CocoaPods Xcode plugins을 직접 설치하는 방법도 있으나 Alcatraz를 사용하면 더 쉽게 할 수 있기 때문이다.</p>
+<p>우선 Objective-C에서는 어떻게 생성하는지는 아래를 보면 알 수 있다.</p>
 
-<h2 id="alcatraz">Alcatraz</h2>
+<p>우선 Singleton Class 정의.</p>
 
-<p>공식 사이트에는 <strong>The package manager for Xcode</strong> 라고 소개하고 있다. 말그대로 Xcode를 위한 패키지 매니저로 여러가지 플러그인, Color 테마, 템플릿들을 바로 설치할 수 있도록 도와준다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-ObjC"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">@implementation</span> <span class="nc">SingletonCls</span>
 
-<h3 id="section">설치</h3>
+<span class="p">+</span> <span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nf">sharedManager</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="n">SingletonCls</span> <span class="o">*</span><span class="n">staticManager</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="k">static</span> <span class="kt">dispatch_once_t</span> <span class="n">onceToken</span><span class="p">;</span>
 
-<p>공식 사이트에 안내되어 있는대로 아래의 명령을 실행하는 것으로 설치가 완료된다.</p>
+    <span class="n">dispatch_once</span><span class="p">(</span><span class="o">&amp;</span><span class="n">onceToken</span><span class="p">,</span> <span class="o">^</span><span class="p">{</span>
+        <span class="n">staticManager</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">self</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+    <span class="p">});</span>
+    <span class="k">return</span> <span class="n">staticManager</span><span class="p">;</span>
+<span class="p">}</span>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>curl -fsSL https://raw.githubusercontent.com/supermarin/Alcatraz/deploy/Scripts/install.sh <span class="p">|</span> sh
+<span class="k">@end</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>설치후 Xcode는 재시작 해주면 아래와 같은 화면이 나온다.</p>
+<p>그리고 사용시.</p>
 
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-1.png" alt="Alcatraz" /></p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-ObjC"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="p">[</span><span class="n">SingletonCls</span> <span class="n">sharedManager</span><span class="p">];</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<p>설치한 플러그인을 load 할 것인지 물어본다. 당연히 “Load Bundle”을 해주면 이제부터 사용 가능하다. Xcode의 Window 메뉴에 보면 아래와 같이 “Package Manager”라는 메뉴가 추가되어 있다.</p>
+<p>그럼 Swift에서는 어떻게 하는지를 살펴보자. 사실 아주 간단하다.</p>
 
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-2.png" alt="Alcatraz" /></p>
+<p>Singleton Class 정의.</p>
 
-<h2 id="cocoapods-xcode-plugins-">CocoaPods Xcode plugins 설치</h2>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="k">let</span> <span class="n">sharedInstance</span> <span class="o">=</span> <span class="n">SingletonCls</span><span class="p">()</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<p>Alcatraz에서 바로 설치 가능한 CocoaPods 플러그인은 현재 2가지가 있는 것으로 보이는데 그 중 <a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a>를 먼저 설치해 보자. 사이트에 보면 설치 방법이 나와 있는데 당연히 Alcatraz를 통해 설치하는 것이 쉽다.</p>
+<p>그리고 사용시.</p>
 
-<p>“Window &gt; Package Manager” 메뉴를 실행하면 아래와 같은 화면이 나온다. 여기서 cocoapods로 검색하면 두가지의 플러그인이 보인다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">SingletonCls</span><span class="p">.</span><span class="n">sharedInstance</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-3.png" alt="Alcatraz" /></p>
+<p>그런데 오늘 하고자하는 이야기는 이게 아니다. 기본적인 Singleton Class를 정의하는 것은 검색하면 많이 나온다. 하지만 내가 필요했던 것은 상속이 가능한 Swift Singleton Class다. 아래의 예를 보자.</p>
 
-<p>이 중에서 위에 CocoaPods를 먼저 설치해 보자. 그냥 “INSTALL”이라고 되어 있는 버튼을 누르면 설치가 완료된다. 그리고 Xcode를 재시작하면 다시 아래와 같은 화면이 나온다. 당연히 “Load Bundle”을 선택한다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+	<span class="k">static</span> <span class="k">let</span> <span class="n">sharedInstance</span> <span class="o">=</span> <span class="n">SingletonCls</span><span class="p">()</span>
 
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-4.png" alt="Alcatraz" /></p>
+	<span class="k">var</span> <span class="nl">X</span><span class="p">:</span><span class="n">Int</span><span class="o">?</span>
+<span class="p">}</span>
 
-<p>이제는 플러그인이 설치가 완료되었기 때문에 “Product &gt; CocoaPods” 메뉴를 볼 수 있다. 이 메뉴를 열어보면 아래와 같은 화면이 나온다. 여기서 유의할 점은 GEM_PATH를 자신의 환경에 맞게 바꿔야 한다는 점이다. 기본은 “/usr/bin”인 것 같은데 나의 경우는 “/usr/local/bin”에 있어서 지정을 했다. 경로를 모른다면 <code>which pod</code>라는 명령을 shell에서 실행해보면 확인 할 수 있다.</p>
+<span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+	<span class="k">var</span> <span class="nl">Y</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="p">}</span>
 
-<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-5.png" alt="Alcatraz" /></p>
+<span class="k">let</span> <span class="n">A</span> <span class="o">=</span> <span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">sharedInstance</span><span class="p">;</span>
+<span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">);</span>
+<span class="n">print</span><span class="p">((</span><span class="n">A</span> <span class="kt">as</span><span class="o">!</span> <span class="n">SingletonClsChild</span><span class="p">).</span><span class="n">Y</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<p>다음은 <a href="https://github.com/Galeas/CocoaPodUI">CocoaPodUI</a> 플러그인이다. 설치 과정은 위의 플러그인 설치 과정과 동일하다. 그런데 문제는 현재 시점에서 확인해보니 정상적인 설치가 되지 않는다. Xcode 7과의 호환성 문제인지 플러그인은 정상 설치가 된 것으로 나오는데 설치 경로에 가보면 폴더가 비어 있다. 스샷만 보면 이 플러그인이 기능이 더 다양해 보이는데 사용을 해보지 못해 아쉽다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">test.SingletonCls
+Could not cast value of type 'test.SingletonCls' (0x10d89d2e0) to 'test.SingletonClsChild' (0x10d89d390).
+</code></pre></div></figure>
 
-<p>하지만 <a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a>만 사용하더라도 기존 보다는 편하다(굳이 따로 shell을 열지 않아도 되니).</p>
+<p>위 코드는 실행하면 오류가 난다. <code>SingletonClsChild.sharedInstance</code>의 결과가 <code>SingletonCls</code> 인스턴스이기 때문이다.</p>
+
+<p>우선 이 문제를 해결하기 위한 기본 코드부터 보자. <a href="http://www.scriptscoop.net/t/23f5fc2cdd82/swift-singleton-inheritance.html">Swift: Singleton Inheritance</a>에 나온 코드를 약간 수정했다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+	<span class="k">static</span> <span class="k">var</span> <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="p">[</span><span class="nl">String</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="p">]()</span>
+	<span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
+		<span class="kr">get</span> <span class="p">{</span>
+			<span class="k">let</span> <span class="n">classname</span> <span class="o">=</span> <span class="n">NSStringFromClass</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
+			<span class="k">if</span> <span class="p">((</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+				<span class="k">return</span> <span class="p">(</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span><span class="o">!</span>
+			<span class="p">}</span>
+			<span class="k">let</span> <span class="n">singletonObject</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
+			<span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">]</span> <span class="o">=</span> <span class="n">singletonObject</span>
+			<span class="k">return</span> <span class="n">singletonObject</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">public</span> <span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">SingletonCls</span><span class="p">.</span><span class="n">sharedInstance</span>
+<span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">sharedInstance</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>위 코드에서 제시한 방법을 사용하면 상속이 가능한 Singleton Class를 정의할 수 있다. 사실 여기에 약간의 기능이 더 추가되어 있다. 호출하는 Class에 따라 각각의 Instance를 생성해서 보관하는 부분이다. 예를 들어 아래의 코드를 보자.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+	<span class="k">static</span> <span class="k">var</span> <span class="n">_singleton_instance</span> <span class="o">=</span> <span class="p">[</span><span class="nl">String</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="p">]()</span>
+	<span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
+		<span class="kr">get</span> <span class="p">{</span>
+			<span class="k">let</span> <span class="n">classname</span> <span class="o">=</span> <span class="n">NSStringFromClass</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
+			<span class="k">if</span> <span class="p">((</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+				<span class="k">return</span> <span class="p">(</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span><span class="o">!</span>
+			<span class="p">}</span>
+			<span class="k">let</span> <span class="n">singletonObject</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
+			<span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">]</span> <span class="o">=</span> <span class="n">singletonObject</span>
+			<span class="k">return</span> <span class="n">singletonObject</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+
+	<span class="k">var</span> <span class="nl">X</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="p">}</span>
+
+<span class="n">public</span> <span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+	<span class="k">var</span> <span class="nl">Y</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="p">}</span>
+
+<span class="k">let</span> <span class="n">A</span> <span class="o">=</span> <span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">shareInstance</span><span class="p">;</span>
+<span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">.</span><span class="n">X</span><span class="p">);</span>
+<span class="n">print</span><span class="p">((</span><span class="n">A</span> <span class="kt">as</span><span class="o">!</span> <span class="n">SingletonClsChild</span><span class="p">).</span><span class="n">Y</span><span class="p">);</span>
+<span class="n">A</span><span class="p">.</span><span class="n">X</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="k">let</span> <span class="n">B</span> <span class="o">=</span> <span class="n">SingletonCls</span><span class="p">.</span><span class="n">shareInstance</span><span class="p">;</span>
+<span class="n">print</span><span class="p">(</span><span class="n">B</span><span class="p">.</span><span class="n">X</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>결과.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">1
+9
+1
+</code></pre></div></figure>
+
+<p>결과를 보면 맨 마지막 값이 2가 아닌 1이 나오는 것을 확인 할 수 있다. 이것은 Singleton이 만들어 졌으나 <code>SingletonCls</code>와 <code>SingletonClsChild</code>가 각각 만들어 졌음을 뜻한다.</p>
+
+<p>이런 추가적인 부분을 제외하고 기본적인 형태만 사용하고자 할 경우에는 아래와 같이 하면 된다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+	<span class="k">static</span> <span class="k">var</span> <span class="nl">_singleton_instance</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="o">?</span>
+	<span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
+		<span class="kr">get</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">_singleton_instance</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+				<span class="n">_singleton_instance</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
+			<span class="p">}</span>
+			<span class="k">return</span> <span class="n">_singleton_instance</span><span class="o">!</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">SingletonCls</span><span class="p">.</span><span class="n">sharedInstance</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>위 코드를 기준으로 오류가 나던 코드를 다시 만들어 보자.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">public</span> <span class="k">class</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+	<span class="k">static</span> <span class="k">var</span> <span class="nl">_singleton_instance</span><span class="p">:</span> <span class="n">SingletonCls</span><span class="o">?</span>
+	<span class="n">public</span> <span class="k">class</span> <span class="k">var</span> <span class="nl">shareInstance</span><span class="p">:</span><span class="n">SingletonCls</span> <span class="p">{</span>
+		<span class="kr">get</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">_singleton_instance</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+				<span class="n">_singleton_instance</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="k">init</span><span class="p">()</span>
+			<span class="p">}</span>
+			<span class="k">return</span> <span class="n">_singleton_instance</span><span class="o">!</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="n">required</span> <span class="n">public</span> <span class="k">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+
+	<span class="k">var</span> <span class="nl">X</span><span class="p">:</span><span class="n">Int</span><span class="o">?</span>
+<span class="p">}</span>
+
+<span class="n">public</span> <span class="k">class</span> <span class="nl">SingletonClsChild</span> <span class="p">:</span> <span class="n">SingletonCls</span> <span class="p">{</span>
+	<span class="k">var</span> <span class="nl">Y</span><span class="p">:</span><span class="n">Int</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="p">}</span>
+
+<span class="k">let</span> <span class="n">A</span> <span class="o">=</span> <span class="n">SingletonClsChild</span><span class="p">.</span><span class="n">shareInstance</span><span class="p">;</span>
+<span class="n">A</span><span class="p">.</span><span class="n">X</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="n">print</span><span class="p">(</span><span class="n">A</span><span class="p">.</span><span class="n">X</span><span class="p">);</span>
+<span class="n">print</span><span class="p">((</span><span class="n">A</span> <span class="kt">as</span><span class="o">!</span> <span class="n">SingletonClsChild</span><span class="p">).</span><span class="n">Y</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>아래와 같은 결과가 출력된다. 원하던 결과를 얻었다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">test.SingletonClsChild
+Optional(1)
+9
+</code></pre></div></figure>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -177,8 +441,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

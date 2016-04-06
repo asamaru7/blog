@@ -113,63 +113,23 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/03/18/iptables-port-forwarding/">
-								iptables을 이용한 port forwarding
+							<a class="title" href="https://blog.asamaru.net/2016/03/21/slow-svn-status/">
+								svn status가 느려질 때
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/03/18/iptables-port-forwarding/">2016.03.18.</span></a>
+								<a href="https://blog.asamaru.net/2016/03/21/slow-svn-status/">2016.03.21.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>사무실 내부에서 외부에서 접근 가능한 포트가 개방된 아이피가 한정되어 있어서 두개의 작업 서버를 공유기로 포트 포워딩해서 사용하고 있었다. 그런데 그중 한대의 서버로 매일 대량의 트래픽을 외부에서 밀어 넣는데 이 상황에서 계속 공유기가 죽는 문제가 발생했다(아마도 공유기가 너무 낡은 것이라 그런 것일지도). 간단히 괜찮은 공유기하나 구매하면 해결될 수도 있는 문제지만 귀찮아서 한대의 서버에 외부 회선을 연결하고 포트포워딩으로 필요한 포트만 다른 서버로 연결하기로 했다.</p>
+							<p>svn을 사용하다 보면 이상하게 <code>svn status</code>가 이상하게 느릴 때가 있다. 사실 나도 이 부분을 크게 생각해 본적이 없었는데 최근에 특정 프로젝트 폴더에서 <code>svn status</code>가 비정상적으로 느려져서 방법을 찾아봤다.</p>
 
-<hr />
+<p>결론부터 이야기하자면 아주 간단하다. 아래와 같이 cleanup을 해주면 속도가 돌아온다.</p>
 
-<h3 id="section">포트포워딩이 허용되어 있는지 확인</h3>
-
-<p><code>cat /etc/sysctl.conf|grep net.ipv4.ip_forward</code> 또는 <code>sysctl -a | grep ip_forward</code> 명령으로 <code>net.ipv4.ip_forward</code>가 1로 설정되어 있는지 확인한다. 1이 아니라면 /etc/sysctl.conf 파일을 열어 수정하거나 <code>echo 1 &gt; /proc/sys/net/ipv4/ip_forward</code> 명령으로 Kernel 변수를 수정할 수도 있다.</p>
-
-<h3 id="section-1">포트포워딩 설정</h3>
-
-<p><strong>이후의 설명은 아래의 상황을 가정한 것이므로 상황에 맞게 수정되어야 합니다.</strong></p>
-
-<ul>
-  <li>외부에 공개된 공인 서버, 사설망 내의 사설 서버가 있다.</li>
-  <li>공인 서버에 NIC이 두개가 있다(eth0, eth1).</li>
-  <li>외부에서 공인서버 eth1을 통해 접속하며 eth0를 통해 사설 서버(192.168.11.102)로 포트포워딩 한다.</li>
-  <li>공인 서버에 8888 포트를 사설 서버의 8888 포트로 포워딩 한다.</li>
-</ul>
-
-<p>설명하는 방법은 <code>/etc/sysconfig/iptables</code> 파일에 직접 설정하는 방법이다. <code>/etc/sysconfig/iptables</code> 파일에 아래의 내용을 입력한다(기존에 내용이 있다면 nat와 filter 항목에 맞게 추가한다).</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">*nat
--A PREROUTING -i eth1 -p tcp -m tcp --dport 8888 -j DNAT --to-destination 192.168.11.102:8888
--A PREROUTING -i eth1 -p udp -m udp --dport 8888 -j DNAT --to-destination 192.168.11.102:8888
--A POSTROUTING -o eth0 -j MASQUERADE
-COMMIT
-
-*filter
--A INPUT -m state --state NEW -m tcp -p tcp --dport 8888 -j ACCEPT
--A INPUT -m state --state NEW -m udp -p udp --dport 8888 -j ACCEPT
--A FORWARD -i eth0 -j ACCEPT
--A FORWARD -o eth0 -j ACCEPT
-</code></pre></div></figure>
-
-<p>iptables을 재시작한다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre>/etc/init.d/iptables restart
-<span class="c"># 아래는 systemd를 사용하는 경우</span>
-service ipstables restart
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>svn cleanup
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>설정이 완료되었으므로 정상적으로 동작하는지 확인한다.</p>
-
-<hr />
-
-<p>위 설명은 서버가 2대이고 NIC도 두개이며 공인망과 사설망이 공존하는 상태에서의 설명이다. 하지만 내용을 조금 살펴보면 1대의 서버 내에서 포트포워딩과 서버는 2대이나 NIC이 하나인 경우에 대해서도 적용할 수 있을 것이다.</p>
+<p>cleanup의 경우 충돌이 발생했을 때만 사용하고 있었는데 오래된 <code>.svn/pristine</code> 폴더의 파일들을 지워주는 효과가 있는 것 같다. 실제로 용량을 비교해보니 상당히 많은 용량이 줄어들었다. 그런데 어떤 사람들은 오래된 파일을 지워주는게 아니라고 말하기도 한다. 어쨌든 나의 경우는 <code>.svn</code>의 용량이 줄어 들었으며 느리던 <code>svn status</code>의 속도가 돌아왔다. 이론적인 검증이 되지 않은 내용이지만 혹시 동일한 현상을 겪는 사람이라면 한번 시도해봐도 손해볼 것은 없다는 생각.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -183,8 +143,8 @@ service ipstables restart
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/03/18/iptables-port-forwarding/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/03/18/iptables-port-forwarding/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/03/21/slow-svn-status/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/03/21/slow-svn-status/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

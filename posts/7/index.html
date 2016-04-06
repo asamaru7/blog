@@ -113,89 +113,119 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/03/11/upgrade-to-php-5-6-or-7-on-mac-osx-10-11-el-capitan-and-osx-10-6-10-10/">
-								Mac OSX(10.6 – 10.11)에서 PHP(5.6 / 7) 업그레이드
+							<a class="title" href="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/">
+								php composer 속도 개선하기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/03/11/upgrade-to-php-5-6-or-7-on-mac-osx-10-11-el-capitan-and-osx-10-6-10-10/">2016.03.11.</span></a>
+								<a href="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/">2016.03.17.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>현재 기준으로 El Capitan에서 PHP 버전은 5.5.30이다. 웬만한 PHP 라이브러리는 동작하는데 문제가 없는 버전이긴 하지만 PHP 7이 최신 버전이며 작업에 따라 더 높은 버전의 PHP가 필요할 수 있다. 나의 경우도 웬만한 작업은 Vagrant에서 하므로 OSX의 PHP 버전은 문제가 되지 않지만 이번에 몇가지를 테스트하기 위해 OSX의 PHP를 버전업 하기로 했다.</p>
+							<p><a href="https://getcomposer.org/">Composer</a>(컴포저)는 PHP의 의존성 관리도구이다. 이 Composer를 사용하면서 가장 큰 단점으로 꼽을 수 있는 것은 느린 속도다. 나만 그렇게 느끼는 것은 아닌지 국내외에 많은 이야기가 있다. 오늘은 그 이야기들을 정리해 보려고 한다.</p>
 
-<p>OSX에서의 PHP 버전업은 <a href="http://coolestguidesontheplanet.com/upgrade-php-on-osx/">Upgrade to PHP 5.6 or 7 on Mac OSX 10.11 El Capitan and OSX 10.6 – 10.10</a>에 잘 나와있다. 아니 설명할 것이 거의 없을 정도로 아주 간단하다.</p>
+<p>우선 Composer에 대한 상세한 내용은 <a href="https://xpressengine.github.io/Composer-korean-docs/">Composer 한국어 매뉴얼</a>을 참고하면 도움이 될 것 같다.</p>
+
+<p>그리고 Composer 속도에 관련된 참고글이다.</p>
+
+<ul>
+  <li><a href="http://findstar.pe.kr/archives/532">composer.phar 의 동작이 느릴 때 조치할 수 있는 것들.</a></li>
+  <li><a href="https://www.lesstif.com/pages/viewpage.action?pageId=30277898">컴포저(PHP Composer) 속도 향상 시키기</a></li>
+</ul>
+
+<p>그럼 하나씩 살펴보자.</p>
+
+<h3 id="composer-">Composer 진단</h3>
+
+<p>우선 <code>composer diagnose</code> 명령을 이용해서 Composer의 상태를 진단할 수 있다. 진단 결과에 따라 개선이 필요한 부분들을 확인하고 개선할 수 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">$ composer diagnose
+
+Checking composer.json: OK
+require.~~~/~~~ : unbound version constraints (dev-master) should be avoided
+Checking platform settings: OK
+Checking git settings: OK
+Checking http connectivity to packagist: OK
+Checking https connectivity to packagist: OK
+Checking github.com oauth access: OK
+Checking disk free space: OK
+Checking pubkeys:
+Tags Public Key Fingerprint: ~~~
+Dev Public Key Fingerprint: ~~~
+OK
+Checking composer version: OK
+</code></pre></div></figure>
+
+<h3 id="composer--">Composer 최신버전 사용</h3>
+
+<p><code>composer diagnose</code>에서도 Composer의 최신 버전을 사용중인지 알려준다. 가급적 최신 버전의 Composer를 사용하는 것이 속도에 조금이나마 도움이 될 수 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">$ sudo /usr/local/bin/composer self-update
+
+Updating to version 7c62e2b5346a6a656dd9587203719e35bb768056.
+    Downloading: 100%
+Use composer self-update --rollback to return to version d6d0435c5437111e42a123b06e4071e26ba7cb6e
+</code></pre></div></figure>
+
+<h3 id="prestissimo--">prestissimo 플러그인 사용</h3>
+
+<p><a href="https://github.com/hirak/prestissimo">prestissimo</a> 이라는 Composer 플러그인이 있다. “composer parallel install plugin”이라고 소개하고 있는 플러그인으로 의존성 라이브러리 설치시 병렬 처리를 지원하여 속도를 대폭 개선해 준다고 한다. 확실히 다운로드가 필요한 상황(신규 설치, 버전업)에서는 병렬 처리로 속도가 개선된다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>composer global require hirak/prestissimo
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>설치 후 Composer를 사용(install, update)하면 아래와 같이 다른 모습을 볼 수 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">Loading composer repositories with package information
+Updating dependencies
+    Prefetch start: total: 6
+    1/6:    https://codeload.github.com/symfony/polyfill-util/legacy.zip/8de62801aa12bc4dfcf85eef5d21981ae7bb3cc4
+    2/6:    https://codeload.github.com/symfony/polyfill-php56/legacy.zip/4d891fff050101a53a4caabb03277284942d1ad9
+    3/6:    https://codeload.github.com/Imangazaliev/DiDOM/legacy.zip/e492feae44321e2f4882f6e9466614732822f008
+    4/6:    https://codeload.github.com/symfony/polyfill-mbstring/legacy.zip/1289d16209491b584839022f29257ad859b8532d
+    5/6:    https://codeload.github.com/paragonie/random_compat/legacy.zip/b3313b618f4edd76523572531d5d7e22fe747430
+    6/6:    https://codeload.github.com/Seldaek/monolog/legacy.zip/a5f2734e8c16f3aa21b3da09715d10e15b4d2d45
+    Finished: success:6, skipped:0, failure:0, total: 6
+</code></pre></div></figure>
+
+<h3 id="prefer-dist-">–prefer-dist 사용</h3>
+
+<p><a href="http://stackoverflow.com/a/20827631">Faster composer install</a>에 보면 <code>--prefer-dist</code> 옵션을 사용함으로써 속도를 향상 시킬 수 있다고 한다.</p>
+
+<h3 id="hhvmhttphhvmcom--php-7-"><a href="http://hhvm.com/">HHVM</a> 또는 PHP 7 사용</h3>
+
+<p>Composer는 PHP로 제작된 프로그램으로 PHP의 성능에 영향을 많이 받는다. 따라서 보다 빠른 실행기를 사용하는 것이 속도에 도움이 된다. PHP 7을 사용할 수 없다면 <a href="http://hhvm.com/">HHVM</a>을 사용하는 것이 도움이 될 수 있다. 하지만 Prebuilt Packages를 지원하는 ubuntu나 debian을 사용하는 것이 아니라면 직접 빌드를 해야하므로 귀찮을 수 있다(개인적 생각).</p>
+
+<h3 id="disable-xdebug">Disable Xdebug</h3>
+
+<p>Xdebug가 켜진 상태에서 Composer를 사용하면 아래와 같은 경고가 나온다. Xdebug를 켠 상태에서는 성능에 매우 큰 영향이 있으니 Xdebug를 끄고 사용하라는 것이다.</p>
 
 <figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre><span class="c"># PHP 5.6으로 버전업</span>
-curl -s http://php-osx.liip.ch/install.sh <span class="p">|</span> bash -s 5.6
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>composer update
 
-<span class="c"># PHP 7.0으로 버전업</span>
-curl -s http://php-osx.liip.ch/install.sh <span class="p">|</span> bash -s 7.0
+You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>위처럼 쉘 스크립트를 실행해 주고 기다리면 거의 모든 작업이 완료된다(시간은 조금 걸린다).</p>
+<h3 id="packagist--">packagist 미러 사용</h3>
 
-<p>이제는 잘 설치되었는지 확인.</p>
+<p>아래와 같이 packagist의 레포지토리를 http://packagist.jp로 설정함으로써 약간의 속도 향상(일본이 아무래도 더 가까우니)을 얻을 수 있다고 한다. 하지만 자칫 잘못하면 더 느려질수도 있으므로 테스트를 해서 결정할 것을 권장한다.</p>
 
-<h3 id="php--">PHP 버전 확인</h3>
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">$ composer config -g repositories.packagist composer http://packagist.jp
+# 제거는 아래와 같이
+$ composer config -g --unset repositories.packagist
+</code></pre></div></figure>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre>/usr/local/php5/bin/php --version
-php --version
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<h3 id="disable-enablegc">Disable enable_gc</h3>
 
-<p>위처럼 해보면 <code>/usr/local/php5/bin/php --version</code>는 PHP가 버전업된 것으로 보이지만 <code>php --version</code>는 기존 버전으로 나올 것이다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>which php
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>위 명령을 넣으면 실행되는 PHP의 경로를 볼 수 있다. 나의 경우엔 <code>/usr/bin/</code>이다. 여기엔 PHP 기본 실행 파일 외에도 몇가지 관련 파일이 있는데 이 파일들을 새로 설치한 파일들로 교체 해주면 된다. 그런데 어떤 파일들을 바꿔야 할지 잘 모르거나 보다 간단한 방법을 찾고 있다면 아래의 방법을 사용하자.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre><span class="c"># 현재 계정 적용</span>
-<span class="nb">echo</span> <span class="s2">&quot;export PATH=/usr/local/php5/bin:\$PATH&quot;</span> &gt;&gt; ~/.profile
-<span class="c"># 또는</span>
-<span class="c"># 전체 계정 적용</span>
-<span class="nb">echo</span> <span class="s2">&quot;export PATH=/usr/local/php5/bin:\$PATH&quot;</span> &gt;&gt; /etc/bashrc
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>이제 shell을 다시 열어 <code>php --version</code> 해보면 새로 설치된 PHP 버전을 확인 할 수 있다.</p>
-
-<h3 id="section">웹 접속 확인</h3>
-
-<p>우선 httpd.conf는 El Capitan 기준으로 <code>/etc/apache2/httpd.conf</code>에 있다. 여기서 <code>DocumentRoot</code>를 확인하면 기본 웹 접근 경로를 알 수 있다. 이것 또한 El Capitan 기준으로  “/Library/WebServer/Documents”이다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>vi /Library/WebServer/Documents/phpinfo.php
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>위처럼 새로 파일을 하나 열어서 아래의 내용을 넣는다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span> <span class="nb">phpinfo</span><span class="p">();</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>이제는 <a href="http://localhost/phpinfo.php">http://localhost/phpinfo.php</a>에 접속해서 페이지가 잘 나오는지 본다. 페이지가 나왔다면 PHP 버전도 확인 가능할 것이다. 나의 경우는 7.0.4가 설치되어 있다.</p>
+<p><a href="https://laracasts.com/discuss/channels/tips/tip-speed-up-composer">[Tip] Speed Up Composer</a>에 보면 <code>enable_gc</code>를 disable 함으로써 속도를 향상시키는 방법을 안내하고 있다. 하지만 <a href="https://github.com/composer/composer/commit/ac676f47f7bbc619678a29deae097b6b0710b799">Disable GC when computing deps, refs #3482</a>에서 보면 이와 관련된 패치는 이미 Composer에 반영되어 있으므로 효과가 없다.</p>
 
 <hr />
 
-<p>덤으로 composer 설치.</p>
+<p>사실 서두에서 이야기한 것처럼 위 내용들은 여러 곳의 이야기를 나름대로 요약 정리한 것이다. 하지만 모두 효과가 있다고는 말하지 못하겠다. 현재 PHP 7을 사용하고 있는 상황에서 여러가지를 시도 해봐도 Composer의 속도는 느리기만 하다(약간씩의 도움은 되는 것들도 있다).</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre>curl -sS https://getcomposer.org/installer <span class="p">|</span> php
-mv composer.phar /usr/local/bin/composer
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p>느린 Composer로 인해 답답한 마음을 달래고자 시간이 되는대로 방법을 찾아보고 있으나 아직은 결론을 얻지 못했다. 그나마 prestissimo를 사용하는 것이 가장 효과적인 것 같다. 앞으로도 여러가지를 시도하여 도움이 될만한 방법을 발견하면 다시 글을 쓰도록 하겠다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -209,8 +239,8 @@ mv composer.phar /usr/local/bin/composer
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/03/11/upgrade-to-php-5-6-or-7-on-mac-osx-10-11-el-capitan-and-osx-10-6-10-10/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/03/11/upgrade-to-php-5-6-or-7-on-mac-osx-10-11-el-capitan-and-osx-10-6-10-10/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

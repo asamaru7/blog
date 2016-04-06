@@ -113,82 +113,48 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/">
-								PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()
+							<a class="title" href="https://blog.asamaru.net/2015/09/15/internationalization-i18n-for-javascript-i18next/">
+								Javascript 국제화(I18N) 라이브러리 - i18next
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/">2015.09.14.</span></a>
+								<a href="https://blog.asamaru.net/2015/09/15/internationalization-i18n-for-javascript-i18next/">2015.09.15.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>앞선 포스팅 <a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a>에서 levenshtein() 함수에 대해 알아보았다. 이번엔 이와 유사한 함수인 similar_text()에 대해 알아보고자 한다.</p>
+							<h2 id="internationalization--i18n-">국제화(internationalization : i18n)의 의미</h2>
 
-<h2 id="similartexthttpphpnetmanualenfunctionsimilar-textphp-"><a href="http://php.net/manual/en/function.similar-text.php">similar_text()</a> 함수</h2>
+<p>국제화는 <a href="http://www.terms.co.kr/internationalization.htm">텀즈</a>의 정의에 따르면 아래와 같다.</p>
 
-<p><a href="http://php.net/manual/en/function.similar-text.php">php 메뉴얼의 설명</a>에 따르면 similar_text() 함수는 두 문자열의 유사도를 계산한다고 되어 있다.</p>
+<p>국제화는 때로 줄여서 그저 “I18N”이라고도 표기하는데, 그 의미는 이 용어의 영어 표기에서 첫 글자인 “I”자와 마지막 글자인 “N”의 사이에 18글자가 들어가 있다는 의미이다. 국제화는 제품이나 서비스를 특정지역의 언어나 문화에 맞추는, 즉 현지화라고 불리는 과정을 쉽게 할 수 있도록 계획하거나 이행하는 과정을 말한다. 국제화는 때로 번역 및 현지화 능력부여 작업이라고도 불리는데, 여기에는 다음과 같은 것들이 포함된다.</p>
 
-<p>두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World’s Best Algorithms by Oliver (ISBN 0-131-00413-1) 에서 설명되어 있다. 이 구현은 pseudo code와 다르게 스택은 아니지만, 재귀 호출이므로 전체 프로세스의 속도에 영향을 줄 수 있다. 이 계산 알고리즘은 시간복잡도 <code>O(N**3)</code>를 가지며 여기서 N은 두 문자열 중 긴 문자열의 길이를 뜻한다.</p>
+<ul>
+  <li>하드웨어 레이블이나, 도움말 페이지, 그리고 온라인 메뉴 등 사용자 인터페이스를 설계할 때, 더 많은 수의 글자가 들어갈 때를 대비하여 여유를 둔다.</li>
+  <li>웹에디터나 저작도구 등과 같은 제품을 개발할 때 국제 문자셋, 즉 유니코드를 지원할 수 있게 한다.</li>
+  <li>인쇄용 그래픽 이미지나, 웹사이트를 만들어서 텍스트 레이블을 번역할 때 비용이 많이 들지 않게 한다.</li>
+  <li>전세계적으로 통용될 수 있는 예시를 사용한다.</li>
+  <li>소프트웨어의 경우에는, 메시지들이 영어와 같은 단일 바이트 문자 코드에서, 한글과 같은 다중 바이트 문자 코드로 변환될 수 있도록 데이터 공간을 확보한다.</li>
+</ul>
 
-<p>문자열의 길이에 따라 성능이 극도로 떨어질 수 있으므로 가급적 짧은 문장의 비교에 사용하는 것이 좋다. 메뉴얼에서 paul은 20000자 이상에서만 성능에 문제가 있었다고는 하나 시간복잡도를 보더라도 긴 문자열은 자제하는게 좋겠다.</p>
+<p>위키피디아에는 <a href="https://ko.wikipedia.org/wiki/%EA%B5%AD%EC%A0%9C%ED%99%94%EC%99%80_%EC%A7%80%EC%97%AD%ED%99%94">“국제화와 지역화”</a>라는 주제로 설명되어 있기도 하다.</p>
 
-<h3 id="section">기본 사용법</h3>
+<h2 id="i18next">i18next</h2>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nx">int</span> <span class="nb">similar_text</span> <span class="p">(</span> <span class="nx">string</span> <span class="nv">$first</span> <span class="p">,</span> <span class="nx">string</span> <span class="nv">$second</span> <span class="p">[,</span> <span class="nx">float</span> <span class="o">&amp;</span><span class="nv">$percent</span> <span class="p">]</span> <span class="p">)</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<ul>
+  <li>공식 사이트 : http://i18next.com/</li>
+  <li>Github : https://github.com/i18next/i18next</li>
+  <li>CDN : http://cdnjs.com/libraries/i18next</li>
+  <li>i18next-node : https://github.com/i18next/i18next-node</li>
+</ul>
 
-<h3 id="section-1">함수 인자</h3>
+<p>i18next는 위에 설명한 i18n을 자바스크립트 상에서 사용할 수 있도록 제작된 라이브러리다. 아주 다양한 형태로의 사용을 지원하는데 사용해본 결과 메뉴얼이 조금 부실(?)하다. 확인해보면 메뉴얼의 양이 적은 건 아니다. 하지만 워낙 다양하게 지원하다 보니 개별적인 설명이 부족한 감이 든다.</p>
 
-<h4 id="first">first</h4>
-<p>첫번째 문자열</p>
+<p>이번에 다국어용 one page 앱을 제작하면서 영어와 한국어를 지원하기 위해 사용하게되었는데 조금 해멨다. 사실 아직도 자유자재로 사용하지는 못하겠다. 하지만 아주 다양한 형태를 지원하므로 필요한 형태를 메뉴얼을 참고하여 사용한다면 유용하게 사용할 수 있을 것으로 생각한다.</p>
 
-<h4 id="second">second</h4>
-<p>두번째 문자열</p>
+<h3 id="section">사용예시</h3>
 
-<h4 id="percent">percent</h4>
-<p>reference로 넘겨져야하는 세번째 인자는 similar_text() 함수의 계산 결과인 문서 유사도를 퍼센트(%)로 제공해 준다.</p>
+<p>아래는 내가 작업한 일부를 간단하게 요약한 것이다.</p>
 
-<h3 id="section-2">반환값</h3>
-
-<p>두 문자열에서 매칭되는 문자수를 반환한다.</p>
-
-<h3 id="section-3">예시</h3>
-
-<p>이 함수는 몇가지 특성을 가지고 있으므로 메뉴얼에 안내되어 있는 아래의 예시들을 통해 차이를 알고 사용해야 한다.</p>
-
-<h4 id="section-4">인자의 입력 순서에 따라 결과가 달라진다.</h4>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="nv">$var_1</span> <span class="o">=</span> <span class="s1">&#39;PHP IS GREAT&#39;</span><span class="p">;</span>
-<span class="nv">$var_2</span> <span class="o">=</span> <span class="s1">&#39;WITH MYSQL&#39;</span><span class="p">;</span>
-
-<span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var_1</span><span class="p">,</span> <span class="nv">$var_2</span><span class="p">,</span> <span class="nv">$percent</span><span class="p">);</span>
-
-<span class="k">echo</span> <span class="nv">$percent</span><span class="p">;</span>
-<span class="c1">// 27.272727272727</span>
-
-<span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var_2</span><span class="p">,</span> <span class="nv">$var_1</span><span class="p">,</span> <span class="nv">$percent</span><span class="p">);</span>
-
-<span class="k">echo</span> <span class="nv">$percent</span><span class="p">;</span>
-<span class="c1">// 18.181818181818</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<h4 id="trim--------">공백은 비교에서 제외된다.(그렇다고 trim이 되거나 문자열 내 공백이 제거되고 비교하는 것은 아니다.)</h4>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-html"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
  4
@@ -205,52 +171,147 @@
 15
 16
 17
-18</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nv">$sim</span><span class="p">;</span>
-<span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">&quot;ab c&quot;</span><span class="p">,</span> <span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nv">$sim</span><span class="p">;</span>
-<span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">&quot; abc&quot;</span><span class="p">,</span> <span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nv">$sim</span><span class="p">;</span>
-<span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70</pre></div></td><td class="code"><div class="highlight"><pre><span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;body&gt;</span>
 
-<span class="c1">// 결과</span>
-<span class="c1">// 0 -&gt; 0</span>
-<span class="c1">// 3 -&gt; 85.714285714286</span>
-<span class="c1">// 3 -&gt; 85.714285714286</span>
+<span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;translation&quot;</span><span class="nt">&gt;</span>
+	<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;javascript:void(0);&quot;</span> <span class="na">onclick=</span><span class="s">&quot;changeLang(&#39;en-US&#39;);&quot;</span><span class="nt">&gt;</span>영어<span class="nt">&lt;/a&gt;</span>
+	<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;javascript:void(0);&quot;</span> <span class="na">onclick=</span><span class="s">&quot;changeLang(&#39;ko-KR&#39;);&quot;</span><span class="nt">&gt;</span>한국어<span class="nt">&lt;/a&gt;</span>
+	<span class="nt">&lt;ul&gt;</span>
+		<span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">&quot;A:apple&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
+		<span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">&quot;A:banana&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
+		<span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">&quot;A:orange&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
+	<span class="nt">&lt;/ul&gt;</span>
+
+	<span class="nt">&lt;ul&gt;</span>
+		<span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">&quot;B:car&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
+		<span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">&quot;B:airplane&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
+		<span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">&quot;B:bicycle&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
+	<span class="nt">&lt;/ul&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+
+<span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span> <span class="na">src=</span><span class="s">&quot;https://code.jquery.com/jquery-2.1.4.min.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+<span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js&quot;</span> <span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+<span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span>
+	<span class="nx">$</span><span class="p">.</span><span class="nx">i18n</span><span class="p">.</span><span class="nx">init</span><span class="p">({</span>
+		<span class="c1">//lng: &#39;en-US&#39;,</span>
+		<span class="nx">lng</span><span class="o">:</span> <span class="s1">&#39;ko-KR&#39;</span><span class="p">,</span>
+		<span class="nx">debug</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+		<span class="nx">useLocalStorage</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+		<span class="nx">localStorageExpirationTime</span><span class="o">:</span> <span class="mi">86400000</span><span class="p">,</span> <span class="c1">// in ms, default 1 week</span>
+		<span class="nx">ns</span><span class="o">:</span> <span class="p">{</span>
+			<span class="nx">namespaces</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">],</span>
+			<span class="nx">defaultNs</span><span class="o">:</span> <span class="s1">&#39;A&#39;</span>
+		<span class="p">},</span>
+		<span class="c1">//resGetPath: &#39;js/locales/translation.json&#39;</span>
+		<span class="nx">resStore</span><span class="o">:</span> <span class="p">{</span>
+			<span class="s2">&quot;en-US&quot;</span><span class="o">:</span> <span class="p">{</span>
+				<span class="s2">&quot;A&quot;</span><span class="o">:</span> <span class="p">{</span>
+					<span class="s2">&quot;apple&quot;</span><span class="o">:</span> <span class="s2">&quot;Apple&quot;</span><span class="p">,</span>
+					<span class="s2">&quot;banana&quot;</span><span class="o">:</span> <span class="s2">&quot;Banana&quot;</span><span class="p">,</span>
+					<span class="s2">&quot;orange&quot;</span><span class="o">:</span> <span class="s2">&quot;Orange&quot;</span>
+				<span class="p">},</span>
+				<span class="s2">&quot;B&quot;</span><span class="o">:</span> <span class="p">{</span>
+					<span class="s2">&quot;car&quot;</span><span class="o">:</span> <span class="s2">&quot;Car&quot;</span><span class="p">,</span>
+					<span class="s2">&quot;airplane&quot;</span><span class="o">:</span> <span class="s2">&quot;Airplane&quot;</span><span class="p">,</span>
+					<span class="s2">&quot;bicycle&quot;</span><span class="o">:</span> <span class="s2">&quot;Bicycle&quot;</span>
+				<span class="p">}</span>
+			<span class="p">},</span>
+			<span class="s2">&quot;ko-KR&quot;</span><span class="o">:</span> <span class="p">{</span>
+				<span class="s2">&quot;A&quot;</span><span class="o">:</span> <span class="p">{</span>
+					<span class="s2">&quot;apple&quot;</span><span class="o">:</span> <span class="s2">&quot;사과&quot;</span><span class="p">,</span>
+					<span class="s2">&quot;banana&quot;</span><span class="o">:</span> <span class="s2">&quot;바나나&quot;</span><span class="p">,</span>
+					<span class="s2">&quot;orange&quot;</span><span class="o">:</span> <span class="s2">&quot;오렌지&quot;</span>
+				<span class="p">},</span>
+				<span class="s2">&quot;B&quot;</span><span class="o">:</span> <span class="p">{</span>
+					<span class="s2">&quot;car&quot;</span><span class="o">:</span> <span class="s2">&quot;자동차&quot;</span><span class="p">,</span>
+					<span class="s2">&quot;airplane&quot;</span><span class="o">:</span> <span class="s2">&quot;비행기&quot;</span><span class="p">,</span>
+					<span class="s2">&quot;bicycle&quot;</span><span class="o">:</span> <span class="s2">&quot;자전거&quot;</span>
+				<span class="p">}</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+	<span class="p">},</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+		<span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.translation&#39;</span><span class="p">).</span><span class="nx">i18n</span><span class="p">();</span>
+	<span class="p">});</span>
+
+	<span class="kd">var</span> <span class="nx">changeLang</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">lang</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">$</span><span class="p">.</span><span class="nx">i18n</span><span class="p">.</span><span class="nx">setLng</span><span class="p">(</span><span class="nx">lang</span><span class="p">);</span>
+		<span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.translation&#39;</span><span class="p">).</span><span class="nx">i18n</span><span class="p">();</span>
+	<span class="p">}</span>
+<span class="nt">&lt;/script&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<h4 id="section-5">대소문자를 구분한다.</h4>
+<p>위의 예시는 jquery와 함께 사용하는 예시이지만 jquery에 대한 의존성을 가진 것은 아니다. <a href="http://cdnjs.com/libraries/i18next">CDN</a> 목록에서 보여지는 것과 같이 amd, commonjs, 기본 등 여러가지 환경에서 사용 가능하다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="nv">$var1</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span><span class="p">;</span>
-<span class="nv">$var2</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span><span class="p">;</span>
-<span class="nv">$var3</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span><span class="p">;</span>
-
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var1</span><span class="p">,</span> <span class="nv">$var2</span><span class="p">);</span>  <span class="c1">// 5</span>
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var1</span><span class="p">,</span> <span class="nv">$var3</span><span class="p">);</span>  <span class="c1">// 4</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<h3 id="section-6">유사함수</h3>
-
-<p>비슷한 역할을 하는 함수에 대해 알고 싶다면 아래의 포스팅을 참고하자.</p>
+<p>여러번 얘기하게되지만 사용방법이 너무 다양하다. 그래서 위의 예시를 기준으로 몇가지 옵션만 설명하겠다. 보다 다양한 사용법은 제작 사이트의 <a href="http://i18next.com/pages/doc_init.html">메뉴얼</a>과 <a href="http://i18next.com/pages/sample.html">샘플</a>을 참고하자.</p>
 
 <ul>
-  <li><a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a></li>
+  <li><strong>lng</strong> : 기본 언어를 지정한다. 위의 예시처럼 setLng 함수를 통해 언제든 변경할 수 있다.</li>
+  <li><strong>debug</strong> : true로 설정시 내부적인 처리에 관련되 log를 확인할 수 있다.</li>
+  <li><strong>useLocalStorage</strong> : true로 설정시 local storage에 내용을 저장하여 향후 재사용할 수 있도록 한다. 이 예시에서는 resStore를 사용해서 언어 설정을 했기 때문에 의미가 없지만 서버에서 언어 정보를 받아와서 사용하는 경우에는 성능에 이점을 얻을 수 있다.</li>
+  <li><strong>localStorageExpirationTime</strong> : local storage에 저장된 데이터에 유효기간을 설정한다. 단위는 ms이며 기본값은 1주일이다.</li>
+  <li><strong>ns</strong> : 사용할 Namespace를 정의한다. 필수는 아니며 필요시에만 사용하면 된다. Namespace의 구분은 ::로 한다.(예시 : “A::apple”)</li>
+  <li><strong>resStore</strong> : i18n에 사용될 데이터를 설정한다.</li>
+  <li><strong>resGetPath</strong> : i18n에서 사용할 데이터를 서버에서 요청할 경우 경로를 구성하는 방법을 정의한다. <code>'locales/__lng__/__ns__.json'</code> 이런 형식을 쓸 수 있는데 <code>__lng__</code>는 언어명으로 <code>__ns__</code>는 Namespace로 대체된다.</li>
 </ul>
+
+<p>그 외에도 다양한 옵션이 있을 뿐 아니라 여러가지 상황에 대입해서 사용할 수 있다. 위의 예시는 html에 data attribute를 사용하는 것을 예를 들었지만 js에서 직접적으로 데이터를 받아서 사용할 수도 있고, sprintf 등과 같이 데이터를 데입해서 내용을 생성하는 것도 가능하다.
+게다가 handlebars, angular, JQuery UI에서 template에 적용시킬 수도 있다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -264,8 +325,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/09/15/internationalization-i18n-for-javascript-i18next/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/09/15/internationalization-i18n-for-javascript-i18next/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -113,22 +113,78 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/08/change-xcode-project-app-name/">
-								Xcode 프로젝트 앱 이름 변경
+							<a class="title" href="https://blog.asamaru.net/2015/10/08/centos-autofs/">
+								CentOS autofs
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/08/change-xcode-project-app-name/">2015.10.08.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/08/centos-autofs/">2015.10.08.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>앱 이름 변경</p>
+							<h2 id="section">설치</h2>
 
-<ol>
-  <li>xxx-Info.plist 선택</li>
-  <li>Bundle display name 선택</li>
-  <li>새로운 이름으로 변경</li>
-  <li>끝</li>
-</ol>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>yum install -y autofs
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h2 id="section-1">설정</h2>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="c"># 서버 부팅시 자동 시작</span>
+/sbin/chkconfig --add autofs
+/sbin/chkconfig --level <span class="m">35</span> autofs on
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+<p>## mount 설정</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="highlight"><pre>vi /etc/auto.master
+
+/home/nfsusers   /etc/auto.users --timeout 60
+
+vi /etc/auto.users
+yyj -rw,vers<span class="o">=</span>3,udp,nolock   192.168.11.99:/czdev/vagrant/work/web
+
+service autofs restart
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h2 id="section-2">관리</h2>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="highlight"><pre><span class="c"># 데몬 재시작</span>
+service autofs restart
+
+<span class="c"># 상태 확인</span>
+service autofs status
+
+<span class="c"># 설정 다시 일기</span>
+service autofs reload
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="c"># 동작 로그 보기</span>
+service autofs stop
+automount -f -v
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -142,8 +198,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/08/change-xcode-project-app-name/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/08/change-xcode-project-app-name/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/08/centos-autofs/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/08/centos-autofs/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

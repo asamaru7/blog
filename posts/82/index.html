@@ -113,173 +113,86 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/13/octopress-github-flavored-markdown-redcarpet/">
-								Octopress에서 GitHub Flavored Markdown 사용하기(redcarpet)
+							<a class="title" href="https://blog.asamaru.net/2015/10/14/centos-7-install-partitioning/">
+								Centos 7 설치시 파티셔닝
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/13/octopress-github-flavored-markdown-redcarpet/">2015.10.13.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/14/centos-7-install-partitioning/">2015.10.14.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>옥토프레스에서는 markdown 해석기로 <a href="https://github.com/davidfstr/rdiscount">rdiscount</a>를 기본으로 사용하고 있다. 현재 사용해보니 rdiscount에서도 GitHub Flavored Markdown를 지원하는 것으로 보이는데 예전엔 제대로 지원이 안되고 있었는지 <a href="https://github.com/vmg/redcarpet">redcarpet</a>으로 바꾸서 사용하는 사람들이 많았다. 그래서 나도 바꿔 봤다.</p>
+							<p>Linux 설치 과정에서 고민되는 것 중 하나가 파티션닝이다. 크게 중요하지 않은 상황이라면 자동으로 설정해주는 것을 그대로 사용하는 것이 편하긴하다. 설치 후에도 파티션을 변경할 수 있는 경우도 있으나 일반적으로 Linux를 서버로 사용하는 경우 동적으로 변경하는 상황은 흔치 않기 때문에 처음 설치시 신중하게 설정하는 것이 좋다.</p>
 
-<p>변경을 위해 참고한 글은 다음과 같다.</p>
+<p>파티셔닝은 서버의 사용 용도 등에 따라 파티션별 파일시스템의 종류와 용량이 많은 차이를 보일 수 있으므로 참고만 하고 자신이 직접 고민을 해보는 것이 좋을 것이다.</p>
+
+<p>아래의 내용은 <a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Installation_Guide/sect-disk-partitioning-setup-x86.html#sect-custom-partitioning-x86">RED HAT ENTERPRISE LINUX 7 Installation Guide : Manual Partitioning</a>을 기준으로 정리하고자 한다(CentOS 7 기준이지만 대부분의 Linux에서도 비슷할 것이다). 따라서 자세한 내용을 보려면 해당 문서를 자세히 읽어보기를 권한다(아래는 간단하게 필요한 부분만 발췌헤서 간단히 개인적인 의견을 적은 것이다).</p>
+
+<h2 id="section">파티션의 분할</h2>
+
+<p>‘6.13.4.5. Recommended Partitioning Scheme’에서 권장하는 파티션 분할은 아래와 같다.</p>
 
 <ul>
-  <li><a href="http://blog.tdksk.com/2013/05/06/use-gfm-in-octopress.html">Octopress で GitHub Flavored Markdown (GFM) を使う</a></li>
-  <li><a href="http://yangsu.github.io/blog/2012/10/11/using-octopress-with-github-flavored-markdown-redcarpet/">Using Octopress With Github Flavored Markdown (RedCarpet)</a></li>
+  <li>/boot partition - recommended size at least 500 MB</li>
+  <li>/ (root) partition - recommended size of 10 GB</li>
+  <li>/home partition - recommended size at least 1 GB</li>
+  <li>swap partition - recommended size at least 1 GB</li>
 </ul>
 
-<p>그런데 위 글들이 작성된 시점이 조금 오래되어서 그런지 그대로 따라해서는 정상적으로 적용이 되지 않았다. 그래서 몇가지를 수정해서 적용을 완료했다.</p>
+<p>위의 파티셔닝은 말그대로 그냥 권장일뿐 상황에 따라서 바뀔 수 있다. 예를들어 나는 간단한 서버인 경우
+home 파티션을 구분하지 않고 boot와 swap만 지정하고 나머지 모두를 /에 할달해서 사용한다(관리 편의상).</p>
 
-<h2 id="redcarpet-">redcarpet 설치</h2>
+<p>그런데 swap은 사람들마다 용량에 대한 의견에 차이가 많은 파티션 중 하나다. 우선 참고할만한 글은 아래와 같다.</p>
 
-<p>Gemfile에 아래의 내용을 추가 한다.</p>
+<ul>
+  <li><a href="http://zetawiki.com/wiki/%EB%A6%AC%EB%88%85%EC%8A%A4_%EC%8A%A4%EC%99%91%EB%A9%94%EB%AA%A8%EB%A6%AC_%ED%81%AC%EA%B8%B0_%EA%B6%8C%EA%B3%A0">리눅스 스왑메모리 크기 권고
+</a></li>
+  <li><a href="https://www.centos.org/docs/5/html/Deployment_Guide-en-US/ch-swapspace.html">CentOS 5 Documentation : Swap Space</a></li>
+  <li><a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Installation_Guide/sect-disk-partitioning-setup-x86.html#sect-custom-partitioning-x86">RED HAT ENTERPRISE LINUX 7 Installation Guide : Manual Partitioning</a> 중 ‘6.13.4.5. Recommended Partitioning Scheme’</li>
+</ul>
 
-<p><strong>Gemfile</strong></p>
+<p>아래는 RED HAT ENTERPRISE LINUX 7 Installation Guide에 안내된 내용을 가져온 것이다. 일반적인 상황이라면 아래의 기준치를 참고해서 정하면된다. 하지만 서비스를 위한 서버라면 일반적으로 swap 자체가 사용되는 상황을 최대한 없애야 하기 때문에 swap 용량을 많이 책정할 이유는 없다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">gem</span> <span class="s1">&#39;redcarpet&#39;</span><span class="p">,</span> <span class="s1">&#39;~&gt; 3.3.2&#39;</span>
-<span class="n">gem</span> <span class="s1">&#39;albino&#39;</span><span class="p">,</span> <span class="s1">&#39;~&gt; 1.3.3&#39;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<table>
+  <thead>
+    <tr>
+      <th>Amount of RAM in the system</th>
+      <th>Recommended swap space</th>
+      <th>Recommended swap space if allowing for hibernation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>less than 2 GB</td>
+      <td>2 times the amount of RAM</td>
+      <td>3 times the amount of RAM</td>
+    </tr>
+    <tr>
+      <td>2 GB - 8 GB</td>
+      <td>Equal to the amount of RAM</td>
+      <td>2 times the amount of RAM</td>
+    </tr>
+    <tr>
+      <td>8 GB - 64 GB</td>
+      <td>0.5 times the amount of RAM</td>
+      <td>1.5 times the amount of RAM</td>
+    </tr>
+    <tr>
+      <td>more than 64 GB</td>
+      <td>workload dependent</td>
+      <td>hibernation not recommended</td>
+    </tr>
+  </tbody>
+</table>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">[</span>sudo<span class="o">]</span> bundle install
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<h2 id="section-1">파일시스템의 선택</h2>
 
-<h2 id="redcarpet--">redcarpet 플러그인 설치</h2>
+<p>CentOS 7은 기본 파일시스템으로 xfs를 사용한다(CentOS 6의 경우 ext4가 기본 파일시스템 이었다). xfs는 데비안 계열의 배포판에서 오래전부터 기본 파일시스템으로 사용하던 것으로 대용량 파일을 지원하며 오랜시간 타 리눅스 배포판에서 사용되면서 안정성이 입증되었다고 판단한 것으로 보인다. 다른 파일시스템도 지원하므로 선택은 자유다. 자세한 내용은 메뉴얼에도 나와있고 찾아보면 많은 자료를 쉽게 찾을 수 있다.
+나의 경우는 파일시스템의 경우 특별한 이유가 있지 않는한 해당 OS에서 기본으로 사용하는 파일시스템을 사용한다.</p>
 
-<p>plugins/redcarpet2_markdown.rb 파일을 추가한다. 원본은 https://github.com/nono/Jekyll-plugins에 가면 볼 수 있다. 거의 그대로인데 약간 수정을 했다.</p>
+<h2 id="section-2">정리</h2>
 
-<p><strong>plugins/redcarpet2_markdown.rb</strong></p>
+<p>앞서 설명할때는 고민을 많이 해야 한다고 했는데 글을 적고 보니 너무 간단한 느낌이다. 사실 아주 고성능과 고가용성이 필요한 서버가 아니라면 위의 내용 정도만 생각해줘도 크게 무리는 없다는 생각이다. 자세히 설명하자면 파티션별 사이즈, 파일시스템 하나 하나에 대해서 설명해야 하는데 그러려면 책이 한권이다. 따라서 그 이상이 필요하다면 메뉴얼을 참고하면 관련 사항들을 하나씩 더 찾아보기 바란다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48</pre></div></td><td class="code"><div class="highlight"><pre><span class="nb">require</span> <span class="s1">&#39;fileutils&#39;</span>
-<span class="nb">require</span> <span class="s1">&#39;digest/md5&#39;</span>
-<span class="nb">require</span> <span class="s1">&#39;redcarpet&#39;</span>
-<span class="nb">require</span> <span class="s1">&#39;albino&#39;</span>
-
-<span class="c1"># PYGMENTS_CACHE_DIR = File.expand_path(&#39;../../_cache&#39;, __FILE__)</span>
-<span class="no">FileUtils</span><span class="o">.</span><span class="n">mkdir_p</span><span class="p">(</span><span class="no">PYGMENTS_CACHE_DIR</span><span class="p">)</span>
-
-<span class="k">class</span> <span class="nc">Redcarpet2Markdown</span> <span class="o">&lt;</span> <span class="no">Redcarpet</span><span class="o">::</span><span class="no">Render</span><span class="o">::</span><span class="no">HTML</span>
-  <span class="k">def</span> <span class="nf">block_code</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
-    <span class="n">lang</span> <span class="o">=</span> <span class="n">lang</span> <span class="o">||</span> <span class="s2">&quot;text&quot;</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">PYGMENTS_CACHE_DIR</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">lang</span><span class="si">}</span><span class="s2">-</span><span class="si">#{</span><span class="no">Digest</span><span class="o">::</span><span class="no">MD5</span><span class="o">.</span><span class="n">hexdigest</span> <span class="n">code</span><span class="si">}</span><span class="s2">.html&quot;</span><span class="p">)</span>
-    <span class="n">cache</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">do</span>
-      <span class="n">colorized</span> <span class="o">=</span> <span class="no">Albino</span><span class="o">.</span><span class="n">colorize</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lang</span><span class="o">.</span><span class="n">downcase</span><span class="p">)</span>
-      <span class="n">add_code_tags</span><span class="p">(</span><span class="n">colorized</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nf">add_code_tags</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
-    <span class="n">code</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sr">/&lt;pre&gt;/</span><span class="p">,</span> <span class="s2">&quot;&lt;pre&gt;&lt;code class=</span><span class="se">\&quot;</span><span class="si">#{</span><span class="n">lang</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&gt;&quot;</span><span class="p">)</span><span class="o">.</span>
-         <span class="nb">sub</span><span class="p">(</span><span class="sr">/&lt;\/pre&gt;/</span><span class="p">,</span> <span class="s2">&quot;&lt;/code&gt;&lt;/pre&gt;&quot;</span><span class="p">)</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nf">cache</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="k">if</span> <span class="no">File</span><span class="o">.</span><span class="n">exist?</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-      <span class="no">File</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="k">else</span>
-      <span class="n">content</span> <span class="o">=</span> <span class="k">yield</span>
-      <span class="no">File</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">f</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">content</span><span class="p">)</span> <span class="p">}</span>
-      <span class="n">content</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-
-<span class="k">class</span> <span class="nc">Jekyll</span><span class="o">::</span><span class="no">MarkdownConverter</span>
-  <span class="k">def</span> <span class="nf">extensions</span>
-    <span class="no">Hash</span><span class="o">[</span> <span class="o">*</span><span class="vi">@config</span><span class="o">[</span><span class="s1">&#39;redcarpet&#39;</span><span class="o">][</span><span class="s1">&#39;extensions&#39;</span><span class="o">].</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">e</span><span class="o">|</span> <span class="o">[</span><span class="n">e</span><span class="o">.</span><span class="n">to_sym</span><span class="p">,</span> <span class="kp">true</span><span class="o">]</span> <span class="p">}</span><span class="o">.</span><span class="n">flatten</span> <span class="o">]</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nf">markdown</span>
-    <span class="vi">@markdown</span> <span class="o">||=</span> <span class="no">Redcarpet</span><span class="o">::</span><span class="no">Markdown</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">Redcarpet2Markdown</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">extensions</span><span class="p">),</span> <span class="n">extensions</span><span class="p">)</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
-    <span class="k">return</span> <span class="k">super</span> <span class="k">unless</span> <span class="vi">@config</span><span class="o">[</span><span class="s1">&#39;markdown&#39;</span><span class="o">]</span> <span class="o">==</span> <span class="s1">&#39;redcarpet&#39;</span>
-    <span class="n">markdown</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<h2 id="config-">config 설정</h2>
-
-<p>_config.yml 파일을 열어서 rdiscount 부분을 아래와 같이 수정한다.</p>
-
-<p>  <figure class='code'><figcaption><span>_config.yml</span></figcaption><div class="highlight notranslate"><pre><code class="language-yaml"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8
-9</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">#markdown: rdiscount</span>
-<span class="l-Scalar-Plain">markdown</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">redcarpet</span>
-<span class="l-Scalar-Plain">redcarpet</span><span class="p-Indicator">:</span>
-  <span class="l-Scalar-Plain">extensions</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;no_intra_emphasis&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;fenced_code_blocks&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;autolink&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;tables&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;with_toc_data&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;strikethrough&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;superscript&quot;</span><span class="p-Indicator">]</span>
-<span class="c1">#rdiscount:</span>
-<span class="c1">#  extensions:</span>
-<span class="c1">#    - autolink</span>
-<span class="c1">#    - footnotes</span>
-<span class="c1">#    - smart</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-</p>
-
-<p>참고 사이트들 설명을 보면 extensions에 hard_wrap을 추가하라고 되어 있는데 나의 경우는 이 옵션을 추가하면 Pygments에서 오류가 났다.</p>
-
-<p>이것으로 설치는 끝이다. generate를 해보면 페이지가 잘 생성된다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -293,8 +206,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/13/octopress-github-flavored-markdown-redcarpet/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/13/octopress-github-flavored-markdown-redcarpet/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/14/centos-7-install-partitioning/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/14/centos-7-install-partitioning/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -125,11 +125,11 @@
 
 <p>우선 실제로 해당 서버에 어떤 IP들이 ssh 로그인을 시도했는지 아래의 명령으로 확인 할 수 있다(이하는 CentOS 7 기준이다).</p>
 
-<p>로그인 시도 IP 확인
-  <figure class='code'><figcaption><span></span></figcaption><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>ls /var/log/secure <span class="p">|</span> xargs grep -E <span class="s2">&quot;[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+&quot;</span> -o <span class="p">|</span> sort <span class="p">|</span> uniq
+<p>로그인 시도 IP 확인</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>ls /var/log/secure <span class="p">|</span> xargs grep -E <span class="s2">&quot;[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+&quot;</span> -o <span class="p">|</span> sort <span class="p">|</span> uniq
 </pre></div>
 </td></tr></table></code></pre></div></figure>
-</p>
 
 <p>공개망에 연결된 서버라면 생각보다 많은 IP가 나와 놀랄수도 있다. IP들 중 자신이 아는 IP를 제외하면 대부분이 위에 언급한 공격일 확률이 높다.</p>
 
@@ -332,7 +332,12 @@ ipv4 filter INPUT <span class="m">0</span> -p tcp -m multiport --dports ssh -m <
 22
 23
 24
-25</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>fail2ban-client status sshd
+25
+26
+27
+28
+29</pre></div></td><td class="code"><div class="highlight"><pre><span class="c"># fail2ban 상태 확인</span>
+<span class="nv">$ </span>fail2ban-client status sshd
 
 Status <span class="k">for</span> the jail: sshd
 <span class="p">|</span>- Filter
@@ -344,6 +349,7 @@ Status <span class="k">for</span> the jail: sshd
    <span class="p">|</span>- Total banned:	2
    <span class="sb">`</span>- Banned IP list:
 
+<span class="c"># ipset에 설정(차단)된 내용 확인</span>
 <span class="nv">$ </span>ipset --list
 
 Name: fail2ban-sshd
@@ -354,8 +360,10 @@ Size in memory: 16656
 References: 1
 Members:
 
+<span class="c"># fail2ban 로그 확인</span>
 <span class="nv">$ </span>cat /var/log/fail2ban.log
 
+<span class="c"># 차단 IP 목록</span>
 <span class="nv">$ </span>awk <span class="s1">&#39;($(NF-1) = /Ban/){print $NF}&#39;</span> /var/log/fail2ban.log <span class="p">|</span> sort <span class="p">|</span> uniq -c <span class="p">|</span> sort -n
 </pre></div>
 </td></tr></table></code></pre></div></figure>

@@ -187,40 +187,40 @@
 21
 22
 23</pre></div></td><td class="code"><div class="highlight"><pre><span class="c"># epel-release 추가</span>
-rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+<span class="nv">$ </span>rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 <span class="c"># fail2ban 설치</span>
-yum install -y fail2ban
+<span class="nv">$ </span>yum install -y fail2ban
 
 <span class="c"># fail2ban 기본 설정</span>
-<span class="nv">hostname</span><span class="o">=</span><span class="sb">`</span>/bin/hostname<span class="sb">`</span>
-<span class="nb">echo</span> <span class="s2">&quot;[DEFAULT]&quot;</span> &gt; /etc/fail2ban/jail.local
+<span class="nv">$ hostname</span><span class="o">=</span><span class="sb">`</span>/bin/hostname<span class="sb">`</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;[DEFAULT]&quot;</span> &gt; /etc/fail2ban/jail.local
 <span class="c"># 1시간 동안 접근 제한</span>
-<span class="nb">echo</span> <span class="s2">&quot;bantime = 3600&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;bantime = 3600&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
 <span class="c"># 결과 수신 메일 지정</span>
-<span class="nb">echo</span> <span class="s2">&quot;destemail = ~~~@~~~.com&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;destemail = ~~~@~~~.com&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
 <span class="c"># 결과 발신 메일 지정</span>
-<span class="nb">echo</span> <span class="s2">&quot;sender = root@$hostname&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="nb">echo</span> <span class="s2">&quot;&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;sender = root@$hostname&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
 <span class="c"># ssh 접근 검사 활성화</span>
-<span class="nb">echo</span> <span class="s2">&quot;[sshd]&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="nb">echo</span> <span class="s2">&quot;enabled = true&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;[sshd]&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;enabled = true&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
 <span class="c"># nginx-http-auth 접근 검사 활성화 : 필요시에만 사용</span>
-<span class="c">#echo &quot;&quot; &gt;&gt; /etc/fail2ban/jail.local</span>
-<span class="c">#echo &quot;[nginx-http-auth]&quot; &gt;&gt; /etc/fail2ban/jail.local</span>
-<span class="c">#echo &quot;enabled = true&quot; &gt;&gt; /etc/fail2ban/jail.local</span>
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;[nginx-http-auth]&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;enabled = true&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
 <p><strong>fail2ban 서비스 활성</strong></p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>systemctl <span class="nb">enable </span>fail2ban.service
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>systemctl <span class="nb">enable </span>fail2ban.service
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
 <p><strong>fail2ban 서비스 시작</strong></p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>systemctl start fail2ban.service
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>systemctl start fail2ban.service
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
@@ -242,25 +242,21 @@ yum install -y fail2ban
 12
 13
 14
-15
-16
-17</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
+15</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>checkmodule -M -m -o fail2ban-syslog.mod fail2ban-syslog.te
+<span class="nv">$ </span>semodule_package -o fail2ban-syslog.pp -m fail2ban-syslog.mod
+<span class="nv">$ </span>semodule -r fail2ban-syslog
+<span class="nv">$ </span>semodule -i fail2ban-syslog.pp
+<span class="nv">$ </span>rm -f fail2ban-syslog.mod
+<span class="nv">$ </span>rm -f fail2ban-syslog.pp
+<span class="nv">$ </span>semodule -l<span class="p">|</span>grep fail2ban-syslog
 
-checkmodule -M -m -o fail2ban-syslog.mod fail2ban-syslog.te
-semodule_package -o fail2ban-syslog.pp -m fail2ban-syslog.mod
-semodule -r fail2ban-syslog
-semodule -i fail2ban-syslog.pp
-rm -f fail2ban-syslog.mod
-rm -f fail2ban-syslog.pp
-semodule -l<span class="p">|</span>grep fail2ban-syslog
-
-checkmodule -M -m -o logrotate-fail2ban.mod logrotate-fail2ban.te
-semodule_package -o logrotate-fail2ban.pp -m logrotate-fail2ban.mod
-semodule -r logrotate-fail2ban
-semodule -i logrotate-fail2ban.pp
-rm -f logrotate-fail2ban.mod
-rm -f logrotate-fail2ban.pp
-semodule -l<span class="p">|</span>grep logrotate-fail2ban
+<span class="nv">$ </span>checkmodule -M -m -o logrotate-fail2ban.mod logrotate-fail2ban.te
+<span class="nv">$ </span>semodule_package -o logrotate-fail2ban.pp -m logrotate-fail2ban.mod
+<span class="nv">$ </span>semodule -r logrotate-fail2ban
+<span class="nv">$ </span>semodule -i logrotate-fail2ban.pp
+<span class="nv">$ </span>rm -f logrotate-fail2ban.mod
+<span class="nv">$ </span>rm -f logrotate-fail2ban.pp
+<span class="nv">$ </span>semodule -l<span class="p">|</span>grep logrotate-fail2ban
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 

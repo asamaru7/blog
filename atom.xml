@@ -3,13 +3,78 @@
 <generator uri="http://jekyllrb.com" version="3.0.1">Jekyll</generator>
 <link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" />
 <link href="https://blog.asamaru.net/" rel="alternate" type="text/html" />
-<updated>2016-04-11T22:26:01+09:00</updated>
+<updated>2016-04-12T20:08:53+09:00</updated>
 <id>https://blog.asamaru.net/</id>
 <subtitle>세상에 필요한 소스코드 한줄 남기고 가자.
 </subtitle>
 <author>
 <name>유영재</name>
 </author>
+<entry>
+<title>php-fpm opcache로 인한 Nginx - 502 bad gateaway 오류</title>
+<link href="https://blog.asamaru.net/2016/04/12/php-fpm-opcache-and-nginx-502-bad-gateaway/" rel="alternate" type="text/html" title="php-fpm opcache로 인한 Nginx - 502 bad gateaway 오류" />
+<published>2016-04-12T15:39:21+09:00</published>
+<updated>2016-04-12T15:39:21+09:00</updated>
+<id>https://blog.asamaru.net/2016/04/12/php-fpm-opcache-and-nginx-502-bad-gateaway</id>
+<content type="html" xml:base="https://blog.asamaru.net/2016/04/12/php-fpm-opcache-and-nginx-502-bad-gateaway/">&lt;p&gt;얼마 전부터 서비스 사용자로부터 이상한 오류 보고를 비주기적으로 받고 있다.&lt;/p&gt;
+
+&lt;p&gt;특정 페이지에 접속시 &lt;code&gt;502 Bad gateaway&lt;/code&gt; 오류가 난다는 것이다. 하지만 그 오류가 나는 페이지에 특별히 눈에 띄는 부분은 없다. 게다가 동일한 프로그램이 몇개의 폴더에서 동시에 사용 중임에도 꼭 한군데서만 동일한 문제를 일으킨다. 게다가 일시적으로 발생하고 사라지지 않고 한번 오류가 발생하면 그 후에 해당 페이지에 접속하면 해결 전까지는 계속 502 에러를 보인다. 게다가 해당 오류가 발생하는 조건을 알 수 없어 오류 재연이 불가능한 상황이라 원인 파악에 애를 먹고 있다.&lt;/p&gt;
+
+&lt;p&gt;현재 해당 서버는 CentOS 6.7에 nginx + php-fpm으로 서비스 되고 있고 opcache와 apcu 등이 적용되어 있다. 오류가 난 상황에서는 로그에 아래와 같은 기록이 남는다.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;/var/log/nginx/error.log&lt;/strong&gt;&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;2016/04/12 14:50:43 [error] 2481#2481: *1828457 recv() failed (104: Connection reset by peer) while reading response header from upstream, client: ~~~.~~~.~~~.~~~, server: ~~~, request: &quot;GET /~~~ HTTP/1.1&quot;, upstream: &quot;fastcgi://~~~:&quot;, host: &quot;~~~&quot;, referrer: &quot;~~~&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;&lt;strong&gt;/var/log/php-fpm/error.log&lt;/strong&gt;&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;[12-Apr-2016 14:54:39] WARNING: [pool www] child 24352 exited on signal 11 (SIGSEGV) after 301.965713 seconds from start
+[12-Apr-2016 14:54:39] NOTICE: [pool www] child 24510 started
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;현재로써는 일단 오류가 발생하면 해당 서버의 opcache를 초기화해주면 문제는 즉시 해결된다. 따라서 opcache의 오류로 판단하고 있다.&lt;/p&gt;
+
+&lt;p&gt;이 문제와 관련해서 검색해보니 비슷한 증상을 보이는 사례들이 많았다. 대부분의 경우 해결책은 opcache를 끄도록 설정하는 것을 제시하고 있다. 하지만 opcache는 당연히 필요하니 사용하던 것이라 그냥 끌수는 없다. 다른 방법으로 &lt;a href=&quot;http://offandon.org/2015/12/apache-2-4-opcache-apcu-502/&quot;&gt;Apache 2.4 + Opcache + APCu = 502?&lt;/a&gt;에 보면 아래와 같은 방법을 제시하고 있다.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;/etc/php.d/opcache.ini:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;opcache.fast_shutdown=0
+opcache.enable_cli=0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;하지만 &lt;code&gt;fast_shutdown&lt;/code&gt;의 경우도 성능을 위해 사용하는 것이 권장되고 있는 옵션으로 그냥 끌수는 없다. 사실 문제가 해결된다는 보장도 없다(글쓴이도 정확하게 이해한 것이 아니라고 한다).&lt;/p&gt;
+
+&lt;p&gt;여기서 잠깐 &lt;code&gt;fast_shutdown&lt;/code&gt;에 대해 조금 알아보자. &lt;a href=&quot;http://php.net/manual/kr/opcache.configuration.php#ini.opcache.fast-shutdown&quot;&gt;PHP 매뉴얼 OPcache 설치/설정&lt;/a&gt;에 보면 아래와 같이 설명되어 있다.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;opcache.fast_shutdown boolean&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;If enabled, a fast shutdown sequence is used that doesn’t free each allocated block, but relies on the Zend Engine memory manager to deallocate the entire set of request variables en masse.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;정확한 의미는 모르겠지만 메뉴얼(&lt;a href=&quot;http://php.net/manual/kr/opcache.installation.php&quot;&gt;Recommended php.ini settings &lt;/a&gt;) 상에서도 아래와 같이 &lt;code&gt;fast_shutdown&lt;/code&gt;를 켜는 것을 권장하고 있다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;opcache.memory_consumption=128
+opcache.interned_strings_buffer=8
+opcache.max_accelerated_files=4000
+opcache.revalidate_freq=60
+opcache.fast_shutdown=1
+opcache.enable_cli=1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;다른 문서인 &lt;a href=&quot;https://www.scalingphpbook.com/blog/2014/02/14/best-zend-opcache-settings.html&quot;&gt;Best Zend OpCache Settings/Tuning/Config&lt;/a&gt;에서도 켜는 것을 권장하고 있다. 따라서 이 옵션을 끄는 것도 보류.&lt;/p&gt;
+
+&lt;p&gt;현재 프로그램에서 의심되는 부분(다른 파일과 동일한 namespace와 class명을 사용)을 수정하고 opcache의 몇가지 옵션을 조정해서 다시 오류가 발생하는지 지켜보고 있다. 다시 오류가 재연되면 opcache 관리 페이지에서 전체 초기화가 아닌 파일 단위로 초기화하면서 원인 파일을 찾으려고 한다(진작에 했어야 하는 일이지만 서비스 중인 상태로 최대한 빨리 복구해야 해서 많은 시간을 들여 오류 위치를 찾을 수 없었다).&lt;/p&gt;
+
+&lt;p&gt;원인 파일을 찾고 나면 소스를 리뷰한 후 특별한 문제를 찾지 못할 경우 해당 파일만 opcache에서 제외시킬 계획이다.&lt;/p&gt;
+
+&lt;p&gt;제외하는 방법은 &lt;code&gt;opcache.blacklist_filename&lt;/code&gt;에 지정된 파일에 해당 파일 경로를 추가하면 된다. 나의 경우는 &lt;code&gt;opcache.blacklist_filename = /etc/php.d/opcache*.blacklist&lt;/code&gt;로 설정되어 있고 &lt;code&gt;/etc/php.d/opcache-default.blacklist&lt;/code&gt; 파일이 기본적으로 생성되어 있다. 현재 테스트 서버에서 &lt;code&gt;/etc/php.d/opcache-default.blacklist&lt;/code&gt;에 특정 파일 경로를 추가해서 opcache에서 정상적으로 제외되는지 확인은 마쳤다.&lt;/p&gt;
+
+&lt;p&gt;php를 10여년 넘게 써오면서 이런 경우는 처음이다. 프로그램을 수정한 부분으로 문제가 해결되었으면 하는 바람이다.&lt;/p&gt;
+</content>
+<summary>얼마 전부터 서비스 사용자로부터 이상한 오류 보고를 비주기적으로 받고 있다.특정 페이지에 접속시 502 Bad gateaway 오류가 난다는 것이다. 하지만 그 오류가 나는 페이지에 특별히 눈에 띄는 부분은 없다. 게다가 동일한 프로그램이 몇개의 폴더에서 동시에 사용 중임에도 꼭 한군데서만 동일한 문제를 일으킨다. 게다가 일시적으로 발생하고 사라지지 않고 한번 오류가 발생하면 그 후에 해당 페이지에 접속하면 해결 전까지는 계속 502 에러를 보인다. 게다가 해당 오류가 발생하는 조건을 알 수 없어 오류 재연이 불가능한 상황이라 원인 파악에 애를 먹고 있다.현재 해당 서버는 CentOS 6.7에 nginx + php-fpm으로 서비스 되고 있고 opcache와 apcu 등이 적용되어 있다. 오류가 난 상황에서는 로그에 아래와 같은 기록이 남는다./var/log/nginx/error.log2016/04/12 14:50:43 [error] 2481#2481: *1828457 recv() failed (104: Connection reset by peer) while reading response header from upstream, client: ~~~.~~~.~~~.~~~, server: ~~~, request: &quot;GET /~~~ HTTP/1.1&quot;, upstream: &quot;fastcgi://~~~:&quot;, host: &quot;~~~&quot;, referrer: &quot;~~~&quot;/var/log/php-fpm/error.log[12-Apr-2016 14:54:39] WARNING: [pool www] child 24352 exited on signal 11 (SIGSEGV) after 301.965713 seconds from start[12-Apr-2016 14:54:39] NOTICE: [pool www] child 24510 started현재로써는 일단 오류가 발생하면 해당 서버의 opcache를 초기화해주면 문제는 즉시 해결된다. 따라서 opcache의 오류로 판단하고 있다.이 문제와 관련해서 검색해보니 비슷한 증상을 보이는 사례들이 많았다. 대부분의 경우 해결책은 opcache를 끄도록 설정하는 것을 제시하고 있다. 하지만 opcache는 당연히 필요하니 사용하던 것이라 그냥 끌수는 없다. 다른 방법으로 Apache 2.4 + Opcache + APCu = 502?에 보면 아래와 같은 방법을 제시하고 있다./etc/php.d/opcache.ini:opcache.fast_shutdown=0opcache.enable_cli=0하지만 fast_shutdown의 경우도 성능을 위해 사용하는 것이 권장되고 있는 옵션으로 그냥 끌수는 없다. 사실 문제가 해결된다는 보장도 없다(글쓴이도 정확하게 이해한 것이 아니라고 한다).여기서 잠깐 fast_shutdown에 대해 조금 알아보자. PHP 매뉴얼 OPcache 설치/설정에 보면 아래와 같이 설명되어 있다.  opcache.fast_shutdown boolean  If enabled, a fast shutdown sequence is used that doesn’t free each allocated block, but relies on the Zend Engine memory manager to deallocate the entire set of request variables en masse.정확한 의미는 모르겠지만 메뉴얼(Recommended php.ini settings ) 상에서도 아래와 같이 fast_shutdown를 켜는 것을 권장하고 있다.opcache.memory_consumption=128opcache.interned_strings_buffer=8opcache.max_accelerated_files=4000opcache.revalidate_freq=60opcache.fast_shutdown=1opcache.enable_cli=1다른 문서인 Best Zend OpCache Settings/Tuning/Config에서도 켜는 것을 권장하고 있다. 따라서 이 옵션을 끄는 것도 보류.현재 프로그램에서 의심되는 부분(다른 파일과 동일한 namespace와 class명을 사용)을 수정하고 opcache의 몇가지 옵션을 조정해서 다시 오류가 발생하는지 지켜보고 있다. 다시 오류가 재연되면 opcache 관리 페이지에서 전체 초기화가 아닌 파일 단위로 초기화하면서 원인 파일을 찾으려고 한다(진작에 했어야 하는 일이지만 서비스 중인 상태로 최대한 빨리 복구해야 해서 많은 시간을 들여 오류 위치를 찾을 수 없었다).원인 파일을 찾고 나면 소스를 리뷰한 후 특별한 문제를 찾지 못할 경우 해당 파일만 opcache에서 제외시킬 계획이다.제외하는 방법은 opcache.blacklist_filename에 지정된 파일에 해당 파일 경로를 추가하면 된다. 나의 경우는 opcache.blacklist_filename = /etc/php.d/opcache*.blacklist로 설정되어 있고 /etc/php.d/opcache-default.blacklist 파일이 기본적으로 생성되어 있다. 현재 테스트 서버에서 /etc/php.d/opcache-default.blacklist에 특정 파일 경로를 추가해서 opcache에서 정상적으로 제외되는지 확인은 마쳤다.php를 10여년 넘게 써오면서 이런 경우는 처음이다. 프로그램을 수정한 부분으로 문제가 해결되었으면 하는 바람이다.</summary>
+</entry>
 <entry>
 <title>Generic Type으로 인스턴스 생성</title>
 <link href="https://blog.asamaru.net/2016/04/11/create-instance-of-generic-type-in-java/" rel="alternate" type="text/html" title="Generic Type으로 인스턴스 생성" />
@@ -393,8 +458,32 @@
 &lt;p&gt;결론은 &lt;code&gt;.withTargetClass(Person.class)&lt;/code&gt; 한줄 빠진 것이다. 굳이 저 한줄을 빼고자 이렇게 복잡하게 해야하나 생각할 수 있지만 복잡한 로직과 결합되면 이 한줄의 코드를 제거하는 것이 큰 영향을 줄 수 있다. 그리고 위 상황이라면 어짜피 Listener는 상속을 한번 받아서 사용하므로 안내한 방법의 단점이 단점이 되지 않는다.&lt;/p&gt;
 
 &lt;p&gt;안내한 방법을 응용하면 Method에서 Generic Type을 추출하는 방법도 있다. 그외에도 여러가지 응용 방법이 있으나 설명하자니 너무 길어질 것 같아서 줄인다.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;strong&gt;첨부 2016.04.12&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;위 클래스를 사용하는 방법도 있지만 이와 관련된 라이브러리도 찾았다. &lt;a href=&quot;https://github.com/jhalterman/typetools&quot;&gt;jhalterman/typetools&lt;/a&gt;라는 것인데 사용법은 해당 사이트에 설명되어 있다. 내부적인 구현은 위에서 소개한 방법과 유사하나 조금 더 다양하게 사용이 가능하고 조금 더 여러가지 상황이 고려되어 있다. 다만, 사이트에 gradle에 추가하는 방법이 안내되어 있지 않다. 그래서 테스트하면서 적용한 방법을 아래에 남긴다. 참고로 android 프로젝트에서 unittest 시에 실행 오류가 발생할 수 있다. 이에 관련해서 오늘 오전에 이슈를 남겼는데 몇시간 지나지 않아 패치를 했다는 답변을 받았다. 하지만 현재 시점(0.4.6)에서는 아직 release되지 않았으므로 혹시 테스트를 하려면 다음의 &lt;code&gt;System.setProperty(&quot;java.version&quot;, &quot;0&quot;);&lt;/code&gt; 코드를 &lt;code&gt;TypeResolver.resolveRawArguments()&lt;/code&gt; 사용 전에 추가해주면 된다. 참고로 오류는 아래와 같다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;Caused by: java.lang.NumberFormatException: For input string: &quot;1.7.0_79&quot;
+	at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
+	at java.lang.Integer.parseInt(Integer.java:492)
+	at java.lang.Integer.valueOf(Integer.java:582)
+	at net.jodah.typetools.TypeResolver.&amp;lt;clinit&amp;gt;(TypeResolver.java:54)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;사용법은 gradle을 사용하는 경우 아래의 코드를 build.gradle 파일에 추가하면 사용 가능하다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile &#39;net.jodah:typetools:0.4.6&#39;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
 </content>
-<summary>java에서 Generic Type은 유용하고 다양한 곳에서 사용한다. 예를 들어 안드로이드에서 findViewById 사용시 Generics을 이용해 Type Casting 없애기처럼 사용도 가능하다. 이 글의 주제는 Generic Type으로 해당 class의 인스턴스를 얻는 방법에 대한 것이므로 Generic Type에 대한 기본적인 내용은 다루지 않는다(설명이 길다).우선 class로 인스턴스를 생성하는 가장 기본적인 방법부터 보자.1234567Class clazz = String.class;try {  String a = (String) clazz.newInstance();} catch (IllegalAccessException e) {} catch (java.lang.InstantiationException e) {  e.printStackTrace();}위처럼 class를 가지고 있다면 인스턴스를 생성할 수 있으므로 Generic Type으로 class를 얻을 수 있다면 인스턴스 또한 생성할 수 있다.아래는 일반적으로 Generic Type에 맞는 인스턴스를 생성하기 위한 방법에 대한 샘플 소스다. 1 2 3 4 5 6 7 8 91011121314151617181920212223242526class Gen&amp;lt;T&amp;gt; {  private Class&amp;lt;T&amp;gt; mClass;  public Gen(Class&amp;lt;T&amp;gt; cls) {    mClass = cls;  }  public T get() {    try {      return mClass.newInstance();    } catch (Exception e) {      e.printStackTrace();      return null;    }  }}class A {  public String name = &amp;quot;A!&amp;quot;;}public static void main(String[] args) {  Gen&amp;lt;A&amp;gt; g = new Gen&amp;lt;&amp;gt;(A.class);  A a = g.get();  System.out.println(a.name);}그런데 위 방법은 원하는 결과를 얻을 수 있으나 Generic Type으로 인스턴스를 얻은 것은 아니다. 생성자에 Generic Type에 해당하는 class를 넘겨주고 이를 기억했다가 인스턴스를 생성하기 때문이다. Generic Type에 의해 class가 정확히 제한되는 장점은 있으나 항상 class를 넘겨줘야 한다.위 방법을 개선해서 class를 직접 넘겨주지 않고 인스턴스를 얻는 방법을 알아보자. 1 2 3 4 5 6 7 8 9101112131415161718192021222324252627abstract class Gen&amp;lt;T&amp;gt; {	public T get() {		try {			// noinspection unchecked			Class&amp;lt;T&amp;gt; mClass = (Class&amp;lt;T&amp;gt;) ClassUtils.getReclusiveGenericClass(getClass(), 0);			if (mClass != null) {				return mClass.newInstance();			}		} catch (Exception e) {			e.printStackTrace();		}		return null;	}}class A {	public String name = &amp;quot;A!&amp;quot;;}class GetT extends Gen&amp;lt;A&amp;gt; {}public static void main(String[] args) {	GetT gt = new GetT();	A a = gt.get();	System.out.println(a.name);}위 소스에서 사용된 ClassUtils의 소스는 아래와 같다. 1 2 3 4 5 6 7 8 9101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687import java.lang.reflect.Array;import java.lang.reflect.GenericArrayType;import java.lang.reflect.ParameterizedType;import java.lang.reflect.Type;class ClassUtils {	private static final String TYPE_NAME_PREFIX = &amp;quot;class &amp;quot;;	public static Class&amp;lt;?&amp;gt; getReclusiveGenericClass(Class&amp;lt;?&amp;gt; clazz, int index) {		Class&amp;lt;?&amp;gt; targetClass = clazz;		while (targetClass != null) {			Class&amp;lt;?&amp;gt; genericClass = getGenericClass(targetClass, index);			if (genericClass != null) {				return genericClass;			}			targetClass = targetClass.getSuperclass();		}		return null;	}	public static Class&amp;lt;?&amp;gt; getGenericClass(Class&amp;lt;?&amp;gt; clazz, int index) {		Type types[] = getParameterizedTypes(clazz);		if ((types != null) &amp;amp;&amp;amp; (types.length &amp;gt; index)) {			try {				return getClass(types[index]);			} catch (Exception e) {				e.printStackTrace();			}		}		return null;	}	static public Type[] getParameterizedTypes(Class&amp;lt;?&amp;gt; target) {		Type[] types = getGenericType(target);		if (types.length &amp;gt; 0 &amp;amp;&amp;amp; types[0] instanceof ParameterizedType) {			return ((ParameterizedType) types[0]).getActualTypeArguments();		}		return null;	}	static public Class&amp;lt;?&amp;gt; getClass(Type type) throws ClassNotFoundException {		if (type instanceof Class) {			return (Class) type;		} else if (type instanceof ParameterizedType) {			return getClass(((ParameterizedType) type).getRawType());		} else if (type instanceof GenericArrayType) {			Type componentType = ((GenericArrayType) type).getGenericComponentType();			Class&amp;lt;?&amp;gt; componentClass = getClass(componentType);			if (componentClass != null) {				return Array.newInstance(componentClass, 0).getClass();			}		}		String className = getClassName(type);		if (className == null || className.isEmpty()) {			return null;		}		return Class.forName(className);	}	static public String getClassName(Type type) {		if (type == null) {			return &amp;quot;&amp;quot;;		}		String className = type.toString();		if (className.startsWith(TYPE_NAME_PREFIX)) {			className = className.substring(TYPE_NAME_PREFIX.length());		}		return className;	}	static public Type[] getGenericType(Class&amp;lt;?&amp;gt; target) {		if (target == null) {			return new Type[0];		}		Type[] types = target.getGenericInterfaces();		if (types.length &amp;gt; 0) {			return types;		}		Type type = target.getGenericSuperclass();		if (type != null) {			if (type instanceof ParameterizedType) {				return new Type[]{type};			}		}		return new Type[0];	}}언뜻보면 위 방법이 처음 방법에 비해 훨씬 복잡해 보일 수 있다. 하지만 이 방법이 아주 유용하게 사용되는 경우들이 많이 있다.그리고 위 코드를 자세히 보면 알겠지만 가장 큰 단점이 있다. Generic Type 이 포함된 클래스를 바로 사용할 수 없고 상속을 한번 이상 받아야 한다는 것이다. 그럼에도 불구하고 위 방법을 응용하면 조금 더 간결한 코딩을 할 수 있다.예를들어 아래의 volleyer 사용 예시 소스를 보자. 1 2 3 4 5 6 7 8 9101112volleyer(requestQueue).get(url)                      .addHeader(&amp;quot;header1&amp;quot;, &amp;quot;value1&amp;quot;)                    .addHeader(&amp;quot;header2&amp;quot;, &amp;quot;value2&amp;quot;)                    .withTargetClass(Person.class)                    .withListener(new Listener&amp;lt;Person&amp;gt;() {                        @Override                        public void onResponse(Person person) {                            Log.d(TAG, &amp;quot;person : &amp;quot; + person);                                }                    })                    .execute();위 소스를 보면 .withTargetClass(Person.class)에서 Person.class를 넘겨주고 있다. 하지만 이 부분은 .withListener(new Listener&amp;lt;Person&amp;gt;()에서 보듯이 Listener의 Generic Type에 의해 유추할 수 있다. 따라서 위에 소개한 방법을 응용하면 아래와 같은 코드를 만들어 낼 수 있다. 1 2 3 4 5 6 7 8 91011volleyer(requestQueue).get(url)                      .addHeader(&amp;quot;header1&amp;quot;, &amp;quot;value1&amp;quot;)                    .addHeader(&amp;quot;header2&amp;quot;, &amp;quot;value2&amp;quot;)                    .withListener(new Listener&amp;lt;Person&amp;gt;() {                        @Override                        public void onResponse(Person person) {                            Log.d(TAG, &amp;quot;person : &amp;quot; + person);                                }                    })                    .execute();결론은 .withTargetClass(Person.class) 한줄 빠진 것이다. 굳이 저 한줄을 빼고자 이렇게 복잡하게 해야하나 생각할 수 있지만 복잡한 로직과 결합되면 이 한줄의 코드를 제거하는 것이 큰 영향을 줄 수 있다. 그리고 위 상황이라면 어짜피 Listener는 상속을 한번 받아서 사용하므로 안내한 방법의 단점이 단점이 되지 않는다.안내한 방법을 응용하면 Method에서 Generic Type을 추출하는 방법도 있다. 그외에도 여러가지 응용 방법이 있으나 설명하자니 너무 길어질 것 같아서 줄인다.</summary>
+<summary>java에서 Generic Type은 유용하고 다양한 곳에서 사용한다. 예를 들어 안드로이드에서 findViewById 사용시 Generics을 이용해 Type Casting 없애기처럼 사용도 가능하다. 이 글의 주제는 Generic Type으로 해당 class의 인스턴스를 얻는 방법에 대한 것이므로 Generic Type에 대한 기본적인 내용은 다루지 않는다(설명이 길다).우선 class로 인스턴스를 생성하는 가장 기본적인 방법부터 보자.1234567Class clazz = String.class;try {  String a = (String) clazz.newInstance();} catch (IllegalAccessException e) {} catch (java.lang.InstantiationException e) {  e.printStackTrace();}위처럼 class를 가지고 있다면 인스턴스를 생성할 수 있으므로 Generic Type으로 class를 얻을 수 있다면 인스턴스 또한 생성할 수 있다.아래는 일반적으로 Generic Type에 맞는 인스턴스를 생성하기 위한 방법에 대한 샘플 소스다. 1 2 3 4 5 6 7 8 91011121314151617181920212223242526class Gen&amp;lt;T&amp;gt; {  private Class&amp;lt;T&amp;gt; mClass;  public Gen(Class&amp;lt;T&amp;gt; cls) {    mClass = cls;  }  public T get() {    try {      return mClass.newInstance();    } catch (Exception e) {      e.printStackTrace();      return null;    }  }}class A {  public String name = &amp;quot;A!&amp;quot;;}public static void main(String[] args) {  Gen&amp;lt;A&amp;gt; g = new Gen&amp;lt;&amp;gt;(A.class);  A a = g.get();  System.out.println(a.name);}그런데 위 방법은 원하는 결과를 얻을 수 있으나 Generic Type으로 인스턴스를 얻은 것은 아니다. 생성자에 Generic Type에 해당하는 class를 넘겨주고 이를 기억했다가 인스턴스를 생성하기 때문이다. Generic Type에 의해 class가 정확히 제한되는 장점은 있으나 항상 class를 넘겨줘야 한다.위 방법을 개선해서 class를 직접 넘겨주지 않고 인스턴스를 얻는 방법을 알아보자. 1 2 3 4 5 6 7 8 9101112131415161718192021222324252627abstract class Gen&amp;lt;T&amp;gt; {	public T get() {		try {			// noinspection unchecked			Class&amp;lt;T&amp;gt; mClass = (Class&amp;lt;T&amp;gt;) ClassUtils.getReclusiveGenericClass(getClass(), 0);			if (mClass != null) {				return mClass.newInstance();			}		} catch (Exception e) {			e.printStackTrace();		}		return null;	}}class A {	public String name = &amp;quot;A!&amp;quot;;}class GetT extends Gen&amp;lt;A&amp;gt; {}public static void main(String[] args) {	GetT gt = new GetT();	A a = gt.get();	System.out.println(a.name);}위 소스에서 사용된 ClassUtils의 소스는 아래와 같다. 1 2 3 4 5 6 7 8 9101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687import java.lang.reflect.Array;import java.lang.reflect.GenericArrayType;import java.lang.reflect.ParameterizedType;import java.lang.reflect.Type;class ClassUtils {	private static final String TYPE_NAME_PREFIX = &amp;quot;class &amp;quot;;	public static Class&amp;lt;?&amp;gt; getReclusiveGenericClass(Class&amp;lt;?&amp;gt; clazz, int index) {		Class&amp;lt;?&amp;gt; targetClass = clazz;		while (targetClass != null) {			Class&amp;lt;?&amp;gt; genericClass = getGenericClass(targetClass, index);			if (genericClass != null) {				return genericClass;			}			targetClass = targetClass.getSuperclass();		}		return null;	}	public static Class&amp;lt;?&amp;gt; getGenericClass(Class&amp;lt;?&amp;gt; clazz, int index) {		Type types[] = getParameterizedTypes(clazz);		if ((types != null) &amp;amp;&amp;amp; (types.length &amp;gt; index)) {			try {				return getClass(types[index]);			} catch (Exception e) {				e.printStackTrace();			}		}		return null;	}	static public Type[] getParameterizedTypes(Class&amp;lt;?&amp;gt; target) {		Type[] types = getGenericType(target);		if (types.length &amp;gt; 0 &amp;amp;&amp;amp; types[0] instanceof ParameterizedType) {			return ((ParameterizedType) types[0]).getActualTypeArguments();		}		return null;	}	static public Class&amp;lt;?&amp;gt; getClass(Type type) throws ClassNotFoundException {		if (type instanceof Class) {			return (Class) type;		} else if (type instanceof ParameterizedType) {			return getClass(((ParameterizedType) type).getRawType());		} else if (type instanceof GenericArrayType) {			Type componentType = ((GenericArrayType) type).getGenericComponentType();			Class&amp;lt;?&amp;gt; componentClass = getClass(componentType);			if (componentClass != null) {				return Array.newInstance(componentClass, 0).getClass();			}		}		String className = getClassName(type);		if (className == null || className.isEmpty()) {			return null;		}		return Class.forName(className);	}	static public String getClassName(Type type) {		if (type == null) {			return &amp;quot;&amp;quot;;		}		String className = type.toString();		if (className.startsWith(TYPE_NAME_PREFIX)) {			className = className.substring(TYPE_NAME_PREFIX.length());		}		return className;	}	static public Type[] getGenericType(Class&amp;lt;?&amp;gt; target) {		if (target == null) {			return new Type[0];		}		Type[] types = target.getGenericInterfaces();		if (types.length &amp;gt; 0) {			return types;		}		Type type = target.getGenericSuperclass();		if (type != null) {			if (type instanceof ParameterizedType) {				return new Type[]{type};			}		}		return new Type[0];	}}언뜻보면 위 방법이 처음 방법에 비해 훨씬 복잡해 보일 수 있다. 하지만 이 방법이 아주 유용하게 사용되는 경우들이 많이 있다.그리고 위 코드를 자세히 보면 알겠지만 가장 큰 단점이 있다. Generic Type 이 포함된 클래스를 바로 사용할 수 없고 상속을 한번 이상 받아야 한다는 것이다. 그럼에도 불구하고 위 방법을 응용하면 조금 더 간결한 코딩을 할 수 있다.예를들어 아래의 volleyer 사용 예시 소스를 보자. 1 2 3 4 5 6 7 8 9101112volleyer(requestQueue).get(url)                      .addHeader(&amp;quot;header1&amp;quot;, &amp;quot;value1&amp;quot;)                    .addHeader(&amp;quot;header2&amp;quot;, &amp;quot;value2&amp;quot;)                    .withTargetClass(Person.class)                    .withListener(new Listener&amp;lt;Person&amp;gt;() {                        @Override                        public void onResponse(Person person) {                            Log.d(TAG, &amp;quot;person : &amp;quot; + person);                                }                    })                    .execute();위 소스를 보면 .withTargetClass(Person.class)에서 Person.class를 넘겨주고 있다. 하지만 이 부분은 .withListener(new Listener&amp;lt;Person&amp;gt;()에서 보듯이 Listener의 Generic Type에 의해 유추할 수 있다. 따라서 위에 소개한 방법을 응용하면 아래와 같은 코드를 만들어 낼 수 있다. 1 2 3 4 5 6 7 8 91011volleyer(requestQueue).get(url)                      .addHeader(&amp;quot;header1&amp;quot;, &amp;quot;value1&amp;quot;)                    .addHeader(&amp;quot;header2&amp;quot;, &amp;quot;value2&amp;quot;)                    .withListener(new Listener&amp;lt;Person&amp;gt;() {                        @Override                        public void onResponse(Person person) {                            Log.d(TAG, &amp;quot;person : &amp;quot; + person);                                }                    })                    .execute();결론은 .withTargetClass(Person.class) 한줄 빠진 것이다. 굳이 저 한줄을 빼고자 이렇게 복잡하게 해야하나 생각할 수 있지만 복잡한 로직과 결합되면 이 한줄의 코드를 제거하는 것이 큰 영향을 줄 수 있다. 그리고 위 상황이라면 어짜피 Listener는 상속을 한번 받아서 사용하므로 안내한 방법의 단점이 단점이 되지 않는다.안내한 방법을 응용하면 Method에서 Generic Type을 추출하는 방법도 있다. 그외에도 여러가지 응용 방법이 있으나 설명하자니 너무 길어질 것 같아서 줄인다.첨부 2016.04.12위 클래스를 사용하는 방법도 있지만 이와 관련된 라이브러리도 찾았다. jhalterman/typetools라는 것인데 사용법은 해당 사이트에 설명되어 있다. 내부적인 구현은 위에서 소개한 방법과 유사하나 조금 더 다양하게 사용이 가능하고 조금 더 여러가지 상황이 고려되어 있다. 다만, 사이트에 gradle에 추가하는 방법이 안내되어 있지 않다. 그래서 테스트하면서 적용한 방법을 아래에 남긴다. 참고로 android 프로젝트에서 unittest 시에 실행 오류가 발생할 수 있다. 이에 관련해서 오늘 오전에 이슈를 남겼는데 몇시간 지나지 않아 패치를 했다는 답변을 받았다. 하지만 현재 시점(0.4.6)에서는 아직 release되지 않았으므로 혹시 테스트를 하려면 다음의 System.setProperty(&quot;java.version&quot;, &quot;0&quot;); 코드를 TypeResolver.resolveRawArguments() 사용 전에 추가해주면 된다. 참고로 오류는 아래와 같다.Caused by: java.lang.NumberFormatException: For input string: &quot;1.7.0_79&quot;	at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)	at java.lang.Integer.parseInt(Integer.java:492)	at java.lang.Integer.valueOf(Integer.java:582)	at net.jodah.typetools.TypeResolver.&amp;lt;clinit&amp;gt;(TypeResolver.java:54)사용법은 gradle을 사용하는 경우 아래의 코드를 build.gradle 파일에 추가하면 사용 가능하다.repositories {	mavenCentral()}dependencies {	compile &#39;net.jodah:typetools:0.4.6&#39;}</summary>
 </entry>
 <entry>
 <title>com.google.gson.JsonSyntaxException: java.lang.NumberFormatException: Expected an int but was 오류</title>
@@ -966,119 +1055,5 @@ service ipstables restart
 &lt;p&gt;위 설명은 서버가 2대이고 NIC도 두개이며 공인망과 사설망이 공존하는 상태에서의 설명이다. 하지만 내용을 조금 살펴보면 1대의 서버 내에서 포트포워딩과 서버는 2대이나 NIC이 하나인 경우에 대해서도 적용할 수 있을 것이다.&lt;/p&gt;
 </content>
 <summary>사무실 내부에서 외부에서 접근 가능한 포트가 개방된 아이피가 한정되어 있어서 두개의 작업 서버를 공유기로 포트 포워딩해서 사용하고 있었다. 그런데 그중 한대의 서버로 매일 대량의 트래픽을 외부에서 밀어 넣는데 이 상황에서 계속 공유기가 죽는 문제가 발생했다(아마도 공유기가 너무 낡은 것이라 그런 것일지도). 간단히 괜찮은 공유기하나 구매하면 해결될 수도 있는 문제지만 귀찮아서 한대의 서버에 외부 회선을 연결하고 포트포워딩으로 필요한 포트만 다른 서버로 연결하기로 했다.포트포워딩이 허용되어 있는지 확인cat /etc/sysctl.conf|grep net.ipv4.ip_forward 또는 sysctl -a | grep ip_forward 명령으로 net.ipv4.ip_forward가 1로 설정되어 있는지 확인한다. 1이 아니라면 /etc/sysctl.conf 파일을 열어 수정하거나 echo 1 &amp;gt; /proc/sys/net/ipv4/ip_forward 명령으로 Kernel 변수를 수정할 수도 있다.포트포워딩 설정이후의 설명은 아래의 상황을 가정한 것이므로 상황에 맞게 수정되어야 합니다.  외부에 공개된 공인 서버, 사설망 내의 사설 서버가 있다.  공인 서버에 NIC이 두개가 있다(eth0, eth1).  외부에서 공인서버 eth1을 통해 접속하며 eth0를 통해 사설 서버(192.168.11.102)로 포트포워딩 한다.  공인 서버에 8888 포트를 사설 서버의 8888 포트로 포워딩 한다.설명하는 방법은 /etc/sysconfig/iptables 파일에 직접 설정하는 방법이다. /etc/sysconfig/iptables 파일에 아래의 내용을 입력한다(기존에 내용이 있다면 nat와 filter 항목에 맞게 추가한다).*nat-A PREROUTING -i eth1 -p tcp -m tcp --dport 8888 -j DNAT --to-destination 192.168.11.102:8888-A PREROUTING -i eth1 -p udp -m udp --dport 8888 -j DNAT --to-destination 192.168.11.102:8888-A POSTROUTING -o eth0 -j MASQUERADECOMMIT*filter-A INPUT -m state --state NEW -m tcp -p tcp --dport 8888 -j ACCEPT-A INPUT -m state --state NEW -m udp -p udp --dport 8888 -j ACCEPT-A FORWARD -i eth0 -j ACCEPT-A FORWARD -o eth0 -j ACCEPTiptables을 재시작한다.123/etc/init.d/iptables restart# 아래는 systemd를 사용하는 경우service ipstables restart설정이 완료되었으므로 정상적으로 동작하는지 확인한다.위 설명은 서버가 2대이고 NIC도 두개이며 공인망과 사설망이 공존하는 상태에서의 설명이다. 하지만 내용을 조금 살펴보면 1대의 서버 내에서 포트포워딩과 서버는 2대이나 NIC이 하나인 경우에 대해서도 적용할 수 있을 것이다.</summary>
-</entry>
-<entry>
-<title>php composer 속도 개선하기</title>
-<link href="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/" rel="alternate" type="text/html" title="php composer 속도 개선하기" />
-<published>2016-03-17T19:20:39+09:00</published>
-<updated>2016-03-17T19:20:39+09:00</updated>
-<id>https://blog.asamaru.net/2016/03/17/php-composer-speed-up</id>
-<content type="html" xml:base="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/">&lt;p&gt;&lt;a href=&quot;https://getcomposer.org/&quot;&gt;Composer&lt;/a&gt;(컴포저)는 PHP의 의존성 관리도구이다. 이 Composer를 사용하면서 가장 큰 단점으로 꼽을 수 있는 것은 느린 속도다. 나만 그렇게 느끼는 것은 아닌지 국내외에 많은 이야기가 있다. 오늘은 그 이야기들을 정리해 보려고 한다.&lt;/p&gt;
-
-&lt;p&gt;우선 Composer에 대한 상세한 내용은 &lt;a href=&quot;https://xpressengine.github.io/Composer-korean-docs/&quot;&gt;Composer 한국어 매뉴얼&lt;/a&gt;을 참고하면 도움이 될 것 같다.&lt;/p&gt;
-
-&lt;p&gt;그리고 Composer 속도에 관련된 참고글이다.&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;http://findstar.pe.kr/archives/532&quot;&gt;composer.phar 의 동작이 느릴 때 조치할 수 있는 것들.&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://www.lesstif.com/pages/viewpage.action?pageId=30277898&quot;&gt;컴포저(PHP Composer) 속도 향상 시키기&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;그럼 하나씩 살펴보자.&lt;/p&gt;
-
-&lt;h3 id=&quot;composer-&quot;&gt;Composer 진단&lt;/h3&gt;
-
-&lt;p&gt;우선 &lt;code&gt;composer diagnose&lt;/code&gt; 명령을 이용해서 Composer의 상태를 진단할 수 있다. 진단 결과에 따라 개선이 필요한 부분들을 확인하고 개선할 수 있다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;$ composer diagnose
-
-Checking composer.json: OK
-require.~~~/~~~ : unbound version constraints (dev-master) should be avoided
-Checking platform settings: OK
-Checking git settings: OK
-Checking http connectivity to packagist: OK
-Checking https connectivity to packagist: OK
-Checking github.com oauth access: OK
-Checking disk free space: OK
-Checking pubkeys:
-Tags Public Key Fingerprint: ~~~
-Dev Public Key Fingerprint: ~~~
-OK
-Checking composer version: OK
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;h3 id=&quot;composer--&quot;&gt;Composer 최신버전 사용&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;composer diagnose&lt;/code&gt;에서도 Composer의 최신 버전을 사용중인지 알려준다. 가급적 최신 버전의 Composer를 사용하는 것이 속도에 조금이나마 도움이 될 수 있다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;$ sudo /usr/local/bin/composer self-update
-
-Updating to version 7c62e2b5346a6a656dd9587203719e35bb768056.
-    Downloading: 100%
-Use composer self-update --rollback to return to version d6d0435c5437111e42a123b06e4071e26ba7cb6e
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;h3 id=&quot;prestissimo--&quot;&gt;prestissimo 플러그인 사용&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/hirak/prestissimo&quot;&gt;prestissimo&lt;/a&gt; 이라는 Composer 플러그인이 있다. “composer parallel install plugin”이라고 소개하고 있는 플러그인으로 의존성 라이브러리 설치시 병렬 처리를 지원하여 속도를 대폭 개선해 준다고 한다. 확실히 다운로드가 필요한 상황(신규 설치, 버전업)에서는 병렬 처리로 속도가 개선된다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;composer global require hirak/prestissimo
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;설치 후 Composer를 사용(install, update)하면 아래와 같이 다른 모습을 볼 수 있다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;Loading composer repositories with package information
-Updating dependencies
-    Prefetch start: total: 6
-    1/6:    https://codeload.github.com/symfony/polyfill-util/legacy.zip/8de62801aa12bc4dfcf85eef5d21981ae7bb3cc4
-    2/6:    https://codeload.github.com/symfony/polyfill-php56/legacy.zip/4d891fff050101a53a4caabb03277284942d1ad9
-    3/6:    https://codeload.github.com/Imangazaliev/DiDOM/legacy.zip/e492feae44321e2f4882f6e9466614732822f008
-    4/6:    https://codeload.github.com/symfony/polyfill-mbstring/legacy.zip/1289d16209491b584839022f29257ad859b8532d
-    5/6:    https://codeload.github.com/paragonie/random_compat/legacy.zip/b3313b618f4edd76523572531d5d7e22fe747430
-    6/6:    https://codeload.github.com/Seldaek/monolog/legacy.zip/a5f2734e8c16f3aa21b3da09715d10e15b4d2d45
-    Finished: success:6, skipped:0, failure:0, total: 6
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;h3 id=&quot;prefer-dist-&quot;&gt;–prefer-dist 사용&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://stackoverflow.com/a/20827631&quot;&gt;Faster composer install&lt;/a&gt;에 보면 &lt;code&gt;--prefer-dist&lt;/code&gt; 옵션을 사용함으로써 속도를 향상 시킬 수 있다고 한다.&lt;/p&gt;
-
-&lt;h3 id=&quot;hhvmhttphhvmcom--php-7-&quot;&gt;&lt;a href=&quot;http://hhvm.com/&quot;&gt;HHVM&lt;/a&gt; 또는 PHP 7 사용&lt;/h3&gt;
-
-&lt;p&gt;Composer는 PHP로 제작된 프로그램으로 PHP의 성능에 영향을 많이 받는다. 따라서 보다 빠른 실행기를 사용하는 것이 속도에 도움이 된다. PHP 7을 사용할 수 없다면 &lt;a href=&quot;http://hhvm.com/&quot;&gt;HHVM&lt;/a&gt;을 사용하는 것이 도움이 될 수 있다. 하지만 Prebuilt Packages를 지원하는 ubuntu나 debian을 사용하는 것이 아니라면 직접 빌드를 해야하므로 귀찮을 수 있다(개인적 생각).&lt;/p&gt;
-
-&lt;h3 id=&quot;disable-xdebug&quot;&gt;Disable Xdebug&lt;/h3&gt;
-
-&lt;p&gt;Xdebug가 켜진 상태에서 Composer를 사용하면 아래와 같은 경고가 나온다. Xdebug를 켠 상태에서는 성능에 매우 큰 영향이 있으니 Xdebug를 끄고 사용하라는 것이다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
-2
-3&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;composer update
-
-You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;h3 id=&quot;packagist--&quot;&gt;packagist 미러 사용&lt;/h3&gt;
-
-&lt;p&gt;아래와 같이 packagist의 레포지토리를 http://packagist.jp로 설정함으로써 약간의 속도 향상(일본이 아무래도 더 가까우니)을 얻을 수 있다고 한다. 하지만 자칫 잘못하면 더 느려질수도 있으므로 테스트를 해서 결정할 것을 권장한다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;$ composer config -g repositories.packagist composer http://packagist.jp
-# 제거는 아래와 같이
-$ composer config -g --unset repositories.packagist
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;h3 id=&quot;disable-enablegc&quot;&gt;Disable enable_gc&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://laracasts.com/discuss/channels/tips/tip-speed-up-composer&quot;&gt;[Tip] Speed Up Composer&lt;/a&gt;에 보면 &lt;code&gt;enable_gc&lt;/code&gt;를 disable 함으로써 속도를 향상시키는 방법을 안내하고 있다. 하지만 &lt;a href=&quot;https://github.com/composer/composer/commit/ac676f47f7bbc619678a29deae097b6b0710b799&quot;&gt;Disable GC when computing deps, refs #3482&lt;/a&gt;에서 보면 이와 관련된 패치는 이미 Composer에 반영되어 있으므로 효과가 없다.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;사실 서두에서 이야기한 것처럼 위 내용들은 여러 곳의 이야기를 나름대로 요약 정리한 것이다. 하지만 모두 효과가 있다고는 말하지 못하겠다. 현재 PHP 7을 사용하고 있는 상황에서 여러가지를 시도 해봐도 Composer의 속도는 느리기만 하다(약간씩의 도움은 되는 것들도 있다).&lt;/p&gt;
-
-&lt;p&gt;느린 Composer로 인해 답답한 마음을 달래고자 시간이 되는대로 방법을 찾아보고 있으나 아직은 결론을 얻지 못했다. 그나마 prestissimo를 사용하는 것이 가장 효과적인 것 같다. 앞으로도 여러가지를 시도하여 도움이 될만한 방법을 발견하면 다시 글을 쓰도록 하겠다.&lt;/p&gt;
-</content>
-<summary>Composer(컴포저)는 PHP의 의존성 관리도구이다. 이 Composer를 사용하면서 가장 큰 단점으로 꼽을 수 있는 것은 느린 속도다. 나만 그렇게 느끼는 것은 아닌지 국내외에 많은 이야기가 있다. 오늘은 그 이야기들을 정리해 보려고 한다.우선 Composer에 대한 상세한 내용은 Composer 한국어 매뉴얼을 참고하면 도움이 될 것 같다.그리고 Composer 속도에 관련된 참고글이다.  composer.phar 의 동작이 느릴 때 조치할 수 있는 것들.  컴포저(PHP Composer) 속도 향상 시키기그럼 하나씩 살펴보자.Composer 진단우선 composer diagnose 명령을 이용해서 Composer의 상태를 진단할 수 있다. 진단 결과에 따라 개선이 필요한 부분들을 확인하고 개선할 수 있다.$ composer diagnoseChecking composer.json: OKrequire.~~~/~~~ : unbound version constraints (dev-master) should be avoidedChecking platform settings: OKChecking git settings: OKChecking http connectivity to packagist: OKChecking https connectivity to packagist: OKChecking github.com oauth access: OKChecking disk free space: OKChecking pubkeys:Tags Public Key Fingerprint: ~~~Dev Public Key Fingerprint: ~~~OKChecking composer version: OKComposer 최신버전 사용composer diagnose에서도 Composer의 최신 버전을 사용중인지 알려준다. 가급적 최신 버전의 Composer를 사용하는 것이 속도에 조금이나마 도움이 될 수 있다.$ sudo /usr/local/bin/composer self-updateUpdating to version 7c62e2b5346a6a656dd9587203719e35bb768056.    Downloading: 100%Use composer self-update --rollback to return to version d6d0435c5437111e42a123b06e4071e26ba7cb6eprestissimo 플러그인 사용prestissimo 이라는 Composer 플러그인이 있다. “composer parallel install plugin”이라고 소개하고 있는 플러그인으로 의존성 라이브러리 설치시 병렬 처리를 지원하여 속도를 대폭 개선해 준다고 한다. 확실히 다운로드가 필요한 상황(신규 설치, 버전업)에서는 병렬 처리로 속도가 개선된다.1$ composer global require hirak/prestissimo설치 후 Composer를 사용(install, update)하면 아래와 같이 다른 모습을 볼 수 있다.Loading composer repositories with package informationUpdating dependencies    Prefetch start: total: 6    1/6:    https://codeload.github.com/symfony/polyfill-util/legacy.zip/8de62801aa12bc4dfcf85eef5d21981ae7bb3cc4    2/6:    https://codeload.github.com/symfony/polyfill-php56/legacy.zip/4d891fff050101a53a4caabb03277284942d1ad9    3/6:    https://codeload.github.com/Imangazaliev/DiDOM/legacy.zip/e492feae44321e2f4882f6e9466614732822f008    4/6:    https://codeload.github.com/symfony/polyfill-mbstring/legacy.zip/1289d16209491b584839022f29257ad859b8532d    5/6:    https://codeload.github.com/paragonie/random_compat/legacy.zip/b3313b618f4edd76523572531d5d7e22fe747430    6/6:    https://codeload.github.com/Seldaek/monolog/legacy.zip/a5f2734e8c16f3aa21b3da09715d10e15b4d2d45    Finished: success:6, skipped:0, failure:0, total: 6–prefer-dist 사용Faster composer install에 보면 --prefer-dist 옵션을 사용함으로써 속도를 향상 시킬 수 있다고 한다.HHVM 또는 PHP 7 사용Composer는 PHP로 제작된 프로그램으로 PHP의 성능에 영향을 많이 받는다. 따라서 보다 빠른 실행기를 사용하는 것이 속도에 도움이 된다. PHP 7을 사용할 수 없다면 HHVM을 사용하는 것이 도움이 될 수 있다. 하지만 Prebuilt Packages를 지원하는 ubuntu나 debian을 사용하는 것이 아니라면 직접 빌드를 해야하므로 귀찮을 수 있다(개인적 생각).Disable XdebugXdebug가 켜진 상태에서 Composer를 사용하면 아래와 같은 경고가 나온다. Xdebug를 켠 상태에서는 성능에 매우 큰 영향이 있으니 Xdebug를 끄고 사용하라는 것이다.123$ composer updateYou are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebugpackagist 미러 사용아래와 같이 packagist의 레포지토리를 http://packagist.jp로 설정함으로써 약간의 속도 향상(일본이 아무래도 더 가까우니)을 얻을 수 있다고 한다. 하지만 자칫 잘못하면 더 느려질수도 있으므로 테스트를 해서 결정할 것을 권장한다.$ composer config -g repositories.packagist composer http://packagist.jp# 제거는 아래와 같이$ composer config -g --unset repositories.packagistDisable enable_gc[Tip] Speed Up Composer에 보면 enable_gc를 disable 함으로써 속도를 향상시키는 방법을 안내하고 있다. 하지만 Disable GC when computing deps, refs #3482에서 보면 이와 관련된 패치는 이미 Composer에 반영되어 있으므로 효과가 없다.사실 서두에서 이야기한 것처럼 위 내용들은 여러 곳의 이야기를 나름대로 요약 정리한 것이다. 하지만 모두 효과가 있다고는 말하지 못하겠다. 현재 PHP 7을 사용하고 있는 상황에서 여러가지를 시도 해봐도 Composer의 속도는 느리기만 하다(약간씩의 도움은 되는 것들도 있다).느린 Composer로 인해 답답한 마음을 달래고자 시간이 되는대로 방법을 찾아보고 있으나 아직은 결론을 얻지 못했다. 그나마 prestissimo를 사용하는 것이 가장 효과적인 것 같다. 앞으로도 여러가지를 시도하여 도움이 될만한 방법을 발견하면 다시 글을 쓰도록 하겠다.</summary>
 </entry>
 </feed>

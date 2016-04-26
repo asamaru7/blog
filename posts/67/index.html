@@ -113,22 +113,27 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/">
-								android apk download / decompile 하기
+							<a class="title" href="https://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/">
+								Xcode 7.1에서 Google Maps SDK 사용시 빌드가 되지 않는 결함
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/">2015.11.02.</span></a>
+								<a href="https://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/">2015.11.02.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>오늘은 <a href="https://play.google.com/store">Google Play</a>에서 apk 파일을 다운 받는 방법과 apk 파일을 decompile하는 방법을 소개하려고 한다.
-일반적인 상황에서는 apk를 받거나 decompile 할 일은 거의 없다. 하지만 안드로이드 개발을 하다보면 필요해지는 경우가 있다. 나의 경우는 ACRA를 이용해서 서비스 앱에서 crash가 발생하면 오류를 보고하도록 해두고 사용한다. 그런데 proguard를 사용해서 난독화가 되어 있다보니 오류 메시지만 보고는 어디에서 발생한 오류인지 확인할 수 없다. 그래서 서비스 중이 apk를 다운 받아 decompile해서 오류 위치를 파악한다. 배포 전에 apk 파일을 따로 보관해두는 방법도 있으나 귀찮아서 일일이 보관하지 않고 있다. 소스야 Git에서 tagging을 해두기 때문에 해당 버전을 바로 확인할 수 있지만 proguard가 적용되면서 package 등을 모두 바꾸게 되어 있어서 서비스 중인 apk가 따로 필요하다.</p>
+							<p>얼마전 iOS 앱 개발에 사용하던 xcode를 7.1로 업데이트 했다. 그런데 앱에서 사용중이던 Google Maps SDK가 빌드되지 못해 앱을 실행할 수가 없었다. 문제는 header 생성 부분인데 해결 방법을 찾지 못해 다시 7.0을 재설치해서 사용하고 있었다. 그렇게 지내던 중 오늘 갑자기 생각이 나서 다시 확인해 봤다. 다행히 그 사이에 Google에서 update를 내 놓았다. 이 문제가 수정된 버전은 1.10.5 버전이다. 그리고 관련된 issue는 <a href="https://code.google.com/p/gmaps-api-issues/issues/detail?id=8524&amp;can=1&amp;q=Could%20not%20build%20Objective-C%20module&amp;colspec=ID%20Type%20Status%20Introduced%20Fixed%20Summary%20Stars%20ApiType%20Internal">Issue 8524:	Bug: Running under Xcode 7 beta 6 with Google Maps SDK results in broken debugging.</a>이다.</p>
 
-<p>본론으로 들어가서 일단 APK 파일을 받으려면 <a href="http://apk-dl.com/">Online Google Play APK Downloader</a>를 사용하면 된다. 사이트에 가서 원하는 앱의 package명을 넣으면 다운 받아진다. 간혹 실패하는 경우가 있으나 다시 시도하면 대부분은 받아진다.</p>
+<p>오류 메시지는 <code>Include of non-modular header inside framework module 'GoogleMaps'</code>이다.</p>
 
-<p>받아진 apk 파일을 decompile 하려면 <a href="http://www.decompileandroid.com/">Android APK Decompiler</a>를 사용하면 된다. 다운 받은 파일을 업로드하면 잠시 후에 Manifest 파일 정보와 함께 다운로드 링크가 나온다. 다운 받으면 소스가 zip로 압축되어 있으니 압축을 풀어서 보면 된다. 당연히 완벽한 소스로 복구되지는 않는다. 하지만 오류 위치를 파악하거나 하는 경우에는 충분한 소스가 나온다.</p>
+<p>대략 아래의 이미지처럼 오류가 난다(이미지는 캡춰하기 귀찮아 인터넷에 있는 이미지를 가져왔다).</p>
 
-<p>물론 위의 사이트들을 사용해야만 가능한 일들은 아니다. apk 다운로드의 경우 별도의 app도 있고 decompile의 경우도 shell에서 직접할 수 있다. 하지만 위 사이트들을 사용하면 간단하게 처리가 가능하니 필요하다면 한번 쯤은 사용해 봐도 좋을 듯하다.</p>
+<p><img src="/img/2015-11-02-google-maps-sdk-with-xcode-7-dot-1-bug-1.png" alt="오류" /></p>
+
+<p>혹 xcode 7.1 사용시 이런 오류가 나온다면 Google Maps SDK를 1.10.5 이상으로 업데이트 후 빌드 해보기 바란다.</p>
+
+<p>이 문제에 대한 원인은 처음 오류를 만났을 때 다른 사람들이 이야기하는 것을 봤었는데 정확한 내용이 기억이 나지 않는다. 대충 기억이 나는 것은 xcode가 7.1로 버전업 되면서 swift 모듈에 header 처리하는 부분이 변경되었다고 했던 것 같은데… 나중에라도 원인을 알게되면 다시 남기도록 하겠다.</p>
+
+<p>Apple Developer Forums에서 나온 <a href="https://forums.developer.apple.com/thread/23554">Include of non-modular header inside framework module</a> issue도 있다. 혹시 GoogleMaps가 아닌 모듈에서 동일한 오류가 난다면 참고.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -142,8 +147,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

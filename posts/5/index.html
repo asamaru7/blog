@@ -113,266 +113,26 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/04/07/how-to-protect-ssh-with-fail2ban-on-centos-6-7/">
-								SSH 무작위 로그인 시도 막기(With Fail2Ban on CentOS 6/7 + selinux)
+							<a class="title" href="https://blog.asamaru.net/2016/04/11/com-google-gson-jsonsyntaxexception-java-lang-numberformatexception-expected-an-int-but-was-2744647680/">
+								com.google.gson.JsonSyntaxException: java.lang.NumberFormatException: Expected an int but was 오류
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/04/07/how-to-protect-ssh-with-fail2ban-on-centos-6-7/">2016.04.07.</span></a>
+								<a href="https://blog.asamaru.net/2016/04/11/com-google-gson-jsonsyntaxexception-java-lang-numberformatexception-expected-an-int-but-was-2744647680/">2016.04.11.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>linux 서버를 공개망에서 사용하면서 방화벽을 사용하지 않는 경우 ssh 로그인을 지속적으로 시도하는 로그를 볼 수 있다. 대부분 외국 IP 대역에서 지속적으로 ssh 로그인을 시도하는데 무작위 비밀번호를 대입하는 것이다. 당연히 방화벽을 설정하는 것이 당연하나 특수한 목적으로 인해 접속 IP 대역을 제한할 수 없는 경우도 있을 수 있다. 이런 경우에 보안을 조금이나마 강화하기 위해 사용할 수 있는 것이 <a href="http://www.fail2ban.org/">fail2ban</a> 이다.</p>
+							<p><a href="https://github.com/google/gson">GSON</a>을 이용해서 JSON 데이터를 Parse하려고 할 때 아래와 같이 <code>NumberFormatException</code>이 발생할 수 있다. 이는 대부분의 경우 int의 최대값을 넘어선 값을 int에 대입하려고 할 때 발생한다.</p>
 
-<p>우선 실제로 해당 서버에 어떤 IP들이 ssh 로그인을 시도했는지 아래의 명령으로 확인 할 수 있다(이하는 CentOS 7 기준이다).</p>
-
-<p>아래는 로그인 시도 IP를 확인하는 방법이다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>ls /var/log/secure <span class="p">|</span> xargs grep -E <span class="s2">&quot;[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+&quot;</span> -o <span class="p">|</span> sort <span class="p">|</span> uniq
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>공개망에 연결된 서버라면 생각보다 많은 IP가 나와 놀랄수도 있다. IP들 중 자신이 아는 IP를 제외하면 대부분이 위에 언급한 공격일 확률이 높다.</p>
-
-<p>다른 방법으로 아래와 같이 최근 로그인 실패 기록을 확인하는 것도 가능하다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>last -f /var/log/btmp <span class="p">|</span> more
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p><a href="http://www.thegeekstuff.com/2011/08/linux-var-log-files/">20 Linux Log Files that are Located under /var/log Directory</a>에 보면 <code>/var/log/btmp</code>에 대한 설명을 확인 할 수 있다.</p>
-
-<p>상황을 확인 했으니 이제 본격적으로 <a href="http://www.fail2ban.org/">fail2ban</a>을 사용해 보자.</p>
-
-<hr />
-
-<h3 id="fail2ban-">fail2ban 설치</h3>
-
-<p>fail2ban은 지정된 시간 내에 지정된 횟수 이상으로 ssh 로그인을 실패하면 해당 IP에서의 접근을 지정된 시간만큼 차단하는 역할을 한다.</p>
-
-<p>아래의 설치 과정은 CentOS 7을 기준으로 한다. 이는 iptables 대신 firewalld가 사용되며 systemd를 사용하는 것을 기준으로 한다는 뜻이다. CentOS 6이라면 아래의 참고자료를 살펴보기 바란다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23</pre></div></td><td class="code"><div class="highlight"><pre><span class="c"># epel-release 추가</span>
-<span class="nv">$ </span>rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-
-<span class="c"># fail2ban 설치</span>
-<span class="nv">$ </span>yum install -y fail2ban
-
-<span class="c"># fail2ban 기본 설정</span>
-<span class="nv">$ hostname</span><span class="o">=</span><span class="sb">`</span>/bin/hostname<span class="sb">`</span>
-<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;[DEFAULT]&quot;</span> &gt; /etc/fail2ban/jail.local
-<span class="c"># 1시간 동안 접근 제한</span>
-<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;bantime = 3600&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="c"># 결과 수신 메일 지정</span>
-<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;destemail = ~~~@~~~.com&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="c"># 결과 발신 메일 지정</span>
-<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;sender = root@$hostname&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="c"># ssh 접근 검사 활성화</span>
-<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;[sshd]&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;enabled = true&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="c"># nginx-http-auth 접근 검사 활성화 : 필요시에만 사용</span>
-<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;[nginx-http-auth]&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;enabled = true&quot;</span> &gt;&gt; /etc/fail2ban/jail.local
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p><strong>fail2ban 서비스 활성</strong></p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>systemctl <span class="nb">enable </span>fail2ban.service
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p><strong>fail2ban 서비스 시작</strong></p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>systemctl start fail2ban.service
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<h3 id="selinux--fail2ban--">selinux 사용시 fail2ban 관련 설정</h3>
-
-<p>이하는 selinux 사용시에만 적용하면 된다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>checkmodule -M -m -o fail2ban-syslog.mod fail2ban-syslog.te
-<span class="nv">$ </span>semodule_package -o fail2ban-syslog.pp -m fail2ban-syslog.mod
-<span class="nv">$ </span>semodule -r fail2ban-syslog
-<span class="nv">$ </span>semodule -i fail2ban-syslog.pp
-<span class="nv">$ </span>rm -f fail2ban-syslog.mod
-<span class="nv">$ </span>rm -f fail2ban-syslog.pp
-<span class="nv">$ </span>semodule -l<span class="p">|</span>grep fail2ban-syslog
-
-<span class="nv">$ </span>checkmodule -M -m -o logrotate-fail2ban.mod logrotate-fail2ban.te
-<span class="nv">$ </span>semodule_package -o logrotate-fail2ban.pp -m logrotate-fail2ban.mod
-<span class="nv">$ </span>semodule -r logrotate-fail2ban
-<span class="nv">$ </span>semodule -i logrotate-fail2ban.pp
-<span class="nv">$ </span>rm -f logrotate-fail2ban.mod
-<span class="nv">$ </span>rm -f logrotate-fail2ban.pp
-<span class="nv">$ </span>semodule -l<span class="p">|</span>grep logrotate-fail2ban
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>아래의 2개의 파일은 위 스크립트 실행에 필요한 파일이므로 해당 파일명으로 저장해서 사용하면 된다.</p>
-
-<p><strong>fail2ban-syslog.te</strong></p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">module fail2ban-syslog 1.0;
-
-require {
-type syslogd_var_run_t;
-type fail2ban_t;
-class dir read;
-class file read;
-class file open;
-class file getattr;
-}
-
-#============= fail2ban_t ==============
-allow fail2ban_t syslogd_var_run_t:dir read;
-allow fail2ban_t syslogd_var_run_t:file read;
-allow fail2ban_t syslogd_var_run_t:file open;
-allow fail2ban_t syslogd_var_run_t:file getattr;
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">com.android.volley.ParseError: com.google.gson.JsonSyntaxException: java.lang.NumberFormatException: Expected an int but was 4291611852 at line 1 column 143 path $.items[0].items[0].borderColor
 </code></pre></div></figure>
 
-<p><strong>logrotate-fail2ban.te</strong></p>
+<p>나의 경우엔 안드로이드로 color 값을 넘겨주려고 할 때 위 오류가 발생했다. 내가 지정한 값은 <code>0xffcccccc</code>인데 int로 4291611852이다. 그런데 안드로이드에서 int의 최대값은 2147483647이므로 범위를 벋어난다. 그런데 안드로이드에서는 <code>0xffcccccc</code>와 같은 형식으로 color 값을 사용하지만 문제가 없다. 이유는 아래와 같이 <code>0xffcccccc</code>값을 int 범위 내로 변환하면 -3355444이 된다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">module logrotate-fail2ban 1.7;
-
-require {
-type fail2ban_client_exec_t;
-type logrotate_t;
-type init_var_lib_t;
-class file { open read execute getattr write create execute_no_trans setattr unlink ioctl rename};
-}
-
-#============= logrotate_t ==============
-allow logrotate_t fail2ban_client_exec_t:file execute_no_trans;
-allow logrotate_t fail2ban_client_exec_t:file { open read execute ioctl };
-allow logrotate_t init_var_lib_t:file { open read getattr write create unlink setattr rename };
-</code></pre></div></figure>
-
-<hr />
-
-<p>설치가 다 되었다면 아래의 명령 실행시 다음과 비슷한 결과를 볼 수 있다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>firewall-cmd --direct --get-all-rules
-
-ipv4 filter INPUT <span class="m">0</span> -p tcp -m multiport --dports ssh -m <span class="nb">set</span> --match-set fail2ban-sshd src -j REJECT --reject-with icmp-port-unreachable
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;0xffcccccc &quot;</span> <span class="o">+</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span><span class="mh">0xffcccccc</span><span class="o">);</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>그리고 아래의 명령으로 적용 상황을 확인할 수 있다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29</pre></div></td><td class="code"><div class="highlight"><pre><span class="c"># fail2ban 상태 확인</span>
-<span class="nv">$ </span>fail2ban-client status sshd
-
-Status <span class="k">for</span> the jail: sshd
-<span class="p">|</span>- Filter
-<span class="p">|</span>  <span class="p">|</span>- Currently failed:	1
-<span class="p">|</span>  <span class="p">|</span>- Total failed:	153
-<span class="p">|</span>  <span class="sb">`</span>- File list:	/var/log/secure
-<span class="sb">`</span>- Actions
-   <span class="p">|</span>- Currently banned:	0
-   <span class="p">|</span>- Total banned:	2
-   <span class="sb">`</span>- Banned IP list:
-
-<span class="c"># ipset에 설정(차단)된 내용 확인</span>
-<span class="nv">$ </span>ipset --list
-
-Name: fail2ban-sshd
-Type: <span class="nb">hash</span>:ip
-Revision: 1
-Header: family inet hashsize <span class="m">1024</span> maxelem <span class="m">65536</span> timeout 3600
-Size in memory: 16656
-References: 1
-Members:
-
-<span class="c"># fail2ban 로그 확인</span>
-<span class="nv">$ </span>cat /var/log/fail2ban.log
-
-<span class="c"># 차단 IP 목록</span>
-<span class="nv">$ </span>awk <span class="s1">&#39;($(NF-1) = /Ban/){print $NF}&#39;</span> /var/log/fail2ban.log <span class="p">|</span> sort <span class="p">|</span> uniq -c <span class="p">|</span> sort -n
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<hr />
-
-<h3 id="section">참고자료</h3>
-
-<ul>
-  <li><a href="http://www.fail2ban.org/wiki/index.php/Commands">fail2ban-client commands</a></li>
-  <li><a href="https://krash.be/node/27">selinux module for fail2ban on Centos/RHEL 7</a></li>
-  <li><a href="https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-centos-7">How To Protect SSH With Fail2Ban on CentOS 7</a></li>
-  <li><a href="https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-centos-6">How To Protect SSH with fail2ban on CentOS 6</a></li>
-  <li><a href="http://www.servermom.org/install-fail2ban-centos/1809/">HOW TO INSTALL FAIL2BAN ON CENTOS</a></li>
-  <li><a href="https://fedoraproject.org/wiki/Fail2ban_with_FirewallD">Fail2ban with FirewallD</a></li>
-  <li><a href="http://www.the-art-of-web.com/system/fail2ban-log/">System: Monitoring the fail2ban log</a></li>
-</ul>
+<p>결론은 이런 값을 사용해야 할 경우는 GSON 객체에서 int 대신 long을 사용하고 사용하는 곳에서 int로 type casting하면 된다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -386,8 +146,8 @@ Members:
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/04/07/how-to-protect-ssh-with-fail2ban-on-centos-6-7/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/04/07/how-to-protect-ssh-with-fail2ban-on-centos-6-7/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/04/11/com-google-gson-jsonsyntaxexception-java-lang-numberformatexception-expected-an-int-but-was-2744647680/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/04/11/com-google-gson-jsonsyntaxexception-java-lang-numberformatexception-expected-an-int-but-was-2744647680/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

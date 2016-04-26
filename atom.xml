@@ -3,13 +3,49 @@
 <generator uri="http://jekyllrb.com" version="3.0.1">Jekyll</generator>
 <link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" />
 <link href="https://blog.asamaru.net/" rel="alternate" type="text/html" />
-<updated>2016-04-14T19:12:35+09:00</updated>
+<updated>2016-04-26T21:47:15+09:00</updated>
 <id>https://blog.asamaru.net/</id>
 <subtitle>세상에 필요한 소스코드 한줄 남기고 가자.
 </subtitle>
 <author>
 <name>유영재</name>
 </author>
+<entry>
+<title>NFS로 연결된 디스크에서 Gulp Watch 사용시 파일 변경 감지가 느릴 때</title>
+<link href="https://blog.asamaru.net/2016/04/26/gulp-watch-is-very-slow-to-recognize-file-modifications/" rel="alternate" type="text/html" title="NFS로 연결된 디스크에서 Gulp Watch 사용시 파일 변경 감지가 느릴 때" />
+<published>2016-04-26T21:21:07+09:00</published>
+<updated>2016-04-26T21:21:07+09:00</updated>
+<id>https://blog.asamaru.net/2016/04/26/gulp-watch-is-very-slow-to-recognize-file-modifications</id>
+<content type="html" xml:base="https://blog.asamaru.net/2016/04/26/gulp-watch-is-very-slow-to-recognize-file-modifications/">&lt;p&gt;얼마 전부터 프로젝트에서 &lt;a href=&quot;https://lumen.laravel.com/&quot;&gt;Lumen&lt;/a&gt;을 사용하고 있다. &lt;a href=&quot;https://laravel.com/&quot;&gt;Laravel&lt;/a&gt;을 사용하려고 하다가 경량 프레임워크에 더 끌려서 Lumen을 사용중이다. 사실 이 부분에 관련해서 약간의 후회(고민)를 하고 있다. lumen은 아무래도 자료도 부족한 면이 있고 Laravel 모듈과의 연동이 원활하지 않은 부분이 있어서 불편한 면이 있다.&lt;/p&gt;
+
+&lt;p&gt;Lumen에는 Laravel에서 기본적으로 제공하는 기능 중 많은 부분이 제외되어 있는데 그 중 하나가 &lt;a href=&quot;https://laravel.com/docs/master/elixir&quot;&gt;Elixir&lt;/a&gt;이다. 하지만 Elixir를 Lumen에 연결하는 것은 크게 어렵지 않다. Elixir는 &lt;a href=&quot;http://gulpjs.com/&quot;&gt;Gulp&lt;/a&gt;를 기반으로 제작되어 있다. 따라서 작업시 gulp의 watch 기능을 사용하게 되는데 나의 작업 환경인 vagrant(centos) 내에서 파일의 변경을 잘 인식하지 못했다.&lt;/p&gt;
+
+&lt;p&gt;그래서 관련자료를 찾다가 &lt;a href=&quot;https://github.com/gulpjs/gulp/issues/448&quot;&gt;Watch is very slow to recognize file modifications&lt;/a&gt;라는 글을 찾았다. 여기서 원인을 찾았는데 원인은 바로 NFS로 연결된 디스크로 인한 문제였다.&lt;/p&gt;
+
+&lt;p&gt;이 글에서의 해결책은 아래와 같다. 중요한 부분은 &lt;code&gt;actimeo=2&lt;/code&gt; 이다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;config.vm.synced_folder &quot;dev&quot;, &quot;/dev/vagrant&quot;,
+    :nfs =&amp;gt; true,
+    :mount_options =&amp;gt; [&#39;actimeo=2&#39;]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;하지만 나의 경우는 &lt;code&gt;synced_folder&lt;/code&gt;를 사용하지 않고 부팅시 직접적으로 NFS 디스크를 마운트하고 있다. 그래서 아래와 같이 적용했다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;mount -o &quot;vers=3,udp,nolock,actimeo=2&quot; 192.168.99.1:&quot;/subdev/web&quot; /home/web
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;그럼 여기서 &lt;code&gt;actimeo&lt;/code&gt;는 무엇인가? &lt;a href=&quot;http://linux.die.net/man/5/nfs&quot;&gt;Linux man page&lt;/a&gt;에 아래와 같이 설명되어 있다.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;em&gt;actimeo=n&lt;/em&gt;&lt;/p&gt;
+
+  &lt;p&gt;Using actimeo sets all of acregmin, acregmax, acdirmin, and acdirmax to the same value. If this option is not specified, the NFS client uses the defaults for each of these options listed above.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;간단히 이야기하자면 위의 방법은 NFS의 파일 cache time을 2초로 줄여서 파일의 변경을 빠르게 인지할 수 있도록 해주는 것이다.&lt;/p&gt;
+</content>
+<summary>얼마 전부터 프로젝트에서 Lumen을 사용하고 있다. Laravel을 사용하려고 하다가 경량 프레임워크에 더 끌려서 Lumen을 사용중이다. 사실 이 부분에 관련해서 약간의 후회(고민)를 하고 있다. lumen은 아무래도 자료도 부족한 면이 있고 Laravel 모듈과의 연동이 원활하지 않은 부분이 있어서 불편한 면이 있다.Lumen에는 Laravel에서 기본적으로 제공하는 기능 중 많은 부분이 제외되어 있는데 그 중 하나가 Elixir이다. 하지만 Elixir를 Lumen에 연결하는 것은 크게 어렵지 않다. Elixir는 Gulp를 기반으로 제작되어 있다. 따라서 작업시 gulp의 watch 기능을 사용하게 되는데 나의 작업 환경인 vagrant(centos) 내에서 파일의 변경을 잘 인식하지 못했다.그래서 관련자료를 찾다가 Watch is very slow to recognize file modifications라는 글을 찾았다. 여기서 원인을 찾았는데 원인은 바로 NFS로 연결된 디스크로 인한 문제였다.이 글에서의 해결책은 아래와 같다. 중요한 부분은 actimeo=2 이다.config.vm.synced_folder &quot;dev&quot;, &quot;/dev/vagrant&quot;,    :nfs =&amp;gt; true,    :mount_options =&amp;gt; [&#39;actimeo=2&#39;]하지만 나의 경우는 synced_folder를 사용하지 않고 부팅시 직접적으로 NFS 디스크를 마운트하고 있다. 그래서 아래와 같이 적용했다.mount -o &quot;vers=3,udp,nolock,actimeo=2&quot; 192.168.99.1:&quot;/subdev/web&quot; /home/web그럼 여기서 actimeo는 무엇인가? Linux man page에 아래와 같이 설명되어 있다.  actimeo=n  Using actimeo sets all of acregmin, acregmax, acdirmin, and acdirmax to the same value. If this option is not specified, the NFS client uses the defaults for each of these options listed above.간단히 이야기하자면 위의 방법은 NFS의 파일 cache time을 2초로 줄여서 파일의 변경을 빠르게 인지할 수 있도록 해주는 것이다.</summary>
+</entry>
 <entry>
 <title>chmod로 권한 변경시 디렉토리(또는 파일)만 적용하기</title>
 <link href="https://blog.asamaru.net/2016/04/14/how-to-chmod-all-directories-or-files/" rel="alternate" type="text/html" title="chmod로 권한 변경시 디렉토리(또는 파일)만 적용하기" />
@@ -993,59 +1029,5 @@ Bug #39918	imagecreatefromjpeg doesn’t work&lt;/a&gt;라는 글로도 등록�
 &lt;p&gt;cleanup의 경우 충돌이 발생했을 때만 사용하고 있었는데 오래된 &lt;code&gt;.svn/pristine&lt;/code&gt; 폴더의 파일들을 지워주는 효과가 있는 것 같다. 실제로 용량을 비교해보니 상당히 많은 용량이 줄어들었다. 그런데 어떤 사람들은 오래된 파일을 지워주는게 아니라고 말하기도 한다. 어쨌든 나의 경우는 &lt;code&gt;.svn&lt;/code&gt;의 용량이 줄어 들었으며 느리던 &lt;code&gt;svn status&lt;/code&gt;의 속도가 돌아왔다. 이론적인 검증이 되지 않은 내용이지만 혹시 동일한 현상을 겪는 사람이라면 한번 시도해봐도 손해볼 것은 없다는 생각.&lt;/p&gt;
 </content>
 <summary>svn을 사용하다 보면 이상하게 svn status가 이상하게 느릴 때가 있다. 사실 나도 이 부분을 크게 생각해 본적이 없었는데 최근에 특정 프로젝트 폴더에서 svn status가 비정상적으로 느려져서 방법을 찾아봤다.결론부터 이야기하자면 아주 간단하다. 아래와 같이 cleanup을 해주면 속도가 돌아온다.1$ svn cleanupcleanup의 경우 충돌이 발생했을 때만 사용하고 있었는데 오래된 .svn/pristine 폴더의 파일들을 지워주는 효과가 있는 것 같다. 실제로 용량을 비교해보니 상당히 많은 용량이 줄어들었다. 그런데 어떤 사람들은 오래된 파일을 지워주는게 아니라고 말하기도 한다. 어쨌든 나의 경우는 .svn의 용량이 줄어 들었으며 느리던 svn status의 속도가 돌아왔다. 이론적인 검증이 되지 않은 내용이지만 혹시 동일한 현상을 겪는 사람이라면 한번 시도해봐도 손해볼 것은 없다는 생각.</summary>
-</entry>
-<entry>
-<title>PHP 7에서 Gearman 모듈 사용하기</title>
-<link href="https://blog.asamaru.net/2016/03/21/php7-and-gearman/" rel="alternate" type="text/html" title="PHP 7에서 Gearman 모듈 사용하기" />
-<published>2016-03-21T11:22:49+09:00</published>
-<updated>2016-03-21T11:22:49+09:00</updated>
-<id>https://blog.asamaru.net/2016/03/21/php7-and-gearman</id>
-<content type="html" xml:base="https://blog.asamaru.net/2016/03/21/php7-and-gearman/">&lt;p&gt;PHP 7로 마이그레이션시에 걸림돌이 될 수 있는 것 중 하나가 PHP 모듈의 호환성 문제다. 나의 경우는 대부분 문제가 없었으나 &lt;a href=&quot;http://gearman.org/&quot;&gt;Gearman&lt;/a&gt;이 걸렸다. 아직 Gearman의 PHP 모듈이 정식으로 PHP 7을 지원하지 않아서 공식 지원을 기다리고 있었다. 그런데 시간을 두고 기다려봐도 지원을 기대하기 어려워(버전업이 오래전부터 멈춰있음) 자체적으로 방법을 찾기로 했다.&lt;/p&gt;
-
-&lt;p&gt;Gearman 외에도 PHP 7과 모듈들의 호환성을 확인하려면 &lt;a href=&quot;https://gist.github.com/lewisgoddard/459b450106cf1e5b754e&quot;&gt;PHP 7 Extensions&lt;/a&gt;을 참고하기 바란다.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;우선 나의 경우는 PHP 7을 소스 설치하지 않고 &lt;a href=&quot;https://webtatic.com/packages/php70/&quot;&gt;Webtatic.com&lt;/a&gt;에서 제공하는 바이너리를 yum으로 설치해서 사용중이다. CentOS에서 해당 레포지토리를 사용하려면 아래와 같이 webtatic 레포지토리를 yum에 추가하면 된다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;PECL에 등록된 Gearman 모듈은 &lt;a href=&quot;http://pecl.php.net/package/gearman&quot;&gt;PECL - Gearman&lt;/a&gt;에서 확인할 수 있고 소스는 &lt;a href=&quot;https://github.com/hjr3/pecl-gearman&quot;&gt;hjr3/pecl-gearman&lt;/a&gt;에서 확인할 수 있다. 보면 알겠지만 꽤 오래전부터 변경이 전혀 없다. 그래서 해당 라이브러리를 fork해서 문제를 개선하고 있는 &lt;a href=&quot;https://github.com/wcgallego/pecl-gearman/network&quot;&gt;wcgallego/pecl-gearman&lt;/a&gt;을 사용해서 컴파일하기로 했다.&lt;/p&gt;
-
-&lt;p&gt;설치는 아래와 같이 할 수 있다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
-2
-3
-4
-5
-6&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;yum install -y php70w-devel libgearman-devel
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;git clone https://github.com/wcgallego/pecl-gearman.git
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;pecl-gearman/
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;./configure
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;make
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;make install
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;앞서 언급했던 것과 같이 나의 경우는 &lt;a href=&quot;https://webtatic.com/packages/php70/&quot;&gt;Webtatic.com&lt;/a&gt;의 바이너리를 사용한 경우이므로 상황에 따라 아래의 명령은 차이가 난다. 하지만 중요한 부분은 &lt;a href=&quot;https://github.com/wcgallego/pecl-gearman/network&quot;&gt;wcgallego/pecl-gearman&lt;/a&gt;의 소스를 받아서 빌드하는 것이므로 자신의 환경에 맞춰 빌드하는 것에는 큰 문제가 없을 것으로 생각한다.&lt;/p&gt;
-
-&lt;p&gt;빌드에 오류가 없다면 &lt;code&gt;/usr/lib64/php/modules/&lt;/code&gt;에 &lt;code&gt;gearman.so&lt;/code&gt; 파일이 만들어져 있을 것이다. modules의 경로 또한 차이가 날 수 있으나 설치 마지막 메시지를 보면 자신의 위치는 확인 할 수 있을 것이다. 이 파일이 만들어 졌다면 이제 거의 끝이다. 이제는 php에서 해당 모듈을 load 하도록 연결하면 된다.&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;/etc/php.d/gearman.ini&lt;/code&gt; 파일을 열어서 아래의 내용을 넣는다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;nmcode&quot;&gt;; Enable gearman extension module
-extension = gearman.so
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;&lt;code&gt;php.ini&lt;/code&gt; 파일에 &lt;code&gt;extension = gearman.so&lt;/code&gt;를 추가해도 된다. 나의 경우는 ini 파일들이 분리되어 관리되기 때문에 따로 파일을 만든 것이다.&lt;/p&gt;
-
-&lt;p&gt;이제는 php를 재시작(&lt;code&gt;service php-fpm restart&lt;/code&gt;)하고 &lt;code&gt;phpinfo();&lt;/code&gt;로 확인해보면 Gearman 모듈이 연결된 것을 확인 할 수 있다.&lt;/p&gt;
-</content>
-<summary>PHP 7로 마이그레이션시에 걸림돌이 될 수 있는 것 중 하나가 PHP 모듈의 호환성 문제다. 나의 경우는 대부분 문제가 없었으나 Gearman이 걸렸다. 아직 Gearman의 PHP 모듈이 정식으로 PHP 7을 지원하지 않아서 공식 지원을 기다리고 있었다. 그런데 시간을 두고 기다려봐도 지원을 기대하기 어려워(버전업이 오래전부터 멈춰있음) 자체적으로 방법을 찾기로 했다.Gearman 외에도 PHP 7과 모듈들의 호환성을 확인하려면 PHP 7 Extensions을 참고하기 바란다.우선 나의 경우는 PHP 7을 소스 설치하지 않고 Webtatic.com에서 제공하는 바이너리를 yum으로 설치해서 사용중이다. CentOS에서 해당 레포지토리를 사용하려면 아래와 같이 webtatic 레포지토리를 yum에 추가하면 된다.1$ rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpmPECL에 등록된 Gearman 모듈은 PECL - Gearman에서 확인할 수 있고 소스는 hjr3/pecl-gearman에서 확인할 수 있다. 보면 알겠지만 꽤 오래전부터 변경이 전혀 없다. 그래서 해당 라이브러리를 fork해서 문제를 개선하고 있는 wcgallego/pecl-gearman을 사용해서 컴파일하기로 했다.설치는 아래와 같이 할 수 있다.123456$ yum install -y php70w-devel libgearman-devel$ git clone https://github.com/wcgallego/pecl-gearman.git$ cd pecl-gearman/$ ./configure$ make$ make install앞서 언급했던 것과 같이 나의 경우는 Webtatic.com의 바이너리를 사용한 경우이므로 상황에 따라 아래의 명령은 차이가 난다. 하지만 중요한 부분은 wcgallego/pecl-gearman의 소스를 받아서 빌드하는 것이므로 자신의 환경에 맞춰 빌드하는 것에는 큰 문제가 없을 것으로 생각한다.빌드에 오류가 없다면 /usr/lib64/php/modules/에 gearman.so 파일이 만들어져 있을 것이다. modules의 경로 또한 차이가 날 수 있으나 설치 마지막 메시지를 보면 자신의 위치는 확인 할 수 있을 것이다. 이 파일이 만들어 졌다면 이제 거의 끝이다. 이제는 php에서 해당 모듈을 load 하도록 연결하면 된다./etc/php.d/gearman.ini 파일을 열어서 아래의 내용을 넣는다.; Enable gearman extension moduleextension = gearman.sophp.ini 파일에 extension = gearman.so를 추가해도 된다. 나의 경우는 ini 파일들이 분리되어 관리되기 때문에 따로 파일을 만든 것이다.이제는 php를 재시작(service php-fpm restart)하고 phpinfo();로 확인해보면 Gearman 모듈이 연결된 것을 확인 할 수 있다.</summary>
 </entry>
 </feed>

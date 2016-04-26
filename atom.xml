@@ -3,13 +3,37 @@
 <generator uri="http://jekyllrb.com" version="3.0.1">Jekyll</generator>
 <link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" />
 <link href="https://blog.asamaru.net/" rel="alternate" type="text/html" />
-<updated>2016-04-26T21:47:15+09:00</updated>
+<updated>2016-04-26T22:03:19+09:00</updated>
 <id>https://blog.asamaru.net/</id>
 <subtitle>세상에 필요한 소스코드 한줄 남기고 가자.
 </subtitle>
 <author>
 <name>유영재</name>
 </author>
+<entry>
+<title>linux에서 대량의 파일을 보다 빠르게 지우기</title>
+<link href="https://blog.asamaru.net/2016/04/26/efficiently-delete-large-directory-containing-thousands-of-files/" rel="alternate" type="text/html" title="linux에서 대량의 파일을 보다 빠르게 지우기" />
+<published>2016-04-26T21:53:55+09:00</published>
+<updated>2016-04-26T21:53:55+09:00</updated>
+<id>https://blog.asamaru.net/2016/04/26/efficiently-delete-large-directory-containing-thousands-of-files</id>
+<content type="html" xml:base="https://blog.asamaru.net/2016/04/26/efficiently-delete-large-directory-containing-thousands-of-files/">&lt;p&gt;주기적으로 실행되는 스케쥴 중에 대량의 파일을 삭제해야 하는 작업이 있었다. 데이터 수집 등의 작업으로 누적된 로그/캐시 파일들을 작업 완료 후 삭제를 해야하는 작업이었다. 그런데 파일의 수가 워낙에 많다보니 지우는 작업에 소요되는 시간이 너무 길었다. 어차피 서비스 서버가 아니고 스케쥴로 처리되는 작업이니 시간이 조금 오래 걸려도 큰 문제될 것은 없었으나 그래도 시간을 조금이라도 줄여보고자 자료를 찾아보다 &lt;a href=&quot;http://unix.stackexchange.com/questions/37329/efficiently-delete-large-directory-containing-thousands-of-files&quot;&gt;Efficiently delete large directory containing thousands of files&lt;/a&gt;라는 글을 찾았다.&lt;/p&gt;
+
+&lt;p&gt;위 글에서 제시하는 방법은 &lt;a href=&quot;https://en.wikipedia.org/wiki/Rsync&quot;&gt;rsync&lt;/a&gt;를 이용해서 빈 폴더와 동기화시키는 방법으로 파일들을 삭제하는 것이다. 이게 큰 차이가 있을까 싶었으나 위 글 외에도 여러 곳에서 이 방법을 제시하고 있다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;rsync -a --delete _empty/ target_directory/
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;대량의 파일을 지울 일이 있다면 한번쯤은 시도해 보는 것도 괜찮을 것 같아 소개해 본다.&lt;/p&gt;
+
+&lt;p&gt;추가적으로 아래와 같이 병렬 삭제를 하는 것도 방법이라고 한다. 하지만 위 방법이 훨씬 나을 것으로 본다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;find target_directory -maxdepth &lt;span class=&quot;m&quot;&gt;3&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;|&lt;/span&gt; tac &lt;span class=&quot;p&quot;&gt;|&lt;/span&gt; xargs -d &lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt; -P &lt;span class=&quot;m&quot;&gt;5&lt;/span&gt; -n &lt;span class=&quot;m&quot;&gt;5&lt;/span&gt; rm -rf
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+</content>
+<summary>주기적으로 실행되는 스케쥴 중에 대량의 파일을 삭제해야 하는 작업이 있었다. 데이터 수집 등의 작업으로 누적된 로그/캐시 파일들을 작업 완료 후 삭제를 해야하는 작업이었다. 그런데 파일의 수가 워낙에 많다보니 지우는 작업에 소요되는 시간이 너무 길었다. 어차피 서비스 서버가 아니고 스케쥴로 처리되는 작업이니 시간이 조금 오래 걸려도 큰 문제될 것은 없었으나 그래도 시간을 조금이라도 줄여보고자 자료를 찾아보다 Efficiently delete large directory containing thousands of files라는 글을 찾았다.위 글에서 제시하는 방법은 rsync를 이용해서 빈 폴더와 동기화시키는 방법으로 파일들을 삭제하는 것이다. 이게 큰 차이가 있을까 싶었으나 위 글 외에도 여러 곳에서 이 방법을 제시하고 있다.1$ rsync -a --delete _empty/ target_directory/대량의 파일을 지울 일이 있다면 한번쯤은 시도해 보는 것도 괜찮을 것 같아 소개해 본다.추가적으로 아래와 같이 병렬 삭제를 하는 것도 방법이라고 한다. 하지만 위 방법이 훨씬 나을 것으로 본다.1$ find target_directory -maxdepth 3 | tac | xargs -d \n -P 5 -n 5 rm -rf</summary>
+</entry>
 <entry>
 <title>NFS로 연결된 디스크에서 Gulp Watch 사용시 파일 변경 감지가 느릴 때</title>
 <link href="https://blog.asamaru.net/2016/04/26/gulp-watch-is-very-slow-to-recognize-file-modifications/" rel="alternate" type="text/html" title="NFS로 연결된 디스크에서 Gulp Watch 사용시 파일 변경 감지가 느릴 때" />
@@ -1011,23 +1035,5 @@ Bug #39918	imagecreatefromjpeg doesn’t work&lt;/a&gt;라는 글로도 등록�
 &lt;p&gt;이렇게 처리하고 나면 기능이 원하는대로 정상 동작한다(&lt;code&gt;not a valid JPEG file&lt;/code&gt;라고 했지만 실제로는 정상적인 jpg 파일이므로)&lt;/p&gt;
 </content>
 <summary>PHP에서 GD를 이용해서 jpg 이미지를 처리할 때 아래와 같은 오류를 만날 수 있다. 나의 경우는 안드로이드에서 jpg 이미지를 PHP로 전송해서 처리하는 과정에서 이 오류를 만났다(안드로이드여 사라져라).Warning:  imagecreatefromjpeg(): gd-jpeg, libjpeg: recoverable error: Invalid SOS parameters for sequential JPEG이 오류는 PHP Bugs에 Bug #39918	imagecreatefromjpeg doesn’t work라는 글로도 등록되어 있다. 일단 PHP Bugs에서는 버그가 아닌 것으로 분류해 놓았지만 대부분의 다른 커뮤니티들에서는 버그라고 이야기하고 있다.어쨌든 해결 방법은 아래와 같다.1@ini_set(&amp;#39;gd.jpeg_ignore_warning&amp;#39;, 1);위 코드를 imagecreatefromjpeg를 사용하기 전에 넣으면 된다(그냥 맨 위쪽). 아니면 php.ini에 위 내용을 형식에 맞게 추가해도 된다.그런데 문제는 이것만으로는 완전히 해결이 되지 않을 수 있다. 아래와 같은 오류가 추가적으로 날 수 있다.Warning:  imagecreatefromjpeg(): &#39;/tmp/php6eEm0r&#39; is not a valid JPEG file in ~~따라서 위 처리 외에도 imagecreatefromjpeg 사용시 @를 붙여 아래와 같이 사용해야 한다.1$source = @imagecreatefromjpeg($sourcePath);@를 사용하는 것은 권장되지 않지만 이 경우는 어쩔 수 없다(오류 출력 범위를 변경하는 등의 방법이 있으나 이 부분만 이렇게 처리하는게 낫다).이렇게 처리하고 나면 기능이 원하는대로 정상 동작한다(not a valid JPEG file라고 했지만 실제로는 정상적인 jpg 파일이므로)</summary>
-</entry>
-<entry>
-<title>svn status가 느려질 때</title>
-<link href="https://blog.asamaru.net/2016/03/21/slow-svn-status/" rel="alternate" type="text/html" title="svn status가 느려질 때" />
-<published>2016-03-21T17:17:49+09:00</published>
-<updated>2016-03-21T17:17:49+09:00</updated>
-<id>https://blog.asamaru.net/2016/03/21/slow-svn-status</id>
-<content type="html" xml:base="https://blog.asamaru.net/2016/03/21/slow-svn-status/">&lt;p&gt;svn을 사용하다 보면 이상하게 &lt;code&gt;svn status&lt;/code&gt;가 이상하게 느릴 때가 있다. 사실 나도 이 부분을 크게 생각해 본적이 없었는데 최근에 특정 프로젝트 폴더에서 &lt;code&gt;svn status&lt;/code&gt;가 비정상적으로 느려져서 방법을 찾아봤다.&lt;/p&gt;
-
-&lt;p&gt;결론부터 이야기하자면 아주 간단하다. 아래와 같이 cleanup을 해주면 속도가 돌아온다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;svn cleanup
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;cleanup의 경우 충돌이 발생했을 때만 사용하고 있었는데 오래된 &lt;code&gt;.svn/pristine&lt;/code&gt; 폴더의 파일들을 지워주는 효과가 있는 것 같다. 실제로 용량을 비교해보니 상당히 많은 용량이 줄어들었다. 그런데 어떤 사람들은 오래된 파일을 지워주는게 아니라고 말하기도 한다. 어쨌든 나의 경우는 &lt;code&gt;.svn&lt;/code&gt;의 용량이 줄어 들었으며 느리던 &lt;code&gt;svn status&lt;/code&gt;의 속도가 돌아왔다. 이론적인 검증이 되지 않은 내용이지만 혹시 동일한 현상을 겪는 사람이라면 한번 시도해봐도 손해볼 것은 없다는 생각.&lt;/p&gt;
-</content>
-<summary>svn을 사용하다 보면 이상하게 svn status가 이상하게 느릴 때가 있다. 사실 나도 이 부분을 크게 생각해 본적이 없었는데 최근에 특정 프로젝트 폴더에서 svn status가 비정상적으로 느려져서 방법을 찾아봤다.결론부터 이야기하자면 아주 간단하다. 아래와 같이 cleanup을 해주면 속도가 돌아온다.1$ svn cleanupcleanup의 경우 충돌이 발생했을 때만 사용하고 있었는데 오래된 .svn/pristine 폴더의 파일들을 지워주는 효과가 있는 것 같다. 실제로 용량을 비교해보니 상당히 많은 용량이 줄어들었다. 그런데 어떤 사람들은 오래된 파일을 지워주는게 아니라고 말하기도 한다. 어쨌든 나의 경우는 .svn의 용량이 줄어 들었으며 느리던 svn status의 속도가 돌아왔다. 이론적인 검증이 되지 않은 내용이지만 혹시 동일한 현상을 겪는 사람이라면 한번 시도해봐도 손해볼 것은 없다는 생각.</summary>
 </entry>
 </feed>

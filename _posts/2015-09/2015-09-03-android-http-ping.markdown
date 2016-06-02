@@ -18,8 +18,9 @@ static class HttpPingAsyncTask extends AsyncTask<String, Void, Boolean> {
     @Override
     protected Boolean doInBackground(String... urls) {
         try {
-            HttpURLConnection.setFollowRedirects(false);
+            // HttpURLConnection.setFollowRedirects(false);
             HttpURLConnection con = (HttpURLConnection) new URL(urls[0]).openConnection();
+            con.setInstanceFollowRedirects(false);
             con.setRequestMethod("HEAD");
             return (con.getResponseCode() == HttpURLConnection.HTTP_OK);
         } catch (Exception e) {

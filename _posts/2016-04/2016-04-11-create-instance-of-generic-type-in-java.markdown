@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Generic Type 인스턴스 생성"
+title: "Generic Type으로 인스턴스 생성"
 date: 2016-04-11 19:40:32 +09:00
 comments: true
 categories: ["java","android"]
@@ -218,3 +218,29 @@ volleyer(requestQueue).get(url)
 결론은 `.withTargetClass(Person.class)` 한줄 빠진 것이다. 굳이 저 한줄을 빼고자 이렇게 복잡하게 해야하나 생각할 수 있지만 복잡한 로직과 결합되면 이 한줄의 코드를 제거하는 것이 큰 영향을 줄 수 있다. 그리고 위 상황이라면 어짜피 Listener는 상속을 한번 받아서 사용하므로 안내한 방법의 단점이 단점이 되지 않는다.
 
 안내한 방법을 응용하면 Method에서 Generic Type을 추출하는 방법도 있다. 그외에도 여러가지 응용 방법이 있으나 설명하자니 너무 길어질 것 같아서 줄인다.
+
+---
+
+**첨부 2016.04.12**
+
+위 클래스를 사용하는 방법도 있지만 이와 관련된 라이브러리도 찾았다. [jhalterman/typetools](https://github.com/jhalterman/typetools)라는 것인데 사용법은 해당 사이트에 설명되어 있다. 내부적인 구현은 위에서 소개한 방법과 유사하나 조금 더 다양하게 사용이 가능하고 조금 더 여러가지 상황이 고려되어 있다. 다만, 사이트에 gradle에 추가하는 방법이 안내되어 있지 않다. 그래서 테스트하면서 적용한 방법을 아래에 남긴다. 참고로 android 프로젝트에서 unittest 시에 실행 오류가 발생할 수 있다. 이에 관련해서 오늘 오전에 이슈를 남겼는데 몇시간 지나지 않아 패치를 했다는 답변을 받았다. 하지만 현재 시점(0.4.6)에서는 아직 release되지 않았으므로 혹시 테스트를 하려면 다음의 `System.setProperty("java.version", "0");` 코드를 `TypeResolver.resolveRawArguments()` 사용 전에 추가해주면 된다. 참고로 오류는 아래와 같다.
+
+```
+Caused by: java.lang.NumberFormatException: For input string: "1.7.0_79"
+	at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
+	at java.lang.Integer.parseInt(Integer.java:492)
+	at java.lang.Integer.valueOf(Integer.java:582)
+	at net.jodah.typetools.TypeResolver.<clinit>(TypeResolver.java:54)
+```
+
+사용법은 gradle을 사용하는 경우 아래의 코드를 build.gradle 파일에 추가하면 사용 가능하다.
+
+```
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile 'net.jodah:typetools:0.4.6'
+}
+```

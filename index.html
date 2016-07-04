@@ -152,9 +152,9 @@
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>이 방법은 project를 package로 배포하지 않고 최신 소스(커밋)를 composer에서 가져오도록 한 것이다. 이 경우 별도의 composer repository가 필요하지 않다. 다만, 버전을 별도로 관리할 수 없고 <code>composer update</code>가 느려진다. <code>composer update</code>가 느려지는 이유는 update시마다 해당 프로젝트의 composer.json을 읽어 변경사항을 확인하기 때문이다. 이렇게 사용하는 것이 한두개라면 모르겠지만 많다면 <code>composer update</code>를 실행 하기가 두려워질 정도로 느려진다(composer.json 파일을 매번 확인하는 데다가 gitlab.com / packagist.org가 해외 서비스다 보니 네트워크가 느려서 더 심하다). composer 자체도 느린데 이런 문제까지 겹치니 감당 안된다. <a href="/2016/03/17/php-composer-speed-up/">php composer 속도 개선하기</a>에서 언급한 방법들을 적용해도 이 문제에는 큰 효과가 없다.</p>
+<p>이 방법은 project를 package로 배포하지 않고 최신 소스(커밋)를 composer에서 가져오도록 한 것이다. 이 경우 별도의 composer repository가 필요하지 않다. 다만, 버전을 별도로 관리할 수 없고 <code>composer update</code>가 느려진다. <code>composer update</code>가 느려지는 이유는 update시마다 해당 프로젝트의 composer.json을 읽어 변경사항을 확인하기 때문이다. 이렇게 사용하는 것이 한두개라면 모르겠지만 많다면 <code>composer update</code>를 실행 하기가 두려워질 정도로 느려진다(composer.json 파일을 매번 확인하는 데다가 <a href="gitlab.com">gitlab.com</a> / <a href="packagist.org">packagist.org</a>가 해외 서비스다 보니 네트워크가 느려서 더 심하다). composer 자체도 느린데 이런 문제까지 겹치니 감당 안된다. <a href="/2016/03/17/php-composer-speed-up/">php composer 속도 개선하기</a>에서 언급한 방법들을 적용해도 이 문제에는 큰 효과가 없다.</p>
 
-<p>composer에 관해서는 더 많은 이야기가 있을 수 있으나 본 글의 주제를 벗어나므로 이쯤에서 줄이고 본격적으로 Toran Proxy 설치를 설명하겠다.</p>
+<p>composer에 관해서는 더 많은 이야기가 있을 수 있으나 본 글의 주제를 벗어 나므로 이쯤에서 줄이고 본격적으로 Toran Proxy 설치를 설명하겠다.</p>
 
 <hr />
 
@@ -162,7 +162,7 @@
   <p>Toran Proxy는 사실 유료다. 단, 개인 사용자에게는 개발자 1명까지 무료다(무료의 경우 기술 지원을 하지 않는다).</p>
 </blockquote>
 
-<p><a href="https://toranproxy.com/">Toran Proxy</a>에서 download 링크를 누르면 다시 download 링크와 설치 방법에 대한 안내를 볼 수 있다.</p>
+<p><a href="https://toranproxy.com/">Toran Proxy</a>에서 <a href="https://toranproxy.com/download">download 링크</a>를 누르면 다시 download 링크와 설치 방법에 대한 안내를 볼 수 있다.</p>
 
 <p>아래는 내가 설치한 과정을 정리한 것이다. 실제로는 bash shell 스크립트로 작성되어 있는데 중요한 부분만 다시 정리한 것으로 작업 상에 약간의 차이가 있을 수 있다. 또한, CentOS 7에서 작업 했으며 사용자는 <code>web</code>, 사용자 그룹은 <code>usergroup</code>이며 사용자 root directory는 <code>/home/web/</code>이다. 따라서 자신의 환경과 맞지 않는 부분은 맞게 고쳐서 적용해야 한다.</p>
 
@@ -232,11 +232,23 @@ Token:
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>안내에 설명되어 있는 것과 같이 https://github.com/settings/tokens/new 에 가서 개인용 ssh token을 생성해서 넣어야 한다. 생성시 어떤 권한을 부여할지 선택하는 화면이 나오는데 다른 것은 필요 없고 <code>public_repo</code>만 선택해서 생성하면 된다. 사실 일반적인 경우라면 composer 사용시 미리 받아 놓은 token이 있을테니 그걸 사용해도 된다. 보통 <code>~/.composer/auth.json</code> 또는 <code>~/.config/composer/auth.json</code>에 등록이 되어있다.</p>
+<p>안내에 설명되어 있는 것과 같이 <a href="https://github.com/settings/tokens/new">https://github.com/settings/tokens/new</a> 에 가서 개인용 ssh token을 생성해서 넣어야 한다. 생성시 어떤 권한을 부여할지 선택하는 화면이 나오는데 다른 것은 필요 없고 <code>public_repo</code>만 선택해서 생성하면 된다. 사실 일반적인 경우라면 composer 사용시 미리 받아 놓은 token이 있을테니 그걸 사용해도 된다. 보통 <code>~/.composer/auth.json</code> 또는 <code>~/.config/composer/auth.json</code>에 등록이 되어있다.</p>
 
-<p>token을 입력하면 <code>app/toran/composer/auth.json</code>에 파일이 생성된다. 여기서는 github에 대한 token만 등록하도록 물어보는데 나의 경우처럼 gitlab.com 등의 접근이 필요하다면 아래과 같이 직접 설정 할 수 있다.</p>
+<p>token을 입력하면 <code>app/toran/composer/auth.json</code>에 파일이 생성된다. 여기서는 github에 대한 token만 등록하도록 물어보는데 나의 경우처럼 gitlab.com 등의 접근이 필요하다면 아래과 같이 설정 할 수 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-json"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-json"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span class="p">{</span>
+    <span class="nt">&quot;github-oauth&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;github.com&quot;</span><span class="p">:</span> <span class="s2">&quot;[github token]&quot;</span> <span class="p">},</span>
+    <span class="nt">&quot;gitlab-oauth&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;gitlab.com&quot;</span><span class="p">:</span> <span class="s2">&quot;[gitlab token]&quot;</span> <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>여기서 설정된 “gitlab token”은 github와는 조금 다르다. github의 경우는 사이트에 token을 발급해서 넣었었는데 gitlab은 동일하게 <a href="https://gitlab.com/profile/personal_access_tokens">사이트에서 발급</a> 받은 token을 강제로 넣었더니 정상적으로 동작하지 않았다. 대신 gitlab에 관련된 repository가 추가된 후 <code>php bin/cron -v</code>를 다시 실행하면 아래와 같이 아이디와 비밀번호를 물어보는데 여기에 입력하면 “gitlab token”이 생성되어 들어가 있다. gitlab.com에 API로 token을 만들어주나 싶어 확인해 봤더니 token은 없었다(아이디 / 비밀번호를 암호화해서 보관하는 것으로 보인다).</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
  4
@@ -245,18 +257,16 @@ Token:
  7
  8
  9
-10
-11</pre></div></td><td class="code"><div class="highlight"><pre><span class="p">{</span>
-    <span class="nt">&quot;github-oauth&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;github.com&quot;</span><span class="p">:</span> <span class="s2">&quot;[github token]&quot;</span>
-    <span class="p">},</span>
-    <span class="nt">&quot;http-basic&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;gitlab.com&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;[username]&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;[password]&quot;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
+10</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>php bin/cron -v
+Initializing private repositories
+Initializing git@gitlab.com:company/project.git
+
+Could not fetch https://gitlab.com/api/v3/projects/company%2Fproject, enter your gitlab.com credentials to access private repos
+A token will be created and stored in <span class="s2">&quot;/home/web/toran/app/toran/composer/auth.json&quot;</span>, your password will never be stored
+To revoke access to this token you can visit gitlab.com/profile/applications
+Username:
+Password:
+Token successfully created
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
@@ -282,7 +292,7 @@ listen = /dev/shm/php5-fpm.toran.sock
 
 <p>이제 php-fpm을 재시작하면 www와 toran 두가지 pool이 동작하고 있다.</p>
 
-<p>이제부터는 nginx 설정이다. 아래의 예시를 참고해서 설정하자. ssl 관련된 설정을 위해서 ssl 인증서를 생성해야 한다(<a href="https://letsencrypt.org/">letsencrypt</a>를 이용하면 무료로 인증서를 받을 수 있다. 이게 어렵거나 귀찮다면 https://buy.wosign.com/free/ 를 이용하면 3년까지 사용 가능한 ssl 인증서를 받을 수 있다).</p>
+<p>이제부터는 nginx 설정이다. 아래의 예시를 참고해서 설정하자. ssl 관련된 설정을 위해서 ssl 인증서를 생성해야 한다(<a href="https://letsencrypt.org/">letsencrypt</a>를 이용하면 무료로 인증서를 받을 수 있다. 이게 어렵거나 귀찮다면 <a href="https://buy.wosign.com/free/">https://buy.wosign.com/free/</a>를 이용하면 3년까지 사용 가능한 ssl 인증서를 받을 수 있다).</p>
 
 <figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">server {
     listen 80;
@@ -370,9 +380,11 @@ listen = /dev/shm/php5-fpm.toran.sock
 
 <p><code>https://your-private-repository.com/repo/private/</code> 설정은 말 그대로 private repository를 사용하기 위한 설정이다. private repository를 설정하는 것은 관리 화면에서 <code>Private Repositories</code> 메뉴로 들어가면 간단히 사용할 수 있다.</p>
 
-<p>나의 경우처럼 git를 바로 연결해서 사용했었다면 간단히 <code>Add Repository</code>를 눌러 Type을 git로 선택하고 git repository 주소를 입력해주면 끝난다.</p>
+<p>나의 경우처럼 git를 바로 연결해서 사용했었다면 간단히 <code>Add Repository</code>를 눌러 Type을 <code>vcs</code>로 선택하고 git repository 주소를 입력해주면 끝난다(참고로 설정 내용은 <code>app/toran/config.yml</code> 파일에 저장되어 있다).</p>
 
-<p>단, 여기서 오류가 날 수 있다. 앞서 설명했던 것과 같이 해당 repository가 private project라면 접속 권한 요구에 대한 오류가 날 수 있다. 이 때는 <code>app/toran/composer/auth.json</code>에 접근 정보를 추가해 주거나 web 계정의 <code>auth.json</code>(<code>~/.composer/auth.json</code> 또는 <code>~/.config/composer/auth.json</code>)에 접근 정보를 추가 해주면 된다.</p>
+<p>단, 여기서 오류가 날 수 있다. 앞서 설명했던 것과 같이 해당 repository가 private project라면 접속 권한 요구에 대한 오류가 날 수 있다. 이 때는 <code>app/toran/composer/auth.json</code>에 접근 정보를 추가해 주면 된다(Type을 <code>git</code>를 선택했다면 web 계정의 <code>auth.json</code>(<code>~/.composer/auth.json</code> 또는 <code>~/.config/composer/auth.json</code>)에 접근 정보를 추가해 주어야 할 수도 있다).</p>
+
+<p>그리고 Type를 <code>git</code>로 선택할 수도 있는데 이 경우엔 composer에서 package를 받았을 때 git를 사용할 수 없다. <code>vcs</code>로 설정된 경우만 git를 사용할 수 있어 commit / push가 가능하다. 목적에 따라 이를 막아야 할 경우라면 <code>git</code>를 선택하는 것도 가능하다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }

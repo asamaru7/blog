@@ -3,13 +3,137 @@
 <generator uri="http://jekyllrb.com" version="3.0.1">Jekyll</generator>
 <link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" />
 <link href="https://blog.asamaru.net/" rel="alternate" type="text/html" />
-<updated>2016-07-05T08:53:51+09:00</updated>
+<updated>2016-07-12T11:55:40+09:00</updated>
 <id>https://blog.asamaru.net/</id>
 <subtitle>세상에 필요한 소스코드 한줄 남기고 가자.
 </subtitle>
 <author>
 <name>유영재</name>
 </author>
+<entry>
+<title>안드로이드 : TextView 터치시 가로 스크롤이 되지 않는 문제 수정(ViewPager 등에서)</title>
+<link href="https://blog.asamaru.net/2016/07/12/android-textview-with-a-single-line-in-viewpager-scroll-doesnt-work/" rel="alternate" type="text/html" title="안드로이드 : TextView 터치시 가로 스크롤이 되지 않는 문제 수정(ViewPager 등에서)" />
+<published>2016-07-12T11:34:06+09:00</published>
+<updated>2016-07-12T11:34:06+09:00</updated>
+<id>https://blog.asamaru.net/2016/07/12/android-textview-with-a-single-line-in-viewpager-scroll-doesnt-work</id>
+<content type="html" xml:base="https://blog.asamaru.net/2016/07/12/android-textview-with-a-single-line-in-viewpager-scroll-doesnt-work/">&lt;p&gt;오늘도 역시 안드로이드는 실망시키지 않는다. 오늘의 문제는 이렇다.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;가로 스크롤되는 ViewPager의 Item View에 TextView가 포함되도록 구성되어 있을 경우 TextView 위에서 터치를 하면 가로 스크롤이 동작하지 않는 문제가 발생한다. 조금 더 정확히 이야기하자면 &lt;code&gt;singleLine&lt;/code&gt; 속성이 true로 설정된 TextView들이 가로 스크롤을 정상 동작하지 않도록 만든다.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;처음엔 click 이벤트로 인한 문제로 생각했다. 실제로 아래에 깔린 View의 click 이벤트를 제거하니 스크롤이 정상적으로 동작했다. 그런데 다른 UI에서 동일한 형태로 사용중이나 그곳에서는 해당 문제가 발생하지 않기에 다른 원인이 있을 것이라는 판단으로 조금 더 찾아봤다.&lt;/p&gt;
+
+&lt;p&gt;결국 원인을 찾고보니 &lt;code&gt;android:scrollHorizontally&lt;/code&gt; 속성이 true로 설정될 경우 해당 문제가 발생했다. TextView의 scroll 처리 영역과 ViewPager의 scroll 처리가 충돌하는 것이다. 그런데 나는 이 속성을 true로 주지 않았기 때문에 이상하다고 생각하고 &lt;code&gt;TextView.java&lt;/code&gt; 파일의 내부를 보다가 아래의 코드를 찾았다.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;TextView.java&lt;/strong&gt;&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt; 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;applySingleLine&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;singleLine&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;applyTransformation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;changeMaxLines&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;mSingleLine&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;singleLine&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;singleLine&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;setLines&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;setHorizontallyScrolling&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;applyTransformation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;setTransformationMethod&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SingleLineTransformationMethod&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getInstance&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;changeMaxLines&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;setMaxLines&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Integer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;MAX_VALUE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;setHorizontallyScrolling&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;applyTransformation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;setTransformationMethod&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;그렇다. &lt;code&gt;singleLine&lt;/code&gt; 속성을 사용하면 자동적으로 &lt;code&gt;setHorizontallyScrolling(true);&lt;/code&gt;가 적용되는 것이다. 여담이지만 &lt;code&gt;android:scrollHorizontally&lt;/code&gt; 설정 상태를 확인하기 위해 &lt;code&gt;TextView.java&lt;/code&gt;에 있는 아래의 함수를 호출해 봤더니 해당 함수를 못찾는다. 최신 SDK에 들어간 것도 아니고 public 인데도 불구하고… 역시 이상한 안드로이드.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
+2
+3&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;getHorizontallyScrolling&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mHorizontallyScrolling&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;어쨌든 이를 해결하기 위해 아래와 같이 style을 정의해서 TextView에 적용해 봤다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-xml&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt; 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;style&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;TextViewBaseStyle&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- 가로 스크롤 문제를 발생시키는 속성 --&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;android:singleLine&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;android:ellipsize&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;end&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- 가로 스크롤 문제를 개선하기 위한 시도 --&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;android:scrollHorizontally&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;false&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;android:clickable&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;false&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;android:focusable&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;false&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;android:focusableInTouchMode&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;false&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;결론은 안된다. &lt;code&gt;android:scrollHorizontally&lt;/code&gt; 값이 위에 보여준 코드에 의해 무시되는 결과를 가져오는 것이다.&lt;/p&gt;
+
+&lt;p&gt;따라서 해결 방법은 아래의 방법 밖에 없다.&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;n&quot;&gt;textView&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;setHorizontallyScrolling&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+
+&lt;p&gt;그렇다. 프로그램에서 직접 &lt;code&gt;android:scrollHorizontally&lt;/code&gt;를 false로 설정하는 것 외에는 다른 방법이 없다. &lt;code&gt;TextView.java&lt;/code&gt; 내부에서 직접 true를 지정하고 있으므로 해당 코드를 오버라이딩 할 것이 아니라면 이 방법 밖에는 없다. 생성자 내부에서 처리 순서가 아래와 같기 때문에 &lt;code&gt;singleLine&lt;/code&gt; 속성을 사용한다면 다른 방법이 없는 것이다. 도대체 TextView 개발자는 무슨 생각으로 코드를 짠 것인가?&lt;/p&gt;
+
+&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-java&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1
+2
+3
+4
+5
+6
+7
+8
+9&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;com&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;android&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;internal&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;R&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;styleable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;TextView_scrollHorizontally&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;getBoolean&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;setHorizontallyScrolling&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;applySingleLine&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;singleLine&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;singleLine&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;singleLine&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;          
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
+</content>
+<summary>오늘도 역시 안드로이드는 실망시키지 않는다. 오늘의 문제는 이렇다.  가로 스크롤되는 ViewPager의 Item View에 TextView가 포함되도록 구성되어 있을 경우 TextView 위에서 터치를 하면 가로 스크롤이 동작하지 않는 문제가 발생한다. 조금 더 정확히 이야기하자면 singleLine 속성이 true로 설정된 TextView들이 가로 스크롤을 정상 동작하지 않도록 만든다.처음엔 click 이벤트로 인한 문제로 생각했다. 실제로 아래에 깔린 View의 click 이벤트를 제거하니 스크롤이 정상적으로 동작했다. 그런데 다른 UI에서 동일한 형태로 사용중이나 그곳에서는 해당 문제가 발생하지 않기에 다른 원인이 있을 것이라는 판단으로 조금 더 찾아봤다.결국 원인을 찾고보니 android:scrollHorizontally 속성이 true로 설정될 경우 해당 문제가 발생했다. TextView의 scroll 처리 영역과 ViewPager의 scroll 처리가 충돌하는 것이다. 그런데 나는 이 속성을 true로 주지 않았기 때문에 이상하다고 생각하고 TextView.java 파일의 내부를 보다가 아래의 코드를 찾았다.TextView.java 1 2 3 4 5 6 7 8 910111213141516171819private void applySingleLine(boolean singleLine, boolean applyTransformation,        boolean changeMaxLines) {    mSingleLine = singleLine;    if (singleLine) {        setLines(1);        setHorizontallyScrolling(true);        if (applyTransformation) {            setTransformationMethod(SingleLineTransformationMethod.getInstance());        }    } else {        if (changeMaxLines) {            setMaxLines(Integer.MAX_VALUE);        }        setHorizontallyScrolling(false);        if (applyTransformation) {            setTransformationMethod(null);        }    }}그렇다. singleLine 속성을 사용하면 자동적으로 setHorizontallyScrolling(true);가 적용되는 것이다. 여담이지만 android:scrollHorizontally 설정 상태를 확인하기 위해 TextView.java에 있는 아래의 함수를 호출해 봤더니 해당 함수를 못찾는다. 최신 SDK에 들어간 것도 아니고 public 인데도 불구하고… 역시 이상한 안드로이드.123public boolean getHorizontallyScrolling() {    return mHorizontallyScrolling;}어쨌든 이를 해결하기 위해 아래와 같이 style을 정의해서 TextView에 적용해 봤다. 1 2 3 4 5 6 7 8 910&amp;lt;style name=&amp;quot;TextViewBaseStyle&amp;quot;&amp;gt;  &amp;lt;!-- 가로 스크롤 문제를 발생시키는 속성 --&amp;gt;  &amp;lt;item name=&amp;quot;android:singleLine&amp;quot;&amp;gt;true&amp;lt;/item&amp;gt;  &amp;lt;item name=&amp;quot;android:ellipsize&amp;quot;&amp;gt;end&amp;lt;/item&amp;gt;  &amp;lt;!-- 가로 스크롤 문제를 개선하기 위한 시도 --&amp;gt;  &amp;lt;item name=&amp;quot;android:scrollHorizontally&amp;quot;&amp;gt;false&amp;lt;/item&amp;gt;  &amp;lt;item name=&amp;quot;android:clickable&amp;quot;&amp;gt;false&amp;lt;/item&amp;gt;  &amp;lt;item name=&amp;quot;android:focusable&amp;quot;&amp;gt;false&amp;lt;/item&amp;gt;  &amp;lt;item name=&amp;quot;android:focusableInTouchMode&amp;quot;&amp;gt;false&amp;lt;/item&amp;gt;&amp;lt;/style&amp;gt;결론은 안된다. android:scrollHorizontally 값이 위에 보여준 코드에 의해 무시되는 결과를 가져오는 것이다.따라서 해결 방법은 아래의 방법 밖에 없다.1textView.setHorizontallyScrolling(false);그렇다. 프로그램에서 직접 android:scrollHorizontally를 false로 설정하는 것 외에는 다른 방법이 없다. TextView.java 내부에서 직접 true를 지정하고 있으므로 해당 코드를 오버라이딩 할 것이 아니라면 이 방법 밖에는 없다. 생성자 내부에서 처리 순서가 아래와 같기 때문에 singleLine 속성을 사용한다면 다른 방법이 없는 것이다. 도대체 TextView 개발자는 무슨 생각으로 코드를 짠 것인가?123456789...case com.android.internal.R.styleable.TextView_scrollHorizontally:    if (a.getBoolean(attr, false)) {        setHorizontallyScrolling(true);    }    break;...applySingleLine(singleLine, singleLine, singleLine);...          </summary>
+</entry>
 <entry>
 <title>PHP Composer : Private Repository / Proxy / 속도 향상(Toran Proxy를 사용한)</title>
 <link href="https://blog.asamaru.net/2016/07/04/php-composer-private-repository-and-proxy-toran-proxy/" rel="alternate" type="text/html" title="PHP Composer : Private Repository / Proxy / 속도 향상(Toran Proxy를 사용한)" />
@@ -1182,73 +1306,5 @@ Members:
 &lt;/ul&gt;
 </content>
 <summary>linux 서버를 공개망에서 사용하면서 방화벽을 사용하지 않는 경우 ssh 로그인을 지속적으로 시도하는 로그를 볼 수 있다. 대부분 외국 IP 대역에서 지속적으로 ssh 로그인을 시도하는데 무작위 비밀번호를 대입하는 것이다. 당연히 방화벽을 설정하는 것이 당연하나 특수한 목적으로 인해 접속 IP 대역을 제한할 수 없는 경우도 있을 수 있다. 이런 경우에 보안을 조금이나마 강화하기 위해 사용할 수 있는 것이 fail2ban 이다.우선 실제로 해당 서버에 어떤 IP들이 ssh 로그인을 시도했는지 아래의 명령으로 확인 할 수 있다(이하는 CentOS 7 기준이다).아래는 로그인 시도 IP를 확인하는 방법이다.1$ ls /var/log/secure | xargs grep -E &amp;quot;[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+&amp;quot; -o | sort | uniq공개망에 연결된 서버라면 생각보다 많은 IP가 나와 놀랄수도 있다. IP들 중 자신이 아는 IP를 제외하면 대부분이 위에 언급한 공격일 확률이 높다.다른 방법으로 아래와 같이 최근 로그인 실패 기록을 확인하는 것도 가능하다.1$ last -f /var/log/btmp | more20 Linux Log Files that are Located under /var/log Directory에 보면 /var/log/btmp에 대한 설명을 확인 할 수 있다.상황을 확인 했으니 이제 본격적으로 fail2ban을 사용해 보자.fail2ban 설치fail2ban은 지정된 시간 내에 지정된 횟수 이상으로 ssh 로그인을 실패하면 해당 IP에서의 접근을 지정된 시간만큼 차단하는 역할을 한다.아래의 설치 과정은 CentOS 7을 기준으로 한다. 이는 iptables 대신 firewalld가 사용되며 systemd를 사용하는 것을 기준으로 한다는 뜻이다. CentOS 6이라면 아래의 참고자료를 살펴보기 바란다. 1 2 3 4 5 6 7 8 91011121314151617181920212223# epel-release 추가$ rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm# fail2ban 설치$ yum install -y fail2ban# fail2ban 기본 설정$ hostname=`/bin/hostname`$ echo &amp;quot;[DEFAULT]&amp;quot; &amp;gt; /etc/fail2ban/jail.local# 1시간 동안 접근 제한$ echo &amp;quot;bantime = 3600&amp;quot; &amp;gt;&amp;gt; /etc/fail2ban/jail.local# 결과 수신 메일 지정$ echo &amp;quot;destemail = ~~~@~~~.com&amp;quot; &amp;gt;&amp;gt; /etc/fail2ban/jail.local# 결과 발신 메일 지정$ echo &amp;quot;sender = root@$hostname&amp;quot; &amp;gt;&amp;gt; /etc/fail2ban/jail.local$ echo &amp;quot;&amp;quot; &amp;gt;&amp;gt; /etc/fail2ban/jail.local# ssh 접근 검사 활성화$ echo &amp;quot;[sshd]&amp;quot; &amp;gt;&amp;gt; /etc/fail2ban/jail.local$ echo &amp;quot;enabled = true&amp;quot; &amp;gt;&amp;gt; /etc/fail2ban/jail.local# nginx-http-auth 접근 검사 활성화 : 필요시에만 사용$ echo &amp;quot;&amp;quot; &amp;gt;&amp;gt; /etc/fail2ban/jail.local$ echo &amp;quot;[nginx-http-auth]&amp;quot; &amp;gt;&amp;gt; /etc/fail2ban/jail.local$ echo &amp;quot;enabled = true&amp;quot; &amp;gt;&amp;gt; /etc/fail2ban/jail.localfail2ban 서비스 활성1$ systemctl enable fail2ban.servicefail2ban 서비스 시작1$ systemctl start fail2ban.serviceselinux 사용시 fail2ban 관련 설정이하는 selinux 사용시에만 적용하면 된다. 1 2 3 4 5 6 7 8 9101112131415$ checkmodule -M -m -o fail2ban-syslog.mod fail2ban-syslog.te$ semodule_package -o fail2ban-syslog.pp -m fail2ban-syslog.mod$ semodule -r fail2ban-syslog$ semodule -i fail2ban-syslog.pp$ rm -f fail2ban-syslog.mod$ rm -f fail2ban-syslog.pp$ semodule -l|grep fail2ban-syslog$ checkmodule -M -m -o logrotate-fail2ban.mod logrotate-fail2ban.te$ semodule_package -o logrotate-fail2ban.pp -m logrotate-fail2ban.mod$ semodule -r logrotate-fail2ban$ semodule -i logrotate-fail2ban.pp$ rm -f logrotate-fail2ban.mod$ rm -f logrotate-fail2ban.pp$ semodule -l|grep logrotate-fail2ban아래의 2개의 파일은 위 스크립트 실행에 필요한 파일이므로 해당 파일명으로 저장해서 사용하면 된다.fail2ban-syslog.temodule fail2ban-syslog 1.0;require {type syslogd_var_run_t;type fail2ban_t;class dir read;class file read;class file open;class file getattr;}#============= fail2ban_t ==============allow fail2ban_t syslogd_var_run_t:dir read;allow fail2ban_t syslogd_var_run_t:file read;allow fail2ban_t syslogd_var_run_t:file open;allow fail2ban_t syslogd_var_run_t:file getattr;logrotate-fail2ban.temodule logrotate-fail2ban 1.7;require {type fail2ban_client_exec_t;type logrotate_t;type init_var_lib_t;class file { open read execute getattr write create execute_no_trans setattr unlink ioctl rename};}#============= logrotate_t ==============allow logrotate_t fail2ban_client_exec_t:file execute_no_trans;allow logrotate_t fail2ban_client_exec_t:file { open read execute ioctl };allow logrotate_t init_var_lib_t:file { open read getattr write create unlink setattr rename };설치가 다 되었다면 아래의 명령 실행시 다음과 비슷한 결과를 볼 수 있다.123$ firewall-cmd --direct --get-all-rulesipv4 filter INPUT 0 -p tcp -m multiport --dports ssh -m set --match-set fail2ban-sshd src -j REJECT --reject-with icmp-port-unreachable그리고 아래의 명령으로 적용 상황을 확인할 수 있다. 1 2 3 4 5 6 7 8 91011121314151617181920212223242526272829# fail2ban 상태 확인$ fail2ban-client status sshdStatus for the jail: sshd|- Filter|  |- Currently failed:	1|  |- Total failed:	153|  `- File list:	/var/log/secure`- Actions   |- Currently banned:	0   |- Total banned:	2   `- Banned IP list:# ipset에 설정(차단)된 내용 확인$ ipset --listName: fail2ban-sshdType: hash:ipRevision: 1Header: family inet hashsize 1024 maxelem 65536 timeout 3600Size in memory: 16656References: 1Members:# fail2ban 로그 확인$ cat /var/log/fail2ban.log# 차단 IP 목록$ awk &amp;#39;($(NF-1) = /Ban/){print $NF}&amp;#39; /var/log/fail2ban.log | sort | uniq -c | sort -n참고자료  fail2ban-client commands  selinux module for fail2ban on Centos/RHEL 7  How To Protect SSH With Fail2Ban on CentOS 7  How To Protect SSH with fail2ban on CentOS 6  HOW TO INSTALL FAIL2BAN ON CENTOS  Fail2ban with FirewallD  System: Monitoring the fail2ban log</summary>
-</entry>
-<entry>
-<title>OSX : shell script 실행하는 app 파일 만들기</title>
-<link href="https://blog.asamaru.net/2016/04/06/how-to-create-simple-mac-apps-from-shell-scripts/" rel="alternate" type="text/html" title="OSX : shell script 실행하는 app 파일 만들기" />
-<published>2016-04-06T19:51:12+09:00</published>
-<updated>2016-04-06T19:51:12+09:00</updated>
-<id>https://blog.asamaru.net/2016/04/06/how-to-create-simple-mac-apps-from-shell-scripts</id>
-<content type="html" xml:base="https://blog.asamaru.net/2016/04/06/how-to-create-simple-mac-apps-from-shell-scripts/">&lt;p&gt;OSX를 사용하다 보면 자주 사용하는 shell script를 app으로 생성해 두고 싶을 때가 많다. 예를들어 나의 경우는 기본 chrome에는 개인 계정을 연결해서 사용하고 chrome의 data 저장 경로를 별도로 지정해서 회사 계정을 연결해서 사용한다. 아래는 주제에서는 벗어나지만 chrome의 data 저장 경로를 별도로 지정해서 실행하는 방법이다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt;1&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;/Applications/Google&lt;span class=&quot;se&quot;&gt;\ &lt;/span&gt;Chrome.app/Contents/MacOS/Google&lt;span class=&quot;se&quot;&gt;\ &lt;/span&gt;Chrome --user-data-dir&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/chrome/subva/ &amp;gt; /dev/null 2&amp;gt;&lt;span class=&quot;p&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;&amp;amp;&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;위 스크립트를 파일로 저장해두고 필요할 경우만 shell에서 실행해서 사용하는데 매번 터미널을 여는 것이 귀찮다. 그래서 기존에는 &lt;code&gt;Automator&lt;/code&gt;를 사용해서 app 파일을 만들어 사용했다(&lt;a href=&quot;http://stackoverflow.com/a/281455&quot;&gt;Executing Shell Scripts from the OS X Dock?&lt;/a&gt; 참고). 그런데 이 app을 만드는 것이 복잡하지는 않아도(사실 무척 간단하다) 귀찮은지라 더 간단한 방법이 없는지 찾아봤다.&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://mathiasbynens.be/notes/shell-script-mac-apps&quot;&gt;How to create simple Mac apps from shell scripts&lt;/a&gt;라는 글에 보면 아래의 스크립트를 소개하고 있다.&lt;/p&gt;
-
-&lt;figure class=&#39;code&#39;&gt;&lt;div class=&quot;highlight notranslate&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;table class=&quot;highlighttable&quot;&gt;&lt;tr&gt;&lt;td class=&quot;linenos&quot;&gt;&lt;div class=&quot;linenodiv&quot;&gt;&lt;pre&gt; 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;c&quot;&gt;#!/usr/bin/env bash&lt;/span&gt;
-
-&lt;span class=&quot;nv&quot;&gt;APPNAME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:-$(&lt;/span&gt;basename &lt;span class=&quot;s2&quot;&gt;&amp;quot;$1&amp;quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;.sh&amp;quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;)}&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;DIR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;$APPNAME.app/Contents/MacOS&amp;quot;&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -a &lt;span class=&quot;s2&quot;&gt;&amp;quot;$APPNAME.app&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-  &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$PWD/$APPNAME.app already exists :(&amp;quot;&lt;/span&gt;
-  &lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;1
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-
-mkdir -p &lt;span class=&quot;s2&quot;&gt;&amp;quot;$DIR&amp;quot;&lt;/span&gt;
-cp &lt;span class=&quot;s2&quot;&gt;&amp;quot;$1&amp;quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$DIR/$APPNAME&amp;quot;&lt;/span&gt;
-chmod +x &lt;span class=&quot;s2&quot;&gt;&amp;quot;$DIR/$APPNAME&amp;quot;&lt;/span&gt;
-
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$PWD/$APPNAME.app&amp;quot;&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/figure&gt;
-
-&lt;p&gt;위 스크립트를 사용해서 shell 스크립트를 간단하게 app으로 변환(생성) 할 수 있다. 그런데 이 글이 오래되었다는 것이 함정이다. 몇 버전부터 인지는 모르지만 엘 케피탄에서 생성된 app을 실행하면 아래와 같은 오류가 나면서 실행이 되지 않는다.&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;PowerPC 응용 프로그램이 더 이상 지원되지 않기 때문에 ‘~~~.app’ 응용 프로그램을 열 수 없습니다.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;위 스크립트를 개선하고 변형한 여러 소스들(&lt;a href=&quot;https://github.com/alexbarton/appify&quot;&gt;alexbarton/appify&lt;/a&gt; 등)을 github 등에서 찾을 수 있으나 대부분 동일한 오류를 낸다.&lt;/p&gt;
-
-&lt;p&gt;또 다른 방법은 &lt;a href=&quot;http://www.sveinbjorn.org/platypus&quot;&gt;Platypus&lt;/a&gt;를 사용하는 것이다.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/img/2016/04/2016-04-06-how-to-create-simple-mac-apps-from-shell-scripts-1.png&quot; alt=&quot;Platypus&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Platypus의 경우는 아주 다양한 활용이 가능하다. 여러가지 스크립트를 지원하며 앱 아이콘도 바로 지정 가능하다. 자세한 내용은 &lt;a href=&quot;http://www.sveinbjorn.org/platypus&quot;&gt;Platypus 공식 사이트&lt;/a&gt;를 참고하자.&lt;/p&gt;
-
-&lt;p&gt;그런데 Platypus의 경우는 지정한 스크립트가 종료되어도 앱은 종료되지 않아서 내가 원하는 결과를 얻지 못했다.&lt;/p&gt;
-
-&lt;p&gt;그래서 결론적으로 내가 선택한 방법은 기존처럼 &lt;code&gt;Automator&lt;/code&gt;를 사용하는 것이다.&lt;/p&gt;
-</content>
-<summary>OSX를 사용하다 보면 자주 사용하는 shell script를 app으로 생성해 두고 싶을 때가 많다. 예를들어 나의 경우는 기본 chrome에는 개인 계정을 연결해서 사용하고 chrome의 data 저장 경로를 별도로 지정해서 회사 계정을 연결해서 사용한다. 아래는 주제에서는 벗어나지만 chrome의 data 저장 경로를 별도로 지정해서 실행하는 방법이다.1/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --user-data-dir=/chrome/subva/ &amp;gt; /dev/null 2&amp;gt;&amp;amp;1 &amp;amp;위 스크립트를 파일로 저장해두고 필요할 경우만 shell에서 실행해서 사용하는데 매번 터미널을 여는 것이 귀찮다. 그래서 기존에는 Automator를 사용해서 app 파일을 만들어 사용했다(Executing Shell Scripts from the OS X Dock? 참고). 그런데 이 app을 만드는 것이 복잡하지는 않아도(사실 무척 간단하다) 귀찮은지라 더 간단한 방법이 없는지 찾아봤다.How to create simple Mac apps from shell scripts라는 글에 보면 아래의 스크립트를 소개하고 있다. 1 2 3 4 5 6 7 8 9101112131415#!/usr/bin/env bashAPPNAME=${2:-$(basename &amp;quot;$1&amp;quot; &amp;quot;.sh&amp;quot;)}DIR=&amp;quot;$APPNAME.app/Contents/MacOS&amp;quot;if [ -a &amp;quot;$APPNAME.app&amp;quot; ]; then  echo &amp;quot;$PWD/$APPNAME.app already exists :(&amp;quot;  exit 1fimkdir -p &amp;quot;$DIR&amp;quot;cp &amp;quot;$1&amp;quot; &amp;quot;$DIR/$APPNAME&amp;quot;chmod +x &amp;quot;$DIR/$APPNAME&amp;quot;echo &amp;quot;$PWD/$APPNAME.app&amp;quot;위 스크립트를 사용해서 shell 스크립트를 간단하게 app으로 변환(생성) 할 수 있다. 그런데 이 글이 오래되었다는 것이 함정이다. 몇 버전부터 인지는 모르지만 엘 케피탄에서 생성된 app을 실행하면 아래와 같은 오류가 나면서 실행이 되지 않는다.  PowerPC 응용 프로그램이 더 이상 지원되지 않기 때문에 ‘~~~.app’ 응용 프로그램을 열 수 없습니다.위 스크립트를 개선하고 변형한 여러 소스들(alexbarton/appify 등)을 github 등에서 찾을 수 있으나 대부분 동일한 오류를 낸다.또 다른 방법은 Platypus를 사용하는 것이다.Platypus의 경우는 아주 다양한 활용이 가능하다. 여러가지 스크립트를 지원하며 앱 아이콘도 바로 지정 가능하다. 자세한 내용은 Platypus 공식 사이트를 참고하자.그런데 Platypus의 경우는 지정한 스크립트가 종료되어도 앱은 종료되지 않아서 내가 원하는 결과를 얻지 못했다.그래서 결론적으로 내가 선택한 방법은 기존처럼 Automator를 사용하는 것이다.</summary>
 </entry>
 </feed>

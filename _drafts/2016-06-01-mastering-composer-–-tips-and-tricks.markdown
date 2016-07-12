@@ -6,6 +6,11 @@ comments: true
 categories: php
 ---
 
+**아래의 글은 아직 작성이 완료되지 않은 글이다.**
+
+---
+
+
 이글은 [Mastering Composer – Tips and Tricks](https://www.sitepoint.com/mastering-composer-tips-tricks/)을 기반으로 내용을 정리한 글이다.
 
 ![Composer](img/2016/06/2016-06-01-mastering-composer-–-tips-and-tricks-composer.png)
@@ -75,25 +80,57 @@ composer require phpunit/phpunit --dev
 
 `composer.lock` 파일은 현재 설치된 패키지들의 목록이 저장된 파일이다. 다른 사람이 현재의 프로젝트를 clone 했을 때 종속된 패키지들이 업데이트 되었을 수 있다. 이 경우 `composer.lock`을 통해 현재 프로젝트와 동일한 버전의 의존 패키지들이 설치 되도록 할 수 있다. 따라서 의존 패키지들의 업데이트로 인한 버전 차이로 인해 개발중인 프로젝트와 clone된 프로젝트의 패키지 환경이 다름으로 발생할 수 있는 오류를 막는데 도움이 될 수 있다.
 
-따라서 `composer.lock` 파일은 항상 형상 관리 도구에 commit 되어야 한다[Composer: It’s All About the Lock File](https://blog.engineyard.com/2014/composer-its-all-about-the-lock-file). 또는 가급적 포함되어야 한다([Composer: It's ALMOST Always About the Lock File](https://philsturgeon.uk/php/2014/11/04/composer-its-almost-always-about-the-lock-file/)).
+따라서 `composer.lock` 파일은 가급적 형상 관리 도구에 commit 되어야 한다([Composer: It’s All About the Lock File](https://blog.engineyard.com/2014/composer-its-all-about-the-lock-file), [Composer: It's ALMOST Always About the Lock File](https://philsturgeon.uk/php/2014/11/04/composer-its-almost-always-about-the-lock-file/)).
 
 > 요약하자면 라이브러리 모듈 등과 같이 다른 프로젝트에 종속되어 사용 되어지는 프로젝트에서는 `composer.lock` 파일이 함께 배포되어도 하위 의존성의 버전에 영향을 주지 않으므로 팀 작업 등을 고려하는 것이 아니라면 크게 의미가 없으나 서비스 프로젝트 등의 경우엔 의존성 패키지의 버전에 따른 영향을 받을 수 있으므로 `composer.lock` 파일을 함께 배포하는 것이 좋겠다.
 
 `composer.lock` 파일은 `composer.json` 파일에 대한 hash를 포함하고 있으므로 프로젝트의 다른 파일만 업데이트될 경우 lock 파일과 json 파일이 맞지않는 다는 경고 메시지를 받을 수 있다. 이 경우는 `composer update --lock` 명령을 통해 다른 파일은 모두 그대로 두고 `composer.lock` 파일만 갱신 할 수 있다.
 
-## Version flags
+## Version 지정
 
-When defining [package versions](https://getcomposer.org/doc/01-basic-usage.md#package-versions), one can use exact matches (1.2.3), ranges with operators (<1.2.3), combinations of operators (>1.2.3 <1.3), best available (1.2.\*), tilde (~1.2.3) and caret (^1.2.3).
-정의 할 때 패키지 버전을 , 하나는 정확한 일치 (사용할 수 있습니다 1.2.3 ), 사업자 (과 범위 <1.2.3 ), 사업자의 조합 ( >1.2.3 <1.3 최고의 가능), ( 1.2.* ), 물결표 ( ~1.2.3 )와 캐럿 ( ^1.2.3 ).
+[패키지 버전](https://getcomposer.org/doc/01-basic-usage.md#package-versions)을 지정하는 방법은 아래와 같이 다양하게 활용할 수 있다.
 
-The latter two might warrant further explanation:
-후자의 두 가지 추가 설명을 보증 있습니다 :
+이름                |  예제            |  의미
+-------------------|-----------------|----------------------------
+정확한 버전           | 1.0.1	        | 버전 1.0.1과 일치하는 버전	 
+범위 지정(Range)      | >=1.0	         | 1.0 보다 크거나 같은 버전중 마지막 버전. 2.0, 3.1 도 포함,	 >=1.2 <2.0	1.2 보다 크거나 같고 2.0 보다 작은 버전중 마지막 버전	 
+물결(Tilde) 연산자(~) | ~1.2	           | 바로 위(>=1.2 <2.0)와 동일한 의미	 
+OR 연산자(\|)        | 1.2.3 \| 1.3.4	|1.2.3 또는 1.3.4	 
+와일드카드 연산자(\*)   | 1.0.*	          | 1.0.x 대중 가장 큰 버전으로 1.1 보다는 작은 버전. >= 1.0 < 1.1 과 동일	 
+캐럿(Caret) 연산자(^) | ^1.2.3          |	>=1.2.3 <2.0 와 동일
 
-* tilde (~1.2.3) will go up to version 1.3 (not included), because in [semantic versioning](http://semver.org/) that’s when new features get introduced. Tilde fetches the highest known stable minor version. As the docs say, we can consider it as only the last digit specified being allowed to change.
-물결표 ( ~1.2.3 ) 버전으로 올라갈 것입니다 1.3 때문에에 (포함되지 않음) 의미 버전 의 새로운 기능을 소개받을 때입니다. 물결은 최고 알려진 안정적인 부 버전을 가져옵니다. 워드 프로세서 말하는 것처럼 마지막 숫자를 변경할 수되는 지정된, 우리는 그것을 고려할 수 있습니다.
+* 물결(~) 연산자
 
-* caret (^1.2.3) means “only be careful of breaking changes”, and will thus go up to version 2.0. According to semver, that’s when breaking changes are introduced, so 1.3,1.4 and 1.9 are fine, while 2.0 is not.
-캐럿 ( ^1.2.3 ) "만 변경을 깨는 조심", 따라서 버전으로 올라갈 것입니다 의미 2.0 . semver에 따르면 깨는 변화가 도입 될 때, 즉, 그래서 1.3 , 1.4 및 1.9 하면서, 괜찮 2.0 없습니다.
+github 에 공개된 PHP 프로젝트의 composer.json 을 보면 물결 연산자(~)로 지정한 것을 많이 볼수 있을 것 입니다.
+예로 ~1.2 는 ">=1.2 <2.0.0"(1.2 보다 크거나 같고 2.0 보다는 작다)와 동일한 의미로 사용하는 라이브러리가 유의적 버전을 따른다면 API가 변경되지 않아 기존 소스가 이상없이 동작하며 기능 추가와 버그 픽스만 적용된 버전중 가장 마지막 버전을 사용하겠다는 의미입니다.
+"~1.2.3"은 1.3.0 보다 작은 버전중 마지막 버전(예: 1.2.9) 를 사용하겠다는 의미입니다. 혼동을 줄이고 버전 지정에 익숙해 지기 위해 물결 연산자를 사용한 몇 가지 예제를 더 읽어 봅시다.
+
+버전    | 의미             |  비고
+-------|-----------------|----------------------------------------
+~0.4   | >=0.4.0, <1.0.0 |
+~4     | >=4.0.0, <5.0.0 |
+~4.1   | >=4.1.0, <5.0.0 | 4.1 보다 크고 일반적으로 가장 많이 사용되는 표현
+~4.1.3 | >=4.1.3, <4.2.0 |
+
+* 캐럿(^) 기호 연산자
+
+캐럿 기호 연산자는 물결 연산자와 비슷하지만 약간 다르게 동작합니다. 예로 ^1.2.3 은 ~1.2.3 과 달리 >= 1.2.3 < 2.0 으로 해석됩니다.
+다음 예제를 보면서 물결 연산자와 차이를 알아 봅시다.
+
+버전    | 의미             |  비고
+-------|-----------------|----------------------------------------
+^4.1.3 | >=4.1.3, <5.0.0 |
+^4.1   | >=4.1.0, <5.0.0 | ~4.1 과 동일한 의미
+^0.4   | >=0.4.0, <0.5.0 | 하위 호환성을 제공하는 라이브러리를 지정할 때 유용하며 ~0.4.0 과 동일 의미
+^4     |>=4.0.0, <5.0.0. | ~4 또는 4.* 과 동일한 의미
+
+* 와일드 카드(*) 연산자
+
+와일드 카드 연산자는 1.\* 같이 마이너 버전에 지정하기 보다는 2.6.* 와 같이 패치 버전 항목에 많이 지정하여 사용합니다.
+이것은 2.6 버전중에 가장 안정 버전을 사용하겠다는 의미로 사용하는 라이브러리에 추가되는 기능이 필요 없을 경우 유용합니다.
+신규 기능을 구현하다 보면 버그가 발생하기 마련이니  안정적인 버전을 사용하여 프로젝트를 진행하고 싶다면 와일드 카드로 패치 버전을 지정하면 안정적인 외부 라이브러리를 사용할 수 있습니다.
+
+----------------
 
 Unless you know you need a specific version, I recommend always using the ~1.2.3 format – it’s your safest bet.
 당신은 당신이 특정 버전이 필요 알지 못한다면, 난 항상 사용하는 것이 좋습니다 ~1.2.3 형식을 - 그것은 당신의 가장 안전한 베팅이다.

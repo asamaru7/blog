@@ -82,3 +82,11 @@ case com.android.internal.R.styleable.TextView_scrollHorizontally:
 applySingleLine(singleLine, singleLine, singleLine);
 ...          
 ```
+
+---
+
+**추가**
+
+조금 더 알아보니 `singleLine` 속성 자체가 API 3에서 deprecated 되었다가 다시 풀린 것으로 보인다. 대신 `maxLines` 속성을 권장하는 것으로 보인다. 하지만 `singleLine` 자체도 `marquee` 등의 기능 사용을 위해 필요한 곳이 있다. [android singleLine vs maxLines](http://stackoverflow.com/a/31871217)
+
+결론은 위의 방법을 사용하거나 `singleLine` 속성 대신 `maxLines` 속성에 1을 주는 방법으로 `ellipsize`를 처리하는 방법이 있다. 사실 이 부분의 경우 하위 버전의 안드로이드에서 정상 동작하지 않는 문제가 있었던 것으로 보이나 현재 시점에서 테스트 해봤을 때는 정상 동작했다. `singleLine` 속성은 내부적으로 추가적인 처리를 하는 것으로 보이니 성능면에서도 `maxLines`를 사용하는 것을 권장한다.

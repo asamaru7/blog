@@ -113,33 +113,231 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/06/punycode/">
-								퓨니코드(Punycode)
+							<a class="title" href="https://blog.asamaru.net/2015/10/08/useful-commands-for-linux/">
+								리눅스 명령어 모음(Centos 6)
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/06/punycode/">2015.10.06.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/08/useful-commands-for-linux/">2015.10.08.</span></a>
 							</p>
 						</header>
 						<p>
-							<blockquote>
-  <p>퓨니코드(Punycode)는 유니코드 문자열을 호스트 이름에서 허용된 문자만으로 인코딩하는 방법으로, <a href="https://tools.ietf.org/html/rfc3492">RFC 3492</a>에 기술되어 있다. 퓨니코드는 유니코드가 지원하는 모든 언어로 국제화 도메인을 쓸 수 있게 한 IDNA의 일부로, 변환은 전적으로 웹 브라우저와 같은 클라이언트에서 이루어진다.
-출처 : https://ko.wikipedia.org/wiki/%ED%93%A8%EB%8B%88%EC%BD%94%EB%93%9C</p>
-</blockquote>
+							<p>아래의 내용은 개인적으로 간혹 사용이 필요한 내용을 기록해 두기 위한 것으로 잘못된 정보일 수 있으니 참고만 하기 바란다.</p>
 
-<p>쉽게 얘기해서 기본적으로 도메인은 ASCII 문자 집합만 사용 가능한데 국제화 도메인을 사용하기 위해서 퓨니코드라는 것이 필요하다는 것이다. 퓨니코드는 <code>xn--</code> 접두어를 통해 구분된다. 예를들어 “wiki백과.한국” 도메인은 IDNA에서 xn–wiki-ei4p334e.xn–3e0b707e로 변환된다.</p>
+<h3 id="section">시스템 로그 삭제</h3>
 
-<p>국제화 도메인과 퓨니코드를 상호 변환을 테스트 해보려면 <a href="http://krnic.or.kr/jsp/resources/domainInfo/punyCode.jsp">KISA 퓨니코드 변환기</a>를 사용할 수 있다. 이 외에도 퓨니코드 변환기로 검색하면 많은 변환기들이 존재한다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>/etc/init.d/rsyslog restart
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<p>사실 이 퓨니코드에 대한 소개를 하는 이유는 일반적인 상황에서는 직접 처리해야할 일이 없지만 특수한 경우에는 이것이 필요할 수 있기 때문이다. 예를들어 이런 경우가 있다. IE8 이하에서는 한글도메인과 퓨니코드로 변환된 도메인을 다르게 인식하여 AJAX 사용시 cross domain 문제를 일으킬 수 있다. 이런 경우엔 퓨니코드를 한글 도메인으로 다시 변환하여 URL을 사용해야 문제를 막을 수 있다.</p>
+<h3 id="sl---apache----">sl 인증서 + apache 시작시 비밀번호 입력 제거</h3>
 
-<p>따라서 퓨니코드에 대한 이해와 변환 방법에 대해 알아두면 도움이 될 것이다. 아래는 변환에 바로 사용할 수 있는 몇가지 오픈소스 프로젝트를 안내한다. 이외에도 조금만 검색하면 많은 오픈소스를 찾을 수 있다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>openssl rsa -in key.pem -out key.nopw.pem
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<ul>
-  <li><a href="https://github.com/bestiejs/punycode.js">punycode.js</a></li>
-  <li><a href="https://github.com/true/php-punycode">php-punycode</a></li>
-  <li><a href="https://github.com/Wevah/Punycode-Cocoa">Punycode-Cocoa</a></li>
-  <li><a href="http://opensource.apple.com/source/ChatServer/ChatServer-262/libidn/java/gnu/inet/encoding/Punycode.java">Punycode.java</a></li>
-</ul>
+<h3 id="ssh---">ssh 접속자 강제 로그아웃</h3>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span class="c"># 602 : userid</span>
+pkill -KILL -u 602
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="bash-script--">bash script에서 실행경로 구하기</h3>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span class="nb">cd</span> <span class="k">${</span><span class="nv">0</span><span class="p">%/*</span><span class="k">}</span> 2&gt;/dev/null
+<span class="nb">echo</span> <span class="nv">$PWD</span>/<span class="k">${</span><span class="nv">0</span><span class="p">##*/</span><span class="k">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="section-1">서버 네트워크 상태 확인</h3>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>netstat -an<span class="p">|</span>grep <span class="s2">&quot;:80&quot;</span><span class="p">|</span>awk <span class="s1">&#39;/tcp/ {print $6}&#39;</span><span class="p">|</span>sort -nr<span class="p">|</span> uniq -c
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="section-2">아파치 동시접속자 수 확인</h3>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>netstat -anp <span class="p">|</span> grep :80 <span class="p">|</span> grep ESTAB <span class="p">|</span> wc -l
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="section-3">권한 파일 찾기 / 바꾸기</h3>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span class="c"># root 권한 파일 찾기</span>
+find . -uid 0
+
+<span class="c"># chown 특정 사용자만 변경</span>
+chown web.usergroup * -R --from<span class="o">=</span>root.root
+chown --from<span class="o">=</span><span class="m">511</span> -R web account/
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="section-4">포트 강제로 죽이기</h3>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>sudo fuser -k -n tcp 444
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="stdout-stderr">실행 결과 숨기기(stdout, stderr)</h3>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>명력어 &gt; /dev/null 2&gt;<span class="p">&amp;</span>1
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="vi-">검색된 파일만 vi 열기</h3>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>vi -p <span class="k">$(</span>find .<span class="p">|</span>grep ModuleLink<span class="p">|</span>grep -v <span class="s1">&#39;.svn&#39;</span><span class="p">|</span>grep -v CZFramework<span class="k">)</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="section-5">내용 일괄변환</h3>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>find . -type f -name *.php -exec perl -pi -e <span class="s1">&#39;s|\\CZ\\CZFramework|\\CZF|g&#39;</span> <span class="o">{}</span> <span class="se">\;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="ssh----1">ssh 비밀번호 없이 접속</h3>
+
+<h4 id="local">local</h4>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre>ssh-keygen -t rsa
+<span class="c"># scp /root/.ssh/id_rsa.pub root@[ip]:/root/.ssh/authorized_keys</span>
+ssh-copy-id -i ~/.ssh/id_rsa.pub admin@<span class="o">[</span>ip<span class="o">]</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h4 id="section-6">대상 서버(호스트)의 퍼미션</h4>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="m">750</span> /home/admin/
+<span class="m">700</span> /home/admin/.ssh/
+<span class="m">600</span> /home/admin/.ssh/authorized_keys
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="section-7">배드블럭 검사</h3>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>badblocks -v /dev/sda1
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="section-8">프로세스 실행경로 확인</h3>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span class="c"># 프로세스 정보</span>
+ps ef
+ps aux
+
+<span class="c"># 프로세스 트리보기</span>
+pstree -aph
+
+<span class="c">#프로세스 상세보기</span>
+lsof -P
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h3 id="section-9">아파치 :  모든 페이지 요청시 동일페이지 노출</h3>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-apacheconf"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span class="nb">RewriteEngine</span> <span class="k">On</span>
+<span class="nb">RewriteRule</span> ^(.*)$ <span class="sx">/target/index.html</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h2 id="mysql--">Mysql 사용자 관리</h2>
+
+<h4 id="section-10">패턴</h4>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-mysql"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="err">디비명</span><span class="p">.</span><span class="err">테이블명</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;접속지 주소&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span> <span class="p">(</span><span class="k">with</span> <span class="k">grant</span> <span class="k">option</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h4 id="section-11">권한 생성</h4>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-mysql"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1"># 원격지에서 root로 접속하는 경우</span>
+<span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="n">root</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span> <span class="k">with</span> <span class="k">grant</span> <span class="k">option</span><span class="p">;</span>
+
+<span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 모든 컴퓨터에서 모든 디비와 테이블에 접속하도록 허용</span>
+<span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
+
+<span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 localhost 에서 db1 디비의 table1에 접속하도록 허용</span>
+<span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="n">root</span><span class="p">.</span><span class="n">db1</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;localhost&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
+
+<span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 111.222.333.444 에서 db1 디비의 모든 테이블에 접속하도록 허용</span>
+<span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="n">root</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span><span class="o">@</span><span class="s1">&#39;111.222.333.444&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
+
+<span class="c1"># &#39;사용자&#39;가 &#39;암호&#39;으로 111.222.333.0/24 에서 모든 디비와 테이블에 접속하도록 허용</span>
+<span class="k">grant</span> <span class="k">all</span> <span class="n">privileges</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="err">사용자</span> <span class="o">@</span><span class="s1">&#39;111.222.333.%&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;암호&#39;</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h4 id="section-12">권한 제거</h4>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-mysql"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">revoke</span> <span class="k">all</span> <span class="k">on</span> <span class="err">디비명</span><span class="p">.</span><span class="err">테이블명</span> <span class="k">from</span> <span class="err">사용자</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h4 id="section-13">권한 적용</h4>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-mysql"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1"># 모든 명령 후에 항상 아래 명령을 실행해야 실제로 적용된다.</span>
+<span class="n">flush</span> <span class="n">privileges</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h4 id="connection--">Connection 상태 확인하기</h4>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-mysql"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">SHOW</span> <span class="n">FULL</span> <span class="n">PROCESSLIST</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h4 id="connection---1">Connection 수 확인하기</h4>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-mysql"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">SHOW</span> <span class="n">STATUS</span> <span class="k">LIKE</span> <span class="s1">&#39;Threads_connected&#39;</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h4 id="connection---2">동작중인 Connection 수 확인하기</h4>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-mysql"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">SHOW</span> <span class="n">STATUS</span> <span class="k">LIKE</span> <span class="s1">&#39;Threads_running&#39;</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<h4 id="connection---3">Connection 상태 확인하기</h4>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-mysql"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">SHOW</span> <span class="n">FULL</span> <span class="n">PROCESSLIST</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -153,8 +351,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/06/punycode/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/06/punycode/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/08/useful-commands-for-linux/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/08/useful-commands-for-linux/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

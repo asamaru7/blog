@@ -113,37 +113,115 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/">
-								Gradle applicationIdSuffix 사용시 AndroidAnnotations 설정
+							<a class="title" href="https://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/">
+								Swift 2 : &#39;lastPathComponent&#39; is unavailable: Use lastPathComponent on NSURL instead. 오류 해결
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/">2015.10.05.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/">2015.10.05.</span></a>
 							</p>
 						</header>
 						<p>
-							<p><a href="/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/">Gradle DSL method not found: ‘packageNameSuffix()’ 오류 해결</a>에서 오류 해결 방법을 안내하면서 언급했던 applicationIdSuffix를 사용시 유의사항이 있다. <strong>applicationId가 debug 모드에서 변경됨에 따라 관련된 부분에서 문제가 일어날 수 있다는 것이다.</strong></p>
+							<table>
+  <tbody>
+    <tr>
+      <td>[Swift 2 : Binary operator ‘</td>
+      <td>’ cannot be applied to two ‘UIViewAutoresizing’ operands 오류 해결](/2015/10/05/binary-operator-cannot-be-applied-to-two-uiviewautoresizing-operands/)에 이어 Swift 2로 넘어가면서 만난 또 다른 오류.</td>
+    </tr>
+  </tbody>
+</table>
 
-<p>나의 경우는 AndroidAnnotations을 함께 사용하는 부분에서 오류를 만났다. AndroidAnnotations에서 applicationId를 기준으로 resource에 접근해서 자동 생성된 class들을 찾지 못하는 문제이다.</p>
-
-<p>이런 경우에 대비해서 AndroidAnnotations에는 resourcePackageName라는 속성을 제공한다.</p>
-
-<p><a href="https://github.com/excilys/androidannotations/wiki/CustomizeAnnotationProcessing">CustomizeAnnotationProcessing</a>에 보면 아래와 같이 안내되어 있다.</p>
-
-<blockquote>
-  <p><strong>resourcePackageName</strong></p>
-
-  <p>Type: string
-By default, AndroidAnnotations try to find the R class by extracting application package from AndroidManifest.xml file. But in some cases you may want to specify a custom package to look for the R class. This is why we added resourcePackageName option.</p>
-</blockquote>
-
-<p>결론은 아래처럼 resourcePackageName에 기존 packageName을 넣어줌으로써 해결이 가능하다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">apt {
-    arguments {
-        resourcePackageName "net.yourdomain"
-    }
-}
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">'lastPathComponent' is unavailable: Use lastPathComponent on NSURL instead.
 </code></pre></div></figure>
+
+<p>관련해서 찾아보니 <a href="https://forums.developer.apple.com/thread/13580">No more stringByAppendingPathComponent in Xcode 7 beta 5?</a>라는 글이 있었다. 내용을 보니 해당 함수가 없어져서 다른 방법으로 수정해야 한다는 것. 내용중 <a href="https://forums.developer.apple.com/people/tieferbegabt">tieferbegabt</a>라는 사람이 간단히 해결할 수 있는 코드를 올려 놓았다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">extension</span> <span class="n">String</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nl">lastPathComponent</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">lastPathComponent</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">var</span> <span class="nl">pathExtension</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">pathExtension</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">var</span> <span class="nl">stringByDeletingLastPathComponent</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingLastPathComponent</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">var</span> <span class="nl">stringByDeletingPathExtension</span><span class="p">:</span> <span class="n">String</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingPathExtension</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">var</span> <span class="nl">pathComponents</span><span class="p">:</span> <span class="p">[</span><span class="n">String</span><span class="p">]</span> <span class="p">{</span>
+        <span class="kr">get</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">pathComponents</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">func</span> <span class="n">stringByAppendingPathComponent</span><span class="p">(</span><span class="nl">path</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">String</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">nsSt</span> <span class="o">=</span> <span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span>
+        <span class="k">return</span> <span class="n">nsSt</span><span class="p">.</span><span class="n">stringByAppendingPathComponent</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">func</span> <span class="n">stringByAppendingPathExtension</span><span class="p">(</span><span class="nl">ext</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">String</span><span class="o">?</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">nsSt</span> <span class="o">=</span> <span class="nb">self</span> <span class="kt">as</span> <span class="bp">NSString</span>
+        <span class="k">return</span> <span class="n">nsSt</span><span class="p">.</span><span class="n">stringByAppendingPathExtension</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>Objective-C의 category나 swift의 extension은 개인적으로 정말 좋은 기능이라고 생각한다. 하지만 위의 코드는 임시로 사용하고 가급적 위 코드의 내용을 참고해서 오류가 나는 부분을 직접 변경하는 것을 권장하고 싶다. 어짜피 나중에는 애플에서 권장하는대로 코딩을 해야할테니 정확한 방법을 익히도록 처리하는 것이 좋다는 얘기다.</p>
+
+<p>아래는 내가 사용한 코드의 일부를 예시로 남긴다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// before</span>
+<span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">file</span><span class="p">.</span><span class="n">lastPathComponent</span><span class="p">.</span><span class="n">stringByDeletingPathExtension</span>
+<span class="c1">// after</span>
+<span class="k">let</span> <span class="n">filename</span> <span class="o">=</span> <span class="p">((</span><span class="n">file</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">lastPathComponent</span> <span class="kt">as</span> <span class="bp">NSString</span><span class="p">).</span><span class="n">stringByDeletingPathExtension</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -157,8 +235,8 @@ By default, AndroidAnnotations try to find the R class by extracting application
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/05/no-more-stringbyappendingpathcomponent-in-xcode-7/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

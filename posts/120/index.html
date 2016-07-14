@@ -113,41 +113,41 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/09/25/git-tracking-empty-directories/">
-								Git : 빈 디렉토리 추가하기
+							<a class="title" href="https://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal/">
+								Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/09/25/git-tracking-empty-directories/">2015.09.25.</span></a>
+								<a href="https://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal/">2015.09.25.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>기존에는 SVN을 주로 사용하다가 최근 Git를 사용하기 시작했다. 맛보기를 시작한지는 조금 됐는데 본격적으로 사용하려고하니 아직 많이 미숙하다.</p>
+							<p>지난 포스팅 <a href="/2015/08/28/android-getcolor-getdrawable-deprecated/">Android 6(API 23)의 getColor() deprecated 대응 + getDrawable() deprecated</a>에서 잠깐 언급했던 <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a>에 대해 이야기하고자 한다.</p>
 
-<p>오늘은 작업을 하다가 빈 디렉토리를 추가하려고 하니 동작을 하지 않았다. SVN에서는 당연히 추가가 가능했는데 Git에서는 add로 추가해도 new file로 나타나지 않았다.</p>
+<p>우선 안드로이드에 안내하고 있는 원문은 아래와 같다.</p>
 
-<p>그래서 찾아보니 원래 Git는 빈 디렉토리는 Tracking 하지 않는다는 글들을 보게되었다. 이런… 불필요한 것을 관리하지 않는 것은 좋지만 log 디렉토리 등과 같이 빈 디렉토리가 추가되어야 할 상황이 있는데 어떻게 하지?</p>
+<ul>
+  <li>영문 : <a href="https://developer.android.com/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP Client Removal</a></li>
+  <li>한글 : <a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a></li>
+</ul>
 
-<p>다행히 간단한 방법이 있었다. 사실 간단히 생각하면 아무 파일이나 넣어서 빈 디렉토리가 되지 않으면 되지 않는가? 그래서 많이 사용하는 방법이 .gitignore 또는 .keep 파일을 넣어서 Tracking하는 것이다.</p>
+<p>한글 문서의 내용은 아래와 같다.</p>
 
-<p>해당 폴더에 가서 아래의 명령으로 .keep 파일을 만들고 add 하면 된다.</p>
+<blockquote>
+  <p>Apache HTTP 클라이언트에 대한 지원을 제거합니다. 앱이 이 클라이언트를 사용하고 Android 2.3(API 레벨 9) 이상을 대상으로 하는 경우, HttpURLConnection 클래스를 대신 사용하세요. 이는 투명한 압축과 응답 캐싱을 통해 네트워크 사용량을 줄이고 전력 소모를 최소화하기 때문에 API가 더 효율적입니다. Apache HTTP API를 계속 사용하려면 우선 다음과 같은 컴파일-시간 종속성을 build.gradle 파일에서 선언해야 합니다.
+<code>gradle
+android {
+    useLibrary 'org.apache.http.legacy'
+}
+</code></p>
+</blockquote>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>touch .keep
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p>이 부분이 제거되면서 문제가 되는 부분은 위의 안내와 같이 gradle에 임시 코드를 넣음으로써 해결이 가능하다. 하지만 제거 과정이 여러가지 문제를 일으켰다. 사실 안드로이드에서는 해당 기능을 Deprecated하고 대체  기능의 사용을 권장하고 있었으나 이를 사용하는 오픈소스 라이브러리들이 미리 대응을 하지 않았던 것이 문제가 되었다. 나의 경우는 <a href="https://github.com/ACRA/acra">ACRA</a>와 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>가 해당 기능을 사용해서 구현되어 있어서 <code>org.apache.http.legacy</code>를 통해 급한 문제들은 해결했었다.</p>
 
-<p>한번에 모든 폴더를 검사해서 .keep 파일 넣기.</p>
+<p>현재 기준으로 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>는 1.4.9로 버전업 되면서 Http에 관련된 부분을 대체 라이브러리로 교체함으로써 문제가 해결되었고 <a href="https://github.com/ACRA/acra">ACRA</a>의 경우는 4.6.2로 버전 기준으로 처리가 되었다고 어디서 본것 같았는데 실제로는 빌드 과정에서 오류가 발생했다. 그래서 다시 알아보니 4.7.0 버전에서 HtttpUrlConnection를 사용함으로써 Android M (6.0)을 정식 지원한다고 안내되어 있다. 하지만 아직 RC2로 정식 버전업이 되지 않았다. 나의 경우는 조금만 더 기다리면 useLibrary ‘org.apache.http.legacy’를 사용하지 않아도 될 것으로 예상된다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>git clean -nd <span class="p">|</span> sed s/<span class="s1">&#39;^Would remove &#39;</span>// <span class="p">|</span> xargs -I<span class="o">{}</span> touch <span class="s2">&quot;{}.keep&quot;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p>사실 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a>도 현재 버전에서는 문제가 있다. 공식 사이트에서는 해당 현상에 대한 이야기는 없으나 나의 경우엔 proguard 적용시 완료 callback이 호출되지 않는 문제가 있었다. 관련해서는 <a href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/">Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결</a>에 별도로 포스팅한다.</p>
 
-<p>log 폴더와 같이 정말 빈 디렉토리만 존재하고 내부에 생성되는 파일은 Tracking할 필요가 없을 때는 .gitignore 파일을 만들고 아래의 내용을 넣는다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">#ignore all files in this dir...
-*
-#... except for this one.
-!.gitignore
-</code></pre></div></figure>
+<p>어쨌든 이 문제는 시간이 지나면서 오픈 소스들이 대응을 시작하면 대부분 해결될 것으로 생각된다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -161,8 +161,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/09/25/git-tracking-empty-directories/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/09/25/git-tracking-empty-directories/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/09/25/android-6-apache-http-client-removal/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -113,17 +113,17 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">
-								Vagrant Box Packaging 후 &quot;Warning: Authentication failure. Retrying... &quot; 오류가 발생할 경우 해결 방법
+							<a class="title" href="https://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation/">
+								mysql_secure_installation 자동화
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/">2015.12.03.</span></a>
+								<a href="https://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation/">2015.12.04.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>vagrant를 사용하면서 직접 box를 만들 경우가 자주 발생하지는 않는다. 하지만 환경 구성을 위해 간혹 작업을 하게되는데 작업 과정에 문제가 생기는 경우가 간혹 있다. 이번에 CentOS 7 환경을 구성하면서 vagrant로 테스트를 진행했었다. 최초 설치 상태로 box를 만들어두고 환경을 구성해보고 문제가 있으면 초기 box로 다시 구성하는 식으로 작업을 했다. 그런데 이번엔 작업을 하면서 이전에 발생하지 않았던 문제가 발생했다.</p>
+							<p>이전 글 <a href="2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a>에서 MariaDB를 설치하면서 <code>mysql_secure_installation</code> 명령을 자동화하는 부분을 언급했었다. 이 글에서는 이를 설명하려고 한다. 우선 바로 만들어둔 bash shell script를 보자.</p>
 
-<p>이전글 <a href="/2015/10/14/creating-a-vagrant-base-box/">Vagrant BASE Box 만들기(CentOS 7)</a>에서 설명했던 것처럼 box 생성 전에 분명 ssh 관련 처리를 해 주었음에도 불구하고 만들어진 box를 사용해서 <code>vagrant up</code>을 하게되면 아래와 같은 결과가 계속 나왔다(여러번 box를 다시 만들어 봤음에도 불구하고).</p>
+<p><strong>mysql_secure_installation_automation.sh</strong></p>
 
 <figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
@@ -152,138 +152,48 @@
 25
 26
 27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>vagrant up
-Bringing machine <span class="s1">&#39;default&#39;</span> up with <span class="s1">&#39;virtualbox&#39;</span> provider...
-<span class="o">==</span>&gt; default: Importing base box <span class="s1">&#39;centos7-dev-1&#39;</span>...
-<span class="o">==</span>&gt; default: Matching MAC address <span class="k">for</span> NAT networking...
-<span class="o">==</span>&gt; default: Setting the name of the VM: <span class="nv">dev7_default_1449141471748_10760</span>
-<span class="o">==</span>&gt; default: Clearing any previously <span class="nb">set </span>network interfaces...
-<span class="o">==</span>&gt; default: Preparing network interfaces based on configuration...
-    default: Adapter 1: nat
-    default: Adapter 2: <span class="nv">hostonly</span>
-<span class="o">==</span>&gt; default: Forwarding ports...
-    default: <span class="nv">80</span> <span class="o">=</span>&gt; <span class="m">8080</span> <span class="o">(</span>adapter 1<span class="o">)</span>
-    default: <span class="nv">22</span> <span class="o">=</span>&gt; <span class="m">2222</span> <span class="o">(</span>adapter 1<span class="o">)</span>
-<span class="o">==</span>&gt; default: Running <span class="s1">&#39;pre-boot&#39;</span> VM customizations...
-<span class="o">==</span>&gt; default: Booting VM...
-<span class="o">==</span>&gt; default: Waiting <span class="k">for</span> machine to boot. This may take a few minutes...
-    default: SSH address: 127.0.0.1:2222
-    default: SSH username: vagrant
-    default: SSH auth method: private key
-    default: Warning: Connection timeout. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-    default: Warning: Authentication failure. Retrying...
-Timed out <span class="k">while</span> waiting <span class="k">for</span> the machine to boot. This means that
-Vagrant was unable to communicate with the guest machine within
-the configured <span class="o">(</span><span class="s2">&quot;config.vm.boot_timeout&quot;</span> value<span class="o">)</span> <span class="nb">time </span>period.
+28</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
 
-If you look above, you should be able to see the error<span class="o">(</span>s<span class="o">)</span> that
-Vagrant had when attempting to connect to the machine. These errors
-are usually good hints as to what may be wrong.
+<span class="c"># https://gist.github.com/Mins/4602864</span>
 
-If you<span class="s1">&#39;re using a custom box, make sure that networking is properly</span>
-<span class="s1">working and you&#39;</span>re able to connect to the machine. It is a common
-problem that networking isn<span class="err">&#39;</span>t setup properly in these boxes.
-Verify that authentication configurations are also setup properly,
-as well.
+yum -y install expect
 
-If the box appears to be booting properly, you may want to increase
-the timeout <span class="o">(</span><span class="s2">&quot;config.vm.boot_timeout&quot;</span><span class="o">)</span> value.
+<span class="c"># Not required in actual script</span>
+<span class="nv">MYSQL_ROOT_PASSWORD</span><span class="o">=</span>
+
+<span class="nv">SECURE_MYSQL</span><span class="o">=</span><span class="k">$(</span>expect -c <span class="s2">&quot;</span>
+<span class="s2">set timeout 3</span>
+<span class="s2">spawn mysql_secure_installation</span>
+<span class="s2">expect \&quot;Enter current password for root (enter for none):\&quot;</span>
+<span class="s2">send \&quot;$MYSQL\r\&quot;</span>
+<span class="s2">expect \&quot;Change the root password?\&quot;</span>
+<span class="s2">send \&quot;n\r\&quot;</span>
+<span class="s2">expect \&quot;Remove anonymous users?\&quot;</span>
+<span class="s2">send \&quot;y\r\&quot;</span>
+<span class="s2">expect \&quot;Disallow root login remotely?\&quot;</span>
+<span class="s2">send \&quot;y\r\&quot;</span>
+<span class="s2">expect \&quot;Remove test database and access to it?\&quot;</span>
+<span class="s2">send \&quot;y\r\&quot;</span>
+<span class="s2">expect \&quot;Reload privilege tables now?\&quot;</span>
+<span class="s2">send \&quot;y\r\&quot;</span>
+<span class="s2">expect eof</span>
+<span class="s2">&quot;</span><span class="k">)</span>
+
+<span class="nb">echo</span> <span class="s2">&quot;$SECURE_MYSQL&quot;</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>ssh 인증에 실패하면서 계속 시도하다가 결국 그냥 종료되어 버린다. 사실 가상 머신이 종료된 것은 아니다. ssh로 직접 접속하면 접속은 된다. 이 문제가 발생한 것은 이전이지만 당장 다른 작업들이 급해서 그냥 아래의 방법을 통해 사용중이었다.</p>
+<p>이 스크립트는 <a href="https://gist.github.com/Mins/4602864">mysql_secure_installation automation</a> 스크립트를 참고하여 CentOS에 맞게 조금 수정한 것이다.</p>
 
-<p><strong>Vagrantfile 에 아래의 내용을 추가한다.</strong></p>
+<p>위 스크립트를 mysql_secure_installation_automation.sh 파일로 저장했다면 아래와 같이 실행하면 된다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">config</span><span class="o">.</span><span class="n">ssh</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="s2">&quot;vagrant&quot;</span>
-<span class="n">config</span><span class="o">.</span><span class="n">ssh</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="s2">&quot;vagrant&quot;</span>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>chmod <span class="m">700</span> mysql_secure_installation_automation.sh
+<span class="nv">$ </span>./mysql_secure_installation_automation.sh
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>이 방법은 ssh key를 사용하지 않고 아이디/비밀번호를 입력하는 방식으로 ssh 접속하는 것이다. 사실 이렇게하면 문제는 해결된다. 어짜피 비밀번호에 대한 보안이 중요한 상황도 아니므로 그냥 사용해도 무방하다. 그런데 그냥 사용하기에는 찜찜했다. 특별히 권장하거나 일반적인 방법이 아닌데다가 기존에는 굳이 이렇게하지 않아도 잘 동작하고 있었기 때문이다.</p>
-
-<p>그래서 오늘 많은 검색과 여러가지 방법을 시도한 끝에 해결 방법을 찾았다. 결론은 box 내부에서 처리하는 과정에 문제가 아니라 내 PC의 문제로 보인다. 해결 방법은 다음과 같다.</p>
-
-<p><strong>Vagrantfile 에 아래의 내용을 추가한다.</strong></p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">config</span><span class="o">.</span><span class="n">ssh</span><span class="o">.</span><span class="n">insert_key</span> <span class="o">=</span> <span class="kp">false</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>아마도 내가 vagrant를 자주 변경하고 실험하는 사이에 뭔가 설정이 꼬인 것 같다. 이 옵션을 해결되는 것으로 볼 때 내 컴퓨터에 잘못된 키가 저장되어 있고 <code>vagrant up</code> 과정에서 가상 머신에 key를 변경해 버려서 위 문제가 발생했던 것으로 보인다.</p>
-
-<p>config.ssh.insert_key는 <a href="https://docs.vagrantup.com/v2/vagrantfile/ssh_settings.html">메뉴얼</a>에 아래와 같이 설명되어 있다.</p>
-
-<blockquote>
-  <p>config.ssh.insert_key - If true, Vagrant will automatically insert an keypair to use for SSH, replacing the default Vagrant’s insecure key inside the machine &gt; if detected. By default, this is true.</p>
-
-  <p>This only has an effect if you don’t already use private keys for authentication or if you are relying on the default insecure key. If you don’t have to take care about security in your project and want to keep using the default insecure key, set this to false.</p>
-</blockquote>
-
-<p>검색을 하다보니 이 두가지 방법 외에도 여러가지 방법이 제안되는 것으로 보아 다른 문제로 인해 이런 현상이 나타나는 경우도 있는 것 같다. 어쨌든 위와 같은 문제를 겪는다면 제시한 2가지 방법도 한번 적용해 보면 도움이 될 것으로 생각한다.</p>
+<p>특별히 설명할 것도 없지만 간략하게나마 원리를 설명하자면 <code>expect</code>라는 도구를 사용해서 사용자 입력을 대신하도록 하는 것이다(이후에 알게되었지만 <a href="http://sourceforge.net/projects/sshpass/">sshpass</a>라는 것이 있어서 expect를 사용하지 않아도 된다. 아니면 <a href="/2016/01/26/ssh-login-without-password/">ssh 비밀번호 없이 로그인하기</a>에서 쓴 것처럼 다른 방법도 있다). 이를 응용하면 <code>mysql_secure_installation</code> 외에도 여러가지 상황에 적용할 수 있다. 나의 경우는 <code>expect</code>를 이용해서 ssh 비밀번호 자동 입력 기능을 만들어 사용하고 있었다. 사실 ssh의 경우는 key를 등록하는 방식으로 비밀번호 없이 로그인이 가능하고 비밀번호를 외부로 노출하는 것이 보안상 문제가 있지만 간단하게 접속이 필요하고 보안상의 이슈가 없는 곳에서 유용하게 사용하고 있다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -297,8 +207,8 @@ the timeout <span class="o">(</span><span class="s2">&quot;config.vm.boot_timeou
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/12/04/mysql-secure-installation-automation/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

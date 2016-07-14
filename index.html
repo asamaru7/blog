@@ -113,109 +113,23 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/07/12/android-textview-with-a-single-line-in-viewpager-scroll-doesnt-work/">
-								안드로이드 : TextView 터치시 가로 스크롤이 되지 않는 문제 수정(ViewPager 등에서)
+							<a class="title" href="https://blog.asamaru.net/2016/07/14/html-fromhtml-deprecated-in-android-n/">
+								Html.fromHtml deprecated(Android N)
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/07/12/android-textview-with-a-single-line-in-viewpager-scroll-doesnt-work/">2016.07.12.</span></a>
+								<a href="https://blog.asamaru.net/2016/07/14/html-fromhtml-deprecated-in-android-n/">2016.07.14.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>오늘도 역시 안드로이드는 실망시키지 않는다. 오늘의 문제는 이렇다.</p>
+							<p>Android N이 아직 developer preview 상태지만 곧 정식 버전이 나올 것으로 생각된다. 이 Android N에서 deprecated 된 것 중의 하나가 <a href="https://developer.android.com/reference/android/text/Html.html#fromHtml%28java.lang.String%29">Html.fromHtml</a>다.</p>
+
+<p>공식 문서에는 다음과 같이 안내되어 있다.</p>
 
 <blockquote>
-  <p>가로 스크롤되는 ViewPager의 Item View에 TextView가 포함되도록 구성되어 있을 경우 TextView 위에서 터치를 하면 가로 스크롤이 동작하지 않는 문제가 발생한다. 조금 더 정확히 이야기하자면 <code>singleLine</code> 속성이 true로 설정된 TextView들이 가로 스크롤을 정상 동작하지 않도록 만든다.</p>
+  <p>This method was deprecated in API level 24. use fromHtml(String, int) instead.</p>
 </blockquote>
 
-<p>처음엔 click 이벤트로 인한 문제로 생각했다. 실제로 아래에 깔린 View의 click 이벤트를 제거하니 스크롤이 정상적으로 동작했다. 그런데 다른 UI에서 동일한 형태로 사용중이나 그곳에서는 해당 문제가 발생하지 않기에 다른 원인이 있을 것이라는 판단으로 조금 더 찾아봤다.</p>
-
-<p>결국 원인을 찾고보니 <code>android:scrollHorizontally</code> 속성이 true로 설정될 경우 해당 문제가 발생했다. TextView의 scroll 처리 영역과 ViewPager의 scroll 처리가 충돌하는 것이다. 그런데 나는 이 속성을 true로 주지 않았기 때문에 이상하다고 생각하고 <code>TextView.java</code> 파일의 내부를 보다가 아래의 코드를 찾았다.</p>
-
-<p><strong>TextView.java</strong></p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">private</span> <span class="kt">void</span> <span class="nf">applySingleLine</span><span class="o">(</span><span class="kt">boolean</span> <span class="n">singleLine</span><span class="o">,</span> <span class="kt">boolean</span> <span class="n">applyTransformation</span><span class="o">,</span>
-        <span class="kt">boolean</span> <span class="n">changeMaxLines</span><span class="o">)</span> <span class="o">{</span>
-    <span class="n">mSingleLine</span> <span class="o">=</span> <span class="n">singleLine</span><span class="o">;</span>
-    <span class="k">if</span> <span class="o">(</span><span class="n">singleLine</span><span class="o">)</span> <span class="o">{</span>
-        <span class="n">setLines</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
-        <span class="n">setHorizontallyScrolling</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">applyTransformation</span><span class="o">)</span> <span class="o">{</span>
-            <span class="n">setTransformationMethod</span><span class="o">(</span><span class="n">SingleLineTransformationMethod</span><span class="o">.</span><span class="na">getInstance</span><span class="o">());</span>
-        <span class="o">}</span>
-    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">changeMaxLines</span><span class="o">)</span> <span class="o">{</span>
-            <span class="n">setMaxLines</span><span class="o">(</span><span class="n">Integer</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">);</span>
-        <span class="o">}</span>
-        <span class="n">setHorizontallyScrolling</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">applyTransformation</span><span class="o">)</span> <span class="o">{</span>
-            <span class="n">setTransformationMethod</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
-        <span class="o">}</span>
-    <span class="o">}</span>
-<span class="o">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>그렇다. <code>singleLine</code> 속성을 사용하면 자동적으로 <code>setHorizontallyScrolling(true);</code>가 적용되는 것이다. 여담이지만 <code>android:scrollHorizontally</code> 설정 상태를 확인하기 위해 <code>TextView.java</code>에 있는 아래의 함수를 호출해 봤더니 해당 함수를 못찾는다. 최신 SDK에 들어간 것도 아니고 public 인데도 불구하고… 역시 이상한 안드로이드.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">getHorizontallyScrolling</span><span class="o">()</span> <span class="o">{</span>
-    <span class="k">return</span> <span class="n">mHorizontallyScrolling</span><span class="o">;</span>
-<span class="o">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>어쨌든 이를 해결하기 위해 아래와 같이 style을 정의해서 TextView에 적용해 봤다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-xml"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10</pre></div></td><td class="code"><div class="highlight"><pre><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">&quot;TextViewBaseStyle&quot;</span><span class="nt">&gt;</span>
-  <span class="c">&lt;!-- 가로 스크롤 문제를 발생시키는 속성 --&gt;</span>
-  <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:singleLine&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/item&gt;</span>
-  <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:ellipsize&quot;</span><span class="nt">&gt;</span>end<span class="nt">&lt;/item&gt;</span>
-  <span class="c">&lt;!-- 가로 스크롤 문제를 개선하기 위한 시도 --&gt;</span>
-  <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:scrollHorizontally&quot;</span><span class="nt">&gt;</span>false<span class="nt">&lt;/item&gt;</span>
-  <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:clickable&quot;</span><span class="nt">&gt;</span>false<span class="nt">&lt;/item&gt;</span>
-  <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:focusable&quot;</span><span class="nt">&gt;</span>false<span class="nt">&lt;/item&gt;</span>
-  <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">&quot;android:focusableInTouchMode&quot;</span><span class="nt">&gt;</span>false<span class="nt">&lt;/item&gt;</span>
-<span class="nt">&lt;/style&gt;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>결론은 안된다. <code>android:scrollHorizontally</code> 값이 위에 보여준 코드에 의해 무시되는 결과를 가져오는 것이다.</p>
-
-<p>따라서 해결 방법은 아래의 방법 밖에 없다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">textView</span><span class="o">.</span><span class="na">setHorizontallyScrolling</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
-
-<p>그렇다. 프로그램에서 직접 <code>android:scrollHorizontally</code>를 false로 설정하는 것 외에는 다른 방법이 없다. <code>TextView.java</code> 내부에서 직접 true를 지정하고 있으므로 해당 코드를 오버라이딩 할 것이 아니라면 이 방법 밖에는 없다. 생성자 내부에서 처리 순서가 아래와 같기 때문에 <code>singleLine</code> 속성을 사용한다면 다른 방법이 없는 것이다. 도대체 TextView 개발자는 무슨 생각으로 코드를 짠 것인가?</p>
+<p>이와 관련해서는 길게 이야기할 것도 없으니 버전에 대응되도록 처리해 둔 함수를 아래에 남긴다.</p>
 
 <figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
@@ -223,27 +137,15 @@
 4
 5
 6
-7
-8
-9</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">...</span>
-<span class="k">case</span> <span class="n">com</span><span class="o">.</span><span class="na">android</span><span class="o">.</span><span class="na">internal</span><span class="o">.</span><span class="na">R</span><span class="o">.</span><span class="na">styleable</span><span class="o">.</span><span class="na">TextView_scrollHorizontally</span><span class="o">:</span>
-    <span class="k">if</span> <span class="o">(</span><span class="n">a</span><span class="o">.</span><span class="na">getBoolean</span><span class="o">(</span><span class="n">attr</span><span class="o">,</span> <span class="kc">false</span><span class="o">))</span> <span class="o">{</span>
-        <span class="n">setHorizontallyScrolling</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
-    <span class="o">}</span>
-    <span class="k">break</span><span class="o">;</span>
-<span class="o">...</span>
-<span class="n">applySingleLine</span><span class="o">(</span><span class="n">singleLine</span><span class="o">,</span> <span class="n">singleLine</span><span class="o">,</span> <span class="n">singleLine</span><span class="o">);</span>
-<span class="o">...</span>          
+7</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="n">Spanned</span> <span class="nf">fromHtml</span><span class="o">(</span><span class="n">String</span> <span class="n">source</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">&lt;</span> <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">N</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// noinspection deprecation</span>
+    <span class="k">return</span> <span class="n">Html</span><span class="o">.</span><span class="na">fromHtml</span><span class="o">(</span><span class="n">source</span><span class="o">);</span>
+  <span class="o">}</span>
+  <span class="k">return</span> <span class="n">Html</span><span class="o">.</span><span class="na">fromHtml</span><span class="o">(</span><span class="n">source</span><span class="o">,</span> <span class="n">Html</span><span class="o">.</span><span class="na">FROM_HTML_MODE_LEGACY</span><span class="o">);</span>
+<span class="o">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
-
-<hr />
-
-<p><strong>추가</strong></p>
-
-<p>조금 더 알아보니 <code>singleLine</code> 속성 자체가 API 3에서 deprecated 되었다가 다시 풀린 것으로 보인다. 대신 <code>maxLines</code> 속성을 권장하는 것으로 보인다. 하지만 <code>singleLine</code> 자체도 <code>marquee</code> 등의 기능 사용을 위해 필요한 곳이 있다. <a href="http://stackoverflow.com/a/31871217">android singleLine vs maxLines</a></p>
-
-<p>결론은 위의 방법을 사용하거나 <code>singleLine</code> 속성 대신 <code>maxLines</code> 속성에 1을 주는 방법으로 <code>ellipsize</code>를 처리하는 방법이 있다. 사실 이 부분의 경우 하위 버전의 안드로이드에서 정상 동작하지 않는 문제가 있었던 것으로 보이나 현재 시점에서 테스트 해봤을 때는 정상 동작했다. <code>singleLine</code> 속성은 내부적으로 추가적인 처리를 하는 것으로 보이니 성능면에서도 <code>maxLines</code>를 사용하는 것을 권장한다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -257,8 +159,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/07/12/android-textview-with-a-single-line-in-viewpager-scroll-doesnt-work/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/07/12/android-textview-with-a-single-line-in-viewpager-scroll-doesnt-work/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/07/14/html-fromhtml-deprecated-in-android-n/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/07/14/html-fromhtml-deprecated-in-android-n/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

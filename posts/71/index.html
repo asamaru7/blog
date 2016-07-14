@@ -113,27 +113,61 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/">
-								Xcode 7.1에서 Google Maps SDK 사용시 빌드가 되지 않는 결함
+							<a class="title" href="https://blog.asamaru.net/2015/11/03/android-dot-view-dot-windowmanager/">
+								android.view.WindowManager$BadTokenException: Unable to add window 오류
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/">2015.11.02.</span></a>
+								<a href="https://blog.asamaru.net/2015/11/03/android-dot-view-dot-windowmanager/">2015.11.03.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>얼마전 iOS 앱 개발에 사용하던 xcode를 7.1로 업데이트 했다. 그런데 앱에서 사용중이던 Google Maps SDK가 빌드되지 못해 앱을 실행할 수가 없었다. 문제는 header 생성 부분인데 해결 방법을 찾지 못해 다시 7.0을 재설치해서 사용하고 있었다. 그렇게 지내던 중 오늘 갑자기 생각이 나서 다시 확인해 봤다. 다행히 그 사이에 Google에서 update를 내 놓았다. 이 문제가 수정된 버전은 1.10.5 버전이다. 그리고 관련된 issue는 <a href="https://code.google.com/p/gmaps-api-issues/issues/detail?id=8524&amp;can=1&amp;q=Could%20not%20build%20Objective-C%20module&amp;colspec=ID%20Type%20Status%20Introduced%20Fixed%20Summary%20Stars%20ApiType%20Internal">Issue 8524:	Bug: Running under Xcode 7 beta 6 with Google Maps SDK results in broken debugging.</a>이다.</p>
+							<p>안드로이드에서 아래와 같은 오류가 나는 경우가 있다.</p>
 
-<p>오류 메시지는 <code>Include of non-modular header inside framework module 'GoogleMaps'</code>이다.</p>
+<p><code>android.view.WindowManager$BadTokenException: Unable to add window -- token android.os.BinderProxy@420d8488 is not valid; is your activity running?</code></p>
 
-<p>대략 아래의 이미지처럼 오류가 난다(이미지는 캡춰하기 귀찮아 인터넷에 있는 이미지를 가져왔다).</p>
+<p>대부분은 Dialog를 띄우러고 할 때 발생한다. 소스로 보자면 아래와 같은 경우다.</p>
 
-<p><img src="/img/2015-11-02-google-maps-sdk-with-xcode-7-dot-1-bug-1.png" alt="오류" /></p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">new</span> <span class="n">AlertDialog</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="n">context</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">setTitle</span><span class="o">(</span><span class="s">&quot;알림&quot;</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">setMessage</span><span class="o">(</span><span class="s">&quot;알림 메시지&quot;</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">setNegativeButton</span><span class="o">(</span><span class="s">&quot;취소&quot;</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">show</span><span class="o">();</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<p>혹 xcode 7.1 사용시 이런 오류가 나온다면 Google Maps SDK를 1.10.5 이상으로 업데이트 후 빌드 해보기 바란다.</p>
+<p>위 소스를 실행 했을 때 BadTokenException 오류가 발생한다면 대부분은 context에 Activity Context를 넣지 않고 Application Context를 넣었을 경우다. 이와 관련해서 <a href="/2015/09/04/android-dialog-windowmanager-badtokenexception/">안드로이드에서 Dialog 사용시 WindowManager$BadTokenException 발생</a>이라는 글을 적은 적이 있었다. 이런 경우라면 처음부터 오류가 발생하기 때문에 발견하고 수정하기가 쉽다.</p>
 
-<p>이 문제에 대한 원인은 처음 오류를 만났을 때 다른 사람들이 이야기하는 것을 봤었는데 정확한 내용이 기억이 나지 않는다. 대충 기억이 나는 것은 xcode가 7.1로 버전업 되면서 swift 모듈에 header 처리하는 부분이 변경되었다고 했던 것 같은데… 나중에라도 원인을 알게되면 다시 남기도록 하겠다.</p>
+<p>그런데 분명 Activity Context를 넣어주었음에도 불구하고 불특정하게 오류가 발생하는 상황이 있다. 나의 경우는 다음과 같은 상황에서 이 문제가 발생했다.</p>
 
-<p>Apple Developer Forums에서 나온 <a href="https://forums.developer.apple.com/thread/23554">Include of non-modular header inside framework module</a> issue도 있다. 혹시 GoogleMaps가 아닌 모듈에서 동일한 오류가 난다면 참고.</p>
+<p>앱 시작시 splash 화면에서 네트워크 활성 여부를 검사해서 비활성(서버 접속 불가)되어 있다면 알림 Dialog를 띄우고 앱을 종료하도록 했다. 그런데 여기서 불특정하게 오류가 발생하여 앱이 알림 Dialog를 띄우지 못하고 죽어 버리는 현상이 발생했다.</p>
+
+<p>ACRA를 통해 보고된 오류 메시지를 확인하니 위에서 언급했던 오류가 발생하고 있었다. 그래서 원인을 찾기 위해 소스 코드를 확인해 보았으나 아무리 봐도 문제가 될 부분을 찾을 수 없었다. 그래서 구글에서 관련 정보를 찾아보니 <a href="http://stackoverflow.com/a/18665887">“android.view.WindowManager$BadTokenException: Unable to add window” on buider.show()</a>에 원인과 해결 방법이 나와 있었다.</p>
+
+<p>결론은 context의 null 검사 뿐만 아니라  <a href="http://developer.android.com/intl/ko/reference/android/app/Activity.html#isFinishing%28%29">isFinishing()</a>도 함께 검사 해줘야 한다는 것이다.</p>
+
+<p>적용된 코드는 아래와 같다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">if</span> <span class="o">((</span><span class="n">context</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(!</span><span class="n">context</span><span class="o">.</span><span class="na">isFinishing</span><span class="o">()))</span> <span class="o">{</span>
+  <span class="k">new</span> <span class="n">AlertDialog</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="n">context</span><span class="o">)</span>
+      <span class="o">.</span><span class="na">setTitle</span><span class="o">(</span><span class="s">&quot;알림&quot;</span><span class="o">)</span>
+      <span class="o">.</span><span class="na">setMessage</span><span class="o">(</span><span class="s">&quot;알림 메시지&quot;</span><span class="o">)</span>
+      <span class="o">.</span><span class="na">setNegativeButton</span><span class="o">(</span><span class="s">&quot;취소&quot;</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
+      <span class="o">.</span><span class="na">show</span><span class="o">();</span>  
+<span class="o">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>사실 이것 만으로 오류가 모두 해결된 것인지는 확인하지 못했다(오류 재현이 너무 힘들다).   하지만 안드로이드에서 발생하는 비슷한 다른 오류들을 감안하면 이것이 원인이 맞을 것이라고 생각한다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -147,8 +181,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/11/02/google-maps-sdk-with-xcode-7-dot-1-bug/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/11/03/android-dot-view-dot-windowmanager/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/11/03/android-dot-view-dot-windowmanager/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -113,23 +113,57 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/03/21/slow-svn-status/">
-								svn status가 느려질 때
+							<a class="title" href="https://blog.asamaru.net/2016/04/06/yum-error-xz-compression-not-available/">
+								yum 실행시 Error: xz compression not available 오류가 날 경우
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/03/21/slow-svn-status/">2016.03.21.</span></a>
+								<a href="https://blog.asamaru.net/2016/04/06/yum-error-xz-compression-not-available/">2016.04.06.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>svn을 사용하다 보면 이상하게 <code>svn status</code>가 이상하게 느릴 때가 있다. 사실 나도 이 부분을 크게 생각해 본적이 없었는데 최근에 특정 프로젝트 폴더에서 <code>svn status</code>가 비정상적으로 느려져서 방법을 찾아봤다.</p>
+							<p>yum을 사용하다 보면 아래와 같은 오류가 나는 경우가 있다.</p>
 
-<p>결론부터 이야기하자면 아주 간단하다. 아래와 같이 cleanup을 해주면 속도가 돌아온다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>svn cleanup
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>yum update
+Loaded plugins: fastestmirror
+Setting up Install Process
+Repository <span class="s1">&#39;svn-wandisco&#39;</span> is missing name in configuration, using id
+Loading mirror speeds from cached hostfile
+ * base: ftp.daumkakao.com
+ * epel: ftp.riken.jp
+ * extras: ftp.daumkakao.com
+ * updates: ftp.daumkakao.com
+ * webtatic: sp.repo.webtatic.com
+Error: xz compression not available
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>cleanup의 경우 충돌이 발생했을 때만 사용하고 있었는데 오래된 <code>.svn/pristine</code> 폴더의 파일들을 지워주는 효과가 있는 것 같다. 실제로 용량을 비교해보니 상당히 많은 용량이 줄어들었다. 그런데 어떤 사람들은 오래된 파일을 지워주는게 아니라고 말하기도 한다. 어쨌든 나의 경우는 <code>.svn</code>의 용량이 줄어 들었으며 느리던 <code>svn status</code>의 속도가 돌아왔다. 이론적인 검증이 되지 않은 내용이지만 혹시 동일한 현상을 겪는 사람이라면 한번 시도해봐도 손해볼 것은 없다는 생각.</p>
+<p>나의 경우엔 CentOS 6.7에서 실수로 CentOS 7용 EPEL 레포지토리를 설치한 후 이런 현상이 있었다.</p>
+
+<p>해결 방법은 직접 레포지토리 정보를 지워주면 된다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span class="c"># epel 레포지토리 제거</span>
+rm -rf /etc/yum.repos.d/epel*
+
+<span class="c"># epel cache 제거</span>
+rm -rf /var/cache/yum/x86_64/6/epel
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>EPEL이 필요하다면 다시 버전에 맞게 설치하면 된다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -143,8 +177,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/03/21/slow-svn-status/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/03/21/slow-svn-status/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/04/06/yum-error-xz-compression-not-available/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/04/06/yum-error-xz-compression-not-available/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

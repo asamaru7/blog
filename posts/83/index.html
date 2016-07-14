@@ -113,100 +113,57 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/20/mfmailcomposeviewcontroller-without-no-mail-accounts-messages/">
-								MFMailComposeViewController without &#39;No Mail Accounts&#39; messages
+							<a class="title" href="https://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/">
+								xcode 7 : Alcatraz 와 CocoaPods Xcode plugins
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/20/mfmailcomposeviewcontroller-without-no-mail-accounts-messages/">2015.10.20.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/">2015.10.20.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>iOS 개발시 앱 내에서 메일 발송폼을 보여주고자 할 때 사용하게 되는 것이 <a href="https://developer.apple.com/library/prerelease/ios/documentation/MessageUI/Reference/MFMailComposeViewController_class/index.html">MFMailComposeViewController</a> 이다. 이 클래스를 swift에서 사용할 경우 대부분 아래와 같이 사용하게 된다.</p>
+							<p><a href="/2015/08/28/cocoapods-usage/">CocoaPods 사용법</a>에서 CocoaPods를 설치하고 사용하는 법에 대해 간단하게 안내했었다. 오늘은 이 CocoaPods을 XCode에서 조금이나마 편하게 쓰기 위한 플러그인을 소개 하려고 한다. 덤으로 <a href="http://alcatraz.io/">Alcatraz</a>라고하는 Xcode용 패키지 메니저도 함께 소개한다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">let</span> <span class="n">mc</span> <span class="o">=</span> <span class="bp">MFMailComposeViewController</span><span class="p">()</span>
-<span class="n">mc</span><span class="p">.</span><span class="n">mailComposeDelegate</span> <span class="o">=</span> <span class="nb">self</span>
-<span class="n">mc</span><span class="p">.</span><span class="n">setToRecipients</span><span class="p">([</span><span class="n">to</span><span class="p">])</span>
-<span class="k">if</span> <span class="p">(</span><span class="n">subject</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">mc</span><span class="p">.</span><span class="n">setSubject</span><span class="p">(</span><span class="n">subject</span><span class="o">!</span><span class="p">)</span>
-<span class="p">}</span>
-<span class="k">if</span> <span class="p">(</span><span class="n">body</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">mc</span><span class="p">.</span><span class="n">setMessageBody</span><span class="p">(</span><span class="n">body</span><span class="o">!</span><span class="p">,</span> <span class="nl">isHTML</span><span class="p">:</span> <span class="nb">false</span><span class="p">)</span>
-<span class="p">}</span>
-<span class="k">if</span> <span class="bp">MFMailComposeViewController</span><span class="p">.</span><span class="n">canSendMail</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">getRootViewController</span><span class="p">()</span><span class="o">?</span><span class="p">.</span><span class="n">presentViewController</span><span class="p">(</span><span class="n">mc</span><span class="p">,</span> <span class="nl">animated</span><span class="p">:</span> <span class="nb">true</span><span class="p">,</span> <span class="nl">completion</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="n">alertView</span> <span class="o">=</span> <span class="n">UIAlertController</span><span class="p">(</span><span class="nl">title</span><span class="p">:</span> <span class="s">&quot;안내&quot;</span><span class="p">,</span> <span class="nl">message</span><span class="p">:</span> <span class="s">&quot;현재 디바이스에서 이메일을 보낼수가 없습니다. 설정에서 이메일 관련 설정을 확인해주세요.&quot;</span><span class="p">,</span> <span class="nl">preferredStyle</span><span class="p">:</span> <span class="p">.</span><span class="n">Alert</span><span class="p">)</span>
-    <span class="n">alertView</span><span class="p">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">UIAlertAction</span><span class="p">(</span><span class="nl">title</span><span class="p">:</span> <span class="s">&quot;Ok&quot;</span><span class="p">,</span> <span class="nl">style</span><span class="p">:</span> <span class="p">.</span><span class="n">Default</span><span class="p">,</span> <span class="nl">handler</span><span class="p">:</span> <span class="nb">nil</span><span class="p">))</span>
-    <span class="n">presentViewController</span><span class="p">(</span><span class="n">alertView</span><span class="p">,</span> <span class="nl">animated</span><span class="p">:</span> <span class="nb">true</span><span class="p">,</span> <span class="nl">completion</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-<span class="p">}</span>
+<p>우선 <a href="http://alcatraz.io/">Alcatraz</a> 부터 소개하려고 한다. CocoaPods Xcode plugins을 직접 설치하는 방법도 있으나 Alcatraz를 사용하면 더 쉽게 할 수 있기 때문이다.</p>
+
+<h2 id="alcatraz">Alcatraz</h2>
+
+<p>공식 사이트에는 <strong>The package manager for Xcode</strong> 라고 소개하고 있다. 말그대로 Xcode를 위한 패키지 매니저로 여러가지 플러그인, Color 테마, 템플릿들을 바로 설치할 수 있도록 도와준다.</p>
+
+<h3 id="section">설치</h3>
+
+<p>공식 사이트에 안내되어 있는대로 아래의 명령을 실행하는 것으로 설치가 완료된다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>curl -fsSL https://raw.githubusercontent.com/supermarin/Alcatraz/deploy/Scripts/install.sh <span class="p">|</span> sh
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>그런데 위 코드처럼 사용하게 되면 설정된 메일 계정이 없어 메일 발송이 불가능할 경우 ‘No Mail Accounts’ 메시지가 먼저 나오게 된다(쉽게 말해서 메시지가 두개가 뜬다). 그렇다면 ‘No Mail Accounts’ 메시지는 나오지 않게 하고 내가 지정한 메시지가 나오게 하려면 어떻게 해야할까?</p>
+<p>설치후 Xcode는 재시작 해주면 아래와 같은 화면이 나온다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">if</span> <span class="bp">MFMailComposeViewController</span><span class="p">.</span><span class="n">canSendMail</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="n">mc</span> <span class="o">=</span> <span class="bp">MFMailComposeViewController</span><span class="p">()</span>
-    <span class="n">mc</span><span class="p">.</span><span class="n">mailComposeDelegate</span> <span class="o">=</span> <span class="nb">self</span>
-    <span class="n">mc</span><span class="p">.</span><span class="n">setToRecipients</span><span class="p">([</span><span class="n">to</span><span class="p">])</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">subject</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">mc</span><span class="p">.</span><span class="n">setSubject</span><span class="p">(</span><span class="n">subject</span><span class="o">!</span><span class="p">)</span>
-    <span class="p">}</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">body</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">mc</span><span class="p">.</span><span class="n">setMessageBody</span><span class="p">(</span><span class="n">body</span><span class="o">!</span><span class="p">,</span> <span class="nl">isHTML</span><span class="p">:</span> <span class="nb">false</span><span class="p">)</span>
-    <span class="p">}</span>
-    <span class="n">getRootViewController</span><span class="p">()</span><span class="o">?</span><span class="p">.</span><span class="n">presentViewController</span><span class="p">(</span><span class="n">mc</span><span class="p">,</span> <span class="nl">animated</span><span class="p">:</span> <span class="nb">true</span><span class="p">,</span> <span class="nl">completion</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="n">alertView</span> <span class="o">=</span> <span class="n">UIAlertController</span><span class="p">(</span><span class="nl">title</span><span class="p">:</span> <span class="s">&quot;안내&quot;</span><span class="p">,</span> <span class="nl">message</span><span class="p">:</span> <span class="s">&quot;현재 디바이스에서 이메일을 보낼수가 없습니다. 설정에서 이메일 관련 설정을 확인해주세요.&quot;</span><span class="p">,</span> <span class="nl">preferredStyle</span><span class="p">:</span> <span class="p">.</span><span class="n">Alert</span><span class="p">)</span>
-    <span class="n">alertView</span><span class="p">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">UIAlertAction</span><span class="p">(</span><span class="nl">title</span><span class="p">:</span> <span class="s">&quot;Ok&quot;</span><span class="p">,</span> <span class="nl">style</span><span class="p">:</span> <span class="p">.</span><span class="n">Default</span><span class="p">,</span> <span class="nl">handler</span><span class="p">:</span> <span class="nb">nil</span><span class="p">))</span>
-    <span class="n">presentViewController</span><span class="p">(</span><span class="n">alertView</span><span class="p">,</span> <span class="nl">animated</span><span class="p">:</span> <span class="nb">true</span><span class="p">,</span> <span class="nl">completion</span><span class="p">:</span> <span class="nb">nil</span><span class="p">)</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-1.png" alt="Alcatraz" /></p>
 
-<p>위 코드처럼 <code>MFMailComposeViewController.canSendMail()</code> 호출 이후에 <code>MFMailComposeViewController()</code>를 생성하면 ‘No Mail Accounts’ 메시지는 나오지 않고 내가 지정한 메시지가 나타나게된다. 정확한 이유는 확인하지 못했지만 어쨌든 이렇게 하면 된다.</p>
+<p>설치한 플러그인을 load 할 것인지 물어본다. 당연히 “Load Bundle”을 해주면 이제부터 사용 가능하다. Xcode의 Window 메뉴에 보면 아래와 같이 “Package Manager”라는 메뉴가 추가되어 있다.</p>
 
-<hr />
+<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-2.png" alt="Alcatraz" /></p>
 
-<p>그리고 MFMailComposeViewController 이야기가 나온 김에 한가지 문제를 더 알아보자.</p>
+<h2 id="cocoapods-xcode-plugins-">CocoaPods Xcode plugins 설치</h2>
 
-<p>MFMailComposeViewController를 사용해서 시뮬레이터에서 실행해보면 이상하게도 아래의 오류가 날 수 있다.</p>
+<p>Alcatraz에서 바로 설치 가능한 CocoaPods 플러그인은 현재 2가지가 있는 것으로 보이는데 그 중 <a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a>를 먼저 설치해 보자. 사이트에 보면 설치 방법이 나와 있는데 당연히 Alcatraz를 통해 설치하는 것이 쉽다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">viewServiceDidTerminateWithError: Error Domain=_UIViewServiceInterfaceErrorDomain Code=3 "(null)" UserInfo={Message=Service Connection Interrupted}
-</code></pre></div></figure>
+<p>“Window &gt; Package Manager” 메뉴를 실행하면 아래와 같은 화면이 나온다. 여기서 cocoapods로 검색하면 두가지의 플러그인이 보인다.</p>
 
-<p>우선 <a href="http://stackoverflow.com/questions/25604552/i-have-real-misunderstanding-with-mfmailcomposeviewcontroller-in-swift-ios8-in/25864182#25864182">I have REAL misunderstanding with MFMailComposeViewController in Swift (iOS8) in Simulator</a>를 살펴보자. 이 문제에 대한 설명이 되어 있다.
-여기서는 Obj-C로 설명되어 있긴하지만 swift로 내용을 변경하는 것은 어렵지 않을 것이다. 그런데 문제는 나의 이렇게 해도 해결이 되지 않는다는 것이다. 사실 위 글을 잘 읽어보면 MFMailComposeViewController을 재사용할 경우에 대한 문제로 시뮬레이터에서 발생하는 문제와는 상관이 없다. 그래서 여러곳을 찾아보니 시뮬레이터만 문제가되고 실 기기에서는 해당 오류가 나지 않는다는 이야기들이 있다. 그리고 iOS 8.3에서 해결되었다는 등의 이야기도 있다. 그런데 나는 iOS 9 기준으로 테스트를 해봤지만 해결되지 않았다. <a href="https://forums.developer.apple.com/thread/4415">MailCompositionService quit unexpectedly</a>를 보면 아직도 해결되지 않은 것으로 보인다. 하지만 기기에서만 문제되지 않는다면 나도 일단은 상관없다고 생각한다.</p>
+<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-3.png" alt="Alcatraz" /></p>
 
+<p>이 중에서 위에 CocoaPods를 먼저 설치해 보자. 그냥 “INSTALL”이라고 되어 있는 버튼을 누르면 설치가 완료된다. 그리고 Xcode를 재시작하면 다시 아래와 같은 화면이 나온다. 당연히 “Load Bundle”을 선택한다.</p>
+
+<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-4.png" alt="Alcatraz" /></p>
+
+<p>이제는 플러그인이 설치가 완료되었기 때문에 “Product &gt; CocoaPods” 메뉴를 볼 수 있다. 이 메뉴를 열어보면 아래와 같은 화면이 나온다. 여기서 유의할 점은 GEM_PATH를 자신의 환경에 맞게 바꿔야 한다는 점이다. 기본은 “/usr/bin”인 것 같은데 나의 경우는 “/usr/local/bin”에 있어서 지정을 했다. 경로를 모른다면 <code>which pod</code>라는 명령을 shell에서 실행해보면 확인 할 수 있다.</p>
+
+<p><img src="/img/2015-10-20-xcode-7-alcatraz-and-cocoapods-xcode-plugins-5.png" alt="Alcatraz" /></p>
+
+<p>다음은 <a href="https://github.com/Galeas/CocoaPodUI">CocoaPodUI</a> 플러그인이다. 설치 과정은 위의 플러그인 설치 과정과 동일하다. 그런데 문제는 현재 시점에서 확인해보니 정상적인 설치가 되지 않는다. Xcode 7과의 호환성 문제인지 플러그인은 정상 설치가 된 것으로 나오는데 설치 경로에 가보면 폴더가 비어 있다. 스샷만 보면 이 플러그인이 기능이 더 다양해 보이는데 사용을 해보지 못해 아쉽다.</p>
+
+<p>하지만 <a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a>만 사용하더라도 기존 보다는 편하다(굳이 따로 shell을 열지 않아도 되니).</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -220,8 +177,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/20/mfmailcomposeviewcontroller-without-no-mail-accounts-messages/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/20/mfmailcomposeviewcontroller-without-no-mail-accounts-messages/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/20/xcode-7-alcatraz-and-cocoapods-xcode-plugins/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

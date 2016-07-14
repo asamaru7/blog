@@ -113,74 +113,47 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/04/12/php-fpm-opcache-and-nginx-502-bad-gateaway/">
-								php-fpm opcache로 인한 Nginx - 502 bad gateaway 오류
+							<a class="title" href="https://blog.asamaru.net/2016/04/26/gulp-watch-is-very-slow-to-recognize-file-modifications/">
+								NFS로 연결된 디스크에서 Gulp Watch 사용시 파일 변경 감지가 느릴 때
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/04/12/php-fpm-opcache-and-nginx-502-bad-gateaway/">2016.04.12.</span></a>
+								<a href="https://blog.asamaru.net/2016/04/26/gulp-watch-is-very-slow-to-recognize-file-modifications/">2016.04.26.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>얼마 전부터 서비스 사용자로부터 이상한 오류 보고를 비주기적으로 받고 있다.</p>
+							<p>얼마 전부터 프로젝트에서 <a href="https://lumen.laravel.com/">Lumen</a>을 사용하고 있다. <a href="https://laravel.com/">Laravel</a>을 사용하려고 하다가 경량 프레임워크에 더 끌려서 Lumen을 사용중이다. 사실 이 부분에 관련해서 약간의 후회(고민)를 하고 있다. lumen은 아무래도 자료도 부족한 면이 있고 Laravel 모듈과의 연동이 원활하지 않은 부분이 있어서 불편한 면이 있다.</p>
 
-<p>특정 페이지에 접속시 <code>502 Bad gateaway</code> 오류가 난다는 것이다. 하지만 그 오류가 나는 페이지에 특별히 눈에 띄는 부분은 없다. 게다가 동일한 프로그램이 몇개의 폴더에서 동시에 사용 중임에도 꼭 한군데서만 동일한 문제를 일으킨다. 게다가 일시적으로 발생하고 사라지지 않고 한번 오류가 발생하면 그 후에 해당 페이지에 접속하면 해결 전까지는 계속 502 에러를 보인다. 게다가 해당 오류가 발생하는 조건을 알 수 없어 오류 재연이 불가능한 상황이라 원인 파악에 애를 먹고 있다.</p>
+<p>Lumen에는 Laravel에서 기본적으로 제공하는 기능 중 많은 부분이 제외되어 있는데 그 중 하나가 <a href="https://laravel.com/docs/master/elixir">Elixir</a>이다. 하지만 Elixir를 Lumen에 연결하는 것은 크게 어렵지 않다. Elixir는 <a href="http://gulpjs.com/">Gulp</a>를 기반으로 제작되어 있다. 따라서 작업시 gulp의 watch 기능을 사용하게 되는데 나의 작업 환경인 vagrant(centos) 내에서 파일의 변경을 잘 인식하지 못했다.</p>
 
-<p>현재 해당 서버는 CentOS 6.7에 nginx + php-fpm으로 서비스 되고 있고 opcache와 apcu 등이 적용되어 있다. 오류가 난 상황에서는 로그에 아래와 같은 기록이 남는다.</p>
+<p>그래서 관련자료를 찾다가 <a href="https://github.com/gulpjs/gulp/issues/448">Watch is very slow to recognize file modifications</a>라는 글을 찾았다. 여기서 원인을 찾았는데 원인은 바로 NFS로 연결된 디스크로 인한 문제였다.</p>
 
-<p><strong>/var/log/nginx/error.log</strong></p>
+<p>이 글에서의 해결책은 아래와 같다. 중요한 부분은 <code>actimeo=2</code> 이다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">2016/04/12 14:50:43 [error] 2481#2481: *1828457 recv() failed (104: Connection reset by peer) while reading response header from upstream, client: ~~~.~~~.~~~.~~~, server: ~~~, request: "GET /~~~ HTTP/1.1", upstream: "fastcgi://~~~:", host: "~~~", referrer: "~~~"
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">config.vm.synced_folder "dev", "/dev/vagrant",
+    :nfs =&gt; true,
+    :mount_options =&gt; ['actimeo=2']
 </code></pre></div></figure>
 
-<p><strong>/var/log/php-fpm/error.log</strong></p>
+<p>하지만 나의 경우는 <code>synced_folder</code>를 사용하지 않고 부팅시 직접적으로 NFS 디스크를 마운트하고 있다. 그래서 아래와 같이 적용했다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">[12-Apr-2016 14:54:39] WARNING: [pool www] child 24352 exited on signal 11 (SIGSEGV) after 301.965713 seconds from start
-[12-Apr-2016 14:54:39] NOTICE: [pool www] child 24510 started
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">mount -o "vers=3,udp,nolock,actimeo=2" 192.168.99.1:"/subdev/web" /home/web
 </code></pre></div></figure>
 
-<p>현재로써는 일단 오류가 발생하면 해당 서버의 opcache를 초기화해주면 문제는 즉시 해결된다. 따라서 opcache의 오류로 판단하고 있다.</p>
-
-<p>이 문제와 관련해서 검색해보니 비슷한 증상을 보이는 사례들이 많았다. 대부분의 경우 해결책은 opcache를 끄도록 설정하는 것을 제시하고 있다. 하지만 opcache는 당연히 필요하니 사용하던 것이라 그냥 끌수는 없다. 다른 방법으로 <a href="http://offandon.org/2015/12/apache-2-4-opcache-apcu-502/">Apache 2.4 + Opcache + APCu = 502?</a>에 보면 아래와 같은 방법을 제시하고 있다.</p>
-
-<p><strong>/etc/php.d/opcache.ini:</strong></p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">opcache.fast_shutdown=0
-opcache.enable_cli=0
-</code></pre></div></figure>
-
-<p>하지만 <code>fast_shutdown</code>의 경우도 성능을 위해 사용하는 것이 권장되고 있는 옵션으로 그냥 끌수는 없다. 사실 문제가 해결된다는 보장도 없다(글쓴이도 정확하게 이해한 것이 아니라고 한다).</p>
-
-<p>여기서 잠깐 <code>fast_shutdown</code>에 대해 조금 알아보자. <a href="http://php.net/manual/kr/opcache.configuration.php#ini.opcache.fast-shutdown">PHP 매뉴얼 OPcache 설치/설정</a>에 보면 아래와 같이 설명되어 있다.</p>
+<p>그럼 여기서 <code>actimeo</code>는 무엇인가? <a href="http://linux.die.net/man/5/nfs">Linux man page</a>에 아래와 같이 설명되어 있다.</p>
 
 <blockquote>
-  <p><strong>opcache.fast_shutdown boolean</strong></p>
+  <p><em>actimeo=n</em></p>
 
-  <p>If enabled, a fast shutdown sequence is used that doesn’t free each allocated block, but relies on the Zend Engine memory manager to deallocate the entire set of request variables en masse.</p>
+  <p>Using actimeo sets all of acregmin, acregmax, acdirmin, and acdirmax to the same value. If this option is not specified, the NFS client uses the defaults for each of these options listed above.</p>
 </blockquote>
 
-<p>정확한 의미는 모르겠지만 메뉴얼(<a href="http://php.net/manual/kr/opcache.installation.php">Recommended php.ini settings </a>) 상에서도 아래와 같이 <code>fast_shutdown</code>를 켜는 것을 권장하고 있다.</p>
+<p>간단히 이야기하자면 위의 방법은 NFS의 파일 cache time을 2초로 줄여서 파일의 변경을 빠르게 인지할 수 있도록 해주는 것이다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">opcache.memory_consumption=128
-opcache.interned_strings_buffer=8
-opcache.max_accelerated_files=4000
-opcache.revalidate_freq=60
-opcache.fast_shutdown=1
-opcache.enable_cli=1
+<p>다른 방법으로는 <code>lookupcache=none</code> 옵션을 사용하는 것도 가능하다(<a href="http://stackoverflow.com/a/28571327">Watching files for changes on Vagrant, file modification times not updating</a>
+).</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">config.vm.synced_folder "./", "/vagrant", type: "nfs", mount_options: ["lookupcache=none"]
 </code></pre></div></figure>
-
-<p>다른 문서인 <a href="https://www.scalingphpbook.com/blog/2014/02/14/best-zend-opcache-settings.html">Best Zend OpCache Settings/Tuning/Config</a>에서도 켜는 것을 권장하고 있다. 따라서 이 옵션을 끄는 것도 보류.</p>
-
-<p>현재 프로그램에서 의심되는 부분(다른 파일과 동일한 namespace와 class명을 사용)을 수정하고 opcache의 몇가지 옵션을 조정해서 다시 오류가 발생하는지 지켜보고 있다. 다시 오류가 재연되면 opcache 관리 페이지에서 전체 초기화가 아닌 파일 단위로 초기화하면서 원인 파일을 찾으려고 한다(진작에 했어야 하는 일이지만 서비스 중인 상태로 최대한 빨리 복구해야 해서 많은 시간을 들여 오류 위치를 찾을 수 없었다).</p>
-
-<p>원인 파일을 찾고 나면 소스를 리뷰한 후 특별한 문제를 찾지 못할 경우 해당 파일만 opcache에서 제외시킬 계획이다.</p>
-
-<p>제외하는 방법은 <code>opcache.blacklist_filename</code>에 지정된 파일에 해당 파일 경로를 추가하면 된다. 나의 경우는 <code>opcache.blacklist_filename = /etc/php.d/opcache*.blacklist</code>로 설정되어 있고 <code>/etc/php.d/opcache-default.blacklist</code> 파일이 기본적으로 생성되어 있다. 현재 테스트 서버에서 <code>/etc/php.d/opcache-default.blacklist</code>에 특정 파일 경로를 추가해서 opcache에서 정상적으로 제외되는지 확인은 마쳤다.</p>
-
-<p>php를 10여년 넘게 써오면서 이런 경우는 처음이다. 프로그램을 수정한 부분으로 문제가 해결되었으면 하는 바람이다.</p>
-
-<p><strong>첨부</strong></p>
-
-<p>위 상황과는 관련이 없지만 불특정하게 발생하지 않는 일반적인 상황에서의 502 오류라면 <a href="https://gom2.net/502-bad-gateway-solution-on-nginx-php_fpm/">nginx + PHP-fpm에서 502 Bad gateway 에러 해결법 총정리</a>를 참고하면 도움이 될 것이다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -194,8 +167,8 @@ opcache.enable_cli=1
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/04/12/php-fpm-opcache-and-nginx-502-bad-gateaway/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/04/12/php-fpm-opcache-and-nginx-502-bad-gateaway/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/04/26/gulp-watch-is-very-slow-to-recognize-file-modifications/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/04/26/gulp-watch-is-very-slow-to-recognize-file-modifications/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

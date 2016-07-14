@@ -113,68 +113,47 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/09/05/octopress-google-translate/">
-								옥토프레스에 구글 번역기 달기
+							<a class="title" href="https://blog.asamaru.net/2015/09/08/cleaner-view-casting-with-generics/">
+								안드로이드에서 findViewById 사용시 Generics을 이용해 Type Casting 없애기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/09/05/octopress-google-translate/">2015.09.05.</span></a>
+								<a href="https://blog.asamaru.net/2015/09/08/cleaner-view-casting-with-generics/">2015.09.08.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>구글에서는 웹사이트에 여러가지 언어로 번역해서 보여줄 수 있는 기능을 제공해 준다.
-이 블로그에 한국어가 아닌 다른 언어를 사용하는 사람이 누가 오겠냐만은 이 블로그는 여러가지 실험을 하기 위한 블로그이므로 구글 번역기도 달아봤다. 생각보다 간단하다.</p>
+							<p>안드로이드 작업을 하다보면 findViewById를 아주 빈번하게 사용하게 된다. 이 작업이 생각보다 귀찮다보니 “<a href="http://jakewharton.github.io/butterknife/">butterknife</a>“나 “<a href="http://androidannotations.org/">androidannotations</a>” 같은 라이브러리를 사용하게 된다.(당연히 그 함수를 사용이 귀찮다는 이유만은 아니지만)</p>
 
-<h2 id="section">구글 번역 스크립트 생성</h2>
-<p>http://translate.google.com/manager/website/</p>
+<p>아래의 방법은 저런 라이브러리를 사용할 때만큼 여러가지 일을 할 수는 없지만 findViewById를 사용함에 가장 귀찮은 작업인 View Type Casting을 하지 않아도 된다.</p>
 
-<p><img src="/img/2015-09-05-octopress-google-translate-1.png" alt="웹사이트에 지금 추가" title="웹사이트에 지금 추가" /></p>
+<p>우린 일반적으로 아래와 같은 방식으로 함수를 사용한다.</p>
 
-<p>“웹사이트에 지금 추가”를 눌러 다음으로.</p>
-
-<p><img src="/img/2015-09-05-octopress-google-translate-2.png" alt="웹사이트 정보" /></p>
-
-<p>번역기를 넣을 웹사이트 주소를 입력하고 언어 선택 후 다음.</p>
-
-<p><img src="/img/2015-09-05-octopress-google-translate-3.png" alt="플러그인 설정" /></p>
-
-<p>원하는 옵션을 선택하고 다음.</p>
-
-<p><img src="/img/2015-09-05-octopress-google-translate-4.png" alt="플러그인 추가" /></p>
-
-<p>번역 스크립트 완성. 이제 이 스크립트를 복사해서 원하는 곳에 넣으면 끝이다.</p>
-
-<h2 id="section-1">옥토프레스에 추가</h2>
-
-<p>옥토프레스에 추가하는 방법은 템플릿 html 어딘가에(노출을 원하는 위치) 넣으면 끝이다.
-맨 상단 메뉴에 넣고 싶다면 source/_includes/navigation.html 파일 내부에 원하는 곳에 넣으면 된다. 당연히 하단, 본문 등 원하는 곳에 그냥 넣으면 끝이다.</p>
-
-<p>하지만. 난 우측 aside 영역에 넣기로 했다. 그리고 그냥 넣지않고 파일을 분리하기로 했다. 플러그인 처럼.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>vi <span class="nb">source</span>/_includes/custom/asides/google_translate.html
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="o">(</span><span class="n">TextView</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">textview</span><span class="o">);</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>우선 google_translate.html을 열어 구글에서 제공해준 스크립트를 넣는다.</p>
+<p>이를 개선하기 위해 아래의 함수 하나를 추가한다. 어디든 상관 없이 사용하고자 하는 클래스의 내부에 넣는다. 사실 사용시마다 이 함수를 추가하는 작업이 더 귀찮을 수 있다. 그래서 난 기본 Activity와 Fragment 안에 넣어두고 사용한다. (난 여러가지 이유로 작업시 base activity, fragment를 만들어 두고 실제 작업시 상속받아 사용한다. 이렇게하면 이번 경우와 같이 유틸성 함수를 함께 쓰기도 좋고 제어하기도 좋기 때문이다.)</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>vi _config.yml
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span class="nd">@SuppressWarnings</span><span class="o">(</span><span class="s">&quot;unchecked&quot;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">final</span> <span class="o">&lt;</span><span class="n">E</span> <span class="kd">extends</span> <span class="n">View</span><span class="o">&gt;</span> <span class="n">E</span> <span class="nf">findView</span> <span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="o">(</span><span class="n">E</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+<span class="o">}</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>_config.yml 파일을 열어 아래처럼 default_asides 항목에 생성한 파일을 넣어준다.(원하는 순서에)</p>
+<p>그리고 아래와 같이 사용할 수 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-yaml"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="l-Scalar-Plain">default_asides</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">custom/asides/google_translate.html</span><span class="p-Indicator">,</span> <span class="nv">...</span><span class="p-Indicator">]</span>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="n">findView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">textview</span><span class="o">);</span>
+<span class="n">Button</span> <span class="n">button</span> <span class="o">=</span> <span class="n">findView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">button</span><span class="o">);</span>
+<span class="n">ImageView</span> <span class="n">image</span> <span class="o">=</span> <span class="n">findView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">imageview</span><span class="o">);</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>이것으로 끝.</p>
-
-<p>확인을 위해</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre>rake generate
-rake deploy
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p>사실 별차이 아니다. 하지만 작업 해본 사람은 안다. Type Casting을 일일이 넣는게 얼마나 귀찮은지.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -188,8 +167,8 @@ rake deploy
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/09/05/octopress-google-translate/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/09/05/octopress-google-translate/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/09/08/cleaner-view-casting-with-generics/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/09/08/cleaner-view-casting-with-generics/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

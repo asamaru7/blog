@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>안드로이드 WebView resumeTimers() / pauseTimers() 적용하기</title>
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="author" content="유영재">
+	<meta name="keywords" content="안드로이드 WebView resumeTimers() / pauseTimers() 적용하기,android,이 세상에 하나는 남기고 가자"/>
+	<meta name="description" content="안드로이드 WebView resumeTimers() / pauseTimers() 적용하기,android,안드로이드의 WebView를 사용하다 보면 처음 페이지를 보여줄 때는 정상적으로 보이나 두번째 이후부터 페이지를 정상적으로 표시하지 못하는 경우가 있다. 이 경우는 여러가지 이유로 발생할 수 있으나 오늘은  pauseTimers / resumeTimers 때문에 발생하는 경우에 대..."/>
+
+	<!-- http://t.co/dKP3o1e -->
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- http://opengraphprotocol.org/ -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="https://blog.asamaru.net/2016/08/01/android-webview-resumetimers-pausetimers/">
+	<meta property="og:title" content="안드로이드 WebView resumeTimers() / pauseTimers() 적용하기">
+	
+
+	<link rel="canonical" href="https://blog.asamaru.net/2016/08/01/android-webview-resumetimers-pausetimers/"/>
+	<link rel="shortcut icon" type="image/x-icon" media="screen" href="https://blog.asamaru.net/favicon.ico"/>
+	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="https://blog.asamaru.net/static/css/style.css"/>
+	<link rel="stylesheet" type="text/css" href="https://blog.asamaru.net/static/css/highlight.css"/>
+
+	
+	<link rel="stylesheet" type="text/css" href="https://blog.asamaru.net/static/css/post.css"/>
+	
+	
+
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+					(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65749108-2', 'auto');
+		ga('send', 'pageview');
+
+	</script>
+</head>
+
+
+<body>
+<div class="main">
+
+	<nav class="navbar navbar-default" role="navigation">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" title="toggle navbar" data-toggle="collapse" data-target=".navbar-collapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="/">이 세상에 하나는 남기고 가자</a>
+		</div>
+
+		<div class="navbar-collapse collapse">
+			
+			<ul class="nav navbar-nav">
+				<li class="active">
+				<a rel="index" href="/">Blog</a>
+				</li>
+				<li >
+				<a href="/archives/">Archives</a>
+				</li>
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a class="subscribe-rss" href="https://blog.asamaru.net/atom.xml" title="subscribe via RSS">
+						<span class="visible-xs">RSS</span>
+						<img class="hidden-xs" src="/static/img/rss.png" alt="RSS">
+					</a>
+				</li>
+			</ul>
+			
+			<!-- <form class="navbar-form navbar-right" action="http://www.google.co.kr" id="cse-search-box" target="_blank">
+			  <div class="form-group">
+			    <input type="hidden" name="cx" value="partner-pub-8163803188491150:6044663021" />
+			    <input type="hidden" name="ie" value="UTF-8" />
+			    <input type="text" name="q" class="form-control" />
+			    <input type="submit" name="sa" value="&#xac80;&#xc0c9;" />
+			  </div>
+			</form>
+			<script type="text/javascript" src="http://www.google.co.kr/coop/cse/brand?form=cse-search-box&amp;lang=ko"></script> -->
+			<form class="navbar-form navbar-right" action="https://www.google.com/search" method="GET">
+				<input type="hidden" name="sitesearch" value="https://blog.asamaru.net">
+				<div class="form-group">
+					<input class="form-control" type="text" name="q" placeholder="Search">
+				</div>
+			</form>
+			
+		</div>
+	</div>
+</nav>
+
+
+	<div class="container">
+		<div class="row">
+	<div class="content col-lg-9">
+		<div class="sheet post">
+			<header>
+				<h2>안드로이드 WebView resumeTimers() / pauseTimers() 적용하기</h2>
+				<p class="post-meta">
+					<!--<span class="glyphicon glyphicon-calendar"></span>--> 2016.08.01.
+					
+					&nbsp;&nbsp;&nbsp;
+					<span>
+						<a href="https://blog.asamaru.net/category/android/"><span class="glyphicon glyphicon-list"></span>&nbsp;android</a>
+					</span>
+					<span>
+                </span>
+				</p>
+			</header>
+			<hr class="boundary">
+			<article>
+				<!-- Topic of Contents -->
+				<!--
+								<section class="panel panel-default cToc">
+									<div class="panel-heading">
+										<h3 class="panel-title">Topic of Contents</h3>
+									</div>
+									<ul class="list-group">
+										<li class="list-group-item toc">
+										</li>
+									</ul>
+								</section>
+				-->
+
+				<p>안드로이드의 WebView를 사용하다 보면 처음 페이지를 보여줄 때는 정상적으로 보이나 두번째 이후부터 페이지를 정상적으로 표시하지 못하는 경우가 있다. 이 경우는 여러가지 이유로 발생할 수 있으나 오늘은  <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a> / <a href="https://developer.android.com/reference/android/webkit/WebView.html#resumeTimers%28%29">resumeTimers</a> 때문에 발생하는 경우에 대한 이야기를 하고자 한다.</p>
+
+<p>우선 이 함수들이 필요한 이유부터 간단히 알아보자.</p>
+
+<p>메뉴얼에서 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 찾아보면 아래와 같이 설명되어 있다.</p>
+
+<blockquote>
+  <p>Pauses all layout, parsing, and JavaScript timers for all WebViews. This is a global requests, not restricted to just this WebView. This can be useful if the application has been paused.</p>
+</blockquote>
+
+<p>현재 보여지는 웹뷰뿐만 아니라 모든 웹뷰에 대해 layout, parsing, JavaScript timers 를 멈추도록 지시한다. 이것이 왜 필요할까? 안드로이드는 기본적으로 앱이 백그라운드 상태로 들어가더라도 웹뷰의 동작은 자동적으로 멈추지 않고 계속 동작하기 때문이다. 이렇게되면 앱을 사용하지 않더라도 지속적으로 연산 작업이 일어나므로 배터리를 더 많이 사용하게 된다(이런 문제라면 OS 차원에서 알아서 처리하면 될텐데 왜 개발자가 직접이 문제를 처리해 주어야하는지 이해가 안된다).</p>
+
+<p>이 문제를 해결하기 위해서는 Activity를 벗어날 때 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 호출해주면 된다.</p>
+
+<p>그런데 이렇게 처리해 주었다면 Activity에 복귀할 때는 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 필히 호출해줘야 한다. 그렇지 않으면 화면이 보여지지 않는 문제를 만날 수 있다. 여러 사람들의 이야기를 들어보면 이 현상은 기기마다 차이가 있는 것으로 보인다(문제가 발생하는 기기도 있고 그렇지 않은 기기도 있다는 뜻).</p>
+
+<p>간단한 해결 방법은 아래와 같이 WebView를 사용하는 Activity의 onResume, onPause에서 직접 처리해주면 된다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-Java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span class="nd">@Override</span>
+<span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onResume</span><span class="o">()</span> <span class="o">{</span>
+  <span class="kd">super</span><span class="o">.</span><span class="na">onResume</span><span class="o">();</span>
+
+  <span class="n">webView</span><span class="o">.</span><span class="na">resumeTimers</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="nd">@Override</span>
+<span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onPause</span><span class="o">()</span> <span class="o">{</span>
+  <span class="kd">super</span><span class="o">.</span><span class="na">onPause</span><span class="o">();</span>
+
+  <span class="n">webView</span><span class="o">.</span><span class="na">pauseTimers</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>Activity 단위로 처리하는 것이 귀찮다면 application의 life cycle에 맞춰서 일괄적으로 처리해도 된다. 메뉴얼에 나와 있듯이 application 전체의 웹뷰에 일괄적으로 적용되므로.</p>
+
+			</article>
+			<hr class="boundary">
+		</div>
+
+		<!-- adsense -->
+		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<!-- 블로그 하단 -->
+		<ins class="adsbygoogle"
+			 style="display:block; margin-bottom:20px;"
+			 data-ad-client="ca-pub-8163803188491150"
+			 data-ad-slot="7841851420"
+			 data-ad-format="auto"></ins>
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>
+		<!-- adsense -->
+
+		<div class="pad-min"></div>
+		<div id="post-comment" class="sheet post">
+			<div id="disqus_thread"></div>
+		</div>
+	</div>
+	<div class="content-navigation col-lg-3">
+		<!-- I made it -->
+		<section class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">I made it</h3>
+			</div>
+			<ul class="list-group">
+				<li class="list-group-item"><a href="http://sprite.asamaru.net/" target="_blank">Sprite CSS/Image</a></li>
+				<li class="list-group-item"><a href="http://loan.asamaru.net/" target="_blank">대출이자계산기</a></li>
+				<li class="list-group-item"><a href="http://bookmarklet.asamaru.net/" target="_blank">북마클릿 생성기</a></li>
+			</ul>
+		</section>
+
+		<!-- Categories -->
+		
+		
+		<section class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Categories</h3>
+			</div>
+			<ul class="list-group">
+				
+				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">4</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/css/">Css <span class="badge">3</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/js/">Js <span class="badge">8</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/android/">Android <span class="badge">50</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/octopress/">Octopress <span class="badge">8</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/ios/">Ios <span class="badge">18</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/php/">Php <span class="badge">21</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/java/">Java <span class="badge">5</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/db/">Db <span class="badge">6</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/html/">Html <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/git/">Git <span class="badge">6</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/blog/">Blog <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/tip/">Tip <span class="badge">13</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/linux/">Linux <span class="badge">25</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/swift/">Swift <span class="badge">6</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/iOS/">Ios <span class="badge">2</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/vagrant/">Vagrant <span class="badge">5</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/jekyll/">Jekyll <span class="badge">1</span></a></li>
+				
+			</ul>
+		</section>
+		
+		
+
+		<!-- Tags -->
+		
+		
+		
+
+		<!-- adsense -->
+		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<!-- 블로그 우측 -->
+		<ins class="adsbygoogle"
+			 style="display:block; margin-bottom:20px;"
+			 data-ad-client="ca-pub-8163803188491150"
+			 data-ad-slot="1934918622"
+			 data-ad-format="auto"></ins>
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>
+		<!-- adsense -->
+
+		<!-- Related -->
+		
+
+		
+
+		
+		<section class="panel panel-default dRelatedPosts">
+			<div class="panel-heading">
+				<h3 class="panel-title">Related</h3>
+			</div>
+			<ul class="list-group">
+				
+				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/07/30/android-4-4-3-4-4-4-webview-referer-doesn-t-work/">Android 4.4.3, 4.4.4 Webview Referer 오류 수정</a></li>
+				
+				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/07/14/html-fromhtml-deprecated-in-android-n/">Html.fromHtml deprecated(Android N)</a></li>
+				
+				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/07/14/android-uri-getqueryparameter/">android Uri.getQueryParameter() 사용시 젤리빈 이전 버전에서 공백이 +로 표시되는 문제 해결</a></li>
+				
+				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/07/12/android-textview-with-a-single-line-in-viewpager-scroll-doesnt-work/">안드로이드 : TextView 터치시 가로 스크롤이 되지 않는 문제 수정(ViewPager 등에서)</a></li>
+				
+				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/04/11/create-instance-of-generic-type-in-java/">Generic Type으로 인스턴스 생성</a></li>
+				
+			</ul>
+		</section>
+		
+
+		<section class="panel panel-default">
+			<style>
+				#google_translate_country { text-align:center; padding-top:5px; }
+				#google_translate_element > div { text-align:center; padding:5px 0; }
+				#google_translate_element > div > div { display:inline-block; *display:inline; *zoom:1; margin-right:10px; }
+			</style>
+			<div id="google_translate_country">
+				<a href="#googtrans(ko|en)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/English.gif?w=660" alt="English"/></a>
+				<!-- <a href="#googtrans(ko|ko)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Korean.gif?w=660" alt="Korean"/></a> -->
+				<a href="#googtrans(ko|zh-CN)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Chinese.gif?w=660" alt="Chinese"/></a>
+				<a href="#googtrans(ko|ja)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Japanese.gif?w=660" alt="Japanese"/></a>
+				<a href="#googtrans(ko|fr)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/French.gif?w=660" alt="French"/></a>
+				<a href="#googtrans(ko|de)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/German.gif?w=660" alt="German"/></a>
+				<a href="#googtrans(ko|it)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Italian.gif?w=660" alt="Italian"/></a>
+			</div>
+			<div id="google_translate_element"></div>
+			<script type="text/javascript">
+				function googleTranslateElementInit() {
+					new google.translate.TranslateElement({pageLanguage: 'ko'}, 'google_translate_element');
+				}
+			</script>
+			<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+		</section>
+	</div>
+</div>
+
+
+		
+		<div id="disqus_thread"></div>
+		<script type="text/javascript">
+			/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+			var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+			// var disqus_developer = 1; // Comment out when the site is live
+			var disqus_identifier = "/2016/08/01/android-webview-resumetimers-pausetimers/";
+
+			/* * * DON'T EDIT BELOW THIS LINE * * */
+			(function () {
+				var dsq = document.createElement('script');
+				dsq.type = 'text/javascript';
+				dsq.async = true;
+				dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+				(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+		<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		
+	</div>
+
+	<div class="page-scrollTop" data-toggle="tooltip" data-placement="top" title="Top">
+		<a href="javascript:void(0);">
+			<div class="arrow"></div>
+			<div class="stick"></div>
+		</a>
+	</div>
+</div>
+
+<footer class="footnote footnote-tiffany">
+	<div class="container">
+		<a class="foot-item" href="mailto:asamaru@asamaru.net" target="_blank"><img src="/static/img/bottom-email.png" alt="Email"></a>
+		<a class="foot-item" href="https://github.com/asamaru7" target="_blank"><img src="/static/img/bottom-github.png" alt="Github"></a>
+		<a class="foot-item" href="https://blog.asamaru.net/atom.xml" target="_blank"><img src="/static/img/bottom-rss.png" alt="RSS"></a>
+		&nbsp;
+		<a href="https://blog.asamaru.net"><span class="word-keep">&copy; 유영재</span></a>
+	</div>
+</footer>
+
+
+<div class="scriptHub">
+	<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="https://blog.asamaru.net/static/js/script.js"></script>
+
+	
+	<script type="text/javascript" src="https://blog.asamaru.net/static/js/post.js"></script>
+	
+	
+</div>
+
+
+
+</body>
+</html>

@@ -113,23 +113,44 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/03/21/slow-svn-status/">
-								svn status가 느려질 때
+							<a class="title" href="https://blog.asamaru.net/2016/03/25/php-invalid-sos-parameters-for-sequential-jpeg/">
+								PHP - Invalid SOS parameters for sequential JPEG 오류 해결
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/03/21/slow-svn-status/">2016.03.21.</span></a>
+								<a href="https://blog.asamaru.net/2016/03/25/php-invalid-sos-parameters-for-sequential-jpeg/">2016.03.25.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>svn을 사용하다 보면 이상하게 <code>svn status</code>가 이상하게 느릴 때가 있다. 사실 나도 이 부분을 크게 생각해 본적이 없었는데 최근에 특정 프로젝트 폴더에서 <code>svn status</code>가 비정상적으로 느려져서 방법을 찾아봤다.</p>
+							<p>PHP에서 GD를 이용해서 jpg 이미지를 처리할 때 아래와 같은 오류를 만날 수 있다. 나의 경우는 안드로이드에서 jpg 이미지를 PHP로 전송해서 처리하는 과정에서 이 오류를 만났다(안드로이드여 사라져라).</p>
 
-<p>결론부터 이야기하자면 아주 간단하다. 아래와 같이 cleanup을 해주면 속도가 돌아온다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">Warning:  imagecreatefromjpeg(): gd-jpeg, libjpeg: recoverable error: Invalid SOS parameters for sequential JPEG
+</code></pre></div></figure>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>svn cleanup
+<p>이 오류는 PHP Bugs에 <a href="https://bugs.php.net/bug.php?id=39918">
+Bug #39918	imagecreatefromjpeg doesn’t work</a>라는 글로도 등록되어 있다. 일단 PHP Bugs에서는 버그가 아닌 것으로 분류해 놓았지만 대부분의 다른 커뮤니티들에서는 버그라고 이야기하고 있다.</p>
+
+<p>어쨌든 해결 방법은 아래와 같다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">@</span><span class="nb">ini_set</span><span class="p">(</span><span class="s1">&#39;gd.jpeg_ignore_warning&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<p>cleanup의 경우 충돌이 발생했을 때만 사용하고 있었는데 오래된 <code>.svn/pristine</code> 폴더의 파일들을 지워주는 효과가 있는 것 같다. 실제로 용량을 비교해보니 상당히 많은 용량이 줄어들었다. 그런데 어떤 사람들은 오래된 파일을 지워주는게 아니라고 말하기도 한다. 어쨌든 나의 경우는 <code>.svn</code>의 용량이 줄어 들었으며 느리던 <code>svn status</code>의 속도가 돌아왔다. 이론적인 검증이 되지 않은 내용이지만 혹시 동일한 현상을 겪는 사람이라면 한번 시도해봐도 손해볼 것은 없다는 생각.</p>
+<p>위 코드를 <a href="http://php.net/manual/kr/function.imagecreatefromjpeg.php">imagecreatefromjpeg</a>를 사용하기 전에 넣으면 된다(그냥 맨 위쪽). 아니면 php.ini에 위 내용을 형식에 맞게 추가해도 된다.</p>
+
+<p>그런데 문제는 이것만으로는 완전히 해결이 되지 않을 수 있다. 아래와 같은 오류가 추가적으로 날 수 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">Warning:  imagecreatefromjpeg(): '/tmp/php6eEm0r' is not a valid JPEG file in ~~
+</code></pre></div></figure>
+
+<p>따라서 위 처리 외에도 imagecreatefromjpeg 사용시 <code>@</code>를 붙여 아래와 같이 사용해야 한다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$source</span> <span class="o">=</span> <span class="o">@</span><span class="nb">imagecreatefromjpeg</span><span class="p">(</span><span class="nv">$sourcePath</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p><code>@</code>를 사용하는 것은 권장되지 않지만 이 경우는 어쩔 수 없다(오류 출력 범위를 변경하는 등의 방법이 있으나 이 부분만 이렇게 처리하는게 낫다).</p>
+
+<p>이렇게 처리하고 나면 기능이 원하는대로 정상 동작한다(<code>not a valid JPEG file</code>라고 했지만 실제로는 정상적인 jpg 파일이므로)</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -143,8 +164,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/03/21/slow-svn-status/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/03/21/slow-svn-status/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/03/25/php-invalid-sos-parameters-for-sequential-jpeg/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/03/25/php-invalid-sos-parameters-for-sequential-jpeg/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

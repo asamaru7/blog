@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>안드로이드 스튜디오에서 디바이스 연결이 끊어질 경우 다시 연결하는 방법</title>
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="author" content="유영재">
+	<meta name="keywords" content="안드로이드 스튜디오에서 디바이스 연결이 끊어질 경우 다시 연결하는 방법,android,이 세상에 하나는 남기고 가자"/>
+	<meta name="description" content="안드로이드 스튜디오에서 디바이스 연결이 끊어질 경우 다시 연결하는 방법,android,안드로이드 앱을 개발시 에뮬레이터를 사용하는 경우도 있으나 대부분의 경우는 실제 기기를 연결해서 작업하는 경우가 많다. 기존 에뮬레이터의 경우 너무 느린 속도와 호환 문제로 잘 사용하지 않는다. 최근 성능과 안정성이 많이 개선 되었다고는 하나 아직 여러가지 문제가 있다(예를들어 v..."/>
+
+	<!-- http://t.co/dKP3o1e -->
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- http://opengraphprotocol.org/ -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="https://blog.asamaru.net/2016/09/27/android-adb-device-reconnect/">
+	<meta property="og:title" content="안드로이드 스튜디오에서 디바이스 연결이 끊어질 경우 다시 연결하는 방법">
+	
+
+	<link rel="canonical" href="https://blog.asamaru.net/2016/09/27/android-adb-device-reconnect/"/>
+	<link rel="shortcut icon" type="image/x-icon" media="screen" href="https://blog.asamaru.net/favicon.ico"/>
+	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="https://blog.asamaru.net/static/css/style.css"/>
+	<link rel="stylesheet" type="text/css" href="https://blog.asamaru.net/static/css/highlight.css"/>
+
+	
+	<link rel="stylesheet" type="text/css" href="https://blog.asamaru.net/static/css/post.css"/>
+	
+	
+
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+					(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-65749108-2', 'auto');
+		ga('send', 'pageview');
+
+	</script>
+</head>
+
+
+<body>
+<div class="main">
+
+	<nav class="navbar navbar-default" role="navigation">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" title="toggle navbar" data-toggle="collapse" data-target=".navbar-collapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="/">이 세상에 하나는 남기고 가자</a>
+		</div>
+
+		<div class="navbar-collapse collapse">
+			
+			<ul class="nav navbar-nav">
+				<li class="active">
+				<a rel="index" href="/">Blog</a>
+				</li>
+				<li >
+				<a href="/archives/">Archives</a>
+				</li>
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<a class="subscribe-rss" href="https://blog.asamaru.net/atom.xml" title="subscribe via RSS">
+						<span class="visible-xs">RSS</span>
+						<img class="hidden-xs" src="/static/img/rss.png" alt="RSS">
+					</a>
+				</li>
+			</ul>
+			
+			<!-- <form class="navbar-form navbar-right" action="http://www.google.co.kr" id="cse-search-box" target="_blank">
+			  <div class="form-group">
+			    <input type="hidden" name="cx" value="partner-pub-8163803188491150:6044663021" />
+			    <input type="hidden" name="ie" value="UTF-8" />
+			    <input type="text" name="q" class="form-control" />
+			    <input type="submit" name="sa" value="&#xac80;&#xc0c9;" />
+			  </div>
+			</form>
+			<script type="text/javascript" src="http://www.google.co.kr/coop/cse/brand?form=cse-search-box&amp;lang=ko"></script> -->
+			<form class="navbar-form navbar-right" action="https://www.google.com/search" method="GET">
+				<input type="hidden" name="sitesearch" value="https://blog.asamaru.net">
+				<div class="form-group">
+					<input class="form-control" type="text" name="q" placeholder="Search">
+				</div>
+			</form>
+			
+		</div>
+	</div>
+</nav>
+
+
+	<div class="container">
+		<div class="row">
+	<div class="content col-lg-9">
+		<div class="sheet post">
+			<header>
+				<h2>안드로이드 스튜디오에서 디바이스 연결이 끊어질 경우 다시 연결하는 방법</h2>
+				<p class="post-meta">
+					<!--<span class="glyphicon glyphicon-calendar"></span>--> 2016.09.27.
+					
+					&nbsp;&nbsp;&nbsp;
+					<span>
+						<a href="https://blog.asamaru.net/category/android/"><span class="glyphicon glyphicon-list"></span>&nbsp;android</a>
+					</span>
+					<span>
+                </span>
+				</p>
+			</header>
+			<hr class="boundary">
+			<article>
+				<!-- Topic of Contents -->
+				<!--
+								<section class="panel panel-default cToc">
+									<div class="panel-heading">
+										<h3 class="panel-title">Topic of Contents</h3>
+									</div>
+									<ul class="list-group">
+										<li class="list-group-item toc">
+										</li>
+									</ul>
+								</section>
+				-->
+
+				<p>안드로이드 앱을 개발시 에뮬레이터를 사용하는 경우도 있으나 대부분의 경우는 실제 기기를 연결해서 작업하는 경우가 많다. 기존 에뮬레이터의 경우 너무 느린 속도와 호환 문제로 잘 사용하지 않는다. 최근 성능과 안정성이 많이 개선 되었다고는 하나 아직 여러가지 문제가 있다(예를들어 vagrant와 동시에 사용할 수 없다).</p>
+
+<p>기기를 사용해서 작업하는 경우 거추장스러운 선을 제거하기 위해 WIFI를 연결해서 디버깅하는 경우(<a href="/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi/">안드로이드 스튜디오에서 WIFI로 Run/Install/Debug 하기</a>)도 있으나 연결의 귀찮음과 안정성 문제로 직접 선을 꽂아서 사용하는 경우가 많다.</p>
+
+<p>그런데 선을 직접 연결해도 수시로 adb와 디바이스의 연결이 끊어지는 문제가 발생하는 경우가 있다. 나의 경우 맥을 sierra로 업데이트 후 너무 심해졌다. 수시로 끊어지고 있다. 예전의 경우엔 USB 선의 문제로 이런 경우가 많았는데 이번엔 선을 바꿔봐도 소용이 없었다. 그래서 선을 매번 뺐다 꽂아서 다시 작업을 하고 있었는데 안 그래도 아이폰에 비해 단자가 헐거워지거나 고장 나는 경우가 많은데 계속 뺐다 꽂았다하기에는 무리가 있다.</p>
+
+<p>그래서 관련 자료를 찾아보니 PC에서 내보내는 전력이 안드로이드 기기에 충분하지 않지 않을 경우 이런 현상이 발생할 수 있고 최신 맥북에서 발생하는 경우가 많다는 사람이 있었다. 다른 사람은 USB 3.0을 사용하면서 그랬다는 사람도 있고…</p>
+
+<p>이런 경우 아래와 같이 USB 설정을 변경해서 해결했다는 사람들도 있었으나 맥에서는 관련 설정을 찾을 수 없었다(내가 못찾는 것일지도).</p>
+
+<ol>
+  <li>Scroll to the right and type ‘Power Options’ in the search field and click on it.</li>
+  <li>Click ‘Change plan setting’ on your chosen plan.</li>
+  <li>Click ‘Change advanced power setting’ on your chosen plan.</li>
+  <li>Find ‘USB settings’ and open.</li>
+  <li>Find ‘USB selective suspend setting’ and change it to disabled.</li>
+</ol>
+
+<p>그래서 일단은 연결이 끊어지면 아래의 방법을 해결하고 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>adb <span class="nb">kill</span>-server <span class="o">&amp;&amp;</span> adb start-server
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>귀찮기는하나 선을 매번 꽂았다 뺐다 하지 않아도 되는 것으로 일단 참고 있다.</p>
+
+			</article>
+			<hr class="boundary">
+		</div>
+
+		<!-- adsense -->
+		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<!-- 블로그 하단 -->
+		<ins class="adsbygoogle"
+			 style="display:block; margin-bottom:20px;"
+			 data-ad-client="ca-pub-8163803188491150"
+			 data-ad-slot="7841851420"
+			 data-ad-format="auto"></ins>
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>
+		<!-- adsense -->
+
+		<div class="pad-min"></div>
+		<div id="post-comment" class="sheet post">
+			<div id="disqus_thread"></div>
+		</div>
+	</div>
+	<div class="content-navigation col-lg-3">
+		<!-- I made it -->
+		<section class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">I made it</h3>
+			</div>
+			<ul class="list-group">
+				<li class="list-group-item"><a href="http://sprite.asamaru.net/" target="_blank">Sprite CSS/Image</a></li>
+				<li class="list-group-item"><a href="http://loan.asamaru.net/" target="_blank">대출이자계산기</a></li>
+				<li class="list-group-item"><a href="http://bookmarklet.asamaru.net/" target="_blank">북마클릿 생성기</a></li>
+			</ul>
+		</section>
+
+		<!-- Categories -->
+		
+		
+		<section class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Categories</h3>
+			</div>
+			<ul class="list-group">
+				
+				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">4</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/css/">Css <span class="badge">3</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/js/">Js <span class="badge">8</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/android/">Android <span class="badge">53</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/octopress/">Octopress <span class="badge">8</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/ios/">Ios <span class="badge">18</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/php/">Php <span class="badge">21</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/java/">Java <span class="badge">5</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/db/">Db <span class="badge">6</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/html/">Html <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/git/">Git <span class="badge">6</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/blog/">Blog <span class="badge">1</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/tip/">Tip <span class="badge">13</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/linux/">Linux <span class="badge">25</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/swift/">Swift <span class="badge">6</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/iOS/">Ios <span class="badge">2</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/vagrant/">Vagrant <span class="badge">5</span></a></li>
+				
+				<li class="list-group-item"><a href="/category/jekyll/">Jekyll <span class="badge">1</span></a></li>
+				
+			</ul>
+		</section>
+		
+		
+
+		<!-- Tags -->
+		
+		
+		
+
+		<!-- adsense -->
+		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<!-- 블로그 우측 -->
+		<ins class="adsbygoogle"
+			 style="display:block; margin-bottom:20px;"
+			 data-ad-client="ca-pub-8163803188491150"
+			 data-ad-slot="1934918622"
+			 data-ad-format="auto"></ins>
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>
+		<!-- adsense -->
+
+		<!-- Related -->
+		
+
+		
+
+		
+		<section class="panel panel-default dRelatedPosts">
+			<div class="panel-heading">
+				<h3 class="panel-title">Related</h3>
+			</div>
+			<ul class="list-group">
+				
+				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/09/23/google-service-library-9-6-0-used-read-phone-state-permission/">Google Service Library 9.6.0 사용시 READ_PHONE_STATE 권한이 추가되는 문제</a></li>
+				
+				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview/">안드로이드 WebView에서 HTML5 Video Full Screen 지원</a></li>
+				
+				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/08/01/android-webview-resumetimers-pausetimers/">안드로이드 WebView resumeTimers() / pauseTimers() 적용하기</a></li>
+				
+				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/07/30/android-4-4-3-4-4-4-webview-referer-doesn-t-work/">Android 4.4.3, 4.4.4 Webview Referer 오류 수정</a></li>
+				
+				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/07/14/html-fromhtml-deprecated-in-android-n/">Html.fromHtml deprecated(Android N)</a></li>
+				
+			</ul>
+		</section>
+		
+
+		<section class="panel panel-default">
+			<style>
+				#google_translate_country { text-align:center; padding-top:5px; }
+				#google_translate_element > div { text-align:center; padding:5px 0; }
+				#google_translate_element > div > div { display:inline-block; *display:inline; *zoom:1; margin-right:10px; }
+			</style>
+			<div id="google_translate_country">
+				<a href="#googtrans(ko|en)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/English.gif?w=660" alt="English"/></a>
+				<!-- <a href="#googtrans(ko|ko)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Korean.gif?w=660" alt="Korean"/></a> -->
+				<a href="#googtrans(ko|zh-CN)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Chinese.gif?w=660" alt="Chinese"/></a>
+				<a href="#googtrans(ko|ja)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Japanese.gif?w=660" alt="Japanese"/></a>
+				<a href="#googtrans(ko|fr)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/French.gif?w=660" alt="French"/></a>
+				<a href="#googtrans(ko|de)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/German.gif?w=660" alt="German"/></a>
+				<a href="#googtrans(ko|it)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Italian.gif?w=660" alt="Italian"/></a>
+			</div>
+			<div id="google_translate_element"></div>
+			<script type="text/javascript">
+				function googleTranslateElementInit() {
+					new google.translate.TranslateElement({pageLanguage: 'ko'}, 'google_translate_element');
+				}
+			</script>
+			<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+		</section>
+	</div>
+</div>
+
+
+		
+		<div id="disqus_thread"></div>
+		<script type="text/javascript">
+			/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+			var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+			// var disqus_developer = 1; // Comment out when the site is live
+			var disqus_identifier = "/2016/09/27/android-adb-device-reconnect/";
+
+			/* * * DON'T EDIT BELOW THIS LINE * * */
+			(function () {
+				var dsq = document.createElement('script');
+				dsq.type = 'text/javascript';
+				dsq.async = true;
+				dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+				(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+		<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		
+	</div>
+
+	<div class="page-scrollTop" data-toggle="tooltip" data-placement="top" title="Top">
+		<a href="javascript:void(0);">
+			<div class="arrow"></div>
+			<div class="stick"></div>
+		</a>
+	</div>
+</div>
+
+<footer class="footnote footnote-tiffany">
+	<div class="container">
+		<a class="foot-item" href="mailto:asamaru@asamaru.net" target="_blank"><img src="/static/img/bottom-email.png" alt="Email"></a>
+		<a class="foot-item" href="https://github.com/asamaru7" target="_blank"><img src="/static/img/bottom-github.png" alt="Github"></a>
+		<a class="foot-item" href="https://blog.asamaru.net/atom.xml" target="_blank"><img src="/static/img/bottom-rss.png" alt="RSS"></a>
+		&nbsp;
+		<a href="https://blog.asamaru.net"><span class="word-keep">&copy; 유영재</span></a>
+	</div>
+</footer>
+
+
+<div class="scriptHub">
+	<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="https://blog.asamaru.net/static/js/script.js"></script>
+
+	
+	<script type="text/javascript" src="https://blog.asamaru.net/static/js/post.js"></script>
+	
+	
+</div>
+
+
+
+</body>
+</html>

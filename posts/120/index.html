@@ -113,46 +113,101 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/09/30/loan-calculator/">
-								필요해서 만든 대출 이자 계산기
+							<a class="title" href="https://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/">
+								ACRA : Please configure &#39;buildConfigClass&#39; in your ACRA config 오류
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/09/30/loan-calculator/">2015.09.30.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/">2015.10.01.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>올해 집을 이사하면서 돈이 부족해서 대출을 받게 되었다.
-대출을 받기 전에 예산을 잡는 과정에서 대출 비용에 따른 월 부담 비용을 알아보기 위해 대출 계산기를 찾아다녔었다. 그런데 딱히 편한게 없었다. 어짜피 계산값이야 다를 수 없는 것이므로 계산이 불편하지는 않았으나 계산했던 결과를 저장해 둘 수가 없어서 매번 다시 계산해야하는 불편함이 있었다. 하루에도 몇번씩 얼마를 빌려야할지가 변하는 상황에서 월 비용을 모두 기억할 수는 없었기 때문에 자주 다시 계산하게 되었던 것이다. 그래서 직접 안드로이드 앱을 만들어 버렸다. 아래의 링크를 통해 마켓으로 갈 수 있다.</p>
+							<p><a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a> 포스트에서 언급했던 것처럼 개발 중인 앱에서 Crash Report를 위해 <a href="https://github.com/ACRA/acra">ACRA</a>를 사용중이다. 아직 4.7.0으로 정식 버전업이 되지는 않았지만 4.7.0 RC1 버전이 maven에 올려져 있어서 적용해 보았다.
+사실은 미리 적용할 예정은 없었으나 <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>와 관련하여 Gradle을 2.4로 버전업 하면서 release 빌드 시에 다른 오류(setLatestEventInfo 함수가 제거됨)가 나타나서 어쩔 수 없이 버전업을 해야했다.</p>
 
-<h3 id="httpsplaygooglecomstoreappsdetailsidnetasamaruloancalc"><a href="https://play.google.com/store/apps/details?id=net.asamaru.loancalc">안드로이드 대출 계산기 앱</a></h3>
+<p>그런데 버전업을하고 나서 Crash 테스트를 하는 도중 또 다른 오류를 만났다. 기존에도 오류가 나고 있었는지 버전업 후의 문제인지는 확실치는 않다. 안드로이드 작업은 끝없는 오류 해결의 연속인 듯하다. 오류는 아래와 같다.</p>
 
-<p>그리고 앱을 만들면서 하이브리드앱 형태로 만들었었기 때문에 조금만 수정해서 웹 버전도 만들었다. 단, 아직 계산 결과 저장 기능은 넣이 않았다. 그게 제일 중요한 목적이긴 했는데 아직 완성하지 못했다. 시간이 되는대로 기능을 넣을 예정이다. 웹 버전은 아래의 링크를 통해 볼 수 있다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">E</span><span class="o">/</span><span class="nl">ACRA:</span> <span class="n">Not</span> <span class="n">adding</span> <span class="n">buildConfig</span> <span class="n">to</span> <span class="n">log</span><span class="o">.</span> <span class="n">Class</span> <span class="n">Not</span> <span class="n">found</span> <span class="o">:</span> <span class="n">net</span><span class="o">.</span><span class="na">yourdomain</span><span class="o">.</span><span class="na">BuildConfig</span><span class="o">.</span> <span class="n">Please</span> <span class="n">configure</span> <span class="err">&#39;</span><span class="n">buildConfigClass</span><span class="err">&#39;</span> <span class="n">in</span> <span class="n">your</span> <span class="n">ACRA</span> <span class="n">config</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<h3 id="httploanasamarunet"><a href="http://loan.asamaru.net/">대출 이자 계산기</a></h3>
+<p>우선 ACRA를 초기화하는 코드를 살펴보자. 당연하지만 실제 적용코드가 아닌 부분적으로 정리된 코드다.</p>
 
-<p>내가 필요해서 만든 것이지만 혹시라도 필요한 사람들이 있을까해서 공개해 본다. 앞으로의 버전업은 크게 기대하기 어렵지만 앱/웹 버전 모두 소스를 공개해 두었기 때문에 계산 로직 등이 필요한 사람들은 도움이 될지도 모르겠다.
-___</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">ACRAConfiguration</span> <span class="n">config</span> <span class="o">=</span> <span class="n">ACRA</span><span class="o">.</span><span class="na">getNewDefaultConfig</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+<span class="n">config</span><span class="o">.</span><span class="na">setFormUri</span><span class="o">(</span><span class="s">&quot;http://dev.yourdomain.net/AppCrash&quot;</span><span class="o">);</span>
+<span class="n">ACRA</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span> <span class="c1">// The following line triggers the initialization of ACRA</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<p>위의 프로그램들과는 크게 상관없지만 대출의 종류를 간단히 소개하고자 한다.</p>
+<p>@ReportsCrashes 어노테이션을 사용하지 않고 동적으로 초기화시켜주는 코드다. 실제로 Crash를 발생시키면 위에서 보여준 오류가 난다. 사실 이 문제는 원인을 확인한 결과 Proguard가 적용되었을 때만 오류가 발생한다. 아래의 ACRA 소스 코드의 일부를 보자.</p>
 
-<h4 id="section">원리금균등분할상환</h4>
-<blockquote>
-  <p>일반적으로 사용되는 상황방식으로 매기간 원금과 이자의 합계가 균등한 저당이다. 초기에는 원리금 중 이자가 차지하는 부분이 많으나 후기에는 원금상환 비중이 커지면 대출만기 일자에 대출원금은 완전히 상환된다.</p>
-</blockquote>
+<p><strong><a href="https://github.com/ACRA/acra/blob/master/src/main/java/org/acra/collector/CrashReportDataFactory.java">CrashReportDataFactory.java</a></strong></p>
 
-<h4 id="section-1">원금균등분할상환</h4>
-<blockquote>
-  <p>대출원금을 융자기간으로 나눈 할부 상환금에 월별잔고에 대한 이자를 합산하여 납부하는 방식이다. 원금액은 동일하나 이자지불액은 원금을 갚아나가면서 조금씩 줄어듦에 따라 매 기간 적어지게 된다. 따라서 원금균등상환방식은 초기에는 월부금이 많이 지급되고 후기에는 점차 줄어들기 때문에 대출자 입장에서는 차입자에게 원금균등분할상환방식으로 대출해 주는 것이 원금회수 측면에서 보다 안전하다.</p>
-</blockquote>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">private</span> <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">getBuildConfigClass</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">ClassNotFoundException</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="n">Class</span> <span class="n">configuredBuildConfig</span> <span class="o">=</span> <span class="n">ACRA</span><span class="o">.</span><span class="na">getConfig</span><span class="o">().</span><span class="na">buildConfigClass</span><span class="o">();</span>
+    <span class="k">if</span> <span class="o">((</span><span class="n">configuredBuildConfig</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">configuredBuildConfig</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">Object</span><span class="o">.</span><span class="na">class</span><span class="o">))</span> <span class="o">{</span>
+        <span class="c1">// If set via annotations or programatically then it will have a real value,</span>
+        <span class="c1">// otherwise it will be Object.class (annotation default) or null (explicit programmatic).</span>
+        <span class="k">return</span> <span class="n">configuredBuildConfig</span><span class="o">;</span>
+    <span class="o">}</span>
 
-<h4 id="section-2">원금만기일시상환(만기상환저당)</h4>
-<blockquote>
-  <p>원금은 만기에 상환하고 대출기간 중에는 이자만 지불하는 저당대출을 말한다. 이 방식을 인터리스트 온리 모기지(interest only mortgage)라고도 한다.</p>
-</blockquote>
+    <span class="kd">final</span> <span class="n">String</span> <span class="n">className</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getPackage</span><span class="o">().</span><span class="na">getName</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;.BuildConfig&quot;</span><span class="o">;</span>
+    <span class="k">try</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="n">className</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ClassNotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">ACRA</span><span class="o">.</span><span class="na">log</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">LOG_TAG</span><span class="o">,</span> <span class="s">&quot;Not adding buildConfig to log. Class Not found : &quot;</span> <span class="o">+</span> <span class="n">className</span> <span class="o">+</span> <span class="s">&quot;. Please configure &#39;buildConfigClass&#39; in your ACRA config&quot;</span><span class="o">);</span>
+        <span class="k">throw</span> <span class="n">e</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
 
-<p>내가 알기론 원금균등상환이 돈을 빌리는 입장에서 제일 유리한 것으로 알고 있으나 대부분의 대출 상품은 원리금균등상환이다.</p>
+<p><code>final String className = context.getClass().getPackage().getName() + ".BuildConfig";</code> 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
+해결을 위한 아래의 코드를 보자.</p>
 
-<p><strong>예전엔 빚테크라는 말도 있듯이 대출을 잘 활용하는 것이 좋았지만 요즘같은 시국엔 빚없이 사는게 제일인 것 같다.</strong> 아무쪼록 내가 만든 프로그램들이 대출을 효율적으로 받는데 도움이 되었으면 한다.</p>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">ACRAConfiguration</span> <span class="n">config</span> <span class="o">=</span> <span class="n">ACRA</span><span class="o">.</span><span class="na">getNewDefaultConfig</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+<span class="n">config</span><span class="o">.</span><span class="na">setBuildConfigClass</span><span class="o">(</span><span class="n">BuildConfig</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<span class="n">config</span><span class="o">.</span><span class="na">setFormUri</span><span class="o">(</span><span class="s">&quot;http://dev.yourdomain.net/AppCrash&quot;</span><span class="o">);</span>
+<span class="n">ACRA</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span> <span class="c1">// The following line triggers the initialization of ACRA</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p><code>config.setBuildConfigClass(BuildConfig.class);</code> 이 부분을 추가했다. ACRA 코드에서 보듯이 setBuildConfigClass로 직접 BuildConfig를 넘겨주면 패키지명으로 찾지 않는다. 따라서 Proguard가 적용되어도 문제가 없다.</p>
+
+<hr />
+
+<p>이 오류는 이것으로 해결이 가능하다. 하지만 나는 지금 다른 문제로 다시 고군분투 중이다.
+오류 발생시 HTTP/POST를 통해 오류 관련 정보를 전송하도록 사용중이었다. 그런데 앞서 이야기 한것과 같이 이번에 버전업이 되면서 HTTP 접속 관련 부분이 변경되었다. 여기에 문제가 있다.</p>
+
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">...</span>
+<span class="n">urlConnection</span><span class="o">.</span><span class="na">setChunkedStreamingMode</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+<span class="o">...</span>
+</pre></div>
+</td></tr></table></code></pre></div></figure>
+
+<p>위 부분은 ACRA에서 HTTP 전송시 사용하는 HttpRequest.java 의 일부분이다. <code>setChunkedStreamingMode</code>에 대해서는 여기서 설명하기엔 너무 길고 간단히 요약하자면 chunked 상태로 데이터가 전송된다.
+그런데 이 상태로 전송되면 현재 내가 사용하고 있는 서버에서 POST 값이 모두 비어 있다. request의 body가 수신되지 못하는 것이다. 이 부분은 나의 환경인 php-fpm가 proxy로 연결되어 있는 것과 관련이 있는 것으로 보인다. 이 부분에 대해서는 여러가지로 시도해 보았으나 해결이 되지 않았고 일단은 몇개의 클래스를 재정의해서 문제를 막아 놓았다. 그리고 관련해서는 ACRA에 Issue로 등록해 두었다. 개선이 될런지는 미지수인데 안된다면 앞으로 사용상에 걸림돌이 될 것 같다. 이 부분에 관련된 해결책이 나온다면 다시 포스팅을 하도록 하겠다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -166,8 +221,8 @@ ___</p>
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/09/30/loan-calculator/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/09/30/loan-calculator/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

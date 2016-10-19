@@ -11,10 +11,10 @@ categories: android
 필요한 처리는 아래와 같다.
 
 * WebView에 WebChromeClient를 설정해 주어야 한다. 그렇지 않으면 4.0 이후에서 NullPointerException이 발생한다.
-* WebChromeClient를 설정하더라도  [onShowCustomView](https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View, android.webkit.WebChromeClient.CustomViewCallback%29)를 구현해주지 않으면 전체창 보기 상태에서 영상은 나오지 않고 소리만 재생되는 현상이 발생한다.
+* WebChromeClient를 설정하더라도  [onShowCustomView()](https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View, android.webkit.WebChromeClient.CustomViewCallback%29)를 구현해주지 않으면 전체창 보기 상태에서 영상은 나오지 않고 소리만 재생되는 현상이 발생한다.
 * `android:hardwareAccelerated="true"` 등을 사용해서 Application 또는 해당 Activity에 하드웨어 가속을 켜줘야 한다.
 
-[onShowCustomView](https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View, android.webkit.WebChromeClient.CustomViewCallback%29)를 구현한 소스는 아래와 같다.
+[onShowCustomView()](https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View, android.webkit.WebChromeClient.CustomViewCallback%29)를 구현한 소스는 아래와 같다.
 
 ```Java
 import android.app.Activity;

@@ -113,69 +113,39 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/09/23/google-service-library-9-6-0-used-read-phone-state-permission/">
-								Google Service Library 9.6.0 사용시 READ_PHONE_STATE 권한이 추가되는 문제
+							<a class="title" href="https://blog.asamaru.net/2016/09/27/android-adb-device-reconnect/">
+								안드로이드 스튜디오에서 디바이스 연결이 끊어질 경우 다시 연결하는 방법
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/09/23/google-service-library-9-6-0-used-read-phone-state-permission/">2016.09.23.</span></a>
+								<a href="https://blog.asamaru.net/2016/09/27/android-adb-device-reconnect/">2016.09.27.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>최근 서비스 중인 앱에서 사용중이던 <a href="https://developers.google.com/android/guides/releases?hl=ko">Google Service Library</a>의 버전을 최신 버전으로 변경했다.
-기존에 사용중이던 버전은 9.2.1 이었다. 얼마전 9.4.0으로 변경된 것을 확인하고 9.4.0을 적용했다. debug 모드와 release 모드에서의 동작을 확인한 후 “베타 테스트”에 올려 보니 이상하게도 모든 테스트 기기에서 앱이 응답하지 않는 문제가 확인되었다. 오류 보고나 기록이 나타나는 것도 아니어서 문제 확인이 어려웠고 처음엔 다른 작업 중에 변경한 코드들에서 원인이 있을 것이라고 추측 했었다. 하지만 많은 부분의 작업을 했던 터라 정확한 원인을 찾기가 어려웠다.</p>
+							<p>안드로이드 앱을 개발시 에뮬레이터를 사용하는 경우도 있으나 대부분의 경우는 실제 기기를 연결해서 작업하는 경우가 많다. 기존 에뮬레이터의 경우 너무 느린 속도와 호환 문제로 잘 사용하지 않는다. 최근 성능과 안정성이 많이 개선 되었다고는 하나 아직 여러가지 문제가 있다(예를들어 vagrant와 동시에 사용할 수 없다).</p>
 
-<p>기존에 firebase를 사용하지만 FCM이 아닌 GCM을 그대로 사용하고 있었는데 이것이 원인일 수 있겠다는 생각으로 FCM으로 변경했으나 문제가 해결되지 않았다.</p>
+<p>기기를 사용해서 작업하는 경우 거추장스러운 선을 제거하기 위해 WIFI를 연결해서 디버깅하는 경우(<a href="/2015/09/07/android-run-slash-install-slash-debug-applications-over-wifi/">안드로이드 스튜디오에서 WIFI로 Run/Install/Debug 하기</a>)도 있으나 연결의 귀찮음과 안정성 문제로 직접 선을 꽂아서 사용하는 경우가 많다.</p>
 
-<p>계속 테스트를 하던 중 <a href="https://developers.google.com/android/guides/releases?hl=ko">Google Service Library</a>를 다시 확인하니 21일자로 9.6.0이 새로 나온 것을 확인하고 혹시나하고 한번 더 버전업하고 사전 출시 테스트를 하니 앱이 응답하지 않는 문제가 해결 되었다. 아마도 9.4.0과 해당 앱의 코드가 충돌하는 문제가 있었거나 9.4.0 버전 자체에 버그가 있었던 것으로 생각된다.</p>
+<p>그런데 선을 직접 연결해도 수시로 adb와 디바이스의 연결이 끊어지는 문제가 발생하는 경우가 있다. 나의 경우 맥을 sierra로 업데이트 후 너무 심해졌다. 수시로 끊어지고 있다. 예전의 경우엔 USB 선의 문제로 이런 경우가 많았는데 이번엔 선을 바꿔봐도 소용이 없었다. 그래서 선을 매번 뺐다 꽂아서 다시 작업을 하고 있었는데 안 그래도 아이폰에 비해 단자가 헐거워지거나 고장 나는 경우가 많은데 계속 뺐다 꽂았다하기에는 무리가 있다.</p>
 
-<p>하지만 문제는 여기서 다시 시작된다. 9.6.0을 사용하니 앱을 업데이트 하려고 할 때 추가 권한을 요구하고 있었다. 요구하는 권한은 아래와 같다.</p>
+<p>그래서 관련 자료를 찾아보니 PC에서 내보내는 전력이 안드로이드 기기에 충분하지 않지 않을 경우 이런 현상이 발생할 수 있고 최신 맥북에서 발생하는 경우가 많다는 사람이 있었다. 다른 사람은 USB 3.0을 사용하면서 그랬다는 사람도 있고…</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">android.permission.READ_PHONE_STATE
-android.permission.READ_EXTERNAL_STORAGE
-android.permission.WRITE_EXTERNAL_STORAGE
-</code></pre></div></figure>
+<p>이런 경우 아래와 같이 USB 설정을 변경해서 해결했다는 사람들도 있었으나 맥에서는 관련 설정을 찾을 수 없었다(내가 못찾는 것일지도).</p>
 
-<p>문제는 다른 것은 두더라도 <code>READ_PHONE_STATE</code> 권한을 요구한다는 것이다. 이 부분은 사용자에게 불필요한 권한을 요구하는 부정적인 이미지를 줄 수 있어 문제가 있다고 생각하고 관련 정보를 찾아봤다.</p>
+<ol>
+  <li>Scroll to the right and type ‘Power Options’ in the search field and click on it.</li>
+  <li>Click ‘Change plan setting’ on your chosen plan.</li>
+  <li>Click ‘Change advanced power setting’ on your chosen plan.</li>
+  <li>Find ‘USB settings’ and open.</li>
+  <li>Find ‘USB selective suspend setting’ and change it to disabled.</li>
+</ol>
 
-<ul>
-  <li><a href="http://stackoverflow.com/questions/38307751/firebase-permissions">Firebase + Permissions</a></li>
-  <li><a href="https://code.google.com/p/android/issues/detail?id=223459">Issue 223459:	Play Services library adding unnecessary READ_PHONE_STATE permission</a></li>
-</ul>
+<p>그래서 일단은 연결이 끊어지면 아래의 방법을 해결하고 있다.</p>
 
-<p>확인해보니 나 말고도 이런 현상을 겪는 사람들이 있었던 것이다.</p>
-
-<p>9.4.0을 사용하면 앱이 응답하지 않는 문제가 발생할 확률이 있고(모두에게 발생하는 문제로는 보이지 않는다) 9.6.0은 불필요한 권한들이 추가되는 문제가 있다.</p>
-
-<p>그래서 현재로써는 9.2.1로 다시 되돌린 상태다. 당분간 <a href="https://code.google.com/p/android/">AOSP</a>에서 해당 이슈를 지켜봐야 할 것 같다.</p>
-
-<p>현재 나의 경우는 AdMob을 사용하는 경우에 이 문제가 발생하는 것으로 보인다.
-우선은 해당 권한이 실제로 필요 없다면 아래와 같이 부모 프로젝트에서 제거 할 수는 있다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-xml"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8
-9</pre></div></td><td class="code"><div class="highlight"><pre><span class="nt">&lt;uses-permission</span>
-	<span class="na">android:name=</span><span class="s">&quot;android.permission.READ_PHONE_STATE&quot;</span>
-	<span class="na">tools:node=</span><span class="s">&quot;remove&quot;</span> <span class="nt">/&gt;</span>
-<span class="nt">&lt;uses-permission</span>
-	<span class="na">android:name=</span><span class="s">&quot;android.permission.READ_EXTERNAL_STORAGE&quot;</span>
-	<span class="na">tools:node=</span><span class="s">&quot;remove&quot;</span> <span class="nt">/&gt;</span>
-<span class="nt">&lt;uses-permission</span>
-	<span class="na">android:name=</span><span class="s">&quot;android.permission.WRITE_EXTERNAL_STORAGE&quot;</span>
-	<span class="na">tools:node=</span><span class="s">&quot;remove&quot;</span> <span class="nt">/&gt;</span>
+<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>adb <span class="nb">kill</span>-server <span class="o">&amp;&amp;</span> adb start-server
 </pre></div>
 </td></tr></table></code></pre></div></figure>
 
-<hr />
-
-<p>update : 2016.09.27.</p>
-
-<p>오늘 확인해보니 역시나 9.6.1이 새로 올라왔으며 해당 권한에 대한 patch가 포함되어 있다.</p>
+<p>귀찮기는하나 선을 매번 꽂았다 뺐다 하지 않아도 되는 것으로 일단 참고 있다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -189,8 +159,8 @@ android.permission.WRITE_EXTERNAL_STORAGE
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/09/23/google-service-library-9-6-0-used-read-phone-state-permission/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/09/23/google-service-library-9-6-0-used-read-phone-state-permission/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/09/27/android-adb-device-reconnect/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/09/27/android-adb-device-reconnect/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

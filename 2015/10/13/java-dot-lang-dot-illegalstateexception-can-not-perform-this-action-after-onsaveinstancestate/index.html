@@ -134,18 +134,9 @@
 								</section>
 				-->
 
-				<p>안드로이드 Fragment 작업 중에 <code>java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</code> 오류가 발생했다. 상황은 이렇다. Fragment를 가진 Activity에서 새로운 Activity를 띄우고 해당 Activity에서 <code>setResult</code>를 통해 값을 반환했다. 새로운 Activity를 열었던 Activity에서는 <code>protected void onActivityResult(int requestCode, int resultCode, Intent intent)</code>를 통해 값을 전달 받아 새로운 Fragment를 불렀다. 그런데 위 오류가 난다. 아래는 작성했던 코드의 일부를 예시를 위해 수정한 것이다(실행가능한 코드가 아니다).</p>
+				<p>안드로이드 Fragment 작업 중에 <code class="highlighter-rouge">java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</code> 오류가 발생했다. 상황은 이렇다. Fragment를 가진 Activity에서 새로운 Activity를 띄우고 해당 Activity에서 <code class="highlighter-rouge">setResult</code>를 통해 값을 반환했다. 새로운 Activity를 열었던 Activity에서는 <code class="highlighter-rouge">protected void onActivityResult(int requestCode, int resultCode, Intent intent)</code>를 통해 값을 전달 받아 새로운 Fragment를 불렀다. 그런데 위 오류가 난다. 아래는 작성했던 코드의 일부를 예시를 위해 수정한 것이다(실행가능한 코드가 아니다).</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10</pre></div></td><td class="code"><div class="highlight"><pre><span class="nd">@Override</span>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="nd">@Override</span>
 <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
     <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
     	<span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
@@ -155,8 +146,8 @@
     <span class="o">}</span>
     <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
 <span class="o">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>관련된 정보를 찾아보니 아래와 같은 문서들이 보였다.</p>
 
@@ -165,18 +156,9 @@
   <li><a href="http://www.kmshack.kr/2013/08/fragment-%ED%8C%8C%ED%97%A4%EC%B9%98%EA%B8%B0-3-fragmentmanager-fragmenttransaction%EC%97%90-%EB%8C%80%ED%95%B4%EC%84%9C/">Fragment 파헤치기 – 3. FragmentManager, FragmentTransaction에 대해서</a></li>
 </ul>
 
-<p><strong>간단히 요약하자면 <code>commit()</code> 대신 <code>commitAllowingStateLoss()</code>을 사용하면 된다.</strong> 원인에 대해서는 위의 글들을 참고하면 상세히 설명되어 있다. 그래서 고쳐진 코드는 다음과 같다.</p>
+<p><strong>간단히 요약하자면 <code class="highlighter-rouge">commit()</code> 대신 <code class="highlighter-rouge">commitAllowingStateLoss()</code>을 사용하면 된다.</strong> 원인에 대해서는 위의 글들을 참고하면 상세히 설명되어 있다. 그래서 고쳐진 코드는 다음과 같다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10</pre></div></td><td class="code"><div class="highlight"><pre><span class="nd">@Override</span>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="nd">@Override</span>
 <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
     <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
     	<span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
@@ -186,11 +168,11 @@
     <span class="o">}</span>
     <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
 <span class="o">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>안드로이드는 이런 문제들에 대해서 알아서 좀 대응할 수 없는건가? 아쉽다.
-그런데 함수 이름에도 나와 있는 것 처럼 <code>commitAllowingStateLoss()</code>를 사용하면 상태값을 잃을 수 있다.</p>
+그런데 함수 이름에도 나와 있는 것 처럼 <code class="highlighter-rouge">commitAllowingStateLoss()</code>를 사용하면 상태값을 잃을 수 있다.</p>
 
 <p><a href="http://developer.android.com/intl/ko/reference/android/app/FragmentTransaction.html#commitAllowingStateLoss%28%29">FragmentTransaction 메뉴얼</a>에 아래와 같이 나와있다.</p>
 
@@ -200,28 +182,13 @@
   <p>Like commit() but allows the commit to be executed after an activity’s state is saved. This is dangerous because the commit can be lost if the activity needs to later be restored from its state, so this should only be used for cases where it is okay for the UI state to change unexpectedly on the user.</p>
 </blockquote>
 
-<p><code>commitAllowingStateLoss()</code>를 사용하지 않고 해결하는 방법은 없을까? 생각해보면 실행되는 시점의 문제이므로 시점을 조금 지연하는 방법을 쓸 수도 있다.</p>
+<p><code class="highlighter-rouge">commitAllowingStateLoss()</code>를 사용하지 않고 해결하는 방법은 없을까? 생각해보면 실행되는 시점의 문제이므로 시점을 조금 지연하는 방법을 쓸 수도 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16</pre></div></td><td class="code"><div class="highlight"><pre><span class="nd">@Override</span>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="nd">@Override</span>
 <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">intent</span><span class="o">)</span> <span class="o">{</span>
     <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
-        <span class="n">Handler</span> <span class="n">handler_</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Handler</span><span class="o">(</span><span class="n">Looper</span><span class="o">.</span><span class="na">getMainLooper</span><span class="o">());</span>
-        <span class="n">handler_</span><span class="o">.</span><span class="na">postDelayed</span><span class="o">(</span><span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">Handler</span> <span class="n">handler_</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Handler</span><span class="o">(</span><span class="n">Looper</span><span class="o">.</span><span class="na">getMainLooper</span><span class="o">());</span>
+        <span class="n">handler_</span><span class="o">.</span><span class="na">postDelayed</span><span class="o">(</span><span class="k">new</span> <span class="n">Runnable</span><span class="o">()</span> <span class="o">{</span>
             <span class="nd">@Override</span>
             <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
                 <span class="n">FragmentManager</span> <span class="n">ft</span> <span class="o">=</span> <span class="n">getChildFragmentManager</span><span class="o">();</span>
@@ -233,10 +200,10 @@
     <span class="o">}</span>
     <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">intent</span><span class="o">);</span>
 <span class="o">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
-<p>위 코드를 보면 Handler의 <code>postDelayed()</code> 함수를 사용해서 처리시점을 지연시켰다(사실 시간은 0이므로 작업을 잠시 뒤로 미룬것이다). 이렇게 해도 위 오류는 발생하지 않는다.</p>
+<p>위 코드를 보면 Handler의 <code class="highlighter-rouge">postDelayed()</code> 함수를 사용해서 처리시점을 지연시켰다(사실 시간은 0이므로 작업을 잠시 뒤로 미룬것이다). 이렇게 해도 위 오류는 발생하지 않는다.</p>
 
 <p>어떤 방법이 맞는지에 대해서는 아직은 정확히 모르겠다(이렇게하면 상태를 잃어버리는 것과 무관해 지는지 명확하지 않다는 뜻이다). 선택은 자유다.</p>
 
@@ -286,7 +253,7 @@
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

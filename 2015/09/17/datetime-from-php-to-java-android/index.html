@@ -148,19 +148,14 @@
 
 <p>자 그럼 서버에서 데이터를 보낼 수 있는 방법에 어떤 것이 있을까? 가장 일반적인 방법으로는 timestamp(int), string, Date가 있다. 어떤 것을 쓰더라도 무방하지만 앞서 얘기한 것처럼 GsonHttpMessageConverter를 써서 간단히 데이터를 정확한 형식으로 받는 것이 편리하기 때문에 전송시 데이터 타입을 맞추는 것이 좋다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// string 타입으로 전송</span>
-<span class="nv">$date</span> <span class="o">=</span> <span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">;</span>
-<span class="c1">// int 타입으로 전송</span>
-<span class="nv">$date</span> <span class="o">=</span> <span class="p">(</span><span class="k">new</span> <span class="nx">\DateTime</span><span class="p">(</span><span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">getTimestamp</span><span class="p">();</span>
-<span class="c1">// Date 타입으로 전송</span>
-<span class="nv">$date</span> <span class="o">=</span> <span class="p">(</span><span class="k">new</span> <span class="nx">\DateTime</span><span class="p">(</span><span class="s2">&quot;2015-09-17 10:00:00&quot;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">setTimeZone</span><span class="p">(</span><span class="k">new</span> <span class="nx">\DateTimeZone</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">))</span><span class="o">-&gt;</span><span class="na">format</span><span class="p">(</span><span class="s1">&#39;Y-m-d\TH:i:s\Z&#39;</span><span class="p">);</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>// string 타입으로 전송
+$date = "2015-09-17 10:00:00";
+// int 타입으로 전송
+$date = (new \DateTime("2015-09-17 10:00:00"))-&gt;getTimestamp();
+// Date 타입으로 전송
+$date = (new \DateTime("2015-09-17 10:00:00"))-&gt;setTimeZone(new \DateTimeZone('UTC'))-&gt;format('Y-m-d\TH:i:s\Z');
+</code></pre>
+</div>
 
 <p>위의 코드를 보면 PHP에서 전송할 때 넘겨줄 데이터의 예시를 타입별로 제시했다. 앞서 강조했던대로 안드로이드 클라이언트에서 GsonHttpMessageConverter를 이용해 Date 타입으로 바로 받으려면 마지막에 있는 “Date 타입으로 전송” 방식을 사용하면 된다.</p>
 
@@ -170,44 +165,30 @@
 
 <p>사실 위의 경우는 GsonHttpMessageConverter를 사용한다는 상황을 가정한 것으로 이것을 사용하지 않고 직접 데이터를 받아 GSON을 통해 파싱한다면 아래의 방법을 쓸 수도 있다. Format을 보면 알겠지만 UTC Date여야 한다(정확한 시간 처리를 위해). “yyyy-MM-dd HH:mm:ss”이 Format을 쓸 수도 있으나 TimeZone 명시되지 않으므로 시간이 다르게 보일 수 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">Gson</span> <span class="n">gson</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">GsonBuilder</span><span class="o">().</span><span class="na">setDateFormat</span><span class="o">(</span><span class="s">&quot;yyyy-MM-dd&#39;T&#39;HH:mm:ssZ&quot;</span><span class="o">).</span><span class="na">create</span><span class="o">();</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="n">Gson</span> <span class="n">gson</span> <span class="o">=</span> <span class="k">new</span> <span class="n">GsonBuilder</span><span class="o">().</span><span class="na">setDateFormat</span><span class="o">(</span><span class="s">"yyyy-MM-dd'T'HH:mm:ssZ"</span><span class="o">).</span><span class="na">create</span><span class="o">();</span>
+</code></pre>
+</div>
 
 <p>아래는 추가적으로 다른 타입으로 수신했을 때 안드로이드 클라이언트에서 Date 타입으로 변환하고자 할때 사용할 수 있는 참고 코드들이다.</p>
 
 <p><strong>string 타입으로 수신시</strong></p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">try</span> <span class="o">{</span>
-    <span class="n">String</span> <span class="n">dateTime</span> <span class="o">=</span> <span class="s">&quot;2015-09-17 10:00:00&quot;</span><span class="o">;</span>
-    <span class="n">SimpleDateFormat</span> <span class="n">dateParser</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SimpleDateFormat</span><span class="o">(</span><span class="s">&quot;yyyy-MM-dd HH:mm:ss&quot;</span><span class="o">,</span> <span class="n">Locale</span><span class="o">.</span><span class="na">KOREA</span><span class="o">);</span>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="k">try</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="n">dateTime</span> <span class="o">=</span> <span class="s">"2015-09-17 10:00:00"</span><span class="o">;</span>
+    <span class="n">SimpleDateFormat</span> <span class="n">dateParser</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SimpleDateFormat</span><span class="o">(</span><span class="s">"yyyy-MM-dd HH:mm:ss"</span><span class="o">,</span> <span class="n">Locale</span><span class="o">.</span><span class="na">KOREA</span><span class="o">);</span>
     <span class="n">Date</span> <span class="n">date</span> <span class="o">=</span> <span class="n">dateParser</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="n">dateTime</span><span class="o">);</span>
 <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ParseException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
     <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
 <span class="o">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p><strong>timestamp(int) 타입으로 수신시</strong></p>
 
 <p>PHP에서의 TimeStamp는 초단위(s)지만 Java에서는 밀리초(ms) 단위이므로 1000을 곱해서 넣어 주어야 한다.
 그리고 Java에서는 Date가 Deprecated되어 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>를 더 권장한다고 한다. <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Date.html">정확하게는 완전히 Deprecated된 것은 아니고 일부 생성자가 그렇다는 것</a>이지만 <a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/Calendar.html">Calendar</a>가 더 다양한 기능을 제공하므로 더 권장된다는 것이다. 자세한 이유는 검색해보면 많이 나온다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8
-9</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// Calendar 사용</span>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="c1">// Calendar 사용</span>
 <span class="n">Calendar</span> <span class="n">c</span> <span class="o">=</span> <span class="n">Calendar</span><span class="o">.</span><span class="na">getInstance</span><span class="o">();</span>
 <span class="n">c</span><span class="o">.</span><span class="na">setTimeInMillis</span><span class="o">(</span><span class="n">timestamp</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">);</span>
 <span class="n">Date</span> <span class="n">date</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">getTime</span><span class="o">();</span>
@@ -215,9 +196,9 @@
 <span class="c1">// OR</span>
 
 <span class="c1">// Date 사용</span>
-<span class="n">Date</span> <span class="n">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Date</span><span class="o">(</span><span class="n">timestamp</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">);</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<span class="n">Date</span> <span class="n">d</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Date</span><span class="o">(</span><span class="n">timestamp</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">);</span>
+</code></pre>
+</div>
 
 
 			</article>
@@ -266,7 +247,7 @@
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

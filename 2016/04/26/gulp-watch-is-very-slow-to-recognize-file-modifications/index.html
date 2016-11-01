@@ -140,19 +140,21 @@
 
 <p>그래서 관련자료를 찾다가 <a href="https://github.com/gulpjs/gulp/issues/448">Watch is very slow to recognize file modifications</a>라는 글을 찾았다. 여기서 원인을 찾았는데 원인은 바로 NFS로 연결된 디스크로 인한 문제였다.</p>
 
-<p>이 글에서의 해결책은 아래와 같다. 중요한 부분은 <code>actimeo=2</code> 이다.</p>
+<p>이 글에서의 해결책은 아래와 같다. 중요한 부분은 <code class="highlighter-rouge">actimeo=2</code> 이다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">config.vm.synced_folder "dev", "/dev/vagrant",
+<div class="highlighter-rouge"><pre class="highlight"><code>config.vm.synced_folder "dev", "/dev/vagrant",
     :nfs =&gt; true,
     :mount_options =&gt; ['actimeo=2']
-</code></pre></div></figure>
+</code></pre>
+</div>
 
-<p>하지만 나의 경우는 <code>synced_folder</code>를 사용하지 않고 부팅시 직접적으로 NFS 디스크를 마운트하고 있다. 그래서 아래와 같이 적용했다.</p>
+<p>하지만 나의 경우는 <code class="highlighter-rouge">synced_folder</code>를 사용하지 않고 부팅시 직접적으로 NFS 디스크를 마운트하고 있다. 그래서 아래와 같이 적용했다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">mount -o "vers=3,udp,nolock,actimeo=2" 192.168.99.1:"/subdev/web" /home/web
-</code></pre></div></figure>
+<div class="highlighter-rouge"><pre class="highlight"><code>mount -o "vers=3,udp,nolock,actimeo=2" 192.168.99.1:"/subdev/web" /home/web
+</code></pre>
+</div>
 
-<p>그럼 여기서 <code>actimeo</code>는 무엇인가? <a href="http://linux.die.net/man/5/nfs">Linux man page</a>에 아래와 같이 설명되어 있다.</p>
+<p>그럼 여기서 <code class="highlighter-rouge">actimeo</code>는 무엇인가? <a href="http://linux.die.net/man/5/nfs">Linux man page</a>에 아래와 같이 설명되어 있다.</p>
 
 <blockquote>
   <p><em>actimeo=n</em></p>
@@ -162,11 +164,12 @@
 
 <p>간단히 이야기하자면 위의 방법은 NFS의 파일 cache time을 2초로 줄여서 파일의 변경을 빠르게 인지할 수 있도록 해주는 것이다.</p>
 
-<p>다른 방법으로는 <code>lookupcache=none</code> 옵션을 사용하는 것도 가능하다(<a href="http://stackoverflow.com/a/28571327">Watching files for changes on Vagrant, file modification times not updating</a>
+<p>다른 방법으로는 <code class="highlighter-rouge">lookupcache=none</code> 옵션을 사용하는 것도 가능하다(<a href="http://stackoverflow.com/a/28571327">Watching files for changes on Vagrant, file modification times not updating</a>
 ).</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">config.vm.synced_folder "./", "/vagrant", type: "nfs", mount_options: ["lookupcache=none"]
-</code></pre></div></figure>
+<div class="highlighter-rouge"><pre class="highlight"><code>config.vm.synced_folder "./", "/vagrant", type: "nfs", mount_options: ["lookupcache=none"]
+</code></pre>
+</div>
 
 			</article>
 			<hr class="boundary">
@@ -214,7 +217,7 @@
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

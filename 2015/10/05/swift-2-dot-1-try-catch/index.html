@@ -154,66 +154,51 @@
 
 <p>Swift에서는 ErrorType protocol라는 빈 protocol을 사용하여 오류를 표시한다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">enum</span> <span class="nl">VendingMachineError</span><span class="p">:</span> <span class="n">ErrorType</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="n">InvalidSelection</span>
-    <span class="k">case</span> <span class="n">InsufficientFunds</span><span class="p">(</span><span class="nl">coinsNeeded</span><span class="p">:</span> <span class="n">Int</span><span class="p">)</span>
-    <span class="k">case</span> <span class="n">OutOfStock</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">enum</span> <span class="kt">VendingMachineError</span><span class="p">:</span> <span class="kt">ErrorType</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="kt">InvalidSelection</span>
+    <span class="k">case</span> <span class="kt">InsufficientFunds</span><span class="p">(</span><span class="nv">coinsNeeded</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span>
+    <span class="k">case</span> <span class="kt">OutOfStock</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>이렇게 생성된 Error는 아래와 같이 발생시킬 수 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">throw</span> <span class="n">VendingMachineError</span><span class="p">.</span><span class="n">InsufficientFunds</span><span class="p">(</span><span class="nl">coinsNeeded</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">throw</span> <span class="kt">VendingMachineError</span><span class="o">.</span><span class="kt">InsufficientFunds</span><span class="p">(</span><span class="nv">coinsNeeded</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span>
+</code></pre>
+</div>
 
 <p>조금더 자세히 보자면 ErrorType은 enum으로 정의될 수 있다. Swift에서 try, catch는 항상 ErrorType를 throw 한다. Java에서는 오류 유형을 클래스로 취급하므로 종류마다 클래스를 정의하므로 개수가 많아지고 오류를 처리에 따라 묶어서 관리하기 어렵다. 하지만 Swift의 ErrorType는 관련 오류를 enum으로 정리할 수 있기 때문에 정리가 쉽다.</p>
 
 <p>예들들어 String을 Int로 변환하는 함수를 가정할 경우 발생할 수 있는 오류는 String이 nil이거나 숫자로 변환될 수 없는 문자열일 수 있다. 이를 ErrorType 로 구현하면 다음과 같이 정의할 수 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">enum</span> <span class="nl">ParseError</span> <span class="p">:</span> <span class="n">ErrorType</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="n">Nil</span> <span class="c1">// nil 인 경우</span>
-    <span class="k">case</span> <span class="n">IllegalFormat</span> <span class="c1">// Int로 해석 할 수 없었던 경우</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">enum</span> <span class="kt">ParseError</span> <span class="p">:</span> <span class="kt">ErrorType</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="kt">Nil</span> <span class="c1">// nil 인 경우</span>
+    <span class="k">case</span> <span class="kt">IllegalFormat</span> <span class="c1">// Int로 해석 할 수 없었던 경우</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>ErrorType는 오류의 종류를 나타낼뿐만 아니라 오류 정보를 함께 가질 수 있다.
 위의 예시에서 IllegalFormat 오류일 때 해당 String이 무엇이었는지를 함께 넘겨주고 싶을 수 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">enum</span> <span class="nl">ParseError</span> <span class="p">:</span> <span class="n">ErrorType</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="n">Nil</span>
-    <span class="k">case</span> <span class="n">IllegalFormat</span> <span class="p">(</span><span class="n">String</span><span class="p">)</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">enum</span> <span class="kt">ParseError</span> <span class="p">:</span> <span class="kt">ErrorType</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="kt">Nil</span>
+    <span class="k">case</span> <span class="kt">IllegalFormat</span> <span class="p">(</span><span class="kt">String</span><span class="p">)</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>이 방식의 좋은 점은 오류의 종류에 따라 다른 유형의 인자를 가질 수 있어 Type Safe하게 값을 얻어낼 수 있다는 것이다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">switch</span> <span class="n">error</span> <span class="p">{</span>
-    <span class="k">case</span><span class="p">.</span> <span class="nl">Nil</span> <span class="p">:</span>
-	    <span class="n">print</span> <span class="p">(</span> <span class="s">&quot;The text is nil.&quot;</span><span class="p">)</span>
-    <span class="k">case</span><span class="p">.</span> <span class="n">IllegalFormat</span> <span class="p">(</span><span class="k">let</span> <span class="n">string</span><span class="p">)</span> <span class="o">:</span>
-    	<span class="n">print</span> <span class="p">(</span> <span class="s">&quot;Illegal format : \ (string)&quot;</span><span class="p">)</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">switch</span> <span class="n">error</span> <span class="p">{</span>
+    <span class="k">case</span><span class="o">.</span> <span class="kt">Nil</span> <span class="p">:</span>
+	    <span class="nf">print</span> <span class="p">(</span> <span class="s">"The text is nil."</span><span class="p">)</span>
+    <span class="k">case</span><span class="o">.</span> <span class="kt">IllegalFormat</span> <span class="p">(</span><span class="k">let</span> <span class="nv">string</span><span class="p">)</span> <span class="p">:</span>
+    	<span class="nf">print</span> <span class="p">(</span> <span class="s">"Illegal format : </span><span class="err">\</span><span class="s"> (string)"</span><span class="p">)</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>Objective-C의 NSError에서도 오류 정보를 가질 수 있지만, Type 정보가 사라져 버리기 때문에 Type Safe 하지 않다.</p>
 
@@ -234,152 +219,107 @@
 
 <p>함수, 메소드, 초기화시에 오류가 throw될 수 있음을 표시하려면 함수 선언시 인자 뒤에 throws 키워드를 추가할 수 있다. 아래의 예시를 보면 이해가 편할 것이다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">func</span> <span class="n">canThrowErrors</span><span class="p">()</span> <span class="n">throws</span> <span class="o">-&gt;</span> <span class="n">String</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">canThrowErrors</span><span class="p">()</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span>
 
-<span class="k">func</span> <span class="n">cannotThrowErrors</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">String</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<span class="kd">func</span> <span class="nf">cannotThrowErrors</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">String</span>
+</code></pre>
+</div>
 
-<p><code>canThrowErrors</code> 함수 내부에서 오류가 발생하면 이 오류는 자신을 호출한 함수로 전파된다.</p>
+<p><code class="highlighter-rouge">canThrowErrors</code> 함수 내부에서 오류가 발생하면 이 오류는 자신을 호출한 함수로 전파된다.</p>
 
 <h3 id="do-catch---handling-errors-using-do-catch">Do-Catch를 이용한 오류 처리(Handling Errors Using Do-Catch)</h3>
 
 <p>오류를 제어 하고자하는 코드의 블록이 있을 경우는 do-catch를 사용할 수 있다. 문법 상의 차이는 있지만 다른 언어에서의 try-catch와 유사하므로 코드를 보는 것이 이해가 더 빠를 것으로 생각된다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">var</span> <span class="n">vendingMachine</span> <span class="o">=</span> <span class="n">VendingMachine</span><span class="p">()</span>
-<span class="n">vendingMachine</span><span class="p">.</span><span class="n">coinsDeposited</span> <span class="o">=</span> <span class="mi">8</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">var</span> <span class="nv">vendingMachine</span> <span class="o">=</span> <span class="kt">VendingMachine</span><span class="p">()</span>
+<span class="n">vendingMachine</span><span class="o">.</span><span class="n">coinsDeposited</span> <span class="o">=</span> <span class="mi">8</span>
 <span class="k">do</span> <span class="p">{</span>
-    <span class="n">try</span> <span class="n">buyFavoriteSnack</span><span class="p">(</span><span class="s">&quot;Alice&quot;</span><span class="p">,</span> <span class="nl">vendingMachine</span><span class="p">:</span> <span class="n">vendingMachine</span><span class="p">)</span>
-<span class="p">}</span> <span class="n">catch</span> <span class="n">VendingMachineError</span><span class="p">.</span><span class="n">InvalidSelection</span> <span class="p">{</span>
-    <span class="n">print</span><span class="p">(</span><span class="s">&quot;Invalid Selection.&quot;</span><span class="p">)</span>
-<span class="p">}</span> <span class="n">catch</span> <span class="n">VendingMachineError</span><span class="p">.</span><span class="n">OutOfStock</span> <span class="p">{</span>
-    <span class="n">print</span><span class="p">(</span><span class="s">&quot;Out of Stock.&quot;</span><span class="p">)</span>
-<span class="p">}</span> <span class="n">catch</span> <span class="n">VendingMachineError</span><span class="p">.</span><span class="n">InsufficientFunds</span><span class="p">(</span><span class="k">let</span> <span class="n">coinsNeeded</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">print</span><span class="p">(</span><span class="s">&quot;Insufficient funds. Please insert an additional \(coinsNeeded) coins.&quot;</span><span class="p">)</span>
+    <span class="k">try</span> <span class="nf">buyFavoriteSnack</span><span class="p">(</span><span class="s">"Alice"</span><span class="p">,</span> <span class="nv">vendingMachine</span><span class="p">:</span> <span class="n">vendingMachine</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="kt">VendingMachineError</span><span class="o">.</span><span class="kt">InvalidSelection</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"Invalid Selection."</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="kt">VendingMachineError</span><span class="o">.</span><span class="kt">OutOfStock</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"Out of Stock."</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="kt">VendingMachineError</span><span class="o">.</span><span class="kt">InsufficientFunds</span><span class="p">(</span><span class="k">let</span> <span class="nv">coinsNeeded</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"Insufficient funds. Please insert an additional </span><span class="se">\(</span><span class="n">coinsNeeded</span><span class="se">)</span><span class="s"> coins."</span><span class="p">)</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
-<p><code>buyFavoriteSnack</code> 함수는 try에 의해 호출되며 오류가 발생하면 오류의 타입에 해당하는 catch에 의해 제어된다. 다른 예시를 하나 살펴보자.</p>
+<p><code class="highlighter-rouge">buyFavoriteSnack</code> 함수는 try에 의해 호출되며 오류가 발생하면 오류의 타입에 해당하는 catch에 의해 제어된다. 다른 예시를 하나 살펴보자.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">do</span> <span class="p">{</span>
-	<span class="k">let</span> <span class="n">number</span> <span class="o">=</span> <span class="n">try</span> <span class="n">toInt</span> <span class="p">(</span><span class="n">label</span><span class="p">.</span> <span class="n">text</span><span class="p">)</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">do</span> <span class="p">{</span>
+	<span class="k">let</span> <span class="nv">number</span> <span class="o">=</span> <span class="k">try</span> <span class="nf">toInt</span> <span class="p">(</span><span class="n">label</span><span class="o">.</span> <span class="n">text</span><span class="p">)</span>
     <span class="c1">// number를 사용한 처리</span>
-<span class="p">}</span> <span class="n">catch</span> <span class="n">ParseError</span><span class="p">.</span> <span class="n">Nil</span> <span class="p">{</span>
-	<span class="n">print</span> <span class="p">(</span> <span class="s">&quot;The text is nil.&quot;</span><span class="p">)</span>
-<span class="p">}</span> <span class="n">catch</span> <span class="n">ParseError</span><span class="p">.</span> <span class="n">IllegalFormat</span> <span class="p">(</span><span class="k">let</span> <span class="n">string</span><span class="p">)</span> <span class="p">{</span>
-	<span class="n">print</span> <span class="p">(</span> <span class="s">&quot;Illegal format : \ (string)&quot;</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="kt">ParseError</span><span class="o">.</span> <span class="kt">Nil</span> <span class="p">{</span>
+	<span class="nf">print</span> <span class="p">(</span> <span class="s">"The text is nil."</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="kt">ParseError</span><span class="o">.</span> <span class="kt">IllegalFormat</span> <span class="p">(</span><span class="k">let</span> <span class="nv">string</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nf">print</span> <span class="p">(</span> <span class="s">"Illegal format : </span><span class="err">\</span><span class="s"> (string)"</span><span class="p">)</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <h3 id="error-optional-values-converting-errors-to-optional-values">Error를 Optional Values로 변환(Converting Errors to Optional Values)</h3>
 
-<p><code>try?</code> 구문을 이용해서 오류를 optional value로 변환할 수 있다. 예를들어 어떤 값을 반환하는 함수가 있을 때 내부에서 오류가 발생하면 오류를 무시하고 nil이 반환된 것과 동일하게 처리할 수 있다. 역시 아래의 예시를 보자.</p>
+<p><code class="highlighter-rouge">try?</code> 구문을 이용해서 오류를 optional value로 변환할 수 있다. 예를들어 어떤 값을 반환하는 함수가 있을 때 내부에서 오류가 발생하면 오류를 무시하고 nil이 반환된 것과 동일하게 처리할 수 있다. 역시 아래의 예시를 보자.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">func</span> <span class="n">someThrowingFunction</span><span class="p">()</span> <span class="n">throws</span> <span class="o">-&gt;</span> <span class="n">Int</span> <span class="p">{</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">someThrowingFunction</span><span class="p">()</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Int</span> <span class="p">{</span>
     <span class="c1">// ...</span>
 <span class="p">}</span>
 
-<span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="n">try</span><span class="o">?</span> <span class="n">someThrowingFunction</span><span class="p">()</span>
-<span class="k">let</span> <span class="nl">y</span><span class="p">:</span> <span class="n">Int</span><span class="o">?</span>
+<span class="k">let</span> <span class="nv">x</span> <span class="o">=</span> <span class="k">try</span><span class="p">?</span> <span class="nf">someThrowingFunction</span><span class="p">()</span>
+<span class="k">let</span> <span class="nv">y</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span>
 <span class="k">do</span> <span class="p">{</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">try</span> <span class="n">someThrowingFunction</span><span class="p">()</span>
-<span class="p">}</span> <span class="n">catch</span> <span class="p">{</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="nb">nil</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="k">try</span> <span class="nf">someThrowingFunction</span><span class="p">()</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="kc">nil</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>아래와 같이 사용하는 것도 가능하다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">func</span> <span class="nf">fetchData</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Data</span><span class="o">?</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="k">let</span> <span class="n">data</span> <span class="o">=</span> <span class="n">try</span><span class="o">?</span> <span class="n">fetchDataFromDisk</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="n">data</span> <span class="p">}</span>
-    <span class="k">if</span> <span class="k">let</span> <span class="n">data</span> <span class="o">=</span> <span class="n">try</span><span class="o">?</span> <span class="n">fetchDataFromServer</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="n">data</span> <span class="p">}</span>
-    <span class="k">return</span> <span class="nb">nil</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">fetchData</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Data</span><span class="p">?</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="k">let</span> <span class="nv">data</span> <span class="o">=</span> <span class="k">try</span><span class="p">?</span> <span class="nf">fetchDataFromDisk</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="n">data</span> <span class="p">}</span>
+    <span class="k">if</span> <span class="k">let</span> <span class="nv">data</span> <span class="o">=</span> <span class="k">try</span><span class="p">?</span> <span class="nf">fetchDataFromServer</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="n">data</span> <span class="p">}</span>
+    <span class="k">return</span> <span class="kc">nil</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <h3 id="disabling-error-propagation">오류 전파 비활성화(Disabling Error Propagation)</h3>
 
-<p>실질적으로는 런타임시 오류를 발생시키지 않는 throwing 함수나 메서드를 사용할 경우가 있다. 이 경우 <code>try!</code>(forced-try)를 사용하여 throwing 함수나 메서드를 호출할 수 있다. <code>try!</code>를 사용하여 throwing 함수나 메서드를 호출하면 error 전파가 비활성화 되고 에러를 던지지 않는 런타임
+<p>실질적으로는 런타임시 오류를 발생시키지 않는 throwing 함수나 메서드를 사용할 경우가 있다. 이 경우 <code class="highlighter-rouge">try!</code>(forced-try)를 사용하여 throwing 함수나 메서드를 호출할 수 있다. <code class="highlighter-rouge">try!</code>를 사용하여 throwing 함수나 메서드를 호출하면 error 전파가 비활성화 되고 에러를 던지지 않는 런타임
 assertion 안에서의 호출로 랩핑된다. 따라서 만일 실제로 에러가 thrown 되면, 런타임 에러를 만나게 된다. 아래의 예시를 보자.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">let</span> <span class="n">photo</span> <span class="o">=</span> <span class="n">try</span><span class="o">!</span> <span class="n">loadImage</span><span class="p">(</span><span class="s">&quot;./Resources/John Appleseed.jpg&quot;</span><span class="p">)</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">let</span> <span class="nv">photo</span> <span class="o">=</span> <span class="k">try!</span> <span class="nf">loadImage</span><span class="p">(</span><span class="s">"./Resources/John Appleseed.jpg"</span><span class="p">)</span>
+</code></pre>
+</div>
 
-<p><code>loadImage(_:)</code> 함수의 경우 Resources에서 이미지를 호출하고 있으므로 런타임 상에서 오류가 발생하지 않는다(빌드시 이미지가 포함되므로). 이런 경우 <code>try!</code>를 사용하여 오류 제어를 줄일 수 있다.</p>
+<p><code class="highlighter-rouge">loadImage(_:)</code> 함수의 경우 Resources에서 이미지를 호출하고 있으므로 런타임 상에서 오류가 발생하지 않는다(빌드시 이미지가 포함되므로). 이런 경우 <code class="highlighter-rouge">try!</code>를 사용하여 오류 제어를 줄일 수 있다.</p>
 
 <h2 id="clearn-up-actions--specifying-clearn-up-actions">Clearn-Up Actions 지정 (Specifying Clearn-Up Actions)</h2>
 
-<p><code>defer</code>를 사용하면 코드의 실행이 코드 블럭을 벗어나기 전에 일련의 작업을 수행하게 할 수 있다. 다시말해 오류의 발생과 무관하게 반드시 실행되어야할 작업을 지정할 수 있다. 다른 언어의 finally와 유사하다고 볼 수 있다. 예를들면 열려진 파일을 닫거나, 수동으로 할당된 메모리를 해제하는 작업이 될 수 있다.</p>
+<p><code class="highlighter-rouge">defer</code>를 사용하면 코드의 실행이 코드 블럭을 벗어나기 전에 일련의 작업을 수행하게 할 수 있다. 다시말해 오류의 발생과 무관하게 반드시 실행되어야할 작업을 지정할 수 있다. 다른 언어의 finally와 유사하다고 볼 수 있다. 예를들면 열려진 파일을 닫거나, 수동으로 할당된 메모리를 해제하는 작업이 될 수 있다.</p>
 
 <p>defer 내부의 구문은 제어흐픔을 벗어나게 할 수 있는 break, return, throw 등을 포함해서는 안된다. 또한 defer는 기술된 순서의 역순으로 실행된다. 다시말해 마지막에 있는 defer부터 실행되어 올라온다.</p>
 
 <p>아래의 예시는 파일을 열어서 내용을 읽어서 처리하며 defer를 사용하여 오류 발생과 무관하게 파일을 닫아주도록 하고 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">func</span> <span class="nf">processFile</span><span class="p">(</span><span class="nl">filename</span><span class="p">:</span><span class="n">String</span><span class="p">)</span> <span class="n">throws</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="n">file</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-        <span class="n">defer</span> <span class="p">{</span>
-            <span class="n">close</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">processFile</span><span class="p">(</span><span class="nv">filename</span><span class="p">:</span><span class="kt">String</span><span class="p">)</span> <span class="k">throws</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="nf">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">file</span> <span class="o">=</span> <span class="nf">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">defer</span> <span class="p">{</span>
+            <span class="nf">close</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
         <span class="p">}</span>
 
-        <span class="k">while</span> <span class="k">let</span> <span class="o">=</span> <span class="n">try</span> <span class="n">file</span><span class="p">.</span><span class="n">readline</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">while</span> <span class="kd">let</span> <span class="o">=</span> <span class="k">try</span> <span class="n">file</span><span class="o">.</span><span class="nf">readline</span><span class="p">()</span> <span class="p">{</span>
             <span class="c1">// work with the file</span>
         <span class="p">}</span>
         <span class="c1">// close(file) is called here, at the end of the scope.</span>
     <span class="p">}</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 			</article>
 			<hr class="boundary">
@@ -427,7 +367,7 @@ assertion 안에서의 호출로 랩핑된다. 따라서 만일 실제로 에러
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

@@ -152,44 +152,30 @@
 
 <p>이 문장을 decode 하려면 다음의 코드를 참조하면 된다. (인터넷에서 다른 소스를 참조해서 조금 개선했다.)</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nb">preg_replace_callback</span><span class="p">(</span>
-    <span class="s1">&#39;/\\\x([0-9a-f]{2})/i&#39;</span><span class="p">,</span>
-    <span class="k">function</span><span class="p">(</span><span class="nv">$matches</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">hexdec</span><span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">1</span><span class="p">]));</span>
-    <span class="p">},</span>
-    <span class="nv">$string</span>
-<span class="p">);</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>$string = "\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9";
+echo preg_replace_callback(
+    '/\\\x([0-9a-f]{2})/i',
+    function($matches) {
+        return chr(hexdec($matches[1]));
+    },
+    $string
+);
+</code></pre>
+</div>
 
 <p>어땠든 이렇게 decode를 했는데도 글자가 깨졌다. 이런… 문자열이 UTF-8이 아니라 EUC-KR이다.
 그래서 조금더 추가. 여기서 UHC는 euc-kr과 거의 유사하다. 조금 더 확장되었다고 알고있는데 오래전 기억이라 확실치 않다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nb">iconv</span><span class="p">(</span><span class="s2">&quot;UHC&quot;</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nb">preg_replace_callback</span><span class="p">(</span>
-    <span class="s1">&#39;/\\\x([0-9a-f]{2})/i&#39;</span><span class="p">,</span>
-    <span class="k">function</span><span class="p">(</span><span class="nv">$matches</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">hexdec</span><span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">1</span><span class="p">]));</span>
-    <span class="p">},</span>
-    <span class="nv">$string</span>
-<span class="p">));</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>$string = "\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9";
+echo iconv("UHC", "UTF-8", preg_replace_callback(
+    '/\\\x([0-9a-f]{2})/i',
+    function($matches) {
+        return chr(hexdec($matches[1]));
+    },
+    $string
+));
+</code></pre>
+</div>
 
 <p>이렇게 해피앤딩이 되면 좋겠지만 현실을 그렇지 않다. 문제는 이 인코딩이 특수문자는 인코딩하지 않는다는 것.(비 ascii 코드만 인코딩)
 따라서 웹에서 데이터로 URL에 사용해서는 안되는 &amp;, # 등이 그대로 남아있어 데이터가 잘려서 넘어오는 문제는 해결되지 않는다. 가장 좋은 해결책은 urlencode를 해서 넘겨 벋는 것이지만 협력사를 내맘대로 할 수는 없고…</p>
@@ -201,145 +187,77 @@
 <p>이왕 이 일로 글을 적는 김에 몇가지 함수도 덤으로…
 php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등을 사용하면되나 javascript에서 인코딩된 문자열을 그대로 전달받는 경우 등에 사용할 수 있다. 쉽게 말해서 javascript 문자열 인코딩 함수 php 대응 함수다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">/**</span>
-<span class="sd"> * @desc javascript의 encodeURIComponent함수와 같은기능으로 문자열을 변환한다.</span>
-<span class="sd"> * @param mixed $str 처리할 배열변수나 단일변수</span>
-<span class="sd"> * @param String $fromEncofing 입력 인코딩</span>
-<span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
-<span class="sd"> * @exam $arr = String::encodeURI($arr);</span>
-<span class="sd"> *       String::encodeURI($arr);</span>
-<span class="sd"> */</span>
-<span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">encodeURI</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$fromEncofing</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nb">is_array</span><span class="p">(</span><span class="nv">$str</span><span class="p">))</span> <span class="p">{</span>
-        <span class="nx">String</span><span class="o">::</span><span class="na">arrayProc</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;String::encodeURI&#39;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-    <span class="p">}</span>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>/**
+ * @desc javascript의 encodeURIComponent함수와 같은기능으로 문자열을 변환한다.
+ * @param mixed $str 처리할 배열변수나 단일변수
+ * @param String $fromEncofing 입력 인코딩
+ * @return mixed 변환된 변수 그대로 반환
+ * @exam $arr = String::encodeURI($arr);
+ *       String::encodeURI($arr);
+ */
+static public function encodeURI(<span class="err">&amp;</span>$str, $fromEncofing = null)
+{
+    if (is_array($str)) {
+        String::arrayProc($str, 'String::encodeURI');
+        return $str;
+    }
 
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">is_null</span><span class="p">(</span><span class="nv">$fromEncofing</span><span class="p">))</span> <span class="p">{</span>
-        <span class="nv">$trans</span> <span class="o">=</span> <span class="nb">iconv</span><span class="p">(</span><span class="nv">$fromEncofing</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nv">$str</span><span class="p">);</span> <span class="c1">// UHC 확장 완성형 한글</span>
-    <span class="p">}</span>
-    <span class="nv">$trans</span> <span class="o">=</span> <span class="nb">rawurlencode</span><span class="p">(</span><span class="nv">$trans</span><span class="p">);</span>
+    if (!is_null($fromEncofing)) {
+        $trans = iconv($fromEncofing, "UTF-8", $str); // UHC 확장 완성형 한글
+    }
+    $trans = rawurlencode($trans);
 
-    <span class="nv">$str</span> <span class="o">=</span> <span class="nv">$trans</span><span class="p">;</span>
-    <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-<span class="p">}</span>
+    $str = $trans;
+    return $str;
+}
 
-<span class="sd">/**</span>
-<span class="sd"> * @desc javascript의 decodeURIComponent함수와 같은기능으로 문자열을 변환한다.</span>
-<span class="sd"> * @param mixed $str 처리할 배열변수나 단일변수</span>
-<span class="sd"> * @param String $toEncofing 반환 인코딩</span>
-<span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
-<span class="sd"> * @exam $arr = String::decodeURI($arr);</span>
-<span class="sd"> *       String::decodeURI($arr); //리턴받지 않아도 입력변수에 저장되어 나옴.</span>
-<span class="sd"> */</span>
-<span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">decodeURI</span><span class="p">(</span><span class="o">&amp;</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$toEncofing</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nb">is_array</span><span class="p">(</span><span class="nv">$str</span><span class="p">))</span> <span class="p">{</span>
-        <span class="nx">String</span><span class="o">::</span><span class="na">arrayProc</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="s1">&#39;String::decodeURI&#39;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-    <span class="p">}</span>
+/**
+ * @desc javascript의 decodeURIComponent함수와 같은기능으로 문자열을 변환한다.
+ * @param mixed $str 처리할 배열변수나 단일변수
+ * @param String $toEncofing 반환 인코딩
+ * @return mixed 변환된 변수 그대로 반환
+ * @exam $arr = String::decodeURI($arr);
+ *       String::decodeURI($arr); //리턴받지 않아도 입력변수에 저장되어 나옴.
+ */
+static public function decodeURI(<span class="err">&amp;</span>$str, $toEncofing = null)
+{
+    if (is_array($str)) {
+        String::arrayProc($str, 'String::decodeURI');
+        return $str;
+    }
 
-    <span class="c1">//  euc-kr의 경우 확장완성형 한글에 대한 처리가 불가능함(예 : ㅂ ㅞ ㄺ)</span>
-    <span class="c1">//  return iconv(&quot;UTF-8&quot;, &quot;EUC-KR&quot;, rawurldecode($text));</span>
-    <span class="nv">$str</span> <span class="o">=</span> <span class="nb">rawurldecode</span><span class="p">(</span><span class="nv">$str</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">is_null</span><span class="p">(</span><span class="nv">$toEncofing</span><span class="p">))</span> <span class="p">{</span>
-        <span class="nv">$str</span> <span class="o">=</span> <span class="nb">iconv</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="nv">$toEncofing</span><span class="p">,</span> <span class="nv">$str</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span>
-<span class="p">}</span>
+    //  euc-kr의 경우 확장완성형 한글에 대한 처리가 불가능함(예 : ㅂ ㅞ ㄺ)
+    //  return iconv("UTF-8", "EUC-KR", rawurldecode($text));
+    $str = rawurldecode($str);
+    if (!is_null($toEncofing)) {
+        $str = iconv("UTF-8", $toEncofing, $str);
+    }
+    return $str;
+}
 
-<span class="sd">/**</span>
-<span class="sd"> * @desc javascript의 escape함수로 인코딩된 문자를 디코딩한다.(encodeURIComponent추천)</span>
-<span class="sd"> * @param String $str 처리할 배열변수나 단일변수</span>
-<span class="sd"> * @param String $toEncofing 반환 인코딩</span>
-<span class="sd"> * @return mixed 변환된 변수 그대로 반환</span>
-<span class="sd"> * @exam $decStr = String::unescape($str);</span>
-<span class="sd"> */</span>
-<span class="k">static</span> <span class="k">public</span> <span class="k">function</span> <span class="nf">unescape</span><span class="p">(</span><span class="nv">$text</span><span class="p">,</span> <span class="nv">$toEncofing</span> <span class="o">=</span> <span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="c1">//return urldecode(preg_replace_callback(&#39;/%u([[:alnum:]]{4})/&#39;, array(&#39;self&#39;, &#39;tostring&#39;), $text));</span>
-    <span class="k">return</span> <span class="nb">urldecode</span><span class="p">(</span>
-        <span class="nb">preg_replace_callback</span><span class="p">(</span>
-            <span class="s1">&#39;/%u([[:alnum:]]{4})/&#39;</span><span class="p">,</span>
-            <span class="nb">create_function</span><span class="p">(</span>
-                <span class="s1">&#39;$text&#39;</span><span class="p">,</span>
-                <span class="s2">&quot;echo &#39;123&#39;; return iconv(&#39;UTF-16LE&#39;, &#39;&quot;</span> <span class="o">.</span> <span class="nv">$toEncofing</span> <span class="o">.</span> <span class="s2">&quot;&#39;, chr(hexdec(substr(</span><span class="se">\$</span><span class="s2">text[1], 2, 2))).chr(hexdec(substr(</span><span class="se">\$</span><span class="s2">text[1], 0, 2))));&quot;</span>
-            <span class="p">),</span>
-            <span class="nv">$text</span>
-        <span class="p">)</span>
-    <span class="p">);</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+/**
+ * @desc javascript의 escape함수로 인코딩된 문자를 디코딩한다.(encodeURIComponent추천)
+ * @param String $str 처리할 배열변수나 단일변수
+ * @param String $toEncofing 반환 인코딩
+ * @return mixed 변환된 변수 그대로 반환
+ * @exam $decStr = String::unescape($str);
+ */
+static public function unescape($text, $toEncofing = 'UTF-8')
+{
+    //return urldecode(preg_replace_callback('/%u([[:alnum:]]{4})/', array('self', 'tostring'), $text));
+    return urldecode(
+        preg_replace_callback(
+            '/%u([[:alnum:]]{4})/',
+            create_function(
+                '$text',
+                "echo '123'; return iconv('UTF-16LE', '" . $toEncofing . "', chr(hexdec(substr(\$text[1], 2, 2))).chr(hexdec(substr(\$text[1], 0, 2))));"
+            ),
+            $text
+        )
+    );
+}
+</code></pre>
+</div>
 
 
 			</article>
@@ -388,7 +306,7 @@ php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

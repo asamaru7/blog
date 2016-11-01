@@ -136,37 +136,25 @@
 								</section>
 				-->
 
-				<p><a href="/2015/10/21/xcode-create-sub-module-using-cocoapods/">Xcode에서 CocoaPods를 이용해 sub module 만들기</a>라는 글에서 Sub Module을 만드는 방법을 설명했었다. 그런데 이렇게 연결된 Module을 사용하는 과정에서 불편한 부분이 생겼다. 다름아닌 <code>#if DEBUG</code>를 Sub Module에서 적용이 되지 않는 것이다. 이 부분은 생각해보면 당연하다 별개의 Module을 빌드에서 연결하는 것이니 <code>DEBUG</code> 상수를 사용하기 위한 설정을 별도로 해야 하는 것이다(<code>DEBUG</code> 상수 설정 방법은 <a href="http://seorenn.blogspot.kr/2014/11/xcode-swift-debug.html">Swift 프로젝트의 디버그(DEBUG) 플래그</a>을 참고하면 된다). 그래서 CocoaPods에서 추가해준 프로젝트에 <code>DEBUG</code> 관련 설정을 해주니 원하는대로 <code>#if DEBUG</code>를 사용할 수 있었다. 그런데 여기서 모든 문제가 해결된 것이 아니었다. <code>pod update</code> 실행시 Module이 재설치 되면서 관련 설정이 다시 초기화 되는 것이다. 이걸 매번 해줄 수도 없고… 그래서 조금 찾아보니 <a href="http://marginalfutility.net/2015/10/11/swift-compiler-flags/">Setting Swift compiler flags in CocoaPods</a>라는 글에서 해결 방법을 제시하고 있었다.</p>
+				<p><a href="/2015/10/21/xcode-create-sub-module-using-cocoapods/">Xcode에서 CocoaPods를 이용해 sub module 만들기</a>라는 글에서 Sub Module을 만드는 방법을 설명했었다. 그런데 이렇게 연결된 Module을 사용하는 과정에서 불편한 부분이 생겼다. 다름아닌 <code class="highlighter-rouge">#if DEBUG</code>를 Sub Module에서 적용이 되지 않는 것이다. 이 부분은 생각해보면 당연하다 별개의 Module을 빌드에서 연결하는 것이니 <code class="highlighter-rouge">DEBUG</code> 상수를 사용하기 위한 설정을 별도로 해야 하는 것이다(<code class="highlighter-rouge">DEBUG</code> 상수 설정 방법은 <a href="http://seorenn.blogspot.kr/2014/11/xcode-swift-debug.html">Swift 프로젝트의 디버그(DEBUG) 플래그</a>을 참고하면 된다). 그래서 CocoaPods에서 추가해준 프로젝트에 <code class="highlighter-rouge">DEBUG</code> 관련 설정을 해주니 원하는대로 <code class="highlighter-rouge">#if DEBUG</code>를 사용할 수 있었다. 그런데 여기서 모든 문제가 해결된 것이 아니었다. <code class="highlighter-rouge">pod update</code> 실행시 Module이 재설치 되면서 관련 설정이 다시 초기화 되는 것이다. 이걸 매번 해줄 수도 없고… 그래서 조금 찾아보니 <a href="http://marginalfutility.net/2015/10/11/swift-compiler-flags/">Setting Swift compiler flags in CocoaPods</a>라는 글에서 해결 방법을 제시하고 있었다.</p>
 
-<p>결론을 이야기하자면 <code>Podfile</code>에서 <code>post_install</code>을 사용해서 <code>DEBUG</code> 상수를 자동으로 추가하도록 하는 것이다. <code>Podfile</code>에 아래의 내용을 추가하면 된다.</p>
+<p>결론을 이야기하자면 <code class="highlighter-rouge">Podfile</code>에서 <code class="highlighter-rouge">post_install</code>을 사용해서 <code class="highlighter-rouge">DEBUG</code> 상수를 자동으로 추가하도록 하는 것이다. <code class="highlighter-rouge">Podfile</code>에 아래의 내용을 추가하면 된다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">post_install</span> <span class="k">do</span> <span class="o">|</span><span class="n">installer</span><span class="o">|</span>
-	<span class="n">installer</span><span class="o">.</span><span class="n">pods_project</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">target</span><span class="o">|</span>
-		<span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;{원하는 모듈명}&#39;</span>
-			<span class="n">target</span><span class="o">.</span><span class="n">build_configurations</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
-				<span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;Debug&#39;</span>
-					<span class="n">config</span><span class="o">.</span><span class="n">build_settings</span><span class="o">[</span><span class="s1">&#39;OTHER_SWIFT_FLAGS&#39;</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;-DDEBUG&#39;</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">post_install</span> <span class="k">do</span> <span class="o">|</span><span class="n">installer</span><span class="o">|</span>
+	<span class="n">installer</span><span class="p">.</span><span class="nf">pods_project</span><span class="p">.</span><span class="nf">targets</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">target</span><span class="o">|</span>
+		<span class="k">if</span> <span class="n">target</span><span class="p">.</span><span class="nf">name</span> <span class="o">==</span> <span class="s1">'{원하는 모듈명}'</span>
+			<span class="n">target</span><span class="p">.</span><span class="nf">build_configurations</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+				<span class="k">if</span> <span class="n">config</span><span class="p">.</span><span class="nf">name</span> <span class="o">==</span> <span class="s1">'Debug'</span>
+					<span class="n">config</span><span class="p">.</span><span class="nf">build_settings</span><span class="p">[</span><span class="s1">'OTHER_SWIFT_FLAGS'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'-DDEBUG'</span>
 					<span class="k">else</span>
-					<span class="n">config</span><span class="o">.</span><span class="n">build_settings</span><span class="o">[</span><span class="s1">&#39;OTHER_SWIFT_FLAGS&#39;</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+					<span class="n">config</span><span class="p">.</span><span class="nf">build_settings</span><span class="p">[</span><span class="s1">'OTHER_SWIFT_FLAGS'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">''</span>
 				<span class="k">end</span>
 			<span class="k">end</span>
 		<span class="k">end</span>
 	<span class="k">end</span>
 <span class="k">end</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 			</article>
 			<hr class="boundary">
@@ -214,7 +202,7 @@
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

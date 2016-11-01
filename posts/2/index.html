@@ -113,29 +113,40 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/10/19/mac-os-git-korean-file-name-error/">
-								Mac 에서 git 사용시 한글 파일명 문제
+							<a class="title" href="https://blog.asamaru.net/2016/10/26/nginx-504-error/">
+								nginx 504 Gateway Time-out 오류
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/10/19/mac-os-git-korean-file-name-error/">2016.10.19.</span></a>
+								<a href="https://blog.asamaru.net/2016/10/26/nginx-504-error/">2016.10.26.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>맥에서 git 사용시 파일이 한글로되어 있을 경우 해당 파일을 제대로 인식하지 못하는 문제가 있다. 맥에서의 한글 문제야 어제 오늘의 문제도 아니긴 하지만 한글 파일명을 사용해야 할 경우는 상당히 불편하다. 방법을 예전부터 찾고 있었는데 얼마전 우연히 관련 자료를 찾았다. 그래서 간단히 해결 방법만 남긴다.</p>
+							<p>nginx에서 <em>504 Gateway Time-out</em> 오류가 발생할 경우는 리버스 프록시에서의 응답이 지정 시간보다 늦어질 경우다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre>git config --global core.precomposeunicode <span class="nb">true</span>
-git config --local core.precomposeunicode <span class="nb">true</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p><img src="/img/2016/10/504.png" alt="nginx 504 Gateway Time-out" /></p>
 
-<blockquote>
-  <p><a href="http://git-scm.com/docs/git-config">Git Documentation</a></p>
+<p>접속이 지연되는 경우는 서버의 부하 문제나 WAS의 오류로 인한 것이니 nginx가 아닌 WAS 쪽에서 해결해야하는 것이 맞을 것이다.</p>
 
-  <p><strong>core.precomposeUnicode</strong></p>
+<p>간혹 특수한 경우에 WAS 쪽의 처리가 오랜 시간을 필요로 하는 경우 어쩔 수 없이 timeout을 늘려야 하는 경우가 있을 수 있다. 이런 경우라면 <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_connect_timeout">proxy_connect_timeout</a>, <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_send_timeout">proxy_send_timeout</a>, <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_read_timeout">proxy_read_timeout</a> 등을 사용해서 시간을 늘려줄 수 있다(기본은 60초다).</p>
 
-  <p>This option is only used by Mac OS implementation of Git. When core.precomposeUnicode=true, Git reverts the unicode decomposition of filenames done by Mac OS. This is useful when sharing a repository between Mac OS and Linux or Windows. (Git for Windows 1.7.10 or higher is needed, or Git under cygwin 1.7). When false, file names are handled fully transparent by Git, which is backward compatible with older versions of Git.</p>
-</blockquote>
+<div class="language-nginx highlighter-rouge"><pre class="highlight"><code><span class="k">server</span> <span class="p">{</span>
+	<span class="kn">...</span>
+
+	<span class="s">location</span> <span class="n">/</span> <span class="p">{</span>
+		<span class="kn">proxy_connect_timeout</span> <span class="mi">300</span><span class="p">;</span>
+		<span class="kn">proxy_send_timeout</span> <span class="mi">300</span><span class="p">;</span>
+		<span class="kn">proxy_read_timeout</span> <span class="mi">300</span><span class="p">;</span>
+		<span class="kn">send_timeout</span> <span class="mi">300</span><span class="p">;</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>사실 이런 경우는 서비스 중에는 발생해서는 안된다. 사용자가 이렇게 오랜 시간을 기다려줄 리가 없기 때문이다. 이런 기능이 필요하다면 Job Queue를 이용하거나 사용자에게 안내 메시지를 보내고 백그라운드에서 계속 실행되도록 하는 것이 맞을 것이다.</p>
+
+<p>php 에서는 이런 경우에 대비해서 <a href="http://php.net/manual/kr/function.fastcgi-finish-request.php">fastcgi_finish_request</a>를 제공한다. 이 함수를 실행하면 사용자에게는 프로세스가 종료된 것처럼 response를 보내고 남은 작업을 계속 실행한다.</p>
+
+<p>다른 방법은 <a href="http://php.net/manual/kr/function.ob-flush.php">ob_flush</a>와 <a href="http://php.net/manual/kr/function.flush.php">flush</a>를 이용해서 response를 지속적으로 보내서 timeout이 발생하지 않도록 하는 것이다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -149,8 +160,8 @@ git config --local core.precomposeunicode <span class="nb">true</span>
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/10/19/mac-os-git-korean-file-name-error/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/10/19/mac-os-git-korean-file-name-error/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/10/26/nginx-504-error/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/10/26/nginx-504-error/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

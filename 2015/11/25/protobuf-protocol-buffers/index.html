@@ -178,113 +178,77 @@
 
 <p>아래는 사용에 필요한 모듈들을 설치하는 과정을 bash shell로 작성해 둔 것이다. 실제 사용시에는 자신의 환경에 맞춰서 사용하면 된다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
 
-su -c <span class="s2">&quot;yum install -y php56w-mbstring php56w-bcmath&quot;</span>
+su -c <span class="s2">"yum install -y php56w-mbstring php56w-bcmath"</span>
 
 <span class="c"># protobuf 설치</span>
 <span class="c"># https://github.com/chobie/protoc-gen-php</span>
-su -c <span class="s2">&quot;yum install -y protobuf-compiler&quot;</span>
+su -c <span class="s2">"yum install -y protobuf-compiler"</span>
 
 <span class="c"># https://github.com/chobie/php-protocolbuffers</span>
 <span class="nb">cd </span>libs/bin/
 git clone https://github.com/chobie/php-protocolbuffers.git
 <span class="nb">cd </span>php-protocolbuffers
-su -c <span class="s2">&quot;yum install -y php56w-devel&quot;</span>
+su -c <span class="s2">"yum install -y php56w-devel"</span>
 phpize
 ./configure
 make
-su -c <span class="s2">&quot;make install ; echo \&quot;extension=protocolbuffers.so\&quot; &gt;&gt; /etc/php.ini&quot;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+su -c <span class="s2">"make install ; echo </span><span class="se">\"</span><span class="s2">extension=protocolbuffers.so</span><span class="se">\"</span><span class="s2"> &gt;&gt; /etc/php.ini"</span>
+</code></pre>
+</div>
 
 <p>아래는 composer.json 설정 부분이다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-json"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre><span class="p">{</span>
-  <span class="nt">&quot;require&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;asamaru7/protoc-gen-php&quot;</span><span class="p">:</span> <span class="s2">&quot;~0.1.1&quot;</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"require"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"asamaru7/protoc-gen-php"</span><span class="p">:</span><span class="w"> </span><span class="s2">"~0.1.1"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
 
 <p>갑자기 모듈명이 asamaru7로 변경된 것에 유의하자. <a href="https://github.com/chobie/protoc-gen-php">chobie/protoc-gen-php</a>의 fork 프로젝트에서 변경 부분을 내가 따로 fork한 프로젝트에 merge하고 내가 필요한 부분을 수정해서 <a href="https://packagist.org/packages/asamaru7/protoc-gen-php">Packagist</a>에 등록했다.</p>
 
 <p>다음으로 proto 파일로 실제 php 파일을 만드는 과정이다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre>protoc <span class="se">\</span>
-    --plugin<span class="o">=</span>protoc-gen-php<span class="o">=</span><span class="s1">&#39;../vendor/asamaru7/protoc-gen-php/bin/protoc-gen-php&#39;</span> <span class="se">\</span>
-    --proto_path<span class="o">=</span><span class="s1">&#39;/home/web/project/libs/protobuf/&#39;</span> <span class="se">\</span>
-    --php_out<span class="o">=</span><span class="s1">&#39;:../Class/Protobuf&#39;</span> <span class="se">\</span>
-    <span class="s1">&#39;/home/web/project/libs/protobuf/logs.proto&#39;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>protoc <span class="se">\</span>
+    --plugin<span class="o">=</span>protoc-gen-php<span class="o">=</span><span class="s1">'../vendor/asamaru7/protoc-gen-php/bin/protoc-gen-php'</span> <span class="se">\</span>
+    --proto_path<span class="o">=</span><span class="s1">'/home/web/project/libs/protobuf/'</span> <span class="se">\</span>
+    --php_out<span class="o">=</span><span class="s1">':../Class/Protobuf'</span> <span class="se">\</span>
+    <span class="s1">'/home/web/project/libs/protobuf/logs.proto'</span>
+</code></pre>
+</div>
 
-<p>이상하게 <code>--proto_path</code>를 사용함에도 full path를 지정해만 정상적으로 생성이 된다. 자주 사용할 부분이 아니므로 일단 패스했다.</p>
+<p>이상하게 <code class="highlighter-rouge">--proto_path</code>를 사용함에도 full path를 지정해만 정상적으로 생성이 된다. 자주 사용할 부분이 아니므로 일단 패스했다.</p>
 
 <p>마지막으로 php에서의 사용.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ch</span> <span class="o">=</span> <span class="nb">curl_init</span><span class="p">();</span>
-<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_URL</span><span class="p">,</span> <span class="s2">&quot;https://android.clients.google.com/~~&quot;</span><span class="p">);</span>
-<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_HEADER</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
-<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_RETURNTRANSFER</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
-<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_POST</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
-<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_POSTFIELDS</span><span class="p">,</span> <span class="nv">$request</span><span class="o">-&gt;</span><span class="na">serializeToString</span><span class="p">());</span>
-<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_FOLLOWLOCATION</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
-<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_SSL_VERIFYPEER</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
-<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="nx">CURLOPT_HTTPHEADER</span><span class="p">,</span> <span class="p">[</span>
-	<span class="s2">&quot;Content-type: application/x-protobuffer&quot;</span>
-<span class="p">]);</span>
-<span class="nv">$content</span> <span class="o">=</span> <span class="nb">curl_exec</span><span class="p">(</span><span class="nv">$ch</span><span class="p">);</span>
-<span class="nb">curl_close</span><span class="p">(</span><span class="nv">$ch</span><span class="p">);</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, "https://android.clients.google.com/~~");
+curl_setopt($ch, CURLOPT_HEADER, 0);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $request-&gt;serializeToString());
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+	"Content-type: application/x-protobuffer"
+]);
+$content = curl_exec($ch);
+curl_close($ch);
+</code></pre>
+</div>
 
-<p><code>$request-&gt;serializeToString()</code> 이 부분이 중요한 부분이다. <code>$request</code>는 protoc에 의해 생성된 class의 인스턴스다. 전송시에는 <code>serializeToString()</code>를 사용해서 직렬화하는 것이다.</p>
+<p><code class="highlighter-rouge">$request-&gt;serializeToString()</code> 이 부분이 중요한 부분이다. <code class="highlighter-rouge">$request</code>는 protoc에 의해 생성된 class의 인스턴스다. 전송시에는 <code class="highlighter-rouge">serializeToString()</code>를 사용해서 직렬화하는 것이다.</p>
 
 <p>다음은 수신시.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$response</span> <span class="o">=</span> <span class="nx">\Response</span><span class="o">::</span><span class="na">parseFromString</span><span class="p">(</span><span class="nv">$content</span><span class="p">);</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>$response = \Response::parseFromString($content);
+</code></pre>
+</div>
 
-<p><code>parseFromString()</code>를 사용해서 수신된 PB 직렬화 데이터를 역직렬화 할 수 있다.</p>
+<p><code class="highlighter-rouge">parseFromString()</code>를 사용해서 수신된 PB 직렬화 데이터를 역직렬화 할 수 있다.</p>
 
 <hr />
 
@@ -348,7 +312,7 @@ su -c <span class="s2">&quot;make install ; echo \&quot;extension=protocolbuffer
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

@@ -113,101 +113,121 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/03/16/android-gradle-provided-and-org-apache-http-legacy/">
-								android gradle provided와 org.apache.http.legacy
+							<a class="title" href="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/">
+								php composer 속도 개선하기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/03/16/android-gradle-provided-and-org-apache-http-legacy/">2016.03.16.</span></a>
+								<a href="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/">2016.03.17.</span></a>
 							</p>
 						</header>
 						<p>
-							<blockquote>
-  <p>이 글은 사실 주제가 명확하지 않다(제목도 그러하듯). 경험을 나열한 것에 불과할지도 모른다. 하지만 Volley와 Glide, gradle provided, org.apache.http.legacy.jar 파일을 얻는 법 등의 내용을 포함하고 있어서 다른 작업시에도 부분적으로 도움이 될 수 있을 것 같아 글을 남긴다.</p>
-</blockquote>
+							<p><a href="https://getcomposer.org/">Composer</a>(컴포저)는 PHP의 의존성 관리도구이다. 이 Composer를 사용하면서 가장 큰 단점으로 꼽을 수 있는 것은 느린 속도다. 나만 그렇게 느끼는 것은 아닌지 국내외에 많은 이야기가 있다. 오늘은 그 이야기들을 정리해 보려고 한다.</p>
 
-<hr />
+<p>우선 Composer에 대한 상세한 내용은 <a href="https://xpressengine.github.io/Composer-korean-docs/">Composer 한국어 매뉴얼</a>을 참고하면 도움이 될 것 같다.</p>
 
-<p><a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>에서 안드로이드의 Apache HTTP 클라이언트에 대한 지원을 제거함에 따른 대응 방법을 안내했었다. 그런데 오늘은 유사하지만 조금 다른 이야기를 하려고 한다.</p>
-
-<p>본 주제를 이야기하기 전에 몇가지를 먼저 이야기 해야 할 것 같다.
-이번에 신규 작업을 하면서 <a href="https://android.googlesource.com/platform/frameworks/volley/">Volley</a>와 <a href="https://github.com/bumptech/glide">Glide</a>를 알게 되었다. 안드로이드 개발을 주업무로 하는게 아니다보니 유명한 라이브러리임에도 불구하고 이제서야 알게된 것이다. 어쨌든 여러가지 장점을 가지고 있는 라이브러리들이라 기존의 <a href="http://loopj.com/android-async-http/">Android Asynchronous Http Client</a> 와 <a href="http://square.github.io/picasso/">Picasso</a>를 사용하지 않고 이것들을 사용하기로 했다. 기존 라이브러리들도 충분히 잘 만들어진 것들이지만 몇가지 버그(<a href="/2015/09/25/android-async-http-1-dot-4-9-not-called-onsuccess-or-onfailure/">Android Asynchronous Http Client(android-async-http) 1.4.9 사용시 Proguard를 적용하면 onSuccess 또는 onFailure이 호출되지 않는 문제 해결</a> 등)와 의존 관계에 대한 문제들로 인해서 교체를 결정한 것이다.</p>
-
-<p>우선 Volley와 Glide에 대한 이해를 돕기 위한 관련 링크들을 먼저 안내한다.</p>
-
-<h3 id="volleyhttpsandroidgooglesourcecomplatformframeworksvolley"><a href="https://android.googlesource.com/platform/frameworks/volley/">Volley</a></h3>
+<p>그리고 Composer 속도에 관련된 참고글이다.</p>
 
 <ul>
-  <li><a href="https://gist.github.com/benelog/5981448">Volley 설명 - GitHub</a></li>
-  <li><a href="https://github.com/DWorkS/VolleyPlus">DWorkS/VolleyPlus</a></li>
-  <li><a href="http://d2.naver.com/helloworld/1258547">Volley를 더 쉽고 강력하게, Volley Extensions</a></li>
+  <li><a href="http://findstar.pe.kr/archives/532">composer.phar 의 동작이 느릴 때 조치할 수 있는 것들.</a></li>
+  <li><a href="https://www.lesstif.com/pages/viewpage.action?pageId=30277898">컴포저(PHP Composer) 속도 향상 시키기</a></li>
 </ul>
 
-<h3 id="glidehttpsgithubcombumptechglide"><a href="https://github.com/bumptech/glide">Glide</a></h3>
+<p>그럼 하나씩 살펴보자.</p>
 
-<ul>
-  <li><a href="http://gun0912.tistory.com/17">[안드로이드]유용한 라이브러리 - Glide (이미지 로딩 라이브러리)</a></li>
-  <li><a href="http://gun0912.tistory.com/19">[안드로이드]Picasso와 Glide 비교분석</a></li>
-</ul>
+<h3 id="composer-">Composer 진단</h3>
 
-<p>위 내용들을 보면 Glide는 크게 문제될 것이 없지만 Volley의 경우는 사용성에서 부족한 부분들이 있다고 한다. 그래서 조사를 해보니 그나마 VolleyPlus와 Volley Extensions가 부족한 부분을 메우기에 적합하다고 판단하고 내용을 검토했다. 그런데 VolleyPlus의 경우는 Volley를 확장한 것이 아니라 Volley 소스를 기반으로 새로 개발된 형태로 Volley의 원형을 사용할 수 없다는 문제가 있다(<a href="https://github.com/isapoetra/VolleyPlus">fork된 프로젝트</a> 중에 이 문제를 수정한 프로젝트가 있긴 하지만 사용에는 적합해 보이지 않는다). 하지만 기능은 매력적인 부분이 많다. 반대로 Volley Extensions의 경우는 Volley에 대한 의존성을 가지고 확장한 것으로 내가 원하는 형태이지만 최근 관리가 안되고 있는 것으로 보인다(D2에서 지속적인 관리를 할 것이라고 했지만). 실제로 Volley의 경우 최근 jcenter(<code>com.android.volley:volley:1.0.0</code>)에 배포하고 있지만 Volley Extensions의 경우 기존에 <a href="https://github.com/mcxiaoke/android-volley">Volley를 미러링한 라이브러리</a>를 그대로 사용하고 있다.</p>
+<p>우선 <code class="highlighter-rouge">composer diagnose</code> 명령을 이용해서 Composer의 상태를 진단할 수 있다. 진단 결과에 따라 개선이 필요한 부분들을 확인하고 개선할 수 있다.</p>
 
-<p>위 상황들을 종합해서 고민한 결과 Volley Extensions 중 <a href="https://github.com/naver/volley-extensions/tree/master/volleyer">Volleyer</a> 소스를 기반으로 필요한 부분을 커스텀하기로 결정했다. Volleyer를 사용하는 구조가 편리하게 잘 구성되어 있으나 위에서 이야기한 Volley 의존성 처리 부분을 변경해야 했고 <a href="https://github.com/google/gson">gson</a>을 사용한 request가 없기 때문에 추가해야 했다(jackson이 더 좋다고들 하지만 gson이 익숙해서). 사실 필요한 부분은 외부에서 확장해도 되지만 실제 사용하다 보면 분명 변경이 필요할 것이라는 생각에 미리 커스텀하기로 결정했다.</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>$ composer diagnose
 
-<p>이 과정에서 Volleyer 소스를 안드로이드 라이브러리로 추가해서 빌드하는 것이 필요했는데 여기서 문제가 발생했다.</p>
+Checking composer.json: OK
+require.~~~/~~~ : unbound version constraints (dev-master) should be avoided
+Checking platform settings: OK
+Checking git settings: OK
+Checking http connectivity to packagist: OK
+Checking https connectivity to packagist: OK
+Checking github.com oauth access: OK
+Checking disk free space: OK
+Checking pubkeys:
+Tags Public Key Fingerprint: ~~~
+Dev Public Key Fingerprint: ~~~
+OK
+Checking composer version: OK
+</code></pre>
+</div>
+
+<h3 id="composer--">Composer 최신버전 사용</h3>
+
+<p><code class="highlighter-rouge">composer diagnose</code>에서도 Composer의 최신 버전을 사용중인지 알려준다. 가급적 최신 버전의 Composer를 사용하는 것이 속도에 조금이나마 도움이 될 수 있다.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$ sudo /usr/local/bin/composer self-update
+
+Updating to version 7c62e2b5346a6a656dd9587203719e35bb768056.
+    Downloading: 100%
+Use composer self-update --rollback to return to version d6d0435c5437111e42a123b06e4071e26ba7cb6e
+</code></pre>
+</div>
+
+<h3 id="prestissimo--">prestissimo 플러그인 사용</h3>
+
+<p><a href="https://github.com/hirak/prestissimo">prestissimo</a> 이라는 Composer 플러그인이 있다. “composer parallel install plugin”이라고 소개하고 있는 플러그인으로 의존성 라이브러리 설치시 병렬 처리를 지원하여 속도를 대폭 개선해 준다고 한다. 확실히 다운로드가 필요한 상황(신규 설치, 버전업)에서는 병렬 처리로 속도가 개선된다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>composer global require hirak/prestissimo
+</code></pre>
+</div>
+
+<p>설치 후 Composer를 사용(install, update)하면 아래와 같이 다른 모습을 볼 수 있다.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Loading composer repositories with package information
+Updating dependencies
+    Prefetch start: total: 6
+    1/6:    https://codeload.github.com/symfony/polyfill-util/legacy.zip/8de62801aa12bc4dfcf85eef5d21981ae7bb3cc4
+    2/6:    https://codeload.github.com/symfony/polyfill-php56/legacy.zip/4d891fff050101a53a4caabb03277284942d1ad9
+    3/6:    https://codeload.github.com/Imangazaliev/DiDOM/legacy.zip/e492feae44321e2f4882f6e9466614732822f008
+    4/6:    https://codeload.github.com/symfony/polyfill-mbstring/legacy.zip/1289d16209491b584839022f29257ad859b8532d
+    5/6:    https://codeload.github.com/paragonie/random_compat/legacy.zip/b3313b618f4edd76523572531d5d7e22fe747430
+    6/6:    https://codeload.github.com/Seldaek/monolog/legacy.zip/a5f2734e8c16f3aa21b3da09715d10e15b4d2d45
+    Finished: success:6, skipped:0, failure:0, total: 6
+</code></pre>
+</div>
+
+<h3 id="prefer-dist-">–prefer-dist 사용</h3>
+
+<p><a href="http://stackoverflow.com/a/20827631">Faster composer install</a>에 보면 <code class="highlighter-rouge">--prefer-dist</code> 옵션을 사용함으로써 속도를 향상 시킬 수 있다고 한다.</p>
+
+<h3 id="hhvmhttphhvmcom--php-7-"><a href="http://hhvm.com/">HHVM</a> 또는 PHP 7 사용</h3>
+
+<p>Composer는 PHP로 제작된 프로그램으로 PHP의 성능에 영향을 많이 받는다. 따라서 보다 빠른 실행기를 사용하는 것이 속도에 도움이 된다. PHP 7을 사용할 수 없다면 <a href="http://hhvm.com/">HHVM</a>을 사용하는 것이 도움이 될 수 있다. 하지만 Prebuilt Packages를 지원하는 ubuntu나 debian을 사용하는 것이 아니라면 직접 빌드를 해야하므로 귀찮을 수 있다(개인적 생각).</p>
+
+<h3 id="disable-xdebug">Disable Xdebug</h3>
+
+<p>Xdebug가 켜진 상태에서 Composer를 사용하면 아래와 같은 경고가 나온다. Xdebug를 켠 상태에서는 성능에 매우 큰 영향이 있으니 Xdebug를 끄고 사용하라는 것이다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>composer update
+
+You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug
+</code></pre>
+</div>
+
+<h3 id="packagist--">packagist 미러 사용</h3>
+
+<p>아래와 같이 packagist의 레포지토리를 http://packagist.jp로 설정함으로써 약간의 속도 향상(일본이 아무래도 더 가까우니)을 얻을 수 있다고 한다. 하지만 자칫 잘못하면 더 느려질수도 있으므로 테스트를 해서 결정할 것을 권장한다.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$ composer config -g repositories.packagist composer http://packagist.jp
+# 제거는 아래와 같이
+$ composer config -g --unset repositories.packagist
+</code></pre>
+</div>
+
+<h3 id="disable-enablegc">Disable enable_gc</h3>
+
+<p><a href="https://laracasts.com/discuss/channels/tips/tip-speed-up-composer">[Tip] Speed Up Composer</a>에 보면 <code class="highlighter-rouge">enable_gc</code>를 disable 함으로써 속도를 향상시키는 방법을 안내하고 있다. 하지만 <a href="https://github.com/composer/composer/commit/ac676f47f7bbc619678a29deae097b6b0710b799">Disable GC when computing deps, refs #3482</a>에서 보면 이와 관련된 패치는 이미 Composer에 반영되어 있으므로 효과가 없다.</p>
 
 <hr />
 
-<p>Volleyer 안드로이드 라이브러리로 빌드하려고하면 org.apache.http.client.HttpClient, android.net.http.AndroidHttpClient, com.fasterxml.jackson.core.JsonParser 등이 사용된 부분에서 오류가 난다(sdk version 23 기준). 이 문제 중 HttpClient와 관련된 부분은 가장 쉽게 해결하려면 <a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>에서 언급했던 것처럼 <code>useLibrary 'org.apache.http.legacy'</code>를 사용하면 된다.</p>
+<p>사실 서두에서 이야기한 것처럼 위 내용들은 여러 곳의 이야기를 나름대로 요약 정리한 것이다. 하지만 모두 효과가 있다고는 말하지 못하겠다. 현재 PHP 7을 사용하고 있는 상황에서 여러가지를 시도 해봐도 Composer의 속도는 느리기만 하다(약간씩의 도움은 되는 것들도 있다).</p>
 
-<p>그런데 이 경우는 빌드시에는 org.apache.http.legacy가 필요하지만 런타임에서는 필요하지 않다. 정확하게는 나의 경우엔 필요하지 않다. Volley에서는 하위 OS를 지원하기 위해 기본적으로 API Level 9 이하에서는 AndroidHttpClient를 사용하도록 되어 있기 때문에 이 부분이 사용되는 것인데 나의 경우는 minSdkVersion이 14로 해당되지 않는다. 따라서 해당 부분의 소스를 수정해서 제거해도되나 가급적 원소스를 유지하는 방향으로 처리하려고 했다. 그럼에도 불구하고 useLibrary ‘org.apache.http.legacy’를 사용하고 싶지는 않았다. 그래서 <code>useLibrary 'org.apache.http.legacy'</code> 대신 아래의 내용을 build.gradle에 추가하는 방법으로 대체했다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">dependencies {
-  provided files('libs/org.apache.http.legacy.jar')
-
-  provided 'org.codehaus.jackson:jackson-mapper-asl:1.9.+'
-  provided 'com.fasterxml.jackson.core:jackson-databind:2.2.+'
-  provided('org.simpleframework:simple-xml:2.7.+') {
-    exclude module: 'stax'
-    exclude module: 'stax-api'
-    exclude module: 'xpp3'
-  }
-}
-</code></pre></div></figure>
-
-<p>위 코드를 설명하기 위해서는 <code>provided</code>를 먼저 이야기 해야 한다. <a href="http://kwonnam.pe.kr/wiki/gradle/dependencies#provided">Gradle Dependencies</a>의 내용 중 provided가 필요한 상황을 설명하는 부분을 인용하자면 아래와 같다.</p>
-
-<blockquote>
-  <p>컴파일시에는 클래스패스에 넣지만, 실행/배포시에는 빠져야 하는 의존성이 있을 수 있다. 예를 들면 Servlet API 같은 것들이 그렇다. Servlet API는 Tomcat등의 WAS에 내장되어 있으므로 배포는 할 필요가 없다.</p>
-</blockquote>
-
-<p><a href="http://sinking.in/blog/provided-scope-in-gradle/">PROVIDED SCOPE IN GRADLE</a>이 글도 참고하면 이해에 도움이 될 것이다.</p>
-
-<p>우선 <code>provided files('libs/org.apache.http.legacy.jar')</code> 부분부터 보자. 위에서 <code>provided</code>로 <code>org.apache.http.legacy</code> 지정했으므로 빌드시에는 해당 라이브러리가 있는 것으로 인정하지만 실제로 배포시에는 포함되지 않는다. 따라서 소스를 유지한 상태에서 오류없이 빌드할 수 있고 해당 라이브러리는 사용하지 않도록 할 수 있다.</p>
-
-<p>그런데 사실은 위의 코드만으로는 실제 빌드가 되지 않는다. <code>libs/org.apache.http.legacy.jar</code> 파일이 없기 때문이다(사용되지는 않지만 빌드시 참조가 되어야 하므로 필요하다). 그럼 <code>org.apache.http.legacy.jar</code> 파일을 어디서 찾아야 하나? <code>useLibrary 'org.apache.http.legacy'</code>로 사용할 수 있는 이유는 안드로이드 SDK에 포함되어 있기 때문이다. 따라서 SDK 폴더에서 해당 파일을 찾을 수 있다. 나의 경우에는 <code>~/Library/Android/sdk/platforms/android-23/optional/org.apache.http.legacy.jar</code>에 있었다. 정확한 경로는 사용하는 sdk 버전과 환경 등에 따라 차이가 있을 수는 있겠지만 분명 sdk 폴더에서 찾을 수 있을 것이다. 해당 파일을 찾았다면 프로젝트 폴더에서 libs 폴더를 만들고 그 안에 넣어준다.</p>
-
-<p>그리고 아래의 부분을 보자.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">provided 'org.codehaus.jackson:jackson-mapper-asl:1.9.+'
-provided 'com.fasterxml.jackson.core:jackson-databind:2.2.+'
-provided('org.simpleframework:simple-xml:2.7.+') {
-  exclude module: 'stax'
-  exclude module: 'stax-api'
-  exclude module: 'xpp3'
-}
-</code></pre></div></figure>
-
-<p>이 부분들도 모두 <code>provided</code>를 사용하고 있다. Volleyer에서는 응답을 파싱하기 위한 <code>Jackson2NetworkResponseParser</code>, <code>JacksonNetworkResponseParser</code>, <code>SimpleXmlNetworkResponseParser</code> 등의 클래스가 있다. 그런데 네이버에서는 친절하게도 필요시에만 이것들을 사용할 수 있도록 제작해 두었기 때문에 이 클래스들을 사용하지 않을 것이라면 위 라이브러리들을 포함시키지 않아도 된다. 하지만 빌드시에는 위에서 설명했던 것과 같이 해당 라이브러리들을 참조해야 하므로 provided 선언이 필요한 것이다. 반대로 거의 항상 사용할 것이라서 라이브러리 빌드시 포함시키고자 한다면 provided 대신 기존 처럼 compile을 사용하면 된다.</p>
-
-<hr />
-
-<p>자.. 그런데 아직도 한가지가 남았다. 실제 빌드시에는 <code>proguard-rules.pro</code> 파일에 아래의 내용을 추가해 주어야 한다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">-dontwarn org.apache.http.**
--dontwarn android.net.http.AndroidHttpClient
-</code></pre></div></figure>
-
-<p>여기까지 처리하고 나면 정상적으로 빌드할 수 있다.</p>
+<p>느린 Composer로 인해 답답한 마음을 달래고자 시간이 되는대로 방법을 찾아보고 있으나 아직은 결론을 얻지 못했다. 그나마 prestissimo를 사용하는 것이 가장 효과적인 것 같다. 앞으로도 여러가지를 시도하여 도움이 될만한 방법을 발견하면 다시 글을 쓰도록 하겠다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -221,8 +241,8 @@ provided('org.simpleframework:simple-xml:2.7.+') {
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/03/16/android-gradle-provided-and-org-apache-http-legacy/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/03/16/android-gradle-provided-and-org-apache-http-legacy/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -162,37 +162,25 @@
 
 <p>일단 swift 이전에 objective-c에서는 아래와 같이 사용한다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-objective-c"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_global_queue</span><span class="p">(</span><span class="n">DISPATCH_QUEUE_PRIORITY_DEFAULT</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">^</span><span class="p">{</span>
-	<span class="c1">// do some task</span>
-	<span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">(),</span> <span class="o">^</span><span class="p">{</span>
-		<span class="c1">// update some UI</span>
-	<span class="p">});</span>
-<span class="p">});</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<pre><code class="language-objective-c">dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	// do some task
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// update some UI
+	});
+});
+</code></pre>
 
 <p>동일한 동작을 swift에서 사용하면 아래와 같다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">let</span> <span class="n">priority</span> <span class="o">=</span> <span class="n">DISPATCH_QUEUE_PRIORITY_DEFAULT</span>
-<span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_global_queue</span><span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="p">{</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">let</span> <span class="nv">priority</span> <span class="o">=</span> <span class="kt">DISPATCH_QUEUE_PRIORITY_DEFAULT</span>
+<span class="nf">dispatch_async</span><span class="p">(</span><span class="nf">dispatch_get_global_queue</span><span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="p">{</span>
 	<span class="c1">// do some task</span>
-	<span class="n">dispatch_async</span><span class="p">(</span><span class="n">dispatch_get_main_queue</span><span class="p">())</span> <span class="p">{</span>
+	<span class="nf">dispatch_async</span><span class="p">(</span><span class="nf">dispatch_get_main_queue</span><span class="p">())</span> <span class="p">{</span>
 		<span class="c1">// update some UI</span>
 	<span class="p">}</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>block object의 표현만 차이가 날 뿐 사실상 거의 차이가 없다.</p>
 
@@ -202,55 +190,36 @@
 
 <p>그 중에서 Async의 장점을 잘 보여주는 예시를 하나 소개한다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">let</span> <span class="n">seconds</span> <span class="o">=</span> <span class="mf">0.5</span>
-<span class="n">Async</span><span class="p">.</span><span class="n">main</span><span class="p">(</span><span class="nl">after</span><span class="p">:</span> <span class="n">seconds</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">println</span><span class="p">(</span><span class="s">&quot;Is called after 0.5 seconds&quot;</span><span class="p">)</span>
-<span class="p">}.</span><span class="n">background</span><span class="p">(</span><span class="nl">after</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">println</span><span class="p">(</span><span class="s">&quot;At least 0.4 seconds after previous block, and 0.9 after Async code is called&quot;</span><span class="p">)</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">let</span> <span class="nv">seconds</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="kt">Async</span><span class="o">.</span><span class="nf">main</span><span class="p">(</span><span class="nv">after</span><span class="p">:</span> <span class="n">seconds</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nf">println</span><span class="p">(</span><span class="s">"Is called after 0.5 seconds"</span><span class="p">)</span>
+<span class="p">}</span><span class="o">.</span><span class="nf">background</span><span class="p">(</span><span class="nv">after</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nf">println</span><span class="p">(</span><span class="s">"At least 0.4 seconds after previous block, and 0.9 after Async code is called"</span><span class="p">)</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>“Is called after 0.5 seconds” 메시지를 main 스레드에서 0.5초 뒤에 출력한 후 0.4초 뒤 background 스레드에서 “At least 0.4 seconds after previous block, and 0.9 after Async code is called”를 출력하는 예시다. 이 예시를 보면 알 수 있듯이 <a href="https://github.com/duemunk/Async">Async</a>는 chaining을 지원하며 스레드를 작업 완료에 따라 순차적으로 실행 할 수 있도록 도와준다.</p>
 
 <p>스레드 작업을 취소하는 예시 하나만 더 아래에 소개한다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15</pre></div></td><td class="code"><div class="highlight"><pre><span class="c1">// Cancel blocks not yet dispatched</span>
-<span class="k">let</span> <span class="n">block1</span> <span class="o">=</span> <span class="n">Async</span><span class="p">.</span><span class="n">background</span> <span class="p">{</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="c1">// Cancel blocks not yet dispatched</span>
+<span class="k">let</span> <span class="nv">block1</span> <span class="o">=</span> <span class="kt">Async</span><span class="o">.</span><span class="n">background</span> <span class="p">{</span>
     <span class="c1">// Heavy work</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mf">0.</span><span class="p">.</span><span class="mf">.1000</span> <span class="p">{</span>
-        <span class="n">println</span><span class="p">(</span><span class="s">&quot;A \(i)&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">...</span><span class="mi">1000</span> <span class="p">{</span>
+        <span class="nf">println</span><span class="p">(</span><span class="s">"A </span><span class="se">\(</span><span class="n">i</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
     <span class="p">}</span>
 <span class="p">}</span>
-<span class="k">let</span> <span class="n">block2</span> <span class="o">=</span> <span class="n">block1</span><span class="p">.</span><span class="n">background</span> <span class="p">{</span>
-    <span class="n">println</span><span class="p">(</span><span class="s">&quot;B – shouldn&#39;t be reached, since cancelled&quot;</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">block2</span> <span class="o">=</span> <span class="n">block1</span><span class="o">.</span><span class="n">background</span> <span class="p">{</span>
+    <span class="nf">println</span><span class="p">(</span><span class="s">"B – shouldn't be reached, since cancelled"</span><span class="p">)</span>
 <span class="p">}</span>
-<span class="n">Async</span><span class="p">.</span><span class="n">main</span> <span class="p">{</span>
+<span class="kt">Async</span><span class="o">.</span><span class="n">main</span> <span class="p">{</span>
     <span class="c1">// Cancel async to allow block1 to begin</span>
-    <span class="n">block1</span><span class="p">.</span><span class="n">cancel</span><span class="p">()</span> <span class="c1">// First block is _not_ cancelled</span>
-    <span class="n">block2</span><span class="p">.</span><span class="n">cancel</span><span class="p">()</span> <span class="c1">// Second block _is_ cancelled</span>
+    <span class="n">block1</span><span class="o">.</span><span class="nf">cancel</span><span class="p">()</span> <span class="c1">// First block is _not_ cancelled</span>
+    <span class="n">block2</span><span class="o">.</span><span class="nf">cancel</span><span class="p">()</span> <span class="c1">// Second block _is_ cancelled</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>위에서 소개한 것처럼 <a href="https://github.com/duemunk/Async">Async</a>는 swift에서의 thread 작업을 아주 쉽게 할 수 있도록 도와준다.</p>
 
@@ -302,7 +271,7 @@
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

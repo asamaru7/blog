@@ -113,49 +113,33 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/07/14/android-uri-getqueryparameter/">
-								android Uri.getQueryParameter() 사용시 젤리빈 이전 버전에서 공백이 +로 표시되는 문제 해결
+							<a class="title" href="https://blog.asamaru.net/2016/07/14/html-fromhtml-deprecated-in-android-n/">
+								Html.fromHtml deprecated(Android N)
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/07/14/android-uri-getqueryparameter/">2016.07.14.</span></a>
+								<a href="https://blog.asamaru.net/2016/07/14/html-fromhtml-deprecated-in-android-n/">2016.07.14.</span></a>
 							</p>
 						</header>
 						<p>
-							<p><a href="https://developer.android.com/reference/android/net/Uri.html#getQueryParameter%28java.lang.String%29">Uri.getQueryParameter()</a> 사용시 젤리빈 이전 버전을 지원해야 한다면 주의해야 할 사항이 있다. 최근에는 젤리빈 이하를 굳이 지원할 필요가 없다고 볼 수 있지만 혹시라도 지원해야 한다면 아래의 내용을 참고하자.</p>
+							<p>Android N이 아직 developer preview 상태지만 곧 정식 버전이 나올 것으로 생각된다. 이 Android N에서 deprecated 된 것 중의 하나가 <a href="https://developer.android.com/reference/android/text/Html.html#fromHtml%28java.lang.String%29">Html.fromHtml</a>다.</p>
 
-<p>공식 문서에서 보면 해당 함수 설명에 아래의 내용이 있다.</p>
+<p>공식 문서에는 다음과 같이 안내되어 있다.</p>
 
 <blockquote>
-  <p>Warning: Prior to Jelly Bean, this decoded the ‘+’ character as ‘+’ rather than ‘ ‘.</p>
+  <p>This method was deprecated in API level 24. use fromHtml(String, int) instead.</p>
 </blockquote>
 
-<p>젤리빈 이전 버전에서는 공백을 urlencode하여 넘겨진 <code>+</code>를 공백으로 치환하지 않는다. 따라서 공백으로 직접 치환해 주어야 한다.</p>
+<p>이와 관련해서는 길게 이야기할 것도 없으니 버전에 대응되도록 처리해 둔 함수를 아래에 남긴다.</p>
 
-<p>호환 처리를 위해 만든 함수를 아래에 남긴다.</p>
-
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11</pre></div></td><td class="code"><div class="highlight"><pre><span class="nd">@Nullable</span>
-<span class="kd">static</span> <span class="kd">public</span> <span class="n">String</span> <span class="nf">getQueryParameter</span><span class="o">(</span><span class="nd">@Nullable</span> <span class="n">Uri</span> <span class="n">uri</span><span class="o">,</span> <span class="nd">@NonNull</span> <span class="n">String</span> <span class="n">key</span><span class="o">)</span> <span class="o">{</span>
-  <span class="n">String</span> <span class="n">result</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-  <span class="k">if</span> <span class="o">(</span><span class="n">uri</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">uri</span><span class="o">.</span><span class="na">getQueryParameter</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
-    <span class="k">if</span> <span class="o">((</span><span class="n">result</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">&lt;</span> <span class="n">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">JELLY_BEAN</span><span class="o">))</span> <span class="o">{</span>
-      <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="sc">&#39;+&#39;</span><span class="o">,</span> <span class="sc">&#39; &#39;</span><span class="o">);</span>
-    <span class="o">}</span>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">static</span> <span class="n">Spanned</span> <span class="nf">fromHtml</span><span class="o">(</span><span class="n">String</span> <span class="n">source</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">&lt;</span> <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">N</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// noinspection deprecation</span>
+    <span class="k">return</span> <span class="n">Html</span><span class="o">.</span><span class="na">fromHtml</span><span class="o">(</span><span class="n">source</span><span class="o">);</span>
   <span class="o">}</span>
-  <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+  <span class="k">return</span> <span class="n">Html</span><span class="o">.</span><span class="na">fromHtml</span><span class="o">(</span><span class="n">source</span><span class="o">,</span> <span class="n">Html</span><span class="o">.</span><span class="na">FROM_HTML_MODE_LEGACY</span><span class="o">);</span>
 <span class="o">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -169,8 +153,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/07/14/android-uri-getqueryparameter/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/07/14/android-uri-getqueryparameter/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/07/14/html-fromhtml-deprecated-in-android-n/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/07/14/html-fromhtml-deprecated-in-android-n/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

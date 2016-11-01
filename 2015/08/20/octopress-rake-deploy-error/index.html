@@ -139,100 +139,67 @@
 
 <p>이제 배포를 하려고 rake deploy를 하니 아래와 같은 오류가 나타났다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7</pre></div></td><td class="code"><div class="highlight"><pre>To https://github.com/asamaru7/blog.git
- ! <span class="o">[</span>rejected<span class="o">]</span>        gh-pages -&gt; gh-pages <span class="o">(</span>non-fast-forward<span class="o">)</span>
-error: failed to push some refs to <span class="s1">&#39;https://github.com/asamaru7/blog.git&#39;</span>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>To https://github.com/asamaru7/blog.git
+ ! <span class="o">[</span>rejected]        gh-pages -&gt; gh-pages <span class="o">(</span>non-fast-forward<span class="o">)</span>
+error: failed to push some refs to <span class="s1">'https://github.com/asamaru7/blog.git'</span>
 hint: Updates were rejected because the tip of your current branch is behind
 hint: its remote counterpart. Integrate the remote changes <span class="o">(</span>e.g.
-hint: <span class="s1">&#39;git pull ...&#39;</span><span class="o">)</span> before pushing again.
-hint: See the <span class="s1">&#39;Note about fast-forwards&#39;</span> in <span class="s1">&#39;git push --help&#39;</span> <span class="k">for</span> details.
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+hint: <span class="s1">'git pull ...'</span><span class="o">)</span> before pushing again.
+hint: See the <span class="s1">'Note about fast-forwards'</span> <span class="k">in</span> <span class="s1">'git push --help'</span> <span class="k">for </span>details.
+</code></pre>
+</div>
 
 <p>구글에서 검색해서 여러가지 방법들을 따라 시도해도 진행이 되지 않다가 발견한 stackoverflow에서 강제 업데이트하는 방법을 안내하고 있었다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>vi Rakefile
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>vi Rakefile
+</code></pre>
+</div>
 
 <p>Rakefile을 열어 deploy_branch로 검색하다 보면 아래와 같은 부분을 볼 수 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">desc</span> <span class="s2">&quot;deploy public directory to github pages&quot;</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">desc</span> <span class="s2">"deploy public directory to github pages"</span>
 <span class="n">multitask</span> <span class="ss">:push</span> <span class="k">do</span>
-  <span class="nb">puts</span> <span class="s2">&quot;## Deploying branch to Github Pages &quot;</span>
-  <span class="nb">puts</span> <span class="s2">&quot;## Pulling any updates from Github Pages &quot;</span>
-  <span class="n">cd</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">do</span>
-    <span class="no">Bundler</span><span class="o">.</span><span class="n">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">&quot;git pull&quot;</span> <span class="p">}</span>
+  <span class="nb">puts</span> <span class="s2">"## Deploying branch to Github Pages "</span>
+  <span class="nb">puts</span> <span class="s2">"## Pulling any updates from Github Pages "</span>
+  <span class="n">cd</span> <span class="s2">"</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">"</span> <span class="k">do</span>
+    <span class="no">Bundler</span><span class="p">.</span><span class="nf">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">"git pull"</span> <span class="p">}</span>
   <span class="k">end</span>
-  <span class="p">(</span><span class="no">Dir</span><span class="o">[</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">/*&quot;</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">rm_rf</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">}</span>
-  <span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="o">[</span><span class="ss">:copydot</span><span class="o">].</span><span class="n">invoke</span><span class="p">(</span><span class="n">public_dir</span><span class="p">,</span> <span class="n">deploy_dir</span><span class="p">)</span>
-  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Copying </span><span class="si">#{</span><span class="n">public_dir</span><span class="si">}</span><span class="s2"> to </span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">&quot;</span>
-  <span class="n">cp_r</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">public_dir</span><span class="si">}</span><span class="s2">/.&quot;</span><span class="p">,</span> <span class="n">deploy_dir</span>
-  <span class="n">cd</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">do</span>
-    <span class="nb">system</span> <span class="s2">&quot;git add -A&quot;</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Site updated at </span><span class="si">#{</span><span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">utc</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Committing: </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="nb">system</span> <span class="s2">&quot;git commit -m </span><span class="se">\&quot;</span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
-    <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Pushing generated </span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2"> website&quot;</span>
-    <span class="no">Bundler</span><span class="o">.</span><span class="n">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">&quot;git push origin </span><span class="si">#{</span><span class="n">deploy_branch</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">}</span>
-    <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## Github Pages deploy complete&quot;</span>
+  <span class="p">(</span><span class="no">Dir</span><span class="p">[</span><span class="s2">"</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">/*"</span><span class="p">]).</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">rm_rf</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">}</span>
+  <span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="p">[</span><span class="ss">:copydot</span><span class="p">].</span><span class="nf">invoke</span><span class="p">(</span><span class="n">public_dir</span><span class="p">,</span> <span class="n">deploy_dir</span><span class="p">)</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">## Copying </span><span class="si">#{</span><span class="n">public_dir</span><span class="si">}</span><span class="s2"> to </span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">"</span>
+  <span class="n">cp_r</span> <span class="s2">"</span><span class="si">#{</span><span class="n">public_dir</span><span class="si">}</span><span class="s2">/."</span><span class="p">,</span> <span class="n">deploy_dir</span>
+  <span class="n">cd</span> <span class="s2">"</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">"</span> <span class="k">do</span>
+    <span class="nb">system</span> <span class="s2">"git add -A"</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s2">"Site updated at </span><span class="si">#{</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">utc</span><span class="si">}</span><span class="s2">"</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">## Committing: </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">"</span>
+    <span class="nb">system</span> <span class="s2">"git commit -m </span><span class="se">\"</span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="se">\"</span><span class="s2">"</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">## Pushing generated </span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2"> website"</span>
+    <span class="no">Bundler</span><span class="p">.</span><span class="nf">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">"git push origin </span><span class="si">#{</span><span class="n">deploy_branch</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">## Github Pages deploy complete"</span>
   <span class="k">end</span>
 <span class="k">end</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
-<p>여기서 고칠 부분은 <code>Bundler.with_clean_env { system "git push origin #{deploy_branch}" }</code> 이 부분이다.
-<code>#{deploy_branch}"</code> 앞에 +를 붙여준다.</p>
+<p>여기서 고칠 부분은 <code class="highlighter-rouge">Bundler.with_clean_env { system "git push origin #{deploy_branch}" }</code> 이 부분이다.
+<code class="highlighter-rouge">#{deploy_branch}"</code> 앞에 +를 붙여준다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="no">Bundler</span><span class="o">.</span><span class="n">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">&quot;git push origin </span><span class="si">#{</span><span class="n">deploy_branch</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Bundler</span><span class="p">.</span><span class="nf">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">"git push origin </span><span class="si">#{</span><span class="n">deploy_branch</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+</code></pre>
+</div>
 
 <p>이제 저장후 나와서 다시 deploy…</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">## Pushing generated _deploy website</span>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c">## Pushing generated _deploy website</span>
 Counting objects: 36, <span class="k">done</span>.
-Delta compression using up to <span class="m">4</span> threads.
+Delta compression using up to 4 threads.
 Compressing objects: 100% <span class="o">(</span>27/27<span class="o">)</span>, <span class="k">done</span>.
-Writing objects: 100% <span class="o">(</span>36/36<span class="o">)</span>, 12.90 KiB <span class="p">|</span> <span class="m">0</span> bytes/s, <span class="k">done</span>.
-Total <span class="m">36</span> <span class="o">(</span>delta 14<span class="o">)</span>, reused <span class="m">0</span> <span class="o">(</span>delta 0<span class="o">)</span>
+Writing objects: 100% <span class="o">(</span>36/36<span class="o">)</span>, 12.90 KiB | 0 bytes/s, <span class="k">done</span>.
+Total 36 <span class="o">(</span>delta 14<span class="o">)</span>, reused 0 <span class="o">(</span>delta 0<span class="o">)</span>
 To https://github.com/asamaru7/blog.git
  + 9295247...d6c0b14 gh-pages -&gt; gh-pages <span class="o">(</span>forced update<span class="o">)</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>이번엔 gh-pages (forced update) 안내를 보여주며 push 성공.</p>
 
@@ -282,7 +249,7 @@ To https://github.com/asamaru7/blog.git
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

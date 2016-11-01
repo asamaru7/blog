@@ -142,40 +142,34 @@
 
 <p>이런 상황이 왜 발생했을까? selinux가 꺼진 상태에서 운영하다가 켜서 재시작하게되면 파일에 대한 selinux rule이 적용하는 과정을 거치게 된다(이로인해 변경 후 최초 시작시 시간이 오래 걸리면 적용이 끝나면 다시 한번 재부팅된다). 이 과정이 정상적으로 완료되었었다면 위 문제가 발생하지 않았겠지만 나의 경우는 내가 설정해 놓은 다른 옵션으로 인해 문제가 발생했다.</p>
 
-<p>나의 경우는 보안상의 이유로 <code>chattr +i /etc/passwd</code>, <code>chattr +i /etc/shadow</code>를 적용한다. 그런데 내가 이걸 잊고 그냥 selinux만 켠 것이다. 그로인해 재시작시 두 파일에 대한 selinux rule이 적용되지 못했던 것이다.</p>
+<p>나의 경우는 보안상의 이유로 <code class="highlighter-rouge">chattr +i /etc/passwd</code>, <code class="highlighter-rouge">chattr +i /etc/shadow</code>를 적용한다. 그런데 내가 이걸 잊고 그냥 selinux만 켠 것이다. 그로인해 재시작시 두 파일에 대한 selinux rule이 적용되지 못했던 것이다.</p>
 
 <p>로그인을 할 수 없었기 때문에 파일 상태를 확인할 수 없어 single mode로 부팅해서 확인해야 했다.
-single mode 부팅에 관련해서는 <a href="http://linux.systemv.pe.kr/centos-7-%EC%8B%B1%EA%B8%80%EB%AA%A8%EB%93%9C-%EB%B6%80%ED%8C%85/">CENTOS 7 싱글모드 부팅</a>에서 잘 설명하고 있다(CentOS 7부터 Grub2로 변경되었다고 한다. 그래서 처음엔 어떻게 single mode 부팅을 해야할지 몰라서 당황했다). 요약하자면 부팅 메시지가 나왔을 때 <code>e</code>를 눌러 편집 모드로 들어가서 <code>ro</code>가 나오는 부분을 찾아서 <code>rw init=/sysroot/bin/sh</code>로 변경한다(찾기가 어려울 수 있다. <code>ro</code>로 시작하는게 아니라 명령줄 내에 ` ro <code>라고 된 부분이 있다. 나의 경우는 linux16 /vmlinuz-3.10.0-~~ 으로 시작하는 라인에 있었다). 수정 후에는 </code>crtl+x<code>를 눌러서 부팅한다. 부팅이 되고나면 실제 서버의 </code>/<code>는 </code>/sysroot<code>로 마운트되어 있다. 따라서 </code>chroot /sysroot<code>를 하면 기존 서버처럼 </code>/` 경로로 변경할 수 있다. 사실 꼭 필요하진 않다. 경로가 헛갈리지 않도록 작업하기 위해서 한다.</p>
+single mode 부팅에 관련해서는 <a href="http://linux.systemv.pe.kr/centos-7-%EC%8B%B1%EA%B8%80%EB%AA%A8%EB%93%9C-%EB%B6%80%ED%8C%85/">CENTOS 7 싱글모드 부팅</a>에서 잘 설명하고 있다(CentOS 7부터 Grub2로 변경되었다고 한다. 그래서 처음엔 어떻게 single mode 부팅을 해야할지 몰라서 당황했다). 요약하자면 부팅 메시지가 나왔을 때 <code class="highlighter-rouge">e</code>를 눌러 편집 모드로 들어가서 <code class="highlighter-rouge">ro</code>가 나오는 부분을 찾아서 <code class="highlighter-rouge">rw init=/sysroot/bin/sh</code>로 변경한다(찾기가 어려울 수 있다. <code class="highlighter-rouge">ro</code>로 시작하는게 아니라 명령줄 내에 ` ro <code class="highlighter-rouge">라고 된 부분이 있다. 나의 경우는 linux16 /vmlinuz-3.10.0-~~ 으로 시작하는 라인에 있었다). 수정 후에는 </code>crtl+x<code class="highlighter-rouge">를 눌러서 부팅한다. 부팅이 되고나면 실제 서버의 </code>/<code class="highlighter-rouge">는 </code>/sysroot<code class="highlighter-rouge">로 마운트되어 있다. 따라서 </code>chroot /sysroot<code class="highlighter-rouge">를 하면 기존 서버처럼 </code>/` 경로로 변경할 수 있다. 사실 꼭 필요하진 않다. 경로가 헛갈리지 않도록 작업하기 위해서 한다.</p>
 
 <p>single mode로 들어가서 일단 selinux를 끄고(permissive 모드 사용) 다시 부팅했다(여기서 바로 변경해도 되었을 수 있지만 확인을 위해서 일단 다시 부팅했다). 부팅 후 아래와 같이 확인했다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>ls -Z /etc/passwd
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>ls -Z /etc/passwd
 -rw-r--r--. root root system_u:object_r:unlabeled_t:s0 /etc/passwd
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
-<p>원래는 <code>/etc/passwd</code>는 <code>passwd_file_t</code>가 되어야 한다. 그런데 <code>unlabeled_t</code>로 되어있어 제대로 로그인 할 수 없었던 것이다. 그래서 <code>restorecon</code>를 사용해서 아래처럼 복구하려고 했다.</p>
+<p>원래는 <code class="highlighter-rouge">/etc/passwd</code>는 <code class="highlighter-rouge">passwd_file_t</code>가 되어야 한다. 그런데 <code class="highlighter-rouge">unlabeled_t</code>로 되어있어 제대로 로그인 할 수 없었던 것이다. 그래서 <code class="highlighter-rouge">restorecon</code>를 사용해서 아래처럼 복구하려고 했다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>restorecon -v /etc/passwd
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>restorecon -v /etc/passwd
 restorecon reset /etc/passwd context system_u:object_r:unlabeled_t:s0-&gt;system_u:object_r:passwd_file_t:s0
-restorecon <span class="nb">set </span>context /etc/passwd-&gt;system_u:object_r:passwd_file_t:s0 failed:<span class="s1">&#39;Operation not permitted&#39;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+restorecon <span class="nb">set </span>context /etc/passwd-&gt;system_u:object_r:passwd_file_t:s0 failed:<span class="s1">'Operation not permitted'</span>
+</code></pre>
+</div>
 
 <p>그런데 위와 같은 오류가 났다. 아마도 selinux를 켜고 최초 부팅시에도 동일한 오류로 인해 정상적으로 rule이 적용되지 않았을 것이다. 그래서 아래와 같이 다시 처리했다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>chattr -i /etc/passwd
-<span class="nv">$ </span>chattr -i /etc/shadow
-<span class="nv">$ </span>restorecon -v /etc/passwd
-<span class="nv">$ </span>restorecon -v /etc/shadow
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>chattr -i /etc/passwd
+<span class="gp">$ </span>chattr -i /etc/shadow
+<span class="gp">$ </span>restorecon -v /etc/passwd
+<span class="gp">$ </span>restorecon -v /etc/shadow
+</code></pre>
+</div>
 
 <p>이제 다시 재부팅하면 기존처럼 로그인이 잘 된다. 아직 selinux를 잘 다루지 못해 발생한 문제이지만 덕분에 여러가지를 알게 되었다. 사실 다행히 이 문제를 vagrant로 띄운 가상 머신에서 겪어서 다양하게 시도해 보면서 좋은 경험을 했다.</p>
 
@@ -225,7 +219,7 @@ restorecon <span class="nb">set </span>context /etc/passwd-&gt;system_u:object_r
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

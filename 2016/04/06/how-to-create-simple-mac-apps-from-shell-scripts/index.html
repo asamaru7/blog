@@ -136,45 +136,31 @@
 
 				<p>OSX를 사용하다 보면 자주 사용하는 shell script를 app으로 생성해 두고 싶을 때가 많다. 예를들어 나의 경우는 기본 chrome에는 개인 계정을 연결해서 사용하고 chrome의 data 저장 경로를 별도로 지정해서 회사 계정을 연결해서 사용한다. 아래는 주제에서는 벗어나지만 chrome의 data 저장 경로를 별도로 지정해서 실행하는 방법이다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>/Applications/Google<span class="se">\ </span>Chrome.app/Contents/MacOS/Google<span class="se">\ </span>Chrome --user-data-dir<span class="o">=</span>/chrome/subva/ &gt; /dev/null 2&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="p">&amp;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>/Applications/Google<span class="se">\ </span>Chrome.app/Contents/MacOS/Google<span class="se">\ </span>Chrome --user-data-dir<span class="o">=</span>/chrome/subva/ &gt; /dev/null 2&gt;&amp;1 &amp;
+</code></pre>
+</div>
 
-<p>위 스크립트를 파일로 저장해두고 필요할 경우만 shell에서 실행해서 사용하는데 매번 터미널을 여는 것이 귀찮다. 그래서 기존에는 <code>Automator</code>를 사용해서 app 파일을 만들어 사용했다(<a href="http://stackoverflow.com/a/281455">Executing Shell Scripts from the OS X Dock?</a> 참고). 그런데 이 app을 만드는 것이 복잡하지는 않아도(사실 무척 간단하다) 귀찮은지라 더 간단한 방법이 없는지 찾아봤다.</p>
+<p>위 스크립트를 파일로 저장해두고 필요할 경우만 shell에서 실행해서 사용하는데 매번 터미널을 여는 것이 귀찮다. 그래서 기존에는 <code class="highlighter-rouge">Automator</code>를 사용해서 app 파일을 만들어 사용했다(<a href="http://stackoverflow.com/a/281455">Executing Shell Scripts from the OS X Dock?</a> 참고). 그런데 이 app을 만드는 것이 복잡하지는 않아도(사실 무척 간단하다) 귀찮은지라 더 간단한 방법이 없는지 찾아봤다.</p>
 
 <p><a href="https://mathiasbynens.be/notes/shell-script-mac-apps">How to create simple Mac apps from shell scripts</a>라는 글에 보면 아래의 스크립트를 소개하고 있다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/usr/bin/env bash</span>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c">#!/usr/bin/env bash</span>
 
-<span class="nv">APPNAME</span><span class="o">=</span><span class="k">${</span><span class="nv">2</span><span class="k">:-$(</span>basename <span class="s2">&quot;$1&quot;</span> <span class="s2">&quot;.sh&quot;</span><span class="k">)}</span>
-<span class="nv">DIR</span><span class="o">=</span><span class="s2">&quot;$APPNAME.app/Contents/MacOS&quot;</span>
+<span class="nv">APPNAME</span><span class="o">=</span><span class="k">${</span><span class="nv">2</span><span class="k">:-$(</span>basename <span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span> <span class="s2">".sh"</span><span class="k">)}</span>
+<span class="nv">DIR</span><span class="o">=</span><span class="s2">"</span><span class="nv">$APPNAME</span><span class="s2">.app/Contents/MacOS"</span>
 
-<span class="k">if</span> <span class="o">[</span> -a <span class="s2">&quot;$APPNAME.app&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-  <span class="nb">echo</span> <span class="s2">&quot;$PWD/$APPNAME.app already exists :(&quot;</span>
+<span class="k">if</span> <span class="o">[</span> -a <span class="s2">"</span><span class="nv">$APPNAME</span><span class="s2">.app"</span> <span class="o">]</span>; <span class="k">then
+  </span><span class="nb">echo</span> <span class="s2">"</span><span class="nv">$PWD</span><span class="s2">/</span><span class="nv">$APPNAME</span><span class="s2">.app already exists :("</span>
   <span class="nb">exit </span>1
-<span class="k">fi</span>
+<span class="k">fi
 
-mkdir -p <span class="s2">&quot;$DIR&quot;</span>
-cp <span class="s2">&quot;$1&quot;</span> <span class="s2">&quot;$DIR/$APPNAME&quot;</span>
-chmod +x <span class="s2">&quot;$DIR/$APPNAME&quot;</span>
+</span>mkdir -p <span class="s2">"</span><span class="nv">$DIR</span><span class="s2">"</span>
+cp <span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$DIR</span><span class="s2">/</span><span class="nv">$APPNAME</span><span class="s2">"</span>
+chmod +x <span class="s2">"</span><span class="nv">$DIR</span><span class="s2">/</span><span class="nv">$APPNAME</span><span class="s2">"</span>
 
-<span class="nb">echo</span> <span class="s2">&quot;$PWD/$APPNAME.app&quot;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<span class="nb">echo</span> <span class="s2">"</span><span class="nv">$PWD</span><span class="s2">/</span><span class="nv">$APPNAME</span><span class="s2">.app"</span>
+</code></pre>
+</div>
 
 <p>위 스크립트를 사용해서 shell 스크립트를 간단하게 app으로 변환(생성) 할 수 있다. 그런데 이 글이 오래되었다는 것이 함정이다. 몇 버전부터 인지는 모르지만 엘 케피탄에서 생성된 app을 실행하면 아래와 같은 오류가 나면서 실행이 되지 않는다.</p>
 
@@ -192,7 +178,7 @@ chmod +x <span class="s2">&quot;$DIR/$APPNAME&quot;</span>
 
 <p>그런데 Platypus의 경우는 지정한 스크립트가 종료되어도 앱은 종료되지 않아서 내가 원하는 결과를 얻지 못했다.</p>
 
-<p>그래서 결론적으로 내가 선택한 방법은 기존처럼 <code>Automator</code>를 사용하는 것이다.</p>
+<p>그래서 결론적으로 내가 선택한 방법은 기존처럼 <code class="highlighter-rouge">Automator</code>를 사용하는 것이다.</p>
 
 			</article>
 			<hr class="boundary">
@@ -240,7 +226,7 @@ chmod +x <span class="s2">&quot;$DIR/$APPNAME&quot;</span>
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				
@@ -312,6 +298,8 @@ chmod +x <span class="s2">&quot;$DIR/$APPNAME&quot;</span>
 				<h3 class="panel-title">Related</h3>
 			</div>
 			<ul class="list-group">
+				
+				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/11/01/nokogiri-libxml2-missing-mac-os-x-10-12/">OSX에서 Nokogiri 설치시 &#39;Libxml2 missing.&#39; 오류 해결</a></li>
 				
 				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/10/19/mac-os-git-korean-file-name-error/">Mac 에서 git 사용시 한글 파일명 문제</a></li>
 				

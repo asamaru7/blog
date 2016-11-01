@@ -8,7 +8,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="author" content="유영재">
 	<meta name="keywords" content="안드로이드 Geocoder 사용시 Service not Available 오류,android,이 세상에 하나는 남기고 가자"/>
-	<meta name="description" content="안드로이드 Geocoder 사용시 Service not Available 오류,android,안드로이드에서 특정 지점의 좌표를 주소로 변환하는 것이 필요해서 Geocoder 사용했다. 대략적인 코드는 아래와 같다. 1 2 3 4 5 6 7 8 9101112131415161718192021222324252627282930static abstract public class G..."/>
+	<meta name="description" content="안드로이드 Geocoder 사용시 Service not Available 오류,android,안드로이드에서 특정 지점의 좌표를 주소로 변환하는 것이 필요해서 Geocoder 사용했다. 대략적인 코드는 아래와 같다.static abstract public class GeoCoderTask extends AsyncTask&lt;LatLng, Void, Address[]&gt;..."/>
 
 	<!-- http://t.co/dKP3o1e -->
 	<meta name="HandheldFriendly" content="True">
@@ -136,46 +136,17 @@
 
 				<p>안드로이드에서 특정 지점의 좌표를 주소로 변환하는 것이 필요해서 Geocoder 사용했다. 대략적인 코드는 아래와 같다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">static</span> <span class="kd">abstract</span> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">GeoCoderTask</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">LatLng</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Address</span><span class="o">[]&gt;</span> <span class="o">{</span>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kd">static</span> <span class="kd">abstract</span> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">GeoCoderTask</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">LatLng</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Address</span><span class="o">[]&gt;</span> <span class="o">{</span>
 	<span class="nd">@Override</span>
 	<span class="kd">protected</span> <span class="n">Address</span><span class="o">[]</span> <span class="nf">doInBackground</span><span class="o">(</span><span class="n">LatLng</span><span class="o">...</span> <span class="n">arg0</span><span class="o">)</span> <span class="o">{</span>
 		<span class="n">List</span><span class="o">&lt;</span><span class="n">Address</span><span class="o">&gt;</span> <span class="n">res</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
 		<span class="k">if</span> <span class="o">(</span><span class="n">arg0</span><span class="o">.</span><span class="na">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
 			<span class="k">try</span> <span class="o">{</span>
-				<span class="n">Geocoder</span> <span class="n">geocoder</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Geocoder</span><span class="o">(</span><span class="n">Helper</span><span class="o">.</span><span class="na">getAppContext</span><span class="o">(),</span> <span class="n">Locale</span><span class="o">.</span><span class="na">KOREA</span><span class="o">);</span>
+				<span class="n">Geocoder</span> <span class="n">geocoder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Geocoder</span><span class="o">(</span><span class="n">Helper</span><span class="o">.</span><span class="na">getAppContext</span><span class="o">(),</span> <span class="n">Locale</span><span class="o">.</span><span class="na">KOREA</span><span class="o">);</span>
 				<span class="n">List</span><span class="o">&lt;</span><span class="n">android</span><span class="o">.</span><span class="na">location</span><span class="o">.</span><span class="na">Address</span><span class="o">&gt;</span> <span class="n">addresses</span> <span class="o">=</span> <span class="n">geocoder</span><span class="o">.</span><span class="na">getFromLocation</span><span class="o">(</span><span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">latitude</span><span class="o">,</span> <span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">longitude</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
 				<span class="k">if</span> <span class="o">((</span><span class="n">addresses</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">addresses</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">))</span> <span class="o">{</span>
 					<span class="n">android</span><span class="o">.</span><span class="na">location</span><span class="o">.</span><span class="na">Address</span> <span class="n">result</span> <span class="o">=</span> <span class="n">addresses</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
-					<span class="n">Address</span> <span class="n">resultAddress</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Address</span><span class="o">();</span>
+					<span class="n">Address</span> <span class="n">resultAddress</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Address</span><span class="o">();</span>
 					<span class="n">resultAddress</span><span class="o">.</span><span class="na">address</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getAddressLine</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
 					<span class="n">resultAddress</span><span class="o">.</span><span class="na">lat</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getLatitude</span><span class="o">();</span>
 					<span class="n">resultAddress</span><span class="o">.</span><span class="na">lng</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getLongitude</span><span class="o">();</span>
@@ -195,8 +166,8 @@
 		<span class="k">return</span> <span class="n">array</span><span class="o">;</span>
 	<span class="o">}</span>
 <span class="o">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>위 코드는 데이터를 다른 클래스로 넘겨서 반환하는 형태로 그대로 사용할 수는 없다. 그냥 이렇게 사용했다는 것을 보여주고자 넣은 코드니 참고만하기 바란다.</p>
 
@@ -210,112 +181,17 @@
 
 <p>이러한 정보 중에서 한가지는 Geocoder를 사용하지 않고 웹으로 호출해서 결과를 받는 것이다. 사실 나의 경우는 오류 때문이 아니라 api 사용량 때문에 사용하던 코드(API 키를 전달하지 않는 코드로 사용량에 제한을 받지 않는 것으로 보임)였는데 참고할 사람이 있을까하고 남겨본다. 그리고 한가지. 조금 전에 API key를 전달하지 않는다고 했는데 기존에는 이 방법으로 정상 동작했다. 그런데 최근 WIFI에서는 이상이 없는데 LTE 상태에서는 api 한계량 초과라는 메시지를 반환하고 있어서 사용하고 있지 않다. 이 부분은 이유를 정확히 확인해보지 못했다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87
-88
-89
-90
-91
-92
-93
-94
-95
-96</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">static</span> <span class="kd">abstract</span> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">WebGeoCoderTask</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">LatLng</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Address</span><span class="o">[]&gt;</span> <span class="o">{</span>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kd">static</span> <span class="kd">abstract</span> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">WebGeoCoderTask</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">LatLng</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Address</span><span class="o">[]&gt;</span> <span class="o">{</span>
     <span class="nd">@Override</span>
     <span class="kd">final</span> <span class="kd">protected</span> <span class="n">Address</span><span class="o">[]</span> <span class="nf">doInBackground</span><span class="o">(</span><span class="n">LatLng</span><span class="o">...</span> <span class="n">arg0</span><span class="o">)</span> <span class="o">{</span>
         <span class="n">List</span><span class="o">&lt;</span><span class="n">Address</span><span class="o">&gt;</span> <span class="n">res</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
         <span class="k">if</span> <span class="o">(</span><span class="n">arg0</span><span class="o">.</span><span class="na">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-            <span class="n">String</span> <span class="n">address</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="n">Locale</span><span class="o">.</span><span class="na">getDefault</span><span class="o">(),</span> <span class="s">&quot;https://maps.googleapis.com/maps/api/geocode/json?latlng=%1$f,%2$f&amp;sensor=false&amp;language=&quot;</span> <span class="o">+</span> <span class="n">Locale</span><span class="o">.</span><span class="na">getDefault</span><span class="o">(),</span> <span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">latitude</span><span class="o">,</span> <span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">longitude</span><span class="o">);</span>
+            <span class="n">String</span> <span class="n">address</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="n">Locale</span><span class="o">.</span><span class="na">getDefault</span><span class="o">(),</span> <span class="s">"https://maps.googleapis.com/maps/api/geocode/json?latlng=%1$f,%2$f&amp;sensor=false&amp;language="</span> <span class="o">+</span> <span class="n">Locale</span><span class="o">.</span><span class="na">getDefault</span><span class="o">(),</span> <span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">latitude</span><span class="o">,</span> <span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">longitude</span><span class="o">);</span>
             <span class="k">try</span> <span class="o">{</span>
-                <span class="n">URL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">URL</span><span class="o">(</span><span class="n">address</span><span class="o">);</span>
+                <span class="n">URL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="n">URL</span><span class="o">(</span><span class="n">address</span><span class="o">);</span>
                 <span class="n">HttpURLConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="n">url</span><span class="o">.</span><span class="na">openConnection</span><span class="o">();</span>
-                <span class="n">InputStreamReader</span> <span class="n">in</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">InputStreamReader</span><span class="o">(</span><span class="n">conn</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">());</span>
-                <span class="n">StringBuilder</span> <span class="n">jsonResults</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StringBuilder</span><span class="o">();</span>
+                <span class="n">InputStreamReader</span> <span class="n">in</span> <span class="o">=</span> <span class="k">new</span> <span class="n">InputStreamReader</span><span class="o">(</span><span class="n">conn</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">());</span>
+                <span class="n">StringBuilder</span> <span class="n">jsonResults</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringBuilder</span><span class="o">();</span>
 
                 <span class="kt">int</span> <span class="n">read</span><span class="o">;</span>
                 <span class="kt">char</span><span class="o">[]</span> <span class="n">buff</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[</span><span class="mi">1024</span><span class="o">];</span>
@@ -323,64 +199,64 @@
                     <span class="n">jsonResults</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">buff</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">read</span><span class="o">);</span>
                 <span class="o">}</span>
                 <span class="n">String</span> <span class="n">json</span> <span class="o">=</span> <span class="n">jsonResults</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
-                <span class="n">JSONObject</span> <span class="n">jsonObject</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">JSONObject</span><span class="o">(</span><span class="n">json</span><span class="o">);</span>
+                <span class="n">JSONObject</span> <span class="n">jsonObject</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JSONObject</span><span class="o">(</span><span class="n">json</span><span class="o">);</span>
                 <span class="n">AFLog</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="n">json</span><span class="o">);</span>
 
-                <span class="k">if</span> <span class="o">(</span><span class="s">&quot;OK&quot;</span><span class="o">.</span><span class="na">equalsIgnoreCase</span><span class="o">(</span><span class="n">jsonObject</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">&quot;status&quot;</span><span class="o">)))</span> <span class="o">{</span>
-                    <span class="n">JSONArray</span> <span class="n">results</span> <span class="o">=</span> <span class="n">jsonObject</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">&quot;results&quot;</span><span class="o">);</span>
+                <span class="k">if</span> <span class="o">(</span><span class="s">"OK"</span><span class="o">.</span><span class="na">equalsIgnoreCase</span><span class="o">(</span><span class="n">jsonObject</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"status"</span><span class="o">)))</span> <span class="o">{</span>
+                    <span class="n">JSONArray</span> <span class="n">results</span> <span class="o">=</span> <span class="n">jsonObject</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">"results"</span><span class="o">);</span>
                     <span class="k">if</span> <span class="o">(</span><span class="n">results</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
                         <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">,</span> <span class="n">iCnt</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="na">length</span><span class="o">();</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">iCnt</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
                             <span class="k">try</span> <span class="o">{</span>
                                 <span class="n">JSONObject</span> <span class="n">result</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="na">getJSONObject</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
 
-                                <span class="n">Address</span> <span class="n">resultAddress</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Address</span><span class="o">();</span>
-                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">address</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">&quot;formatted_address&quot;</span><span class="o">);</span>
-                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">placeId</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;place_id&quot;</span><span class="o">);</span>
-                                <span class="n">JSONObject</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">optJSONObject</span><span class="o">(</span><span class="s">&quot;geometry&quot;</span><span class="o">);</span>
+                                <span class="n">Address</span> <span class="n">resultAddress</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Address</span><span class="o">();</span>
+                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">address</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"formatted_address"</span><span class="o">);</span>
+                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">placeId</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"place_id"</span><span class="o">);</span>
+                                <span class="n">JSONObject</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">optJSONObject</span><span class="o">(</span><span class="s">"geometry"</span><span class="o">);</span>
                                 <span class="k">if</span> <span class="o">(</span><span class="n">geometry</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-                                    <span class="n">geometry</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="na">optJSONObject</span><span class="o">(</span><span class="s">&quot;location&quot;</span><span class="o">);</span>
+                                    <span class="n">geometry</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="na">optJSONObject</span><span class="o">(</span><span class="s">"location"</span><span class="o">);</span>
                                     <span class="k">if</span> <span class="o">(</span><span class="n">geometry</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-                                        <span class="n">resultAddress</span><span class="o">.</span><span class="na">lat</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="na">getDouble</span><span class="o">(</span><span class="s">&quot;lat&quot;</span><span class="o">);</span>
-                                        <span class="n">resultAddress</span><span class="o">.</span><span class="na">lng</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="na">getDouble</span><span class="o">(</span><span class="s">&quot;lng&quot;</span><span class="o">);</span>
+                                        <span class="n">resultAddress</span><span class="o">.</span><span class="na">lat</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="na">getDouble</span><span class="o">(</span><span class="s">"lat"</span><span class="o">);</span>
+                                        <span class="n">resultAddress</span><span class="o">.</span><span class="na">lng</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="na">getDouble</span><span class="o">(</span><span class="s">"lng"</span><span class="o">);</span>
                                     <span class="o">}</span>
                                 <span class="o">}</span>
 
-                                <span class="n">JSONArray</span> <span class="n">components</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">&quot;address_components&quot;</span><span class="o">);</span>
+                                <span class="n">JSONArray</span> <span class="n">components</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">"address_components"</span><span class="o">);</span>
                                 <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">components</span><span class="o">.</span><span class="na">length</span><span class="o">();</span> <span class="n">a</span><span class="o">++)</span> <span class="o">{</span>
                                     <span class="n">JSONObject</span> <span class="n">component</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="na">getJSONObject</span><span class="o">(</span><span class="n">a</span><span class="o">);</span>
-                                    <span class="n">JSONArray</span> <span class="n">types</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">&quot;types&quot;</span><span class="o">);</span>
+                                    <span class="n">JSONArray</span> <span class="n">types</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">"types"</span><span class="o">);</span>
                                     <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">types</span><span class="o">.</span><span class="na">length</span><span class="o">();</span> <span class="n">j</span><span class="o">++)</span> <span class="o">{</span>
                                         <span class="n">String</span> <span class="n">type</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="n">j</span><span class="o">);</span>
                                         <span class="k">switch</span> <span class="o">(</span><span class="n">type</span><span class="o">)</span> <span class="o">{</span>
-                                            <span class="k">case</span> <span class="s">&quot;premise&quot;</span><span class="o">:</span>
-                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">premise</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                            <span class="k">case</span> <span class="s">"premise"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">premise</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
                                                 <span class="k">break</span><span class="o">;</span>
-                                            <span class="k">case</span> <span class="s">&quot;administrative_area_level_1&quot;</span><span class="o">:</span>
-                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">administrative_area_level_1</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                            <span class="k">case</span> <span class="s">"administrative_area_level_1"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">administrative_area_level_1</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
                                                 <span class="k">break</span><span class="o">;</span>
-                                            <span class="k">case</span> <span class="s">&quot;sublocality_level_1&quot;</span><span class="o">:</span>
-                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_1</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                            <span class="k">case</span> <span class="s">"sublocality_level_1"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_1</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
                                                 <span class="k">break</span><span class="o">;</span>
-                                            <span class="k">case</span> <span class="s">&quot;sublocality_level_2&quot;</span><span class="o">:</span>
-                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_2</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                            <span class="k">case</span> <span class="s">"sublocality_level_2"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_2</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
                                                 <span class="k">break</span><span class="o">;</span>
-                                            <span class="k">case</span> <span class="s">&quot;sublocality_level_3&quot;</span><span class="o">:</span>
-                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_3</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                            <span class="k">case</span> <span class="s">"sublocality_level_3"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_3</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
                                                 <span class="k">break</span><span class="o">;</span>
-                                            <span class="k">case</span> <span class="s">&quot;sublocality_level_4&quot;</span><span class="o">:</span>
-                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_4</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                            <span class="k">case</span> <span class="s">"sublocality_level_4"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_4</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
                                                 <span class="k">break</span><span class="o">;</span>
-                                            <span class="k">case</span> <span class="s">&quot;country&quot;</span><span class="o">:</span>
-                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">country</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                            <span class="k">case</span> <span class="s">"country"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">country</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
                                                 <span class="k">break</span><span class="o">;</span>
-                                            <span class="k">case</span> <span class="s">&quot;postal_code&quot;</span><span class="o">:</span>
-                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">postal_code</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">&quot;long_name&quot;</span><span class="o">);</span>
+                                            <span class="k">case</span> <span class="s">"postal_code"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">postal_code</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
                                                 <span class="k">break</span><span class="o">;</span>
-                                            <span class="k">case</span> <span class="s">&quot;political&quot;</span><span class="o">:</span>
-                                            <span class="k">case</span> <span class="s">&quot;sublocality&quot;</span><span class="o">:</span>
+                                            <span class="k">case</span> <span class="s">"political"</span><span class="o">:</span>
+                                            <span class="k">case</span> <span class="s">"sublocality"</span><span class="o">:</span>
                                                 <span class="k">break</span><span class="o">;</span>
                                             <span class="k">default</span><span class="o">:</span>
-<span class="c1">//													AFLog.d(&quot;Not catched : &quot; + type);</span>
+<span class="c1">//													AFLog.d("Not catched : " + type);</span>
                                                 <span class="k">break</span><span class="o">;</span>
                                         <span class="o">}</span>
                                     <span class="o">}</span>
@@ -401,8 +277,8 @@
         <span class="k">return</span> <span class="n">array</span><span class="o">;</span>
     <span class="o">}</span>
 <span class="o">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>이 코드도 마찬가지로 참고만 하기 바란다. 내부적으로 사용중인 클래스들이 있어서 그대로 넣으면 동작하지 않는다. 하지만 코드를 보면 반환 클래스에 관련된 부분이므로 어디를 수정해야 할지 바로 알 수 있을 것으로 보인다.</p>
 
@@ -452,7 +328,7 @@
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

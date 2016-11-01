@@ -113,73 +113,202 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/04/06/how-to-create-simple-mac-apps-from-shell-scripts/">
-								OSX : shell script 실행하는 app 파일 만들기
+							<a class="title" href="https://blog.asamaru.net/2016/04/07/how-to-protect-ssh-with-fail2ban-on-centos-6-7/">
+								SSH 무작위 로그인 시도 막기(With Fail2Ban on CentOS 6/7 + selinux)
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/04/06/how-to-create-simple-mac-apps-from-shell-scripts/">2016.04.06.</span></a>
+								<a href="https://blog.asamaru.net/2016/04/07/how-to-protect-ssh-with-fail2ban-on-centos-6-7/">2016.04.07.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>OSX를 사용하다 보면 자주 사용하는 shell script를 app으로 생성해 두고 싶을 때가 많다. 예를들어 나의 경우는 기본 chrome에는 개인 계정을 연결해서 사용하고 chrome의 data 저장 경로를 별도로 지정해서 회사 계정을 연결해서 사용한다. 아래는 주제에서는 벗어나지만 chrome의 data 저장 경로를 별도로 지정해서 실행하는 방법이다.</p>
+							<p>linux 서버를 공개망에서 사용하면서 방화벽을 사용하지 않는 경우 ssh 로그인을 지속적으로 시도하는 로그를 볼 수 있다. 대부분 외국 IP 대역에서 지속적으로 ssh 로그인을 시도하는데 무작위 비밀번호를 대입하는 것이다. 당연히 방화벽을 설정하는 것이 당연하나 특수한 목적으로 인해 접속 IP 대역을 제한할 수 없는 경우도 있을 수 있다. 이런 경우에 보안을 조금이나마 강화하기 위해 사용할 수 있는 것이 <a href="http://www.fail2ban.org/">fail2ban</a> 이다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>/Applications/Google<span class="se">\ </span>Chrome.app/Contents/MacOS/Google<span class="se">\ </span>Chrome --user-data-dir<span class="o">=</span>/chrome/subva/ &gt; /dev/null 2&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="p">&amp;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p>우선 실제로 해당 서버에 어떤 IP들이 ssh 로그인을 시도했는지 아래의 명령으로 확인 할 수 있다(이하는 CentOS 7 기준이다).</p>
 
-<p>위 스크립트를 파일로 저장해두고 필요할 경우만 shell에서 실행해서 사용하는데 매번 터미널을 여는 것이 귀찮다. 그래서 기존에는 <code>Automator</code>를 사용해서 app 파일을 만들어 사용했다(<a href="http://stackoverflow.com/a/281455">Executing Shell Scripts from the OS X Dock?</a> 참고). 그런데 이 app을 만드는 것이 복잡하지는 않아도(사실 무척 간단하다) 귀찮은지라 더 간단한 방법이 없는지 찾아봤다.</p>
+<p>아래는 로그인 시도 IP를 확인하는 방법이다.</p>
 
-<p><a href="https://mathiasbynens.be/notes/shell-script-mac-apps">How to create simple Mac apps from shell scripts</a>라는 글에 보면 아래의 스크립트를 소개하고 있다.</p>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>ls /var/log/secure | xargs grep -E <span class="s2">"[[:digit:]]+</span><span class="se">\.</span><span class="s2">[[:digit:]]+</span><span class="se">\.</span><span class="s2">[[:digit:]]+</span><span class="se">\.</span><span class="s2">[[:digit:]]+"</span> -o | sort | uniq
+</code></pre>
+</div>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/usr/bin/env bash</span>
+<p>공개망에 연결된 서버라면 생각보다 많은 IP가 나와 놀랄수도 있다. IP들 중 자신이 아는 IP를 제외하면 대부분이 위에 언급한 공격일 확률이 높다.</p>
 
-<span class="nv">APPNAME</span><span class="o">=</span><span class="k">${</span><span class="nv">2</span><span class="k">:-$(</span>basename <span class="s2">&quot;$1&quot;</span> <span class="s2">&quot;.sh&quot;</span><span class="k">)}</span>
-<span class="nv">DIR</span><span class="o">=</span><span class="s2">&quot;$APPNAME.app/Contents/MacOS&quot;</span>
+<p>다른 방법으로 아래와 같이 최근 로그인 실패 기록을 확인하는 것도 가능하다.</p>
 
-<span class="k">if</span> <span class="o">[</span> -a <span class="s2">&quot;$APPNAME.app&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-  <span class="nb">echo</span> <span class="s2">&quot;$PWD/$APPNAME.app already exists :(&quot;</span>
-  <span class="nb">exit </span>1
-<span class="k">fi</span>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>last -f /var/log/btmp | more
+</code></pre>
+</div>
 
-mkdir -p <span class="s2">&quot;$DIR&quot;</span>
-cp <span class="s2">&quot;$1&quot;</span> <span class="s2">&quot;$DIR/$APPNAME&quot;</span>
-chmod +x <span class="s2">&quot;$DIR/$APPNAME&quot;</span>
+<p><a href="http://www.thegeekstuff.com/2011/08/linux-var-log-files/">20 Linux Log Files that are Located under /var/log Directory</a>에 보면 <code class="highlighter-rouge">/var/log/btmp</code>에 대한 설명을 확인 할 수 있다.</p>
 
-<span class="nb">echo</span> <span class="s2">&quot;$PWD/$APPNAME.app&quot;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p>상황을 확인 했으니 이제 본격적으로 <a href="http://www.fail2ban.org/">fail2ban</a>을 사용해 보자.</p>
 
-<p>위 스크립트를 사용해서 shell 스크립트를 간단하게 app으로 변환(생성) 할 수 있다. 그런데 이 글이 오래되었다는 것이 함정이다. 몇 버전부터 인지는 모르지만 엘 케피탄에서 생성된 app을 실행하면 아래와 같은 오류가 나면서 실행이 되지 않는다.</p>
+<hr />
 
-<blockquote>
-  <p>PowerPC 응용 프로그램이 더 이상 지원되지 않기 때문에 ‘~~~.app’ 응용 프로그램을 열 수 없습니다.</p>
-</blockquote>
+<h3 id="fail2ban-">fail2ban 설치</h3>
 
-<p>위 스크립트를 개선하고 변형한 여러 소스들(<a href="https://github.com/alexbarton/appify">alexbarton/appify</a> 등)을 github 등에서 찾을 수 있으나 대부분 동일한 오류를 낸다.</p>
+<p>fail2ban은 지정된 시간 내에 지정된 횟수 이상으로 ssh 로그인을 실패하면 해당 IP에서의 접근을 지정된 시간만큼 차단하는 역할을 한다.</p>
 
-<p>또 다른 방법은 <a href="http://www.sveinbjorn.org/platypus">Platypus</a>를 사용하는 것이다.</p>
+<p>아래의 설치 과정은 CentOS 7을 기준으로 한다. 이는 iptables 대신 firewalld가 사용되며 systemd를 사용하는 것을 기준으로 한다는 뜻이다. CentOS 6이라면 아래의 참고자료를 살펴보기 바란다.</p>
 
-<p><img src="/img/2016/04/2016-04-06-how-to-create-simple-mac-apps-from-shell-scripts-1.png" alt="Platypus" /></p>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c"># epel-release 추가</span>
+<span class="gp">$ </span>rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
-<p>Platypus의 경우는 아주 다양한 활용이 가능하다. 여러가지 스크립트를 지원하며 앱 아이콘도 바로 지정 가능하다. 자세한 내용은 <a href="http://www.sveinbjorn.org/platypus">Platypus 공식 사이트</a>를 참고하자.</p>
+<span class="c"># fail2ban 설치</span>
+<span class="gp">$ </span>yum install -y fail2ban
 
-<p>그런데 Platypus의 경우는 지정한 스크립트가 종료되어도 앱은 종료되지 않아서 내가 원하는 결과를 얻지 못했다.</p>
+<span class="c"># fail2ban 기본 설정</span>
+<span class="gp">$ </span><span class="nv">hostname</span><span class="o">=</span><span class="sb">`</span>/bin/hostname<span class="sb">`</span>
+<span class="gp">$ </span><span class="nb">echo</span> <span class="s2">"[DEFAULT]"</span> &gt; /etc/fail2ban/jail.local
+<span class="c"># 1시간 동안 접근 제한</span>
+<span class="gp">$ </span><span class="nb">echo</span> <span class="s2">"bantime = 3600"</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="c"># 결과 수신 메일 지정</span>
+<span class="gp">$ </span><span class="nb">echo</span> <span class="s2">"destemail = ~~~@~~~.com"</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="c"># 결과 발신 메일 지정</span>
+<span class="gp">$ </span><span class="nb">echo</span> <span class="s2">"sender = root@</span><span class="nv">$hostname</span><span class="s2">"</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="gp">$ </span><span class="nb">echo</span> <span class="s2">""</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="c"># ssh 접근 검사 활성화</span>
+<span class="gp">$ </span><span class="nb">echo</span> <span class="s2">"[sshd]"</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="gp">$ </span><span class="nb">echo</span> <span class="s2">"enabled = true"</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="c"># nginx-http-auth 접근 검사 활성화 : 필요시에만 사용</span>
+<span class="gp">$ </span><span class="nb">echo</span> <span class="s2">""</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="gp">$ </span><span class="nb">echo</span> <span class="s2">"[nginx-http-auth]"</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="gp">$ </span><span class="nb">echo</span> <span class="s2">"enabled = true"</span> &gt;&gt; /etc/fail2ban/jail.local
+</code></pre>
+</div>
 
-<p>그래서 결론적으로 내가 선택한 방법은 기존처럼 <code>Automator</code>를 사용하는 것이다.</p>
+<p><strong>fail2ban 서비스 활성</strong></p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>systemctl <span class="nb">enable </span>fail2ban.service
+</code></pre>
+</div>
+
+<p><strong>fail2ban 서비스 시작</strong></p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>systemctl start fail2ban.service
+</code></pre>
+</div>
+
+<h3 id="selinux--fail2ban--">selinux 사용시 fail2ban 관련 설정</h3>
+
+<p>이하는 selinux 사용시에만 적용하면 된다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>checkmodule -M -m -o fail2ban-syslog.mod fail2ban-syslog.te
+<span class="gp">$ </span>semodule_package -o fail2ban-syslog.pp -m fail2ban-syslog.mod
+<span class="gp">$ </span>semodule -r fail2ban-syslog
+<span class="gp">$ </span>semodule -i fail2ban-syslog.pp
+<span class="gp">$ </span>rm -f fail2ban-syslog.mod
+<span class="gp">$ </span>rm -f fail2ban-syslog.pp
+<span class="gp">$ </span>semodule -l|grep fail2ban-syslog
+
+<span class="gp">$ </span>checkmodule -M -m -o logrotate-fail2ban.mod logrotate-fail2ban.te
+<span class="gp">$ </span>semodule_package -o logrotate-fail2ban.pp -m logrotate-fail2ban.mod
+<span class="gp">$ </span>semodule -r logrotate-fail2ban
+<span class="gp">$ </span>semodule -i logrotate-fail2ban.pp
+<span class="gp">$ </span>rm -f logrotate-fail2ban.mod
+<span class="gp">$ </span>rm -f logrotate-fail2ban.pp
+<span class="gp">$ </span>semodule -l|grep logrotate-fail2ban
+</code></pre>
+</div>
+
+<p>아래의 2개의 파일은 위 스크립트 실행에 필요한 파일이므로 해당 파일명으로 저장해서 사용하면 된다.</p>
+
+<p><strong>fail2ban-syslog.te</strong></p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>module fail2ban-syslog 1.0;
+
+require {
+type syslogd_var_run_t;
+type fail2ban_t;
+class dir read;
+class file read;
+class file open;
+class file getattr;
+}
+
+#============= fail2ban_t ==============
+allow fail2ban_t syslogd_var_run_t:dir read;
+allow fail2ban_t syslogd_var_run_t:file read;
+allow fail2ban_t syslogd_var_run_t:file open;
+allow fail2ban_t syslogd_var_run_t:file getattr;
+</code></pre>
+</div>
+
+<p><strong>logrotate-fail2ban.te</strong></p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>module logrotate-fail2ban 1.7;
+
+require {
+type fail2ban_client_exec_t;
+type logrotate_t;
+type init_var_lib_t;
+class file { open read execute getattr write create execute_no_trans setattr unlink ioctl rename};
+}
+
+#============= logrotate_t ==============
+allow logrotate_t fail2ban_client_exec_t:file execute_no_trans;
+allow logrotate_t fail2ban_client_exec_t:file { open read execute ioctl };
+allow logrotate_t init_var_lib_t:file { open read getattr write create unlink setattr rename };
+</code></pre>
+</div>
+
+<hr />
+
+<p>설치가 다 되었다면 아래의 명령 실행시 다음과 비슷한 결과를 볼 수 있다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>firewall-cmd --direct --get-all-rules
+
+ipv4 filter INPUT 0 -p tcp -m multiport --dports ssh -m <span class="nb">set</span> --match-set fail2ban-sshd src -j REJECT --reject-with icmp-port-unreachable
+</code></pre>
+</div>
+
+<p>그리고 아래의 명령으로 적용 상황을 확인할 수 있다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c"># fail2ban 상태 확인</span>
+<span class="gp">$ </span>fail2ban-client status sshd
+
+Status <span class="k">for </span>the jail: sshd
+|- Filter
+|  |- Currently failed:	1
+|  |- Total failed:	153
+|  <span class="sb">`</span>- File list:	/var/log/secure
+<span class="sb">`</span>- Actions
+   |- Currently banned:	0
+   |- Total banned:	2
+   <span class="sb">`</span>- Banned IP list:
+
+<span class="c"># ipset에 설정(차단)된 내용 확인</span>
+<span class="gp">$ </span>ipset --list
+
+Name: fail2ban-sshd
+Type: <span class="nb">hash</span>:ip
+Revision: 1
+Header: family inet hashsize 1024 maxelem 65536 timeout 3600
+Size <span class="k">in </span>memory: 16656
+References: 1
+Members:
+
+<span class="c"># fail2ban 로그 확인</span>
+<span class="gp">$ </span>cat /var/log/fail2ban.log
+
+<span class="c"># 차단 IP 목록</span>
+<span class="gp">$ </span>awk <span class="s1">'($(NF-1) = /Ban/){print $NF}'</span> /var/log/fail2ban.log | sort | uniq -c | sort -n
+</code></pre>
+</div>
+
+<hr />
+
+<h3 id="section">참고자료</h3>
+
+<ul>
+  <li><a href="http://www.fail2ban.org/wiki/index.php/Commands">fail2ban-client commands</a></li>
+  <li><a href="https://krash.be/node/27">selinux module for fail2ban on Centos/RHEL 7</a></li>
+  <li><a href="https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-centos-7">How To Protect SSH With Fail2Ban on CentOS 7</a></li>
+  <li><a href="https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-centos-6">How To Protect SSH with fail2ban on CentOS 6</a></li>
+  <li><a href="http://www.servermom.org/install-fail2ban-centos/1809/">HOW TO INSTALL FAIL2BAN ON CENTOS</a></li>
+  <li><a href="https://fedoraproject.org/wiki/Fail2ban_with_FirewallD">Fail2ban with FirewallD</a></li>
+  <li><a href="http://www.the-art-of-web.com/system/fail2ban-log/">System: Monitoring the fail2ban log</a></li>
+</ul>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -193,8 +322,8 @@ chmod +x <span class="s2">&quot;$DIR/$APPNAME&quot;</span>
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/04/06/how-to-create-simple-mac-apps-from-shell-scripts/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/04/06/how-to-create-simple-mac-apps-from-shell-scripts/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/04/07/how-to-protect-ssh-with-fail2ban-on-centos-6-7/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/04/07/how-to-protect-ssh-with-fail2ban-on-centos-6-7/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

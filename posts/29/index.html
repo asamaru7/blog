@@ -113,42 +113,79 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/03/10/android-studio-ignore-build-files-in-find-results/">
-								Android Studio : Find results에서 build files 제외하기
+							<a class="title" href="https://blog.asamaru.net/2016/03/11/upgrade-to-php-5-6-or-7-on-mac-osx-10-11-el-capitan-and-osx-10-6-10-10/">
+								Mac OSX(10.6 – 10.11)에서 PHP(5.6 / 7) 업그레이드
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/03/10/android-studio-ignore-build-files-in-find-results/">2016.03.10.</span></a>
+								<a href="https://blog.asamaru.net/2016/03/11/upgrade-to-php-5-6-or-7-on-mac-osx-10-11-el-capitan-and-osx-10-6-10-10/">2016.03.11.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>Android Studio로 작업을 하다보면 많은 불편함을 겪게 된다. 그중에 하나가 원하는 문자열을 찾기 위해 사용하는 “Find in Path”(<kbd>Command</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>) 메뉴다. PHPStorm은 exclude 기능을 이용해서 원하지 않는 폴더를 프로젝트에서 제외해 둘 수 있다. 같은 회사에서 만들었음에도 불구하고 Android Studio에는 비슷한 기능이 없다. 그로 인해서 Find로 프로젝트 전체에서 검색시 build 폴더 등이 포함되어 원하는 결과를 찾기가 무척 힘들다(특히 R.java, log 파일등이 포함되면). 이 문제를 해결할 방법은 없는가?</p>
+							<p>현재 기준으로 El Capitan에서 PHP 버전은 5.5.30이다. 웬만한 PHP 라이브러리는 동작하는데 문제가 없는 버전이긴 하지만 PHP 7이 최신 버전이며 작업에 따라 더 높은 버전의 PHP가 필요할 수 있다. 나의 경우도 웬만한 작업은 Vagrant에서 하므로 OSX의 PHP 버전은 문제가 되지 않지만 이번에 몇가지를 테스트하기 위해 OSX의 PHP를 버전업 하기로 했다.</p>
 
-<p><img src="/img/2016/03/android_studio_find_in_path.png" alt="Android Studio Find in path" /></p>
+<p>OSX에서의 PHP 버전업은 <a href="http://coolestguidesontheplanet.com/upgrade-php-on-osx/">Upgrade to PHP 5.6 or 7 on Mac OSX 10.11 El Capitan and OSX 10.6 – 10.10</a>에 잘 나와있다. 아니 설명할 것이 거의 없을 정도로 아주 간단하다.</p>
 
-<p>일반적인 방법으로 “File name filter”를 이용해서 java, xml 등의 파일만 지정하는 것도 가능하지만 그래도 build 폴더 등을 제외하기는 쉽지 않다. 또는 “Scope &gt; Directory”에서 소스 폴더를 지정하는 방법도 있으나 서브 모듈들이 다수 포함되어 있거나 libs 폴더 등도 함께 검색하고자 한다면 원하는 결과를 얻기 어렵다.</p>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c"># PHP 5.6으로 버전업</span>
+curl -s http://php-osx.liip.ch/install.sh | bash -s 5.6
 
-<p>그럼 build 시에 생성되는 파일들이 저장되는 intermediates, generated 폴더를 제외시키는 방법을 알아보자(<a href="http://stackoverflow.com/a/32238593">Ignore R.java files in Find results</a>).</p>
+<span class="c"># PHP 7.0으로 버전업</span>
+curl -s http://php-osx.liip.ch/install.sh | bash -s 7.0
+</code></pre>
+</div>
 
-<ul>
-  <li>“Find in Path” 다이얼로그를 연다(<kbd>Command</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>).</li>
-  <li>“Scope &gt; Custom”을 선택하고 우측에 “…“을 선택한다.</li>
-  <li>“Scopes” 다이얼로그가 나타나면 좌측 상단에 “+”를 선택한다.</li>
-  <li>”+”를 선택하면 “Local / Shared”를 선택하라고 나오는데 아무것이나 선택해도 된다. 사실은 아직 두개의 차이를 모르겠다. 처음엔 Shared를 선택하면 다른 프로젝트에서도 사용할 수 있을 것이라 생각했는데 되지 않았다.</li>
-  <li>Scope 이름을 넣는 다이얼로그가 나오면 원하는 이름(“ExcludeIntermediates”)을 넣는다.</li>
-  <li>새로운 Scope가 생성되었다면 “Pattern:” 란에 <code>!file:*intermediates*/&amp;&amp;!file:*generated*/</code>을 입력하고 “OK”를 선택한다.</li>
-</ul>
+<p>위처럼 쉘 스크립트를 실행해 주고 기다리면 거의 모든 작업이 완료된다(시간은 조금 걸린다).</p>
 
-<blockquote>
-  <p>Custom 메뉴에 보면 보다 다양하게 범위를 지정할 수 있는 기능들이 있으니 활용해 보는 것도 좋을 것이다.</p>
-</blockquote>
+<p>이제는 잘 설치되었는지 확인.</p>
 
-<p><img src="/img/2016/03/android_studio_find_in_path_2.png" alt="Android Studio Find in path" /></p>
+<h3 id="php--">PHP 버전 확인</h3>
 
-<p>이제부터는 “Find in Path”에서 “Scope &gt; Custom &gt; ExcludeIntermediates”를 선택하고 검색하면 intermediates, generated를 제외한 폴더에서만 검색된 결과가 나온다. 설명을 보면 알겠지만 추가적으로 제외하고 싶은 폴더가 있다면 규칙을 추가하면 된다.</p>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>/usr/local/php5/bin/php --version
+php --version
+</code></pre>
+</div>
+
+<p>위처럼 해보면 <code class="highlighter-rouge">/usr/local/php5/bin/php --version</code>는 PHP가 버전업된 것으로 보이지만 <code class="highlighter-rouge">php --version</code>는 기존 버전으로 나올 것이다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>which php
+</code></pre>
+</div>
+
+<p>위 명령을 넣으면 실행되는 PHP의 경로를 볼 수 있다. 나의 경우엔 <code class="highlighter-rouge">/usr/bin/</code>이다. 여기엔 PHP 기본 실행 파일 외에도 몇가지 관련 파일이 있는데 이 파일들을 새로 설치한 파일들로 교체 해주면 된다. 그런데 어떤 파일들을 바꿔야 할지 잘 모르거나 보다 간단한 방법을 찾고 있다면 아래의 방법을 사용하자.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c"># 현재 계정 적용</span>
+<span class="nb">echo</span> <span class="s2">"export PATH=/usr/local/php5/bin:</span><span class="se">\$</span><span class="s2">PATH"</span> &gt;&gt; ~/.profile
+<span class="c"># 또는</span>
+<span class="c"># 전체 계정 적용</span>
+<span class="nb">echo</span> <span class="s2">"export PATH=/usr/local/php5/bin:</span><span class="se">\$</span><span class="s2">PATH"</span> &gt;&gt; /etc/bashrc
+</code></pre>
+</div>
+
+<p>이제 shell을 다시 열어 <code class="highlighter-rouge">php --version</code> 해보면 새로 설치된 PHP 버전을 확인 할 수 있다.</p>
+
+<h3 id="section">웹 접속 확인</h3>
+
+<p>우선 httpd.conf는 El Capitan 기준으로 <code class="highlighter-rouge">/etc/apache2/httpd.conf</code>에 있다. 여기서 <code class="highlighter-rouge">DocumentRoot</code>를 확인하면 기본 웹 접근 경로를 알 수 있다. 이것 또한 El Capitan 기준으로  “/Library/WebServer/Documents”이다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>vi /Library/WebServer/Documents/phpinfo.php
+</code></pre>
+</div>
+
+<p>위처럼 새로 파일을 하나 열어서 아래의 내용을 넣는다.</p>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span> <span class="nb">phpinfo</span><span class="p">();</span>
+</code></pre>
+</div>
+
+<p>이제는 <a href="http://localhost/phpinfo.php">http://localhost/phpinfo.php</a>에 접속해서 페이지가 잘 나오는지 본다. 페이지가 나왔다면 PHP 버전도 확인 가능할 것이다. 나의 경우는 7.0.4가 설치되어 있다.</p>
 
 <hr />
 
-<p>안드로이드 스튜디오를 이용한 개발은 정말 고난의 연속이다.</p>
+<p>덤으로 composer 설치.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>curl -sS https://getcomposer.org/installer | php
+mv composer.phar /usr/local/bin/composer
+</code></pre>
+</div>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -162,8 +199,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/03/10/android-studio-ignore-build-files-in-find-results/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/03/10/android-studio-ignore-build-files-in-find-results/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/03/11/upgrade-to-php-5-6-or-7-on-mac-osx-10-11-el-capitan-and-osx-10-6-10-10/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/03/11/upgrade-to-php-5-6-or-7-on-mac-osx-10-11-el-capitan-and-osx-10-6-10-10/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -159,7 +159,7 @@
 This is fixed and will be released in next version of Android. Thanks,</p>
 </blockquote>
 
-<p>이 글에서 보면 <code>Project Member</code>가 다음 버전에 수정하겠다는 답변을 달아 놓았다.
+<p>이 글에서 보면 <code class="highlighter-rouge">Project Member</code>가 다음 버전에 수정하겠다는 답변을 달아 놓았다.
 그리고 이글에서 보면 4.4.3과 4.4.4에서만 이 현상이 나타난다는 댓글도 있다. 모든 기기를 테스트할 수는 없으나 내가 확인한 기기들에서는 4.4.2는 이상이 없고 4.4.4에서는 실제로 이상이 있었다.</p>
 
 <hr />
@@ -168,29 +168,20 @@ This is fixed and will be released in next version of Android. Thanks,</p>
 
 <p>하지만 수많은 테스트 결과 찾은 방법이 있어 아래에 공유한다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">extraHeaders</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;&gt;();</span>
-<span class="n">String</span> <span class="n">referer</span> <span class="o">=</span> <span class="s">&quot;~~~&quot;</span><span class="o">;</span>
-<span class="n">extraHeaders</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;Referer&quot;</span><span class="o">,</span> <span class="n">referer</span><span class="o">);</span>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">extraHeaders</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;&gt;();</span>
+<span class="n">String</span> <span class="n">referer</span> <span class="o">=</span> <span class="s">"~~~"</span><span class="o">;</span>
+<span class="n">extraHeaders</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"Referer"</span><span class="o">,</span> <span class="n">referer</span><span class="o">);</span>
 
-<span class="k">if</span> <span class="o">((</span><span class="s">&quot;4.4.3&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">RELEASE</span><span class="o">))</span>
-		<span class="o">||</span> <span class="o">(</span><span class="s">&quot;4.4.4&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">RELEASE</span><span class="o">)))</span> <span class="o">{</span>   <span class="c1">// 4.4.3 ~ 4.4.4 에서 Referer가 누락되는 문제를 수정하기 위함</span>
-	<span class="n">extraHeaders</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;Referer &quot;</span><span class="o">,</span> <span class="n">referer</span><span class="o">);</span>
+<span class="k">if</span> <span class="o">((</span><span class="s">"4.4.3"</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">RELEASE</span><span class="o">))</span>
+		<span class="o">||</span> <span class="o">(</span><span class="s">"4.4.4"</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">RELEASE</span><span class="o">)))</span> <span class="o">{</span>   <span class="c1">// 4.4.3 ~ 4.4.4 에서 Referer가 누락되는 문제를 수정하기 위함</span>
+	<span class="n">extraHeaders</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"Referer "</span><span class="o">,</span> <span class="n">referer</span><span class="o">);</span>
 <span class="o">}</span>
 
 <span class="n">view</span><span class="o">.</span><span class="na">loadUrl</span><span class="o">(</span><span class="n">url</span><span class="o">,</span> <span class="n">extraHeaders</span><span class="o">);</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
-<p>아주 간단하다. “Referer” 대신 “Referer “를 사용하는 것이다. HTTP 프로토콜에서 Referer는 다음과 같은 형식이다. <code>Referer : ~~~</code> 따라서 Referer 뒤에 공백하나 더 들어가도 규칙엔 문제가 없으므로 정상 동작한다.</p>
+<p>아주 간단하다. “Referer” 대신 “Referer “를 사용하는 것이다. HTTP 프로토콜에서 Referer는 다음과 같은 형식이다. <code class="highlighter-rouge">Referer : ~~~</code> 따라서 Referer 뒤에 공백하나 더 들어가도 규칙엔 문제가 없으므로 정상 동작한다.</p>
 
 <p>다행히 안드로이드에서 문자열을 trim하지 않고 비교하고 있어서 간단하게 해결된다. 개발자의 실수가 다행인 경우도 있을 수 있구나.</p>
 
@@ -240,7 +231,7 @@ This is fixed and will be released in next version of Android. Thanks,</p>
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

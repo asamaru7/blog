@@ -140,15 +140,15 @@
 
 <p><a href="http://php.net/manual/en/function.similar-text.php">php 메뉴얼의 설명</a>에 따르면 similar_text() 함수는 두 문자열의 유사도를 계산한다고 되어 있다.</p>
 
-<p>두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World’s Best Algorithms by Oliver (ISBN 0-131-00413-1) 에서 설명되어 있다. 이 구현은 pseudo code와 다르게 스택은 아니지만, 재귀 호출이므로 전체 프로세스의 속도에 영향을 줄 수 있다. 이 계산 알고리즘은 시간복잡도 <code>O(N**3)</code>를 가지며 여기서 N은 두 문자열 중 긴 문자열의 길이를 뜻한다.</p>
+<p>두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World’s Best Algorithms by Oliver (ISBN 0-131-00413-1) 에서 설명되어 있다. 이 구현은 pseudo code와 다르게 스택은 아니지만, 재귀 호출이므로 전체 프로세스의 속도에 영향을 줄 수 있다. 이 계산 알고리즘은 시간복잡도 <code class="highlighter-rouge">O(N**3)</code>를 가지며 여기서 N은 두 문자열 중 긴 문자열의 길이를 뜻한다.</p>
 
 <p>문자열의 길이에 따라 성능이 극도로 떨어질 수 있으므로 가급적 짧은 문장의 비교에 사용하는 것이 좋다. 메뉴얼에서 paul은 20000자 이상에서만 성능에 문제가 있었다고는 하나 시간복잡도를 보더라도 긴 문자열은 자제하는게 좋겠다.</p>
 
 <h3 id="section">기본 사용법</h3>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nx">int</span> <span class="nb">similar_text</span> <span class="p">(</span> <span class="nx">string</span> <span class="nv">$first</span> <span class="p">,</span> <span class="nx">string</span> <span class="nv">$second</span> <span class="p">[,</span> <span class="nx">float</span> <span class="o">&amp;</span><span class="nv">$percent</span> <span class="p">]</span> <span class="p">)</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>int similar_text ( string $first , string $second [, float <span class="err">&amp;</span>$percent ] )
+</code></pre>
+</div>
 
 <h3 id="section-1">함수 인자</h3>
 
@@ -171,91 +171,56 @@
 
 <h4 id="section-4">인자의 입력 순서에 따라 결과가 달라진다.</h4>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="nv">$var_1</span> <span class="o">=</span> <span class="s1">&#39;PHP IS GREAT&#39;</span><span class="p">;</span>
-<span class="nv">$var_2</span> <span class="o">=</span> <span class="s1">&#39;WITH MYSQL&#39;</span><span class="p">;</span>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="nv">$var_1</span> <span class="o">=</span> <span class="s1">'PHP IS GREAT'</span><span class="p">;</span>
+<span class="nv">$var_2</span> <span class="o">=</span> <span class="s1">'WITH MYSQL'</span><span class="p">;</span>
 
 <span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var_1</span><span class="p">,</span> <span class="nv">$var_2</span><span class="p">,</span> <span class="nv">$percent</span><span class="p">);</span>
 
 <span class="k">echo</span> <span class="nv">$percent</span><span class="p">;</span>
-<span class="c1">// 27.272727272727</span>
-
+<span class="c1">// 27.272727272727
+</span>
 <span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var_2</span><span class="p">,</span> <span class="nv">$var_1</span><span class="p">,</span> <span class="nv">$percent</span><span class="p">);</span>
 
 <span class="k">echo</span> <span class="nv">$percent</span><span class="p">;</span>
-<span class="c1">// 18.181818181818</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<span class="c1">// 18.181818181818
+</span></code></pre>
+</div>
 
 <h4 id="trim--------">공백은 비교에서 제외된다.(그렇다고 trim이 되거나 문자열 내 공백이 제거되고 비교하는 것은 아니다.)</h4>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">;</span>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">" "</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
+<span class="k">echo</span> <span class="s2">" -&gt; "</span><span class="p">;</span>
 <span class="k">echo</span> <span class="nv">$sim</span><span class="p">;</span>
-<span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">&quot;ab c&quot;</span><span class="p">,</span> <span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">;</span>
+<span class="k">echo</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span>
+<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">"ab c"</span><span class="p">,</span> <span class="s2">"abc"</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
+<span class="k">echo</span> <span class="s2">" -&gt; "</span><span class="p">;</span>
 <span class="k">echo</span> <span class="nv">$sim</span><span class="p">;</span>
-<span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">&quot; abc&quot;</span><span class="p">,</span> <span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">;</span>
+<span class="k">echo</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span>
+<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="s2">" abc"</span><span class="p">,</span> <span class="s2">"abc"</span><span class="p">,</span> <span class="nv">$sim</span><span class="p">);</span>
+<span class="k">echo</span> <span class="s2">" -&gt; "</span><span class="p">;</span>
 <span class="k">echo</span> <span class="nv">$sim</span><span class="p">;</span>
-<span class="k">echo</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+<span class="k">echo</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span>
 
-<span class="c1">// 결과</span>
-<span class="c1">// 0 -&gt; 0</span>
-<span class="c1">// 3 -&gt; 85.714285714286</span>
-<span class="c1">// 3 -&gt; 85.714285714286</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<span class="c1">// 결과
+// 0 -&gt; 0
+// 3 -&gt; 85.714285714286
+// 3 -&gt; 85.714285714286
+</span></code></pre>
+</div>
 
 <h4 id="section-5">대소문자를 구분한다.</h4>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7</pre></div></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="nv">$var1</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span><span class="p">;</span>
-<span class="nv">$var2</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span><span class="p">;</span>
-<span class="nv">$var3</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span><span class="p">;</span>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="nv">$var1</span> <span class="o">=</span> <span class="s1">'Hello'</span><span class="p">;</span>
+<span class="nv">$var2</span> <span class="o">=</span> <span class="s1">'Hello'</span><span class="p">;</span>
+<span class="nv">$var3</span> <span class="o">=</span> <span class="s1">'hello'</span><span class="p">;</span>
 
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var1</span><span class="p">,</span> <span class="nv">$var2</span><span class="p">);</span>  <span class="c1">// 5</span>
-<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var1</span><span class="p">,</span> <span class="nv">$var3</span><span class="p">);</span>  <span class="c1">// 4</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var1</span><span class="p">,</span> <span class="nv">$var2</span><span class="p">);</span>  <span class="c1">// 5
+</span><span class="k">echo</span> <span class="nb">similar_text</span><span class="p">(</span><span class="nv">$var1</span><span class="p">,</span> <span class="nv">$var3</span><span class="p">);</span>  <span class="c1">// 4
+</span></code></pre>
+</div>
 
 <h3 id="section-6">유사함수</h3>
 
@@ -311,7 +276,7 @@
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

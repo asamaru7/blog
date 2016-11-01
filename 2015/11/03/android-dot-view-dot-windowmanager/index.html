@@ -136,21 +136,17 @@
 
 				<p>안드로이드에서 아래와 같은 오류가 나는 경우가 있다.</p>
 
-<p><code>android.view.WindowManager$BadTokenException: Unable to add window -- token android.os.BinderProxy@420d8488 is not valid; is your activity running?</code></p>
+<p><code class="highlighter-rouge">android.view.WindowManager$BadTokenException: Unable to add window -- token android.os.BinderProxy@420d8488 is not valid; is your activity running?</code></p>
 
 <p>대부분은 Dialog를 띄우러고 할 때 발생한다. 소스로 보자면 아래와 같은 경우다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">new</span> <span class="n">AlertDialog</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="n">context</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">setTitle</span><span class="o">(</span><span class="s">&quot;알림&quot;</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">setMessage</span><span class="o">(</span><span class="s">&quot;알림 메시지&quot;</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">setNegativeButton</span><span class="o">(</span><span class="s">&quot;취소&quot;</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="k">new</span> <span class="n">AlertDialog</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="n">context</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">setTitle</span><span class="o">(</span><span class="s">"알림"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">setMessage</span><span class="o">(</span><span class="s">"알림 메시지"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">setNegativeButton</span><span class="o">(</span><span class="s">"취소"</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
     <span class="o">.</span><span class="na">show</span><span class="o">();</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>위 소스를 실행 했을 때 BadTokenException 오류가 발생한다면 대부분은 context에 Activity Context를 넣지 않고 Application Context를 넣었을 경우다. 이와 관련해서 <a href="/2015/09/04/android-dialog-windowmanager-badtokenexception/">안드로이드에서 Dialog 사용시 WindowManager$BadTokenException 발생</a>이라는 글을 적은 적이 있었다. 이런 경우라면 처음부터 오류가 발생하기 때문에 발견하고 수정하기가 쉽다.</p>
 
@@ -164,21 +160,15 @@
 
 <p>적용된 코드는 아래와 같다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-java"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">if</span> <span class="o">((</span><span class="n">context</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(!</span><span class="n">context</span><span class="o">.</span><span class="na">isFinishing</span><span class="o">()))</span> <span class="o">{</span>
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="k">if</span> <span class="o">((</span><span class="n">context</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(!</span><span class="n">context</span><span class="o">.</span><span class="na">isFinishing</span><span class="o">()))</span> <span class="o">{</span>
   <span class="k">new</span> <span class="n">AlertDialog</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="n">context</span><span class="o">)</span>
-      <span class="o">.</span><span class="na">setTitle</span><span class="o">(</span><span class="s">&quot;알림&quot;</span><span class="o">)</span>
-      <span class="o">.</span><span class="na">setMessage</span><span class="o">(</span><span class="s">&quot;알림 메시지&quot;</span><span class="o">)</span>
-      <span class="o">.</span><span class="na">setNegativeButton</span><span class="o">(</span><span class="s">&quot;취소&quot;</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
+      <span class="o">.</span><span class="na">setTitle</span><span class="o">(</span><span class="s">"알림"</span><span class="o">)</span>
+      <span class="o">.</span><span class="na">setMessage</span><span class="o">(</span><span class="s">"알림 메시지"</span><span class="o">)</span>
+      <span class="o">.</span><span class="na">setNegativeButton</span><span class="o">(</span><span class="s">"취소"</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
       <span class="o">.</span><span class="na">show</span><span class="o">();</span>  
 <span class="o">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>사실 이것 만으로 오류가 모두 해결된 것인지는 확인하지 못했다(오류 재현이 너무 힘들다).   하지만 안드로이드에서 발생하는 비슷한 다른 오류들을 감안하면 이것이 원인이 맞을 것이라고 생각한다.</p>
 
@@ -228,7 +218,7 @@
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

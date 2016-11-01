@@ -156,52 +156,29 @@
 
 <h2 id="php">php</h2>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-php"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">function</span> <span class="nf">getDistance</span><span class="p">(</span><span class="nv">$lat1</span><span class="p">,</span> <span class="nv">$lng1</span><span class="p">,</span> <span class="nv">$lat2</span><span class="p">,</span> <span class="nv">$lng2</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="nv">$earth_radius</span> <span class="o">=</span> <span class="mi">6371</span><span class="p">;</span>
-    <span class="nv">$dLat</span> <span class="o">=</span> <span class="nb">deg2rad</span><span class="p">(</span><span class="nv">$lat2</span> <span class="o">-</span> <span class="nv">$lat1</span><span class="p">);</span>
-    <span class="nv">$dLon</span> <span class="o">=</span> <span class="nb">deg2rad</span><span class="p">(</span><span class="nv">$lng2</span> <span class="o">-</span> <span class="nv">$lng1</span><span class="p">);</span>
-    <span class="nv">$a</span> <span class="o">=</span> <span class="nb">sin</span><span class="p">(</span><span class="nv">$dLat</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nb">sin</span><span class="p">(</span><span class="nv">$dLat</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nb">cos</span><span class="p">(</span><span class="nb">deg2rad</span><span class="p">(</span><span class="nv">$lat1</span><span class="p">))</span> <span class="o">*</span> <span class="nb">cos</span><span class="p">(</span><span class="nb">deg2rad</span><span class="p">(</span><span class="nv">$lat2</span><span class="p">))</span> <span class="o">*</span> <span class="nb">sin</span><span class="p">(</span><span class="nv">$dLon</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nb">sin</span><span class="p">(</span><span class="nv">$dLon</span><span class="o">/</span><span class="mi">2</span><span class="p">);</span>
-    <span class="nv">$c</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">asin</span><span class="p">(</span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">$a</span><span class="p">));</span>
-    <span class="nv">$d</span> <span class="o">=</span> <span class="nv">$earth_radius</span> <span class="o">*</span> <span class="nv">$c</span><span class="p">;</span>
-    <span class="k">return</span> <span class="nv">$d</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>function getDistance($lat1, $lng1, $lat2, $lng2)
+{
+    $earth_radius = 6371;
+    $dLat = deg2rad($lat2 - $lat1);
+    $dLon = deg2rad($lng2 - $lng1);
+    $a = sin($dLat/2) * sin($dLat/2) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon/2) * sin($dLon/2);
+    $c = 2 * asin(sqrt($a));
+    $d = $earth_radius * $c;
+    return $d;
+}
+</code></pre>
+</div>
 
 <h2 id="mysql">MySql</h2>
 
 <p>함수로 구현된 예시이지만 당연히 query에서 return 부분을 직접 사용해도 된다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-mysql"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">CREATE</span> <span class="n">FUNCTION</span> <span class="nf">distance_between</span> <span class="p">(</span><span class="n">from_lat</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">from_lng</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">to_lat</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">to_lng</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="n">RETURNS</span> <span class="kt">DECIMAL</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-	<span class="k">RETURN</span> <span class="mi">6371</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="nf">ATAN2</span><span class="p">(</span><span class="nf">SQRT</span><span class="p">(</span><span class="nf">POW</span><span class="p">(</span><span class="nf">SIN</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lat</span> <span class="o">-</span> <span class="n">from_lat</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nf">POW</span><span class="p">(</span><span class="nf">SIN</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lng</span> <span class="o">-</span> <span class="n">from_lng</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nf">COS</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">from_lat</span><span class="p">))</span> <span class="o">*</span> <span class="nf">COS</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lat</span><span class="p">))),</span> <span class="nf">SQRT</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="nf">POW</span><span class="p">(</span><span class="nf">SIN</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lat</span> <span class="o">-</span> <span class="n">from_lat</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nf">POW</span><span class="p">(</span><span class="nf">SIN</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lng</span> <span class="o">-</span> <span class="n">from_lng</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nf">COS</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">from_lat</span><span class="p">))</span> <span class="o">*</span> <span class="nf">COS</span><span class="p">(</span><span class="nf">RADIANS</span><span class="p">(</span><span class="n">to_lat</span><span class="p">))));</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<pre><code class="language-mysql">CREATE FUNCTION distance_between (from_lat DECIMAL(6, 3), from_lng DECIMAL(6, 3), to_lat DECIMAL(6, 3), to_lng DECIMAL(6, 3)) RETURNS DECIMAL(11, 3)
+	RETURN 6371 * 2 * ATAN2(SQRT(POW(SIN(RADIANS(to_lat - from_lat)/2), 2) + POW(SIN(RADIANS(to_lng - from_lng)/2), 2) * COS(RADIANS(from_lat)) * COS(RADIANS(to_lat))), SQRT(1 - POW(SIN(RADIANS(to_lat - from_lat)/2), 2) + POW(SIN(RADIANS(to_lng - from_lng)/2), 2) * COS(RADIANS(from_lat)) * COS(RADIANS(to_lat))));
+</code></pre>
 <p>## javascript</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-javascript"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13</pre></div></td><td class="code"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">getDistanceFromLatLonInKm</span><span class="p">(</span><span class="nx">lat1</span><span class="p">,</span><span class="nx">lng1</span><span class="p">,</span><span class="nx">lat2</span><span class="p">,</span><span class="nx">lng2</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">getDistanceFromLatLonInKm</span><span class="p">(</span><span class="nx">lat1</span><span class="p">,</span><span class="nx">lng1</span><span class="p">,</span><span class="nx">lat2</span><span class="p">,</span><span class="nx">lng2</span><span class="p">)</span> <span class="p">{</span>
     <span class="kd">function</span> <span class="nx">deg2rad</span><span class="p">(</span><span class="nx">deg</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">return</span> <span class="nx">deg</span> <span class="o">*</span> <span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span><span class="o">/</span><span class="mi">180</span><span class="p">)</span>
     <span class="p">}</span>
@@ -214,8 +191,8 @@
     <span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="nx">R</span> <span class="o">*</span> <span class="nx">c</span><span class="p">;</span> <span class="c1">// Distance in km</span>
     <span class="k">return</span> <span class="nx">d</span><span class="p">;</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>http://www.mapanet.eu/EN/Resources/Script-Distance.htm 이 사이트에서는 여러가지 언어로 사용하는 방법이 나와 있으나 위에 나열된 함수와는 계산이 조금 다르다. 특히 “Earth radius in km (WGS84)”라고 설명된 값이 6378.137를 사용하고 있다.
 <a href="https://en.wikipedia.org/wiki/Earth_radius">위키피디아</a>에서 셜명된 Earth radius 값이 6371이기 때문이다.(지구가 둥글기 때문에 지역마다 값의 차이가 있는 것으로 보인다.)</p>
@@ -266,7 +243,7 @@
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

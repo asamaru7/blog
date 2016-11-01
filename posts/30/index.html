@@ -113,28 +113,42 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/03/10/android-error-could-not-read-entry-app-processdebugmanifest-from-cache-taskartifacts-bin/">
-								Android : Error:Could not read entry &#39;:app:processDebugManifest&#39; from cache taskArtifacts.bin 오류 수정
+							<a class="title" href="https://blog.asamaru.net/2016/03/10/android-studio-ignore-build-files-in-find-results/">
+								Android Studio : Find results에서 build files 제외하기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/03/10/android-error-could-not-read-entry-app-processdebugmanifest-from-cache-taskartifacts-bin/">2016.03.10.</span></a>
+								<a href="https://blog.asamaru.net/2016/03/10/android-studio-ignore-build-files-in-find-results/">2016.03.10.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>안드로이드 빌드시 아래와 같은 오류가 날 때가 있다.</p>
+							<p>Android Studio로 작업을 하다보면 많은 불편함을 겪게 된다. 그중에 하나가 원하는 문자열을 찾기 위해 사용하는 “Find in Path”(<kbd>Command</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>) 메뉴다. PHPStorm은 exclude 기능을 이용해서 원하지 않는 폴더를 프로젝트에서 제외해 둘 수 있다. 같은 회사에서 만들었음에도 불구하고 Android Studio에는 비슷한 기능이 없다. 그로 인해서 Find로 프로젝트 전체에서 검색시 build 폴더 등이 포함되어 원하는 결과를 찾기가 무척 힘들다(특히 R.java, log 파일등이 포함되면). 이 문제를 해결할 방법은 없는가?</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="nmcode">Error:Could not read entry ':app:processDebugManifest' from cache taskArtifacts.bin ~~~
-</code></pre></div></figure>
+<p><img src="/img/2016/03/android_studio_find_in_path.png" alt="Android Studio Find in path" /></p>
 
-<p>흔하게 발생하지는 않는데 프로젝트의 Gradle 버전을 변경하는 경우 간혹 발생할 수 있다.</p>
+<p>일반적인 방법으로 “File name filter”를 이용해서 java, xml 등의 파일만 지정하는 것도 가능하지만 그래도 build 폴더 등을 제외하기는 쉽지 않다. 또는 “Scope &gt; Directory”에서 소스 폴더를 지정하는 방법도 있으나 서브 모듈들이 다수 포함되어 있거나 libs 폴더 등도 함께 검색하고자 한다면 원하는 결과를 얻기 어렵다.</p>
 
-<p>해결 방법은 대부분 아주 간단하다. 오류 내용 중 <code>from cache taskArtifacts.bin</code>에서 보듯이 cache 파일에서 필요한 정보를 가져오지 못하고 있으니 해당 cache 파일을 지우면 된다.</p>
+<p>그럼 build 시에 생성되는 파일들이 저장되는 intermediates, generated 폴더를 제외시키는 방법을 알아보자(<a href="http://stackoverflow.com/a/32238593">Ignore R.java files in Find results</a>).</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>rm .gradle/2.10/taskArtifacts/taskArtifacts.bin
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<ul>
+  <li>“Find in Path” 다이얼로그를 연다(<kbd>Command</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>).</li>
+  <li>“Scope &gt; Custom”을 선택하고 우측에 “…“을 선택한다.</li>
+  <li>“Scopes” 다이얼로그가 나타나면 좌측 상단에 “+”를 선택한다.</li>
+  <li>”+”를 선택하면 “Local / Shared”를 선택하라고 나오는데 아무것이나 선택해도 된다. 사실은 아직 두개의 차이를 모르겠다. 처음엔 Shared를 선택하면 다른 프로젝트에서도 사용할 수 있을 것이라 생각했는데 되지 않았다.</li>
+  <li>Scope 이름을 넣는 다이얼로그가 나오면 원하는 이름(“ExcludeIntermediates”)을 넣는다.</li>
+  <li>새로운 Scope가 생성되었다면 “Pattern:” 란에 <code class="highlighter-rouge">!file:*intermediates*/&amp;&amp;!file:*generated*/</code>을 입력하고 “OK”를 선택한다.</li>
+</ul>
 
-<p><code>taskArtifacts.bin</code> 파일의 경로는 Gradle 버전 등에 따라 다를 수 있으니 오류 로그에서 파일의 위치를 확인하거나 <code>.gradle</code> 하위에서 해당 파일을 찾으면 된다.</p>
+<blockquote>
+  <p>Custom 메뉴에 보면 보다 다양하게 범위를 지정할 수 있는 기능들이 있으니 활용해 보는 것도 좋을 것이다.</p>
+</blockquote>
+
+<p><img src="/img/2016/03/android_studio_find_in_path_2.png" alt="Android Studio Find in path" /></p>
+
+<p>이제부터는 “Find in Path”에서 “Scope &gt; Custom &gt; ExcludeIntermediates”를 선택하고 검색하면 intermediates, generated를 제외한 폴더에서만 검색된 결과가 나온다. 설명을 보면 알겠지만 추가적으로 제외하고 싶은 폴더가 있다면 규칙을 추가하면 된다.</p>
+
+<hr />
+
+<p>안드로이드 스튜디오를 이용한 개발은 정말 고난의 연속이다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -148,8 +162,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/03/10/android-error-could-not-read-entry-app-processdebugmanifest-from-cache-taskartifacts-bin/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/03/10/android-error-could-not-read-entry-app-processdebugmanifest-from-cache-taskartifacts-bin/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/03/10/android-studio-ignore-build-files-in-find-results/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/03/10/android-studio-ignore-build-files-in-find-results/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

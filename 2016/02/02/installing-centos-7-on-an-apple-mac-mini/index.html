@@ -144,58 +144,28 @@
 
 <p>해당 이미지가 있는 폴더에 가서 아래와 같이 dmg 파일을 우선 생성한다. 당연히 맥에서 작업해야 한다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>hdiutil convert -format UDRW -o target.img CentOS-7-x86_64-Minimal-1511.iso
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>hdiutil convert -format UDRW -o target.img CentOS-7-x86_64-Minimal-1511.iso
 
 Master Boot Record<span class="o">(</span>MBR : 0<span class="o">)</span> 읽는 중...
-CentOS <span class="m">7</span> x86_64                 <span class="o">(</span>Apple_ISO : 1<span class="o">)</span> 읽는 중...
+CentOS 7 x86_64                 <span class="o">(</span>Apple_ISO : 1<span class="o">)</span> 읽는 중...
 <span class="o">(</span>Type EF : 2<span class="o">)</span> 읽는 중...
 .
-CentOS <span class="m">7</span> x86_64                 <span class="o">(</span>Apple_ISO : 3<span class="o">)</span> 읽는 중...
+CentOS 7 x86_64                 <span class="o">(</span>Apple_ISO : 3<span class="o">)</span> 읽는 중...
 ....................................................................................................................................................................
 경과 시간: 661.204ms
 속도: 912.0Mbytes/초
 저장: 0.0%
 created: /Users/yjyou/Downloads/target.img.dmg
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
-<p>부트 이미지를 담을 USB를 연결한 다음 아래와 같이 <code>diskutil</code>을 사용해서 disk 번호를 확인한다.</p>
+<p>부트 이미지를 담을 USB를 연결한 다음 아래와 같이 <code class="highlighter-rouge">diskutil</code>을 사용해서 disk 번호를 확인한다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>diskutil list
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>diskutil list
 
 /dev/disk0 <span class="o">(</span>internal, physical<span class="o">)</span>:
    <span class="c">#:                       TYPE NAME                    SIZE       IDENTIFIER</span>
-   0:      GUID_partition_scheme                        *500.3 GB   disk0
+   0:      GUID_partition_scheme                        <span class="k">*</span>500.3 GB   disk0
    1:                        EFI EFI                     209.7 MB   disk0s1
    2:          Apple_CoreStorage Macintosh HD            250.5 GB   disk0s2
    3:                 Apple_Boot Recovery HD             650.0 MB   disk0s3
@@ -208,53 +178,43 @@ created: /Users/yjyou/Downloads/target.img.dmg
                                  Unencrypted
 /dev/disk2 <span class="o">(</span>external, physical<span class="o">)</span>:
    <span class="c">#:                       TYPE NAME                    SIZE       IDENTIFIER</span>
-   0:      GUID_partition_scheme                        *15.8 GB    disk2
+   0:      GUID_partition_scheme                        <span class="k">*</span>15.8 GB    disk2
    1:                        EFI EFI                     209.7 MB   disk2s1
    2:       Microsoft Basic Data USB                     15.6 GB    disk2s2
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
-<p>나의 경우는 <code>/dev/disk2</code>에 mount 되어 있었다. <strong>이후의 과정에서는 당연히 자신에게 맞는 disk 번호를 사용해야 한다.</strong></p>
+<p>나의 경우는 <code class="highlighter-rouge">/dev/disk2</code>에 mount 되어 있었다. <strong>이후의 과정에서는 당연히 자신에게 맞는 disk 번호를 사용해야 한다.</strong></p>
 
 <p>우선 USB를 unmount 한다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span> diskutil unmountDisk /dev/disk2
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$  </span>diskutil unmountDisk /dev/disk2
 
 Unmount of all volumes on disk2 was successful
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>이제는 실제로 위에 만든 dmg 이미지를 이용해서 부트 USB를 만든다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8
-9</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">time </span>sudo dd <span class="k">if</span><span class="o">=</span>target.img.dmg <span class="nv">of</span><span class="o">=</span>/dev/disk2 <span class="nv">bs</span><span class="o">=</span>1m
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span><span class="nb">time </span>sudo dd <span class="k">if</span><span class="o">=</span>target.img.dmg <span class="nv">of</span><span class="o">=</span>/dev/disk2 <span class="nv">bs</span><span class="o">=</span>1m
 
-602+1 records in
-602+1 records out
-<span class="m">632262656</span> bytes transferred in 155.872514 secs <span class="o">(</span><span class="m">4056281</span> bytes/sec<span class="o">)</span>
+602+1 records <span class="k">in
+</span>602+1 records out
+632262656 bytes transferred <span class="k">in </span>155.872514 secs <span class="o">(</span>4056281 bytes/sec<span class="o">)</span>
 
 real	2m36.025s
 user	0m0.006s
 sys	0m2.548s
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
-<p>이미지를 만드는데 시간이 조금 소요되니 걱정하지 말고 기다리자. 그리고 생성되고 나면 해당 디스크를 인식할 수 없다고 자동적으로 추출된다. 이제는 USB를 빼서 설치할 맥 미니에 연결하고 부팅한다. 당연히 <code>alt/option</code>를 누르고 부팅해서 부팅 디스크를 선택하는 화면으로 진입해야 한다.</p>
+<p>이미지를 만드는데 시간이 조금 소요되니 걱정하지 말고 기다리자. 그리고 생성되고 나면 해당 디스크를 인식할 수 없다고 자동적으로 추출된다. 이제는 USB를 빼서 설치할 맥 미니에 연결하고 부팅한다. 당연히 <code class="highlighter-rouge">alt/option</code>를 누르고 부팅해서 부팅 디스크를 선택하는 화면으로 진입해야 한다.</p>
 
 <p>이후 과정을 진행하기 전에 파티션의 변경이 필요하다면 미리 맥 미니 내에서 설정해 두어야 한다. 나의 경우를 보자면 500G의 디스크를 2개의 파티션으로 나누고 복구 파티션까지 3개가 있었다. 처음엔 복구 파티션을 두고 두개의 파티션을 CentOS 설치 과정에서 묶으려고 했는데 복구 파티션이 두개 파티션 사이에 위치해 합칠 수 없었다. 그래서 맥에서 두개의 파티션을 합쳐주고 다시 설치했다. 사실은 이 과정은 복구 파티션을 두려고 했던 것인데 실제 CentOS를 설치하면서 복구 파티션도 날렸다(원하지 않았지만). 이렇게되면 위 과정이 필요없었을 수 있지만 혹시나해서 남겨둔다.</p>
 
 <p>이제부터는 일반적으로 CentOS를 설치하는 것과 동일하게 설치하면 된다. 설치 방법이 궁금하다면 <a href="/2015/10/14/centos-7-minimal-install/">CentOS 7 minimal 설치</a>를  참고해도 된다.</p>
 
-<p>마지막으로 중요한 부분이 있다. 파티션 설치시 <code>/boot/efi</code>을 별도로 지정해야 한다는 것이다. 일반적인 설치에서는 하지 않던 작업인데 맥 미니의 경우 해당 파티션이 기본적으로 없어서 그런 것인지 지정하지 않으면 파티셔닝이 완료되지 않았다. <code>/boot/efi</code>의 용량은 최소 100MB를 지정하도록 권장하는 것 같다. 이 부분 또한 자동 파티셔닝이 아닌 사용자 지정 파티션을 사용해서 발생한 문제일지도 모르겠다. 하지만 개인적인 생각으로 “맥 미니에서 다른 CentOS 설치시 잘 안되는 경우는 이것 때문이지 않을까?”해서 경험을 남겨둔다.</p>
+<p>마지막으로 중요한 부분이 있다. 파티션 설치시 <code class="highlighter-rouge">/boot/efi</code>을 별도로 지정해야 한다는 것이다. 일반적인 설치에서는 하지 않던 작업인데 맥 미니의 경우 해당 파티션이 기본적으로 없어서 그런 것인지 지정하지 않으면 파티셔닝이 완료되지 않았다. <code class="highlighter-rouge">/boot/efi</code>의 용량은 최소 100MB를 지정하도록 권장하는 것 같다. 이 부분 또한 자동 파티셔닝이 아닌 사용자 지정 파티션을 사용해서 발생한 문제일지도 모르겠다. 하지만 개인적인 생각으로 “맥 미니에서 다른 CentOS 설치시 잘 안되는 경우는 이것 때문이지 않을까?”해서 경험을 남겨둔다.</p>
 
 <p>이후부터는 정말 CentOS 설치와 동일하다(일단 나의 경우엔).</p>
 
@@ -304,7 +264,7 @@ sys	0m2.548s
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				
@@ -377,6 +337,8 @@ sys	0m2.548s
 			</div>
 			<ul class="list-group">
 				
+				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/11/01/nokogiri-libxml2-missing-mac-os-x-10-12/">OSX에서 Nokogiri 설치시 &#39;Libxml2 missing.&#39; 오류 해결</a></li>
+				
 				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/10/26/nginx-504-error/">nginx 504 Gateway Time-out 오류</a></li>
 				
 				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/10/19/mac-os-git-korean-file-name-error/">Mac 에서 git 사용시 한글 파일명 문제</a></li>
@@ -384,8 +346,6 @@ sys	0m2.548s
 				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/04/26/efficiently-delete-large-directory-containing-thousands-of-files/">linux에서 대량의 파일을 보다 빠르게 지우기</a></li>
 				
 				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/04/14/how-to-chmod-all-directories-or-files/">chmod로 권한 변경시 디렉토리(또는 파일)만 적용하기</a></li>
-				
-				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/04/07/how-to-protect-ssh-with-fail2ban-on-centos-6-7/">SSH 무작위 로그인 시도 막기(With Fail2Ban on CentOS 6/7 + selinux)</a></li>
 				
 			</ul>
 		</section>

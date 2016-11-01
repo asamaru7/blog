@@ -113,174 +113,213 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/21/xcode-create-sub-module-using-cocoapods/">
-								Xcode에서 CocoaPods를 이용해 sub module 만들기
+							<a class="title" href="https://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/">
+								Swift 2.0에서 상속 가능한 Singleton 생성하기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/21/xcode-create-sub-module-using-cocoapods/">2015.10.21.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/">2015.10.21.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>이번엔 Xcode로 앱 제작시 Sub Module을 만드는 방법을 설명하고자 한다.</p>
+							<p>오늘은 swift에서 Singleton 객체를 생성하는 방법을 설명하고자 한다.</p>
 
-<p>그전에 우선 어떤 경우에 Sub Module을 사용하려고 하는지 부터 이야기를 해야 할 듯하다. 나의 경우는 여러 프로젝트에서 공통적으로 사용 할만한 유틸성 클래스들을 주로 묶어서 별도 모듈을 만들어 사용한다. 이렇게하면 비슷한 작업의 반복을 줄일 수 있고  기능도 통합적으로 관리할 수 있어 유지보수가 편하다. 이것은 예를들어 설명한 것일뿐 여러가지 용도로 사용될 수 있다.</p>
+<p>우선 Objective-C에서는 어떻게 생성하는지는 아래를 보면 알 수 있다.</p>
 
-<p>Android Studio의 경우 Module을 추가하고 gradle을 설정함으로써 간단하게 서브 모듈을 만들 수 있다. 그런데 Xcode에서는 그렇게 쉬운 방법을 찾질 못했다. 당연히 방법이 있는데 내가 못 찾은 것일 수 있다. 내가 찾아본 방법은 대부분 Framework 프로젝트를 만들어서 사용할 프로젝트에서 추가해서 사용하는 방법들이었다. 그런데 이 방법들은 초기 설정 과정이 다소 복잡하고 Sub Module의 소스를 수정하려면 따로 build를 해서 넣어야 하는 불편함이 있었다.</p>
+<p>우선 Singleton Class 정의.</p>
 
-<p>그래서 여러가지 글들을 찾아 다니다가 <a href="http://albertodebortoli.github.io/blog/2014/03/11/cocoapods-working-with-internal-pods/">CocoaPods: Working With Internal Pods Without Hassle</a>을 찾았다. 여기서는 <a href="https://cocoapods.org/">CocoaPods</a>를 이용해서 Internal Pods를 만들어 모듈을 적용하는 방법을 설명하고 있다. 내가 찾던 것과 가장 유사한 방법으로 바로 적용해 봤다. 단, 이 글에서 설명하는 것 중 CocoaPods Repository를 설정하는 과정은 필요하지 않아 제외했다(사실 귀찮음이 가장 큰 이유다). 하지만 모듈의 버전을 관리하며 체계적으로 적용할 필요가 있다면 CocoaPods Repository를 만들어 관리하는 것을 권장한다.</p>
+<pre><code class="language-ObjC">@implementation SingletonCls
 
-<p>본격적으로 설명에 앞서 이 방법을 사용할 때의 장점에 대해 간략히 설명하고자 한다.</p>
++ (id)sharedManager {
+    static SingletonCls *staticManager = nil;
+    static dispatch_once_t onceToken;
 
-<ul>
-  <li>Sub Module과 메인 프로젝트를 하나의 Xcode에서 작업 가능하다.</li>
-  <li>Sub Module의 소스 변경이 있어도 별도로 빌드할 필요가 없다(메인 프로젝트 빌드에 바로 반용된다).</li>
-  <li>Sub Module과 메인 프로젝트의 형상 관리는 각각 적용된다.</li>
-</ul>
+    dispatch_once(&amp;onceToken, ^{
+        staticManager = [[self alloc] init];
+    });
+    return staticManager;
+}
 
-<p>이제부터 위 글에서 설명하는 내용을 보고 내가 적용한 방법을 설명하겠다.</p>
+@end
+</code></pre>
 
-<h2 id="section">환경</h2>
+<p>그리고 사용시.</p>
 
-<p>일단 내가 설명하기 위해 작업한 환경은 아래와 같다. 하지만 꼭 아래 환경이 맞춰져야하는 것은 아니다. Xcode의 기능을 직접적으로 사용한다기 보다 <a href="https://cocoapods.org/">CocoaPods</a>에 의해서 대부분 처리되기 때문이다.</p>
+<pre><code class="language-ObjC">[SingletonCls sharedManager];
+</code></pre>
 
-<ul>
-  <li>OSX 10.11</li>
-  <li>Xcode 7</li>
-  <li>CocoaPods 0.39.0</li>
-  <li>Swift</li>
-  <li>iOS 8 (Deploy Target)</li>
-  <li>Git</li>
-</ul>
+<p>그럼 Swift에서는 어떻게 하는지를 살펴보자. 사실 아주 간단하다.</p>
 
-<h2 id="sub-module">Sub Module</h2>
+<p>Singleton Class 정의.</p>
 
-<p>이제부터 본격적으로 Sub Module을 만드는 과정을 살펴보자.</p>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
+    <span class="kd">static</span> <span class="k">let</span> <span class="nv">sharedInstance</span> <span class="o">=</span> <span class="kt">SingletonCls</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre>
+</div>
 
-<h3 id="cocoapods--git-">CocoaPods / Git 설치</h3>
+<p>그리고 사용시.</p>
 
-<p>당연히 이미 설치되어 있다면 다시 설치할 필요는 없다.</p>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kt">SingletonCls</span><span class="o">.</span><span class="n">sharedInstance</span>
+</code></pre>
+</div>
 
-<p>CocoaPods 설치는 <a href="/2015/08/28/cocoapods-usage/">CocoaPods 사용법</a>에서 간단히 안내했던 내용이지만 아주 간단하다.</p>
+<p>그런데 오늘 하고자하는 이야기는 이게 아니다. 기본적인 Singleton Class를 정의하는 것은 검색하면 많이 나온다. 하지만 내가 필요했던 것은 상속이 가능한 Swift Singleton Class다. 아래의 예를 보자.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span><span class="o">[</span>sudo<span class="o">]</span> gem install cocoapods
-<span class="nv">$ </span>pod setup
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
+	<span class="kd">static</span> <span class="k">let</span> <span class="nv">sharedInstance</span> <span class="o">=</span> <span class="kt">SingletonCls</span><span class="p">()</span>
 
-<p>Git는 <a href="http://git-scm.com/download">Git Downloads</a>에서 자신의 환경에 맞는 설치 파일을 다운받아 간단히 설치 가능하다. 그리고 Git는 submodule을 사용해서 프로젝트와 Sub Module을 연결하고 함께 형상 관리를 하기 위한 것으로 SVN과 같은 다른 형상 관리 도구를 사용한다면 그것을 그대로 사용해도 된다. 다만 아래의 설명에서 Git 처리 부분을 해당 형상 관리 도구에 맞추어 적용하면 된다(형상 관리를 하지 않겠다면 하지 않아도 된다. 하지만 권장하지는 않는다).</p>
+	<span class="k">var</span> <span class="nv">X</span><span class="p">:</span><span class="kt">Int</span><span class="p">?</span>
+<span class="p">}</span>
 
-<h3 id="xcode--">Xcode 프로젝트 만들기</h3>
+<span class="kd">class</span> <span class="kt">SingletonClsChild</span> <span class="p">:</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
+	<span class="k">var</span> <span class="nv">Y</span><span class="p">:</span><span class="kt">Int</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="p">}</span>
 
-<p>이 부분은 특별히 설정하지 않아도 될 듯하다. 자신의 필요에 맞는 프로젝트를 만들거나 기존의 프로젝트를 그대로 사용해도 무방하다.
-다만 신규로 개설했다면 git repository에 등록하자. 앞서 설명과 마찬가지로 SVN이라면 SVN에 등록해도 된다.
-나의 경우는 <a href="https://gitlab.com/">gitlab.com</a>을 사용중이라 여기에 맞춰 예를들면 아래와 같은 과정을 거친다.</p>
+<span class="k">let</span> <span class="nv">A</span> <span class="o">=</span> <span class="kt">SingletonClsChild</span><span class="o">.</span><span class="n">sharedInstance</span><span class="p">;</span>
+<span class="nf">print</span><span class="p">(</span><span class="kt">A</span><span class="p">);</span>
+<span class="nf">print</span><span class="p">((</span><span class="kt">A</span> <span class="k">as!</span> <span class="kt">SingletonClsChild</span><span class="p">)</span><span class="o">.</span><span class="kt">Y</span><span class="p">);</span>
+</code></pre>
+</div>
 
-<ul>
-  <li>gitlab에서 신규 프로젝트 개설</li>
-  <li>생성한 프로젝트를 아래와 같이 git에 연결한다.</li>
-</ul>
+<div class="highlighter-rouge"><pre class="highlight"><code>test.SingletonCls
+Could not cast value of type 'test.SingletonCls' (0x10d89d2e0) to 'test.SingletonClsChild' (0x10d89d390).
+</code></pre>
+</div>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">cd</span> <span class="o">{</span>프로젝트명<span class="o">}</span>
-<span class="nv">$ </span>git init
-<span class="nv">$ </span>git remote add origin https://gitlab.com/<span class="o">{</span>사용자<span class="o">}</span>/<span class="o">{</span>프로젝트명<span class="o">}</span>.git
-<span class="nv">$ </span>git add .
-<span class="nv">$ </span>git commit
-<span class="nv">$ </span>git push -u origin master
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p>위 코드는 실행하면 오류가 난다. <code class="highlighter-rouge">SingletonClsChild.sharedInstance</code>의 결과가 <code class="highlighter-rouge">SingletonCls</code> 인스턴스이기 때문이다.</p>
 
-<h3 id="sub-module-xcode--">Sub Module Xcode 프로젝트 만들기</h3>
+<p>우선 이 문제를 해결하기 위한 기본 코드부터 보자. <a href="http://www.scriptscoop.net/t/23f5fc2cdd82/swift-singleton-inheritance.html">Swift: Singleton Inheritance</a>에 나온 코드를 약간 수정했다.</p>
 
-<p>Sub Module로 사용할 프로젝트를 하나 더 생성한다. 나의 경우는 Cocoa Touch Framework로 생성했다. Cocoa Touch Static Library 등의 다른 형식은 적용해보지 않아서 동일하게 적용이 되는지는 모르겠다. 특별한 이유가 없다면 Cocoa Touch Framework로 생성한다.</p>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
+	<span class="kd">static</span> <span class="k">var</span> <span class="nv">_singleton_instance</span> <span class="o">=</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">SingletonCls</span><span class="p">]()</span>
+	<span class="kd">public</span> <span class="kd">class</span> <span class="k">var</span> <span class="nv">shareInstance</span><span class="p">:</span><span class="kt">SingletonCls</span> <span class="p">{</span>
+		<span class="k">get</span> <span class="p">{</span>
+			<span class="k">let</span> <span class="nv">classname</span> <span class="o">=</span> <span class="kt">NSStringFromClass</span><span class="p">(</span><span class="k">self</span><span class="p">)</span>
+			<span class="k">if</span> <span class="p">((</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span> <span class="o">!=</span> <span class="kc">nil</span><span class="p">)</span> <span class="p">{</span>
+				<span class="nf">return</span> <span class="p">(</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span><span class="o">!</span>
+			<span class="p">}</span>
+			<span class="k">let</span> <span class="nv">singletonObject</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="nf">init</span><span class="p">()</span>
+			<span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">]</span> <span class="o">=</span> <span class="n">singletonObject</span>
+			<span class="k">return</span> <span class="n">singletonObject</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
 
-<p><img src="/img/2015-10-21-xcode-create-sub-module-using-cocoapods-1.png" alt="" /></p>
+	<span class="kd">required</span> <span class="kd">public</span> <span class="nf">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+<span class="p">}</span>
 
-<p>이후 부터는 화면에서 안내하는대로 프로젝트를 개설하면 되므로 자세한 설명은 생략하겠다. 생성을 마쳤다면 이 프로젝트도 “Xcode 프로젝트 만들기” 부분에서 예를 들었던 내용처럼 git에 연결한다.</p>
+<span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonClsChild</span> <span class="p">:</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
+<span class="p">}</span>
+</code></pre>
+</div>
 
-<h4 id="podspec-">podspec 생성</h4>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kt">SingletonCls</span><span class="o">.</span><span class="n">sharedInstance</span>
+<span class="kt">SingletonClsChild</span><span class="o">.</span><span class="n">sharedInstance</span>
+</code></pre>
+</div>
 
-<p>Sub Module을 만들었다면 CocoaPods을 통해 연결할 수 있도록 podspec을 생성해야 한다.
-Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하고 아래와 같이 내용을 넣어준다. 이 부분도 상황에 따라 내용을 변경해도 상관없다.</p>
+<p>위 코드에서 제시한 방법을 사용하면 상속이 가능한 Singleton Class를 정의할 수 있다. 사실 여기에 약간의 기능이 더 추가되어 있다. 호출하는 Class에 따라 각각의 Instance를 생성해서 보관하는 부분이다. 예를 들어 아래의 코드를 보자.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12</pre></div></td><td class="code"><div class="highlight"><pre><span class="no">Pod</span><span class="o">::</span><span class="no">Spec</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">s</span><span class="o">|</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">name</span>     <span class="o">=</span> <span class="s1">&#39;{모듈명}&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">version</span>  <span class="o">=</span> <span class="s1">&#39;1.0.0&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="s1">&#39;MIT&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">summary</span>  <span class="o">=</span> <span class="s1">&#39;{설명}&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">homepage</span> <span class="o">=</span> <span class="s1">&#39;https://gitlab.com/subva/SUBiOSFramework&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">author</span>   <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;{작성자}&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;{작성자}{도메인}&#39;</span> <span class="p">}</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">source</span>   <span class="o">=</span> <span class="p">{</span> <span class="ss">:git</span> <span class="o">=&gt;</span> <span class="s1">&#39;{git repository}&#39;</span><span class="p">,</span> <span class="ss">:tag</span> <span class="o">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">version</span> <span class="p">}</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">ios</span><span class="o">.</span><span class="n">deployment_target</span> <span class="o">=</span> <span class="s1">&#39;8.0&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">source_files</span> <span class="o">=</span> <span class="s1">&#39;{모듈명}/*.swift&#39;</span>
-  <span class="n">s</span><span class="o">.</span><span class="n">requires_arc</span> <span class="o">=</span> <span class="kp">true</span>
-<span class="k">end</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
+	<span class="kd">static</span> <span class="k">var</span> <span class="nv">_singleton_instance</span> <span class="o">=</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">SingletonCls</span><span class="p">]()</span>
+	<span class="kd">public</span> <span class="kd">class</span> <span class="k">var</span> <span class="nv">shareInstance</span><span class="p">:</span><span class="kt">SingletonCls</span> <span class="p">{</span>
+		<span class="k">get</span> <span class="p">{</span>
+			<span class="k">let</span> <span class="nv">classname</span> <span class="o">=</span> <span class="kt">NSStringFromClass</span><span class="p">(</span><span class="k">self</span><span class="p">)</span>
+			<span class="k">if</span> <span class="p">((</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span> <span class="o">!=</span> <span class="kc">nil</span><span class="p">)</span> <span class="p">{</span>
+				<span class="nf">return</span> <span class="p">(</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span><span class="o">!</span>
+			<span class="p">}</span>
+			<span class="k">let</span> <span class="nv">singletonObject</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="nf">init</span><span class="p">()</span>
+			<span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">]</span> <span class="o">=</span> <span class="n">singletonObject</span>
+			<span class="k">return</span> <span class="n">singletonObject</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
 
-<h3 id="sub-module-">Sub Module 연결</h3>
+	<span class="kd">required</span> <span class="kd">public</span> <span class="nf">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
 
-<p>위 과정을 문제없이 진행했다면 git에 연결된 두개의 프로젝트(메인 프로젝트, Sub Module 프로젝트)를 가지고 있을 것이다. 이제는 본격적으로 둘을 연결하는 과정이다.</p>
+	<span class="k">var</span> <span class="nv">X</span><span class="p">:</span><span class="kt">Int</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="p">}</span>
 
-<h4 id="git-submodule-">git submodule 추가</h4>
+<span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonClsChild</span> <span class="p">:</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
+	<span class="k">var</span> <span class="nv">Y</span><span class="p">:</span><span class="kt">Int</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="p">}</span>
 
-<p>메인 프로젝트 폴더로 이동하여 git submodule로 Sub Module을 clone한다.</p>
+<span class="k">let</span> <span class="nv">A</span> <span class="o">=</span> <span class="kt">SingletonClsChild</span><span class="o">.</span><span class="n">shareInstance</span><span class="p">;</span>
+<span class="nf">print</span><span class="p">(</span><span class="kt">A</span><span class="o">.</span><span class="kt">X</span><span class="p">);</span>
+<span class="nf">print</span><span class="p">((</span><span class="kt">A</span> <span class="k">as!</span> <span class="kt">SingletonClsChild</span><span class="p">)</span><span class="o">.</span><span class="kt">Y</span><span class="p">);</span>
+<span class="kt">A</span><span class="o">.</span><span class="kt">X</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="k">let</span> <span class="nv">B</span> <span class="o">=</span> <span class="kt">SingletonCls</span><span class="o">.</span><span class="n">shareInstance</span><span class="p">;</span>
+<span class="nf">print</span><span class="p">(</span><span class="kt">B</span><span class="o">.</span><span class="kt">X</span><span class="p">);</span>
+</code></pre>
+</div>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">cd</span> <span class="o">{</span>프로젝트명<span class="o">}</span>
-<span class="nv">$ </span>git submodule add https://gitlab.com/<span class="o">{</span>사용자<span class="o">}</span>/<span class="o">{</span>프로젝트명<span class="o">}</span>.git <span class="o">{</span>Sub Module명<span class="o">}</span>
-<span class="nv">$ </span>git submodule init
-<span class="nv">$ </span>git submodule update
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<p>결과.</p>
 
-<h4 id="cocoapods-sub-module-">CocoaPods로 Sub Module 연결</h4>
+<div class="highlighter-rouge"><pre class="highlight"><code>1
+9
+1
+</code></pre>
+</div>
 
-<p>메인 프로젝트 폴더에 <code>Podfile</code>을 생성하고 아래와 같이 내용을 입력한다. Pods에 대한 설정 내용은 프로젝트에 따라 달라 질 수 있다. 중요한 부분은 <code>use_frameworks!</code>, <code>pod '{Sub Module명}', :path =&gt; './{Sub Module명}'</code> 이다. 그리고 platform의 ‘8.0’ 부분도 빠지면 오류가 날 수 있는데 이 부분은 Sub Module의 deploy target에 맞춰져야 한다.</p>
+<p>결과를 보면 맨 마지막 값이 2가 아닌 1이 나오는 것을 확인 할 수 있다. 이것은 Singleton이 만들어 졌으나 <code class="highlighter-rouge">SingletonCls</code>와 <code class="highlighter-rouge">SingletonClsChild</code>가 각각 만들어 졌음을 뜻한다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-ruby"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">source</span> <span class="s1">&#39;https://github.com/CocoaPods/Specs.git&#39;</span>
-<span class="n">platform</span> <span class="ss">:ios</span><span class="p">,</span> <span class="s1">&#39;8.0&#39;</span>
-<span class="n">use_frameworks!</span>
+<p>이런 추가적인 부분을 제외하고 기본적인 형태만 사용하고자 할 경우에는 아래와 같이 하면 된다.</p>
 
-<span class="n">pod</span> <span class="s1">&#39;{Sub Module명}&#39;</span><span class="p">,</span> <span class="ss">:path</span> <span class="o">=&gt;</span> <span class="s1">&#39;./{Sub Module명}&#39;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
+	<span class="kd">static</span> <span class="k">var</span> <span class="nv">_singleton_instance</span><span class="p">:</span> <span class="kt">SingletonCls</span><span class="p">?</span>
+	<span class="kd">public</span> <span class="kd">class</span> <span class="k">var</span> <span class="nv">shareInstance</span><span class="p">:</span><span class="kt">SingletonCls</span> <span class="p">{</span>
+		<span class="k">get</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">_singleton_instance</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">)</span> <span class="p">{</span>
+				<span class="n">_singleton_instance</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="nf">init</span><span class="p">()</span>
+			<span class="p">}</span>
+			<span class="k">return</span> <span class="n">_singleton_instance</span><span class="o">!</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
 
-<p>파일을 생성했다면 아래의 명령을 실행해서 Pod를 실행한다.</p>
+	<span class="kd">required</span> <span class="kd">public</span> <span class="nf">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+</div>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>pod install
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kt">SingletonCls</span><span class="o">.</span><span class="n">sharedInstance</span>
+</code></pre>
+</div>
 
-<h3 id="section-1">설정 확인</h3>
+<p>위 코드를 기준으로 오류가 나던 코드를 다시 만들어 보자.</p>
 
-<p>이제 정상적으로 연결되었는지 확인하면 된다. CocoaPods을 사용해 봤다면 알겠지만 CocoaPods을 사용 할 때는 xcodeproj가 아닌 xcworkspace로 프로젝트를 열어야 한다. 위 과정이 정상적이었다면 아래와 같이 Pods 영역에 “Development Pods”라는 것이 추가되어 있고 그 안애 추가한 Sub Module이 보일 것이다. 여기까지 확인되었다면 Sub Module 연결 과정은 모두 끝났다.</p>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
+	<span class="kd">static</span> <span class="k">var</span> <span class="nv">_singleton_instance</span><span class="p">:</span> <span class="kt">SingletonCls</span><span class="p">?</span>
+	<span class="kd">public</span> <span class="kd">class</span> <span class="k">var</span> <span class="nv">shareInstance</span><span class="p">:</span><span class="kt">SingletonCls</span> <span class="p">{</span>
+		<span class="k">get</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">_singleton_instance</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">)</span> <span class="p">{</span>
+				<span class="n">_singleton_instance</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="nf">init</span><span class="p">()</span>
+			<span class="p">}</span>
+			<span class="k">return</span> <span class="n">_singleton_instance</span><span class="o">!</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
 
-<p>마지막으로 한가지만 더 이야기하겠다. 프로젝트를 열어서 해당 모듈을 사용하려면 당연히 소스에서 <code>import</code>를 해야하는데 처음엔 연결이 되지 않는 것처럼 보일 수 있다. 이 부분은 모듈이 아직 빌드가 되지 않아서 그런 것이니 빌드를 한번 해주고나면 정상적으로 사용이 가능할 것이다.</p>
+	<span class="kd">required</span> <span class="kd">public</span> <span class="nf">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
 
-<p>위에서 Git나 CocoaPods에 대한 설명을 하느라 조금 길어졌지만 이 두가지를 사용할 줄 알고 있다면 설정 과정은 생각보다 아주 간단하다. Android Studio와 비교하면 과정도 거의 유사하다는 것을 알 것이다.</p>
+	<span class="k">var</span> <span class="nv">X</span><span class="p">:</span><span class="kt">Int</span><span class="p">?</span>
+<span class="p">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonClsChild</span> <span class="p">:</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
+	<span class="k">var</span> <span class="nv">Y</span><span class="p">:</span><span class="kt">Int</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="p">}</span>
+
+<span class="k">let</span> <span class="nv">A</span> <span class="o">=</span> <span class="kt">SingletonClsChild</span><span class="o">.</span><span class="n">shareInstance</span><span class="p">;</span>
+<span class="kt">A</span><span class="o">.</span><span class="kt">X</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="nf">print</span><span class="p">(</span><span class="kt">A</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="kt">A</span><span class="o">.</span><span class="kt">X</span><span class="p">);</span>
+<span class="nf">print</span><span class="p">((</span><span class="kt">A</span> <span class="k">as!</span> <span class="kt">SingletonClsChild</span><span class="p">)</span><span class="o">.</span><span class="kt">Y</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<p>아래와 같은 결과가 출력된다. 원하던 결과를 얻었다.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>test.SingletonClsChild
+Optional(1)
+9
+</code></pre>
+</div>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -294,8 +333,8 @@ Sub Module 프로젝트 폴더에 가서 {모듈명}.podspec 파일을 생성하
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/21/xcode-create-sub-module-using-cocoapods/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/21/xcode-create-sub-module-using-cocoapods/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

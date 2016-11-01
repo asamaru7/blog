@@ -149,99 +149,57 @@
 
 <p>FOUND_ROWS는 직전 쿼리에서 검색된 결과 row 수를 반환한다. 이해를 돕기위해 간단한 쿼리의 결과를 아래에 추가했으니 참고하면 바로 이해가 되리라 생각한다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-mysql"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">article</span><span class="p">;</span>
-<span class="p">...</span>
-<span class="p">...</span>
+<pre><code class="language-mysql">mysql&gt; SELECT * FROM article;
+...
+...
 
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="nf">FOUND_ROWS</span><span class="p">();</span>
-<span class="o">+--------------+</span>
-<span class="o">|</span> <span class="nf">FOUND_ROWS</span><span class="p">()</span> <span class="o">|</span>
-<span class="o">+--------------+</span>
-<span class="o">|</span>          <span class="mi">120</span> <span class="o">|</span>
-<span class="o">+--------------+</span>
-<span class="mi">1</span> <span class="n">row</span> <span class="k">in</span> <span class="kt">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
+mysql&gt; SELECT FOUND_ROWS();
++--------------+
+| FOUND_ROWS() |
++--------------+
+|          120 |
++--------------+
+1 row in set (0.00 sec)
 
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">article</span> <span class="k">limit</span> <span class="mi">10</span><span class="p">;</span>
-<span class="p">...</span>
-<span class="p">...</span>
+mysql&gt; SELECT * FROM article limit 10;
+...
+...
 
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="nf">FOUND_ROWS</span><span class="p">();</span>
-<span class="o">+--------------+</span>
-<span class="o">|</span> <span class="nf">FOUND_ROWS</span><span class="p">()</span> <span class="o">|</span>
-<span class="o">+--------------+</span>
-<span class="o">|</span>           <span class="mi">10</span> <span class="o">|</span>
-<span class="o">+--------------+</span>
-<span class="mi">1</span> <span class="n">row</span> <span class="k">in</span> <span class="kt">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
+mysql&gt; SELECT FOUND_ROWS();
++--------------+
+| FOUND_ROWS() |
++--------------+
+|           10 |
++--------------+
+1 row in set (0.00 sec)
 
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="nf">FOUND_ROWS</span><span class="p">();</span>
-<span class="o">+--------------+</span>
-<span class="o">|</span> <span class="nf">FOUND_ROWS</span><span class="p">()</span> <span class="o">|</span>
-<span class="o">+--------------+</span>
-<span class="o">|</span>            <span class="mi">1</span> <span class="o">|</span>
-<span class="o">+--------------+</span>
-<span class="mi">1</span> <span class="n">row</span> <span class="k">in</span> <span class="kt">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+mysql&gt; SELECT FOUND_ROWS();
++--------------+
+| FOUND_ROWS() |
++--------------+
+|            1 |
++--------------+
+1 row in set (0.00 sec)
+</code></pre>
 
-<p>단, 여기서 주의할 것은 맨 마지막 결과다. “왜 10이 아닐까?” 하는 생각을 할 수 있으나 맨처음 적었듯이 “직전” 쿼리의 결과 row 수를 반환하기 때문에 1이 나오는 것이다.(이전 <code>select FOUND_ROWS();</code>의 결과 row 수 반환)</p>
+<p>단, 여기서 주의할 것은 맨 마지막 결과다. “왜 10이 아닐까?” 하는 생각을 할 수 있으나 맨처음 적었듯이 “직전” 쿼리의 결과 row 수를 반환하기 때문에 1이 나오는 것이다.(이전 <code class="highlighter-rouge">select FOUND_ROWS();</code>의 결과 row 수 반환)</p>
 
 <h2 id="sqlcalcfoundrows-foundrows-">SQL_CALC_FOUND_ROWS와 FOUND_ROWS()의 결합</h2>
 
 <p>각각의 기능을 확인했으니 둘이 만나면 어떻게 되는지 알아보자. 일단 아래의 쿼리 결과를 보자.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-mysql"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="k">SQL_CALC_FOUND_ROWS</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">article</span> <span class="k">limit</span> <span class="mi">10</span><span class="p">;</span>
-<span class="p">...</span>
-<span class="p">...</span>
+<pre><code class="language-mysql">mysql&gt; SELECT SQL_CALC_FOUND_ROWS * FROM article limit 10;
+...
+...
 
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="nf">FOUND_ROWS</span><span class="p">();</span>
-<span class="o">+--------------+</span>
-<span class="o">|</span> <span class="nf">FOUND_ROWS</span><span class="p">()</span> <span class="o">|</span>
-<span class="o">+--------------+</span>
-<span class="o">|</span>          <span class="mi">120</span> <span class="o">|</span>
-<span class="o">+--------------+</span>
-<span class="mi">1</span> <span class="n">row</span> <span class="k">in</span> <span class="kt">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+mysql&gt; SELECT FOUND_ROWS();
++--------------+
+| FOUND_ROWS() |
++--------------+
+|          120 |
++--------------+
+1 row in set (0.00 sec)
+</code></pre>
 
 <p>이해가 되는가? 앞선 예시와 결과가 다르다. SQL_CALC_FOUND_ROWS가 없었다면 FOUND_ROWS()의 결과는 10이었을 것이다. 하지만 SQL_CALC_FOUND_ROWS에서 설명했던 것과 같이 SQL_CALC_FOUND_ROWS 힌트가 추가되면 limit은 무시되고 검색 조건에 해당하는 모든 row 수를 계산하기 때문에 FOUND_ROWS()의 결과가 120이 나오는 것이다.</p>
 
@@ -290,39 +248,25 @@ Group By 결과 row 수를 얻으려면 어떻게 해야할까? 간단할 듯 �
 
 <p>가장 쉽게 접근하는 방법은 서브 쿼리를 사용하는 방법일 것이다. Group By 쿼리를 서브 쿼리로 넣어 count를 사용하는 방법. 대략 아래와 같다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-mysql"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">select</span> <span class="nf">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="nf">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">cnt</span> <span class="k">from</span> <span class="n">article</span> <span class="k">group</span> <span class="k">by</span> <span class="n">apartmentIdx</span><span class="p">)</span> <span class="n">APT</span><span class="p">;</span>
-<span class="o">+----------+</span>
-<span class="o">|</span> <span class="nf">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">|</span>
-<span class="o">+----------+</span>
-<span class="o">|</span>        <span class="mi">4</span> <span class="o">|</span>
-<span class="o">+----------+</span>
-<span class="mi">1</span> <span class="n">row</span> <span class="k">in</span> <span class="kt">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<pre><code class="language-mysql">mysql&gt; select count(1) from (select count(1) as cnt from article group by apartmentIdx) APT;
++----------+
+| count(1) |
++----------+
+|        4 |
++----------+
+1 row in set (0.00 sec)
+</code></pre>
 
 <p>다음은 distinct를 사용하는 방법이다. distinct에 대해서는 주제를 벗어나니 여기서는 생략.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-mysql"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7</pre></div></td><td class="code"><div class="highlight"><pre><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">select</span> <span class="nf">count</span><span class="p">(</span><span class="k">distinct</span> <span class="n">apartmentIdx</span><span class="p">)</span> <span class="k">as</span> <span class="n">cnt</span> <span class="k">from</span> <span class="n">article</span><span class="p">;</span>
-<span class="o">+-----+</span>
-<span class="o">|</span> <span class="n">cnt</span> <span class="o">|</span>
-<span class="o">+-----+</span>
-<span class="o">|</span>   <span class="mi">4</span> <span class="o">|</span>
-<span class="o">+-----+</span>
-<span class="mi">1</span> <span class="n">row</span> <span class="k">in</span> <span class="kt">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<pre><code class="language-mysql">mysql&gt; select count(distinct apartmentIdx) as cnt from article;
++-----+
+| cnt |
++-----+
+|   4 |
++-----+
+1 row in set (0.00 sec)
+</code></pre>
 
 <p>그외에도 오라클이나 다른 DB에서는 또 다른 방법들도 있다.</p>
 
@@ -380,7 +324,7 @@ Group By 결과 row 수를 얻으려면 어떻게 해야할까? 간단할 듯 �
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

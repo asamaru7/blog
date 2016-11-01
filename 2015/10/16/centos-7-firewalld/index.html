@@ -134,7 +134,7 @@
 								</section>
 				-->
 
-				<p>CentOS 7부터 방화벽으로 iptables를 사용하지 않고 firewalld를 사용한다. <code>/etc/sysconfig/iptables</code> 파일도 존재하지 않는다. 따라서 <code>firewall-cmd</code>를 사용해서 방화벽을 설정해야 한다(x windows에서는 firewall-config를 사용한다고하나 콘솔만 사용해봐서 firewall-config는 어떻게 생겼는지 모르겠다).</p>
+				<p>CentOS 7부터 방화벽으로 iptables를 사용하지 않고 firewalld를 사용한다. <code class="highlighter-rouge">/etc/sysconfig/iptables</code> 파일도 존재하지 않는다. 따라서 <code class="highlighter-rouge">firewall-cmd</code>를 사용해서 방화벽을 설정해야 한다(x windows에서는 firewall-config를 사용한다고하나 콘솔만 사용해봐서 firewall-config는 어떻게 생겼는지 모르겠다).</p>
 
 <p><a href="https://access.redhat.com/documentation/ko-KR/Red_Hat_Enterprise_Linux/7/html/Migration_Planning_Guide/ch04s11.html#idp7905344">Redhat Products &amp; Servies의 4.11. 보안 및 액세스 제어</a>에 아래와 같이 설명되어 있다.</p>
 
@@ -189,29 +189,23 @@
 
 <p>사실 “소스IP를 명시하는 부분이 명확하지 않다.” 라는 부분은 글쓴이의 정확한 의도를 알 수 없어 단언하기는 힘들지만 틀린 부분이 있을 수 있다고 생각한다. firewalld를 사용하더라도 소스 IP를 지정할 수 없는 것은 아니다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre>firewall-cmd --permanent --zone<span class="o">=</span>public --add-rich-rule<span class="o">=</span><span class="s1">&#39;rule family=&quot;ipv4&quot; source address=&quot;1.2.3.4/32&quot; port protocol=&quot;tcp&quot; port=&quot;80&quot; accept&#39;</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>firewall-cmd --permanent --zone<span class="o">=</span>public --add-rich-rule<span class="o">=</span><span class="s1">'rule family="ipv4" source address="1.2.3.4/32" port protocol="tcp" port="80" accept'</span>
+</code></pre>
+</div>
 
-<p>위 명령에서 보는 것과 같이 <code>rich-rule</code>를 사용해서 소스 IP를 지정할 수 있다. 그리고 지정된 내역을 보는 방법은 <code>firewall-cmd</code>을 사용하면 되지만 개인적으로는 <code>cat /etc/firewalld/zones/public.xml</code>를 사용해서 확인하는게 더 편한 것 같다. 사실은 아직 <code>firewall-cmd</code>를 능숙하게 사용하지를 못해서 어떻게하면 보기 쉽게 나오는지 잘 모르겠다(몇가지 명령을 시도해 봤는데 내용이 너무 많이 나온다.).</p>
+<p>위 명령에서 보는 것과 같이 <code class="highlighter-rouge">rich-rule</code>를 사용해서 소스 IP를 지정할 수 있다. 그리고 지정된 내역을 보는 방법은 <code class="highlighter-rouge">firewall-cmd</code>을 사용하면 되지만 개인적으로는 <code class="highlighter-rouge">cat /etc/firewalld/zones/public.xml</code>를 사용해서 확인하는게 더 편한 것 같다. 사실은 아직 <code class="highlighter-rouge">firewall-cmd</code>를 능숙하게 사용하지를 못해서 어떻게하면 보기 쉽게 나오는지 잘 모르겠다(몇가지 명령을 시도해 봤는데 내용이 너무 많이 나온다.).</p>
 
 <p>결론적으로 <strong>무조건 firewalld를 사용해야 하는 것은 아니다.</strong> firewalld를 중지시키고 iptables를 설치해서 기존처럼 관리하는 것도 가능하다. 아래의 명령을 실행하면 된다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-bash"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7</pre></div></td><td class="code"><div class="highlight"><pre><span class="nv">$ </span>systemctl stop firewalld
-<span class="nv">$ </span>systemctl mask firewalld
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>systemctl stop firewalld
+<span class="gp">$ </span>systemctl mask firewalld
 
-<span class="nv">$ </span>yum install iptables-services
-<span class="nv">$ </span>systemctl <span class="nb">enable </span>iptables
+<span class="gp">$ </span>yum install iptables-services
+<span class="gp">$ </span>systemctl <span class="nb">enable </span>iptables
 
-<span class="nv">$ </span>service iptables save
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+<span class="gp">$ </span>service iptables save
+</code></pre>
+</div>
 
 <p><strong>firewalld를 사용할지 iptables를 사용할지는 자신의 선택이다.</strong></p>
 
@@ -263,7 +257,7 @@
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

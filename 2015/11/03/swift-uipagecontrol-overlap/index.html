@@ -138,51 +138,31 @@
 
 <p><img src="/img/2015-11-03-swift-uipagecontrol-overlap-1.png" alt="UIPageControl" /></p>
 
-<p>이 부분의 공간을 제거하고 내용 페이지의 위에 오버랩하려면 아래와 같이 <code>viewDidLayoutSubviews</code>에 필요한 소스를 추가하면 된다. 기본적으로 UIPageControl는 투명이라 자연스럽게 덮힌다.</p>
+<p>이 부분의 공간을 제거하고 내용 페이지의 위에 오버랩하려면 아래와 같이 <code class="highlighter-rouge">viewDidLayoutSubviews</code>에 필요한 소스를 추가하면 된다. 기본적으로 UIPageControl는 투명이라 자연스럽게 덮힌다.</p>
 
-<figure class='code'><div class="highlight notranslate"><pre><code class="language-swift"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">class</span> <span class="nl">PageViewController</span><span class="p">:</span> <span class="bp">UIPageViewController</span> <span class="p">{</span>
-  <span class="kr">override</span> <span class="k">func</span> <span class="n">viewDidLayoutSubviews</span><span class="p">()</span> <span class="p">{</span>
+<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">PageViewController</span><span class="p">:</span> <span class="kt">UIPageViewController</span> <span class="p">{</span>
+  <span class="k">override</span> <span class="kd">func</span> <span class="nf">viewDidLayoutSubviews</span><span class="p">()</span> <span class="p">{</span>
 		<span class="c1">// UIPageControl overlap</span>
-		<span class="k">let</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="n">view</span>
-		<span class="k">let</span> <span class="n">subviews</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">subviews</span>
-		<span class="k">var</span> <span class="nl">sv</span><span class="p">:</span> <span class="bp">UIView</span><span class="o">?</span> <span class="o">=</span> <span class="nb">nil</span>
-		<span class="k">var</span> <span class="nl">pc</span><span class="p">:</span> <span class="bp">UIView</span><span class="o">?</span> <span class="o">=</span> <span class="nb">nil</span>
-		<span class="k">for</span> <span class="nl">t</span><span class="p">:</span> <span class="bp">UIView</span> <span class="k">in</span> <span class="n">subviews</span> <span class="p">{</span>
-			<span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">isKindOfClass</span><span class="p">(</span><span class="bp">UIScrollView</span><span class="p">))</span> <span class="p">{</span>
+		<span class="k">let</span> <span class="nv">v</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">view</span>
+		<span class="k">let</span> <span class="nv">subviews</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">subviews</span>
+		<span class="k">var</span> <span class="nv">sv</span><span class="p">:</span> <span class="kt">UIView</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+		<span class="k">var</span> <span class="nv">pc</span><span class="p">:</span> <span class="kt">UIView</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+		<span class="k">for</span> <span class="nv">t</span><span class="p">:</span> <span class="kt">UIView</span> <span class="k">in</span> <span class="n">subviews</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="nf">isKindOfClass</span><span class="p">(</span><span class="kt">UIScrollView</span><span class="p">))</span> <span class="p">{</span>
 				<span class="n">sv</span> <span class="o">=</span> <span class="n">t</span>
-			<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">isKindOfClass</span><span class="p">(</span><span class="bp">UIPageControl</span><span class="p">))</span> <span class="p">{</span>
+			<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="nf">isKindOfClass</span><span class="p">(</span><span class="kt">UIPageControl</span><span class="p">))</span> <span class="p">{</span>
 				<span class="n">pc</span> <span class="o">=</span> <span class="n">t</span>
 			<span class="p">}</span>
 		<span class="p">}</span>
-		<span class="k">if</span> <span class="p">((</span><span class="n">sv</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">pc</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">))</span> <span class="p">{</span>
-			<span class="n">sv</span><span class="o">!</span><span class="p">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">bounds</span>
-			<span class="n">v</span><span class="p">.</span><span class="n">bringSubviewToFront</span><span class="p">(</span><span class="n">pc</span><span class="o">!</span><span class="p">)</span>
+		<span class="k">if</span> <span class="p">((</span><span class="n">sv</span> <span class="o">!=</span> <span class="kc">nil</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">pc</span> <span class="o">!=</span> <span class="kc">nil</span><span class="p">))</span> <span class="p">{</span>
+			<span class="n">sv</span><span class="o">!.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">bounds</span>
+			<span class="n">v</span><span class="o">.</span><span class="nf">bringSubviewToFront</span><span class="p">(</span><span class="n">pc</span><span class="o">!</span><span class="p">)</span>
 		<span class="p">}</span>
-		<span class="nb">super</span><span class="p">.</span><span class="n">viewDidLayoutSubviews</span><span class="p">()</span>
+		<span class="k">super</span><span class="o">.</span><span class="nf">viewDidLayoutSubviews</span><span class="p">()</span>
 	<span class="p">}</span>
 <span class="p">}</span>
-</pre></div>
-</td></tr></table></code></pre></div></figure>
+</code></pre>
+</div>
 
 <p>Objective-c에서의 처리 방법은 <a href="http://stackoverflow.com/a/24851985">How do I make the bottom bar with dots of a UIPageViewController translucent?</a>를 참고.</p>
 
@@ -232,7 +212,7 @@
 				
 				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
 				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">5</span></a></li>
+				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">6</span></a></li>
 				
 				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
 				

@@ -113,68 +113,73 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/03/03/php-password-hash-and-bcrypt/">
-								PHP password_hash()와 BCrypt
+							<a class="title" href="https://blog.asamaru.net/2016/03/07/git-socks5-proxy/">
+								ssh proxy를 이용한 git 사용하기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/03/03/php-password-hash-and-bcrypt/">2016.03.03.</span></a>
+								<a href="https://blog.asamaru.net/2016/03/07/git-socks5-proxy/">2016.03.07.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>Naver D2에 <a href="http://d2.naver.com/helloworld/318732">안전한 패스워드 저장</a>이란 글을 보면 비밀번호 저장을 위한 해시 함수에 대한 소개를 하고 있다. 그 중에서 bcrypt에 대해서는 아래와 같이 설명하고 있다.</p>
+							<p>앞서 <a href="/2015/09/21/how-to-install-gogs-on-centos/">CentOS에 gogs 설치하기</a>,
+<a href="/2015/09/22/how-to-install-gitlib-on-centos/">CentOS에 Gitlab 설치하기</a>, <a href="/2015/10/12/gitlab-ce-to-gitlab-dot-com/">자체 설치한 gitlab-ce에서 gitlab.com으로 이전하다</a>에서 언급했던 것처럼 git 저장소로 <a href="https://gitlab.com/">gitlab.com</a>을 사용중이다. 한동안은 아무 문제없이 잘 사용하고 있었다. 아니 사실 gitlab.com에 접속이 되지 않는 문제가 간헐적으로 발생했었다. 얼마전까지만 하더라도 해외 서비스에서 서비스되는 사이트라서 그런가보다 했다.</p>
 
-<blockquote>
-  <p><strong>bcrypt</strong></p>
+<p>그런데 몇일 전부터 회사 네트워크에서 <a href="https://gitlab.com/">gitlab.com</a>에 접속할 수 없었다. 웹사이트뿐 아니라 git push/pull도 할 수가 없었다. 처음엔 회사 네트워크 방화벽 문제인 줄 알고 확인했으나 아니었다. 그래서 tracepath로 확인해 보니 SK Broadband 네트워크를 벗어나지 못하고 있었다(회사 네트워크가 SK다). 이상해서 조금 검색해보니 예전부터 SK Broadband의 해외 사이트 접속 문제가 유명했던 것 같다. 사람들의 이야기를 봐도 SK에 이야기한다고 해결될 문제는 아닌 것 같고… 그렇다고 git를 사용하지 않을 수 없어서 다른 방법을 찾아야 했다.</p>
 
-  <p>bcrypt는 애초부터 패스워드 저장을 목적으로 설계되었다. Niels Provos와 David Mazières가 1999년 발표했고 현재까지 사용되는 가장 강력한 해시 메커니즘 중 하나이다. bcrypt는 보안에 집착하기로 유명한 OpenBSD에서 기본 암호 인증 메커니즘으로 사용되고 있고 미래에 PBKDF2보다 더 경쟁력이 있다고 여겨진다.</p>
-</blockquote>
+<p>다행히 회사엔 외부망(SK가 아닌)에 연결된 Proxy가 하나 있다. 그래서 그 Proxy를 사용해서 급한대로 gitlab.com에 push/pull 하고 있다. 조금 더 기다려볼 생각이지만 빠른 시일 내에 접속이 복구되지 않는다면 다시 설치형 gitlab을 검토해야 할 것 같다.</p>
 
-<p>실제로 PHP의 <a href="http://php.net/manual/kr/function.password-hash.php">password_hash()</a>는 암호화 알고리즘으로 bcrypt를 기본으로 사용하고 있다. 하지만 이는 현재 시점 기준이다. 메뉴얼에 따르면 향후 PHP에서 보다 강력한 알고리즘이 추가되면 변경된다고 한다(<code class="highlighter-rouge">PASSWORD_DEFAULT</code> 알고리즘 사용시, <code class="highlighter-rouge">PASSWORD_BCRYPT</code> 옵션을 사용해서 강제로 지정하는 것도 가능하다).</p>
+<hr />
 
-<p>이 시점에서 한가지만 짚고 넘어가자.</p>
+<p>본론으로 들어가서 위의 이유로 인해 사용하게된 ssh proxy에 대한 처리 방법을 설명하려고 한다. 이번에 필요에 의해 적용한 환경은 CentOS 7과 OSX 10.11 이다.</p>
 
-<p>“<code class="highlighter-rouge">PASSWORD_DEFAULT</code> 사용시 향후 알고리즘이 변경될 수 있는데 그렇다면 기존 데이터는 어떻게 해야하나?”</p>
+<p><strong>CentOS 7</strong></p>
 
-<p>당연히 단방향 해시 알고리즘이므로 원래 값으로 복구할 수 없으므로 새로운 알고리즘으로 해시값을 만들 수 없다. 그렇다면 위의 의문처럼 기존 데이터와의 호환은 어떻게 되는가? 사실 걱정할 것은 없다. <a href="http://php.net/manual/kr/function.password-hash.php">password_hash()</a>로 만들어진 해시값은  <a href="http://php.net/manual/kr/function.password-verify.php">password_verify()</a>를 사용해서 검증하게 되는데 <a href="http://php.net/manual/kr/function.password-verify.php">password_verify()</a>가 위 문제를 모두 해결해 준다.</p>
+<p><code class="highlighter-rouge">~/.ssh/config</code> 파일에 아래의 내용을 추가 한다.</p>
 
-<p>그럼 <a href="http://php.net/manual/kr/function.password-verify.php">password_verify()</a>는 어떻게 이문제를 해결하는가? 이 부분을 이해하고나면 php에서 만들어진 해시값을 다른 언어(플랫폼)에서 검증하는 것도 가능하다는 것을 알 수 있다.</p>
-
-<p><a href="http://stackoverflow.com/a/20927202">Determining the salt from a password_hash()</a>에 설명된 내용 중 아래에 발췌한 내용이 그 답을 가지고 있다.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>$2y$10$nOUIs5kJ7naTuTFkBy1veuK0kSxUFXfuaOKdOKf9xYT0KKIGSJwFa
- |  |  |                     |
- |  |  |                     hash-value = K0kSxUFXfuaOKdOKf9xYT0KKIGSJwFa
- |  |  |
- |  |  salt = nOUIs5kJ7naTuTFkBy1veu (22 characters)
- |  |
- |  cost-factor = 10 = 2^10 iterations
- |
- hash-algorithm = 2y = BCrypt
+<div class="highlighter-rouge"><pre class="highlight"><code>Host gitlab.com
+    User                    git
+    ProxyCommand            socat STDIO SOCKS4:[proxy ip]:%h:%p,socksport=[proxy port]
 </code></pre>
 </div>
 
-<p><a href="http://php.net/manual/kr/function.password-verify.php">password_verify()</a>에서 만들어진 해시값은 위의 설명과 같이 구성되므로 검증에 필요한 모든 정보를 가지고 있다는 것을 알 수 있다.</p>
+<p>여기서 중요한 부분. <code class="highlighter-rouge">socat</code>이 설치되어 있어야 한다. 설치되어 있지 않다면 간단히 <code class="highlighter-rouge">yum install socat</code>을 통해 설치할 수 있다.</p>
 
-<p>따라서 특별한 이유가 없다면 <code class="highlighter-rouge">PASSWORD_DEFAULT</code> 옵션을 사용하는 것이 바람직하다는 생각이다.</p>
+<p>그리고 <code class="highlighter-rouge">SOCKS4</code>는 Proxy의 프로토콜에 따라 변경되어야 한다. 사실 내가 사용한 Proxy는 <code class="highlighter-rouge">SOCKS5</code>를 사용하는데 <code class="highlighter-rouge">SOCKS5</code>를 지정하면 오류가 나고 <code class="highlighter-rouge">SOCKS4</code>를 지정해야만 정상 동작했다. 기타 프로토콜의 경우는 <a href="http://www.dest-unreach.org/socat/">socat</a>를 참고.</p>
+
+<p>위 처리를 하고나면 “gitlab.com” 도메인에 대해서는 ssh 접속시 지정한 Proxy를 사용한다. 따라서 git 명령을 사용하면 Proxy를 통해서 데이터가 전달된다. 단, ssh를 사용해서 git remote가 연결된 경우에.</p>
+
+<p><strong>OSX</strong></p>
+
+<p>OSX 또한 <code class="highlighter-rouge">~/.ssh/config</code> 파일에 아래의 내용을 추가 한다.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Host gitlab.com
+    User                    git
+    ProxyCommand            nc -X 5 -x [proxy ip]:[proxy port] %h %p
+</code></pre>
+</div>
+
+<p>OSX도 CentOS와 방법은 동일하나 socat 대신 nc(<a href="http://netcat.sourceforge.net/">netcat</a>)를 사용하고 있다. nc가 기본적으로 설치되어 있어서 그냥 nc를 사용했다. 어짜피 원리는 같다.
+nc의 경우는 -X 뒤에 있는 5가 Proxy 프로토콜을 뜻한다.</p>
+
+<blockquote>
+  <p>-X proxy_version
+            Requests that nc should use the specified protocol when talking to the proxy server.  Supported protocols are “4” (SOCKS v.4), “5”
+            (SOCKS v.5) and “connect” (HTTPS proxy).  If the protocol is not specified, SOCKS version 5 is used.</p>
+</blockquote>
+
+<p><strong>PHPStorm</strong></p>
+
+<p>덤으로 PHPStorm과 같은 IntelliJ IDE에서의 설정을 설명한다. 기본적으로 IntelliJ는 Git의 ssh 클라이언트를 Built-in을 사용한다. 이 설정을 Native로 바꿔주면 위에서 설정한 <code class="highlighter-rouge">~/.ssh/config</code> 파일의 설정을 그대로 적용시킬 수 있다. 메뉴의 위치는 “Preference &gt; Version Control &gt; Git”에서 “SSH executable”를 찾으면 된다.</p>
 
 <hr />
 
-<p><a href="http://php.net/manual/kr/function.password-hash.php">password_hash()</a>에 관련된 몇가지 추가적 안내가 있다.</p>
+<p>위 방법은 ssh의 설정을 이용한 방법이지만 git의 설정한 방법도 있다. 개인적으로 git에 설정하는게 더 복잡해서 그냥 ssh에 설정하는 것을 선택했을 뿐이다.</p>
+
+<p><strong>참고글</strong></p>
 
 <ul>
-  <li>이 함수는 php 5.5 이상에서만 사용할 수 있다. 그렇다면 이하 버전에서는 어떻게 할까? 당연히 해결방법은 있다. 친절하게도 <a href="https://github.com/ircmaxell/password_compat">ircmaxell/password_compat</a>에 호환 라이브러리가 있다.</li>
-  <li>scrypt 알고리즘이 훨씬 더 강력하다고 알려져 있으나 아직 PHP에서 공식적으로 지원하지 않고 있다. 단, <a href="https://pecl.php.net/package/scrypt">PECL::scrypt</a>, <a href="https://github.com/DomBlack/php-scrypt">DomBlack/php-scrypt</a>를 사용할 수 있다.</li>
-</ul>
-
-<hr />
-
-<p>참조하면 도움이 될만한 글들을 아래에 소개한다.</p>
-
-<ul>
-  <li><a href="/2016/02/24/php-password-hash-salt-option-has-been-deprecated/">PHP password_hash() salt option has been deprecated</a></li>
-  <li><a href="http://www.hanbit.co.kr/network/view.html?bi_id=1960">PHP에서의 더 안전한 암호 구축 : Bycrpt를 이용한 안전한 패스워드 저장</a></li>
-  <li><a href="https://hiun.github.io/2013/08/bcrypt.html">bcrypt를 이용한 PHP기반 서비스의 비밀번호 암호화</a></li>
-  <li><a href="http://www.phpschool.com/gnuboard4/bbs/board.php?bo_table=tipntech&amp;wr_id=78316">비밀번호 암호화의 정석</a></li>
+  <li><a href="http://cms-sw.github.io/tutorial-proxy.html">Tutorial: how to use git through a proxy</a></li>
+  <li><a href="http://www.jones.ec/blogs/a/entry/using_git_through_a_socks/">Using git through a SOCKS proxy (or SSH tunnel)</a></li>
 </ul>
 
 						<!--
@@ -189,8 +194,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/03/03/php-password-hash-and-bcrypt/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/03/03/php-password-hash-and-bcrypt/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/03/07/git-socks5-proxy/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/03/07/git-socks5-proxy/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

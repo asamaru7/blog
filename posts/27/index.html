@@ -113,46 +113,43 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/03/25/php-invalid-sos-parameters-for-sequential-jpeg/">
-								PHP - Invalid SOS parameters for sequential JPEG 오류 해결
+							<a class="title" href="https://blog.asamaru.net/2016/04/06/yum-error-xz-compression-not-available/">
+								yum 실행시 Error: xz compression not available 오류가 날 경우
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/03/25/php-invalid-sos-parameters-for-sequential-jpeg/">2016.03.25.</span></a>
+								<a href="https://blog.asamaru.net/2016/04/06/yum-error-xz-compression-not-available/">2016.04.06.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>PHP에서 GD를 이용해서 jpg 이미지를 처리할 때 아래와 같은 오류를 만날 수 있다. 나의 경우는 안드로이드에서 jpg 이미지를 PHP로 전송해서 처리하는 과정에서 이 오류를 만났다(안드로이드여 사라져라).</p>
+							<p>yum을 사용하다 보면 아래와 같은 오류가 나는 경우가 있다.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>Warning:  imagecreatefromjpeg(): gd-jpeg, libjpeg: recoverable error: Invalid SOS parameters for sequential JPEG
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>yum update
+Loaded plugins: fastestmirror
+Setting up Install Process
+Repository <span class="s1">'svn-wandisco'</span> is missing name <span class="k">in </span>configuration, using id
+Loading mirror speeds from cached hostfile
+ <span class="k">*</span> base: ftp.daumkakao.com
+ <span class="k">*</span> epel: ftp.riken.jp
+ <span class="k">*</span> extras: ftp.daumkakao.com
+ <span class="k">*</span> updates: ftp.daumkakao.com
+ <span class="k">*</span> webtatic: sp.repo.webtatic.com
+Error: xz compression not available
 </code></pre>
 </div>
 
-<p>이 오류는 PHP Bugs에 <a href="https://bugs.php.net/bug.php?id=39918">
-Bug #39918	imagecreatefromjpeg doesn’t work</a>라는 글로도 등록되어 있다. 일단 PHP Bugs에서는 버그가 아닌 것으로 분류해 놓았지만 대부분의 다른 커뮤니티들에서는 버그라고 이야기하고 있다.</p>
+<p>나의 경우엔 CentOS 6.7에서 실수로 CentOS 7용 EPEL 레포지토리를 설치한 후 이런 현상이 있었다.</p>
 
-<p>어쨌든 해결 방법은 아래와 같다.</p>
+<p>해결 방법은 직접 레포지토리 정보를 지워주면 된다.</p>
 
-<div class="language-php highlighter-rouge"><pre class="highlight"><code>@ini_set('gd.jpeg_ignore_warning', 1);
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c"># epel 레포지토리 제거</span>
+rm -rf /etc/yum.repos.d/epel<span class="k">*</span>
+
+<span class="c"># epel cache 제거</span>
+rm -rf /var/cache/yum/x86_64/6/epel
 </code></pre>
 </div>
 
-<p>위 코드를 <a href="http://php.net/manual/kr/function.imagecreatefromjpeg.php">imagecreatefromjpeg</a>를 사용하기 전에 넣으면 된다(그냥 맨 위쪽). 아니면 php.ini에 위 내용을 형식에 맞게 추가해도 된다.</p>
-
-<p>그런데 문제는 이것만으로는 완전히 해결이 되지 않을 수 있다. 아래와 같은 오류가 추가적으로 날 수 있다.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Warning:  imagecreatefromjpeg(): '/tmp/php6eEm0r' is not a valid JPEG file in ~~
-</code></pre>
-</div>
-
-<p>따라서 위 처리 외에도 imagecreatefromjpeg 사용시 <code class="highlighter-rouge">@</code>를 붙여 아래와 같이 사용해야 한다.</p>
-
-<div class="language-php highlighter-rouge"><pre class="highlight"><code>$source = @imagecreatefromjpeg($sourcePath);
-</code></pre>
-</div>
-
-<p><code class="highlighter-rouge">@</code>를 사용하는 것은 권장되지 않지만 이 경우는 어쩔 수 없다(오류 출력 범위를 변경하는 등의 방법이 있으나 이 부분만 이렇게 처리하는게 낫다).</p>
-
-<p>이렇게 처리하고 나면 기능이 원하는대로 정상 동작한다(<code class="highlighter-rouge">not a valid JPEG file</code>라고 했지만 실제로는 정상적인 jpg 파일이므로)</p>
+<p>EPEL이 필요하다면 다시 버전에 맞게 설치하면 된다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -166,8 +163,8 @@ Bug #39918	imagecreatefromjpeg doesn’t work</a>라는 글로도 등록되어 �
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/03/25/php-invalid-sos-parameters-for-sequential-jpeg/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/03/25/php-invalid-sos-parameters-for-sequential-jpeg/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/04/06/yum-error-xz-compression-not-available/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/04/06/yum-error-xz-compression-not-available/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

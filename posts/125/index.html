@@ -113,49 +113,34 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/">
-								Gradle DSL method not found: &#39;packageNameSuffix()&#39; 오류 해결
+							<a class="title" href="https://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/">
+								Gradle applicationIdSuffix 사용시 AndroidAnnotations 설정
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/">2015.10.05.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/">2015.10.05.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>안드로이드에서 빌드시 packageName을 동적으로 변경하기 위해 packageNameSuffix를 사용하는 경우가 있다. 예를들어 배포된 앱과 개발중인 앱을 동시에 사용하기 위해 packageNameSuffix를 사용할 수 있다.</p>
+							<p><a href="/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/">Gradle DSL method not found: ‘packageNameSuffix()’ 오류 해결</a>에서 오류 해결 방법을 안내하면서 언급했던 applicationIdSuffix를 사용시 유의사항이 있다. <strong>applicationId가 debug 모드에서 변경됨에 따라 관련된 부분에서 문제가 일어날 수 있다는 것이다.</strong></p>
 
-<p>아래의 예시를 보자.</p>
+<p>나의 경우는 AndroidAnnotations을 함께 사용하는 부분에서 오류를 만났다. AndroidAnnotations에서 applicationId를 기준으로 resource에 접근해서 자동 생성된 class들을 찾지 못하는 문제이다.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>android {
-    buildTypes {
-        debug {
-            packageNameSuffix '.debug'
-            versionNameSuffix '-debug'
-        }
-    }
-}
-</code></pre>
-</div>
+<p>이런 경우에 대비해서 AndroidAnnotations에는 resourcePackageName라는 속성을 제공한다.</p>
 
-<p>debug 모드에서 빌드할 경우에는 packageName 뒤에 <code class="highlighter-rouge">.debug</code>를 붙이도록 설정한 것이다. 이렇게 함으로써 release와 debug가 packageName이 달라져서 두개의 앱으로 인식되므로 모두를 설치할 수 있다.
-이 방법을 모를때는 매번 앱을 지우고 새로 깔고… 귀찮은 작업을 반복하며 작업을 했었다.</p>
+<p><a href="https://github.com/excilys/androidannotations/wiki/CustomizeAnnotationProcessing">CustomizeAnnotationProcessing</a>에 보면 아래와 같이 안내되어 있다.</p>
 
-<p>그런데 이렇게 사용하면 아래의 경우를 만날 수 있다.</p>
+<blockquote>
+  <p><strong>resourcePackageName</strong></p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code> Gradle sync failed: Gradle DSL method not found: 'packageNameSuffix()'
-            Consult IDE log for more details (Help | Show Log)
-</code></pre>
-</div>
+  <p>Type: string
+By default, AndroidAnnotations try to find the R class by extracting application package from AndroidManifest.xml file. But in some cases you may want to specify a custom package to look for the R class. This is why we added resourcePackageName option.</p>
+</blockquote>
 
-<p>이유는 packageNameSuffix라는 속성이 applicationIdSuffix로 변경되었기 때문이다. 관련 메뉴얼은 <a href="http://tools.android.com/tech-docs/new-build-system/applicationid-vs-packagename">ApplicationId versus PackageName</a>에서 볼 수 있다.</p>
+<p>결론은 아래처럼 resourcePackageName에 기존 packageName을 넣어줌으로써 해결이 가능하다.</p>
 
-<p>그래서 아래와 같이 수정하면 정상적으로 사용이 가능하다.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>android {
-    buildTypes {
-        debug {
-            applicationIdSuffix '.debug'
-            versionNameSuffix '-debug'
-        }
+<div class="highlighter-rouge"><pre class="highlight"><code>apt {
+    arguments {
+        resourcePackageName "net.yourdomain"
     }
 }
 </code></pre>
@@ -173,8 +158,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

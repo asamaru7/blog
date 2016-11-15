@@ -1,5 +1,129 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet type="text/xml" href="https://blog.asamaru.net/feed.xslt.xml"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.2.1">Jekyll</generator><link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" /><link href="https://blog.asamaru.net/" rel="alternate" type="text/html" /><updated>2016-11-07T08:38:03+09:00</updated><id>https://blog.asamaru.net/</id><title type="html">이 세상에 하나는 남기고 가자</title><subtitle>세상에 필요한 소스코드 한줄 남기고 가자.
-</subtitle><author><name>유영재</name></author><entry><title type="html">PHP 삼항 연산자 : Ternary Operator 와 Null Coalesce Operator</title><link href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/" rel="alternate" type="text/html" title="PHP 삼항 연산자 : Ternary Operator 와 Null Coalesce Operator" /><published>2016-11-07T08:02:12+09:00</published><updated>2016-11-07T08:02:12+09:00</updated><id>https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator</id><content type="html" xml:base="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/">&lt;p&gt;&lt;a href=&quot;http://php.net/&quot;&gt;PHP&lt;/a&gt;에도 &lt;a href=&quot;http://php.net/manual/kr/language.operators.comparison.php#language.operators.comparison.ternary&quot;&gt;삼항 연산자:Ternary operator&lt;/a&gt;
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet type="text/xml" href="https://blog.asamaru.net/feed.xslt.xml"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.2.1">Jekyll</generator><link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" /><link href="https://blog.asamaru.net/" rel="alternate" type="text/html" /><updated>2016-11-15T14:50:46+09:00</updated><id>https://blog.asamaru.net/</id><title type="html">이 세상에 하나는 남기고 가자</title><subtitle>세상에 필요한 소스코드 한줄 남기고 가자.
+</subtitle><author><name>유영재</name></author><entry><title type="html">PHP에서 NFD(Normalization Form D) / NFC(Normalization Form C) 변환</title><link href="https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc/" rel="alternate" type="text/html" title="PHP에서 NFD(Normalization Form D) / NFC(Normalization Form C) 변환" /><published>2016-11-15T13:57:44+09:00</published><updated>2016-11-15T13:57:44+09:00</updated><id>https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc</id><content type="html" xml:base="https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc/">&lt;p&gt;Mac OSX는 경우 문자열을 &lt;a href=&quot;http://unicode.org/reports/tr15/&quot;&gt;Unicode Normalization Forms&lt;/a&gt; 중 NFD(소리 마디를 첫가끝 코드로 분해)로 처리한다(일반적으로는 NFC(첫가끝 코드를 소리 마디로 결합)를 사용).
+이는 한글(&lt;a href=&quot;http://www.unicode.org/charts/PDF/UAC00.pdf&quot;&gt;U+AC00&lt;/a&gt;) 영역을 사용하는 곳에서는 한글이 모두 풀어진 상태로 보이는 문제가 있다.
+따라서 &lt;a href=&quot;http://www.unicode.org/charts/PDF/U1100.pdf&quot;&gt;U+1100&lt;/a&gt; 영역을 &lt;a href=&quot;http://www.unicode.org/charts/PDF/UAC00.pdf&quot;&gt;U+AC00&lt;/a&gt; 영역으로 변환하는 과정이 필요하다.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://d2.naver.com/helloworld/76650&quot;&gt;한글 인코딩의 이해 2편: 유니코드와 Java를 이용한 한글 처리&lt;/a&gt;에서는 &lt;a href=&quot;https://ko.wikipedia.org/wiki/%EC%9C%A0%EB%8B%88%EC%BD%94%EB%93%9C_%EC%A0%95%EA%B7%9C%ED%99%94&quot;&gt;유니코드 정규화&lt;/a&gt;(&lt;a href=&quot;https://en.wikipedia.org/wiki/Unicode_equivalence&quot;&gt;Unicode equivalence&lt;/a&gt;)를 아래와 같이 소개하고 있다.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;한글 소리 마디와 한글자모, 한글 자모 확장 이렇게 두 개의 코드 영역이 있다는 것은 같은 글자를 표현하는 서로 다른 두 개의 방법이 있다는 것을 말한다.
+이것은 한글뿐만 아니라 다른 언어에서도 나타나는 현상이다. 가령 “ñ”을 표현할 때 U+00F1을 사용할 수도 있고, U+006E (라틴 소문자 “n”) 과 U+0303( 결합 틸데 “◌̃”)을 연이어 사용하여 표현할 수도 있다.
+유니코드 정규화(Unicode equivalence)란 이렇게 연속적인 코드를 사용하여 표현한 어떤 글자를 처리하는 방법을 다루는 명세이다. 유니코드 정규화에는 다음과 같은 네 가지 방법이 있다.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;정규화 방법&lt;/th&gt;
+      &lt;th&gt;예&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;NFD (정준 분해) Normalization Form Canonical Decomposition&lt;/td&gt;
+      &lt;td&gt;À (U+00C0) → A (U+0041) + ̀ (U+0300) 위 (U+C704) → ᄋ (U+110B) + ᅱ (U+1171)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;NFC (정준 분해한 뒤 다시 정준 결합) Normalization Form Canonical Composition&lt;/td&gt;
+      &lt;td&gt;A (U+0041) + ̀ (U+0300) → À (U+00C0) ᄋ (U+110B) + ᅱ (U+1171) → 위 (U+C704)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;NFKD (호환 분해)  Normalization Form Compatibility Decomposition&lt;/td&gt;
+      &lt;td&gt;ﬁ (U+FB01) → f (U+0066) + i (U+0069)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;NFKC (호환 분해한 뒤 다시 정준 결합) Normalization Form Compatibility Composition&lt;/td&gt;
+      &lt;td&gt;樂 (U+F914), 樂 (U+F95C), 樂 (U+F9BF) → 樂 (U+6A02)&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;이중 한글 처리와 관련된 것은 NFD(소리 마디를 첫가끝 코드로 분해)와 NFC(첫가끝 코드를 소리 마디로 결합)이다.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;NFD에 관련된 내용은 위 링크들을 확인해보면 충분한 정보를 얻을 수 있을테니 오늘은 PHP에서 NFD를 다루는 부분을 소개한다.
+참고로 아래의 함수를 사용하기 위해서는 &lt;a href=&quot;http://php.net/manual/kr/book.intl.php&quot;&gt;intl&lt;/a&gt; 모듈이 설치되어 있어야 한다.&lt;/p&gt;
+
+&lt;p&gt;우선 간단한 코드부터 보자.&lt;/p&gt;
+
+&lt;div class=&quot;language-php highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// setlocale(LC_ALL, 'ko_KR.UTF-8');
+if (!\Normalizer::isNormalized($text)) {
+  $text = \Normalizer::normalize($text);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;사실 위 코드를 보면 더 이상 설명이 필요 없을 정도로 간단하다.
+&lt;a href=&quot;http://php.net/manual/kr/normalizer.isnormalized.php&quot;&gt;\Normalizer::isNormalized&lt;/a&gt; 함수를 사용해서 NFC 형식인지 검사한다.
+위 예시는 두번째 인자인 &lt;code class=&quot;highlighter-rouge&quot;&gt;$from&lt;/code&gt;이 생략된 것이다(기본값 : &lt;code class=&quot;highlighter-rouge&quot;&gt;Normalizer::FORM_C&lt;/code&gt;). 따라서 두번째 인자로 &lt;code class=&quot;highlighter-rouge&quot;&gt;Normalizer::FORM_D&lt;/code&gt;를 넣어주면 NFD를 검사할 수 있다.&lt;/p&gt;
+
+&lt;p&gt;NFC 형식이 아니라면 &lt;a href=&quot;http://php.net/manual/kr/normalizer.normalize.php&quot;&gt;\Normalizer::normalize&lt;/a&gt; 함수를 이용해서 NFC 형식으로 변환한다.
+이 함수 또한 기본적으로 두번째 인자로 &lt;code class=&quot;highlighter-rouge&quot;&gt;Normalizer::FORM_C&lt;/code&gt;를 사용한다.&lt;/p&gt;
+
+&lt;p&gt;마지막으로 주석 처리한 &lt;code class=&quot;highlighter-rouge&quot;&gt;setlocale&lt;/code&gt; 부분은 필요 시에만 추가하면 된다(상황에 따라서는 &lt;code class=&quot;highlighter-rouge&quot;&gt;setlocale&lt;/code&gt;을 추가하면 한글의 일부가 깨지는 상황이 발생했다.).&lt;/p&gt;</content><author><name>유영재</name></author><summary type="html">Mac OSX는 경우 문자열을 Unicode Normalization Forms 중 NFD(소리 마디를 첫가끝 코드로 분해)로 처리한다(일반적으로는 NFC(첫가끝 코드를 소리 마디로 결합)를 사용).
+이는 한글(U+AC00) 영역을 사용하는 곳에서는 한글이 모두 풀어진 상태로 보이는 문제가 있다.
+따라서 U+1100 영역을 U+AC00 영역으로 변환하는 과정이 필요하다.
+
+한글 인코딩의 이해 2편: 유니코드와 Java를 이용한 한글 처리에서는 유니코드 정규화(Unicode equivalence)를 아래와 같이 소개하고 있다.
+
+
+  한글 소리 마디와 한글자모, 한글 자모 확장 이렇게 두 개의 코드 영역이 있다는 것은 같은 글자를 표현하는 서로 다른 두 개의 방법이 있다는 것을 말한다.
+이것은 한글뿐만 아니라 다른 언어에서도 나타나는 현상이다. 가령 “ñ”을 표현할 때 U+00F1을 사용할 수도 있고, U+006E (라틴 소문자 “n”) 과 U+0303( 결합 틸데 “◌̃”)을 연이어 사용하여 표현할 수도 있다.
+유니코드 정규화(Unicode equivalence)란 이렇게 연속적인 코드를 사용하여 표현한 어떤 글자를 처리하는 방법을 다루는 명세이다. 유니코드 정규화에는 다음과 같은 네 가지 방법이 있다.
+
+
+
+  
+    
+      정규화 방법
+      예
+    
+  
+  
+    
+      NFD (정준 분해) Normalization Form Canonical Decomposition
+      À (U+00C0) → A (U+0041) + ̀ (U+0300) 위 (U+C704) → ᄋ (U+110B) + ᅱ (U+1171)
+    
+    
+      NFC (정준 분해한 뒤 다시 정준 결합) Normalization Form Canonical Composition
+      A (U+0041) + ̀ (U+0300) → À (U+00C0) ᄋ (U+110B) + ᅱ (U+1171) → 위 (U+C704)
+    
+    
+      NFKD (호환 분해)  Normalization Form Compatibility Decomposition
+      ﬁ (U+FB01) → f (U+0066) + i (U+0069)
+    
+    
+      NFKC (호환 분해한 뒤 다시 정준 결합) Normalization Form Compatibility Composition
+      樂 (U+F914), 樂 (U+F95C), 樂 (U+F9BF) → 樂 (U+6A02)
+    
+  
+
+
+
+  이중 한글 처리와 관련된 것은 NFD(소리 마디를 첫가끝 코드로 분해)와 NFC(첫가끝 코드를 소리 마디로 결합)이다.
+
+
+NFD에 관련된 내용은 위 링크들을 확인해보면 충분한 정보를 얻을 수 있을테니 오늘은 PHP에서 NFD를 다루는 부분을 소개한다.
+참고로 아래의 함수를 사용하기 위해서는 intl 모듈이 설치되어 있어야 한다.
+
+우선 간단한 코드부터 보자.
+
+// setlocale(LC_ALL, 'ko_KR.UTF-8');
+if (!\Normalizer::isNormalized($text)) {
+  $text = \Normalizer::normalize($text);
+}
+
+
+
+사실 위 코드를 보면 더 이상 설명이 필요 없을 정도로 간단하다.
+\Normalizer::isNormalized 함수를 사용해서 NFC 형식인지 검사한다.
+위 예시는 두번째 인자인 $from이 생략된 것이다(기본값 : Normalizer::FORM_C). 따라서 두번째 인자로 Normalizer::FORM_D를 넣어주면 NFD를 검사할 수 있다.
+
+NFC 형식이 아니라면 \Normalizer::normalize 함수를 이용해서 NFC 형식으로 변환한다.
+이 함수 또한 기본적으로 두번째 인자로 Normalizer::FORM_C를 사용한다.
+
+마지막으로 주석 처리한 setlocale 부분은 필요 시에만 추가하면 된다(상황에 따라서는 setlocale을 추가하면 한글의 일부가 깨지는 상황이 발생했다.).</summary></entry><entry><title type="html">PHP 삼항 연산자 : Ternary Operator 와 Null Coalesce Operator</title><link href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/" rel="alternate" type="text/html" title="PHP 삼항 연산자 : Ternary Operator 와 Null Coalesce Operator" /><published>2016-11-07T08:02:12+09:00</published><updated>2016-11-07T08:02:12+09:00</updated><id>https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator</id><content type="html" xml:base="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/">&lt;p&gt;&lt;a href=&quot;http://php.net/&quot;&gt;PHP&lt;/a&gt;에도 &lt;a href=&quot;http://php.net/manual/kr/language.operators.comparison.php#language.operators.comparison.ternary&quot;&gt;삼항 연산자:Ternary operator&lt;/a&gt;
 가 있다. &lt;a href=&quot;http://php.net/manual/kr/language.operators.comparison.php#language.operators.comparison.ternary&quot;&gt;메뉴얼&lt;/a&gt;에는 아래와 같이 설명되어 있다.&lt;/p&gt;
 
 &lt;div class=&quot;language-php highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?php&lt;/span&gt;
@@ -652,240 +776,4 @@ android.permission.WRITE_EXTERNAL_STORAGE
 
 update : 2016.09.27.
 
-오늘 확인해보니 역시나 9.6.1이 새로 올라왔으며 해당 권한에 대한 patch가 포함되어 있다.</summary></entry><entry><title type="html">안드로이드 WebView에서 HTML5 Video Full Screen 지원</title><link href="https://blog.asamaru.net/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview/" rel="alternate" type="text/html" title="안드로이드 WebView에서 HTML5 Video Full Screen 지원" /><published>2016-08-12T20:15:23+09:00</published><updated>2016-08-12T20:15:23+09:00</updated><id>https://blog.asamaru.net/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview</id><content type="html" xml:base="https://blog.asamaru.net/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview/">&lt;p&gt;안드로이드 WebView에서 HTML5 Video를 재생할 경우 “전체창으로 보기”를 사용할 수 있다. 그런데 자동적으로 사용할 수 있는 것이 아니라 관련된 처리를 직접 해주어야 한다.&lt;/p&gt;
-
-&lt;p&gt;필요한 처리는 아래와 같다.&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;WebView에 WebChromeClient를 설정해 주어야 한다. 그렇지 않으면 4.0 이후에서 NullPointerException이 발생한다.&lt;/li&gt;
-  &lt;li&gt;WebChromeClient를 설정하더라도  &lt;a href=&quot;https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View, android.webkit.WebChromeClient.CustomViewCallback%29&quot;&gt;onShowCustomView()&lt;/a&gt;를 구현해주지 않으면 전체창 보기 상태에서 영상은 나오지 않고 소리만 재생되는 현상이 발생한다.&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;android:hardwareAccelerated=&quot;true&quot;&lt;/code&gt; 등을 사용해서 Application 또는 해당 Activity에 하드웨어 가속을 켜줘야 한다.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View, android.webkit.WebChromeClient.CustomViewCallback%29&quot;&gt;onShowCustomView()&lt;/a&gt;를 구현한 소스는 아래와 같다.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-Java&quot;&gt;import android.app.Activity;
-import android.content.Context;
-import android.os.Build;
-import android.support.v4.content.ContextCompat;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.webkit.WebChromeClient;
-import android.widget.FrameLayout;
-
-public class FullscreenableChromeClient extends WebChromeClient {
-	private Activity mActivity = null;
-
-	private View mCustomView;
-	private WebChromeClient.CustomViewCallback mCustomViewCallback;
-	private int mOriginalOrientation;
-
-	private FrameLayout mFullscreenContainer;
-
-	private static final FrameLayout.LayoutParams COVER_SCREEN_PARAMS = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
-	public FullscreenableChromeClient(Activity activity) {
-		this.mActivity = activity;
-	}
-
-	@Override
-	public void onShowCustomView(View view, CustomViewCallback callback) {
-		if (Build.VERSION.SDK_INT &amp;gt;= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-			if (mCustomView != null) {
-				callback.onCustomViewHidden();
-				return;
-			}
-
-			mOriginalOrientation = mActivity.getRequestedOrientation();
-			FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
-			mFullscreenContainer = new FullscreenHolder(mActivity);
-			mFullscreenContainer.addView(view, COVER_SCREEN_PARAMS);
-			decor.addView(mFullscreenContainer, COVER_SCREEN_PARAMS);
-			mCustomView = view;
-			setFullscreen(true);
-			mCustomViewCallback = callback;
-//			mActivity.setRequestedOrientation(requestedOrientation);
-		}
-
-		super.onShowCustomView(view, callback);
-	}
-
-	@SuppressWarnings(&quot;deprecation&quot;)
-	@Override
-	public void onShowCustomView(View view, int requestedOrientation, WebChromeClient.CustomViewCallback callback) {
-		this.onShowCustomView(view, callback);
-	}
-
-	@Override
-	public void onHideCustomView() {
-		if (mCustomView == null) {
-			return;
-		}
-
-		setFullscreen(false);
-		FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
-		decor.removeView(mFullscreenContainer);
-		mFullscreenContainer = null;
-		mCustomView = null;
-		mCustomViewCallback.onCustomViewHidden();
-		mActivity.setRequestedOrientation(mOriginalOrientation);
-	}
-
-	private void setFullscreen(boolean enabled) {
-		Window win = mActivity.getWindow();
-		WindowManager.LayoutParams winParams = win.getAttributes();
-		final int bits = WindowManager.LayoutParams.FLAG_FULLSCREEN;
-		if (enabled) {
-			winParams.flags |= bits;
-		} else {
-			winParams.flags &amp;amp;= ~bits;
-			if (mCustomView != null) {
-				mCustomView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-			}
-		}
-		win.setAttributes(winParams);
-	}
-
-	private static class FullscreenHolder extends FrameLayout {
-		public FullscreenHolder(Context ctx) {
-			super(ctx);
-			setBackgroundColor(ContextCompat.getColor(ctx, android.R.color.black));
-		}
-
-		@Override
-		public boolean onTouchEvent(MotionEvent evt) {
-			return true;
-		}
-	}
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;사용법은 아래와 같다.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-Java&quot;&gt;webView.setWebChromeClient(new FullscreenableChromeClient(activity));
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;비슷한 방법으로 &lt;a href=&quot;http://stackoverflow.com/a/16179544&quot;&gt;Playing HTML5 video on fullscreen in android webview&lt;/a&gt;에서 안내하는 방법도 있다.&lt;/p&gt;
-
-&lt;p&gt;어쨌든 결론은 Full Screen을 위한 별도의 View를 구성해줘야 한다는 것이다. 항상 느끼는 것이지만 이런 것들은 OS 또는 SDK 차원에서 기본적으로 제공하고 Custom이 필요할 경우만 처리하도록 하면 될 텐데 안드로이드는 이런 부분들이 너무 부족하다.&lt;/p&gt;</content><author><name>유영재</name></author><summary type="html">안드로이드 WebView에서 HTML5 Video를 재생할 경우 “전체창으로 보기”를 사용할 수 있다. 그런데 자동적으로 사용할 수 있는 것이 아니라 관련된 처리를 직접 해주어야 한다.
-
-필요한 처리는 아래와 같다.
-
-
-  WebView에 WebChromeClient를 설정해 주어야 한다. 그렇지 않으면 4.0 이후에서 NullPointerException이 발생한다.
-  WebChromeClient를 설정하더라도  onShowCustomView()를 구현해주지 않으면 전체창 보기 상태에서 영상은 나오지 않고 소리만 재생되는 현상이 발생한다.
-  android:hardwareAccelerated=&quot;true&quot; 등을 사용해서 Application 또는 해당 Activity에 하드웨어 가속을 켜줘야 한다.
-
-
-onShowCustomView()를 구현한 소스는 아래와 같다.
-
-import android.app.Activity;
-import android.content.Context;
-import android.os.Build;
-import android.support.v4.content.ContextCompat;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.webkit.WebChromeClient;
-import android.widget.FrameLayout;
-
-public class FullscreenableChromeClient extends WebChromeClient {
-	private Activity mActivity = null;
-
-	private View mCustomView;
-	private WebChromeClient.CustomViewCallback mCustomViewCallback;
-	private int mOriginalOrientation;
-
-	private FrameLayout mFullscreenContainer;
-
-	private static final FrameLayout.LayoutParams COVER_SCREEN_PARAMS = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
-	public FullscreenableChromeClient(Activity activity) {
-		this.mActivity = activity;
-	}
-
-	@Override
-	public void onShowCustomView(View view, CustomViewCallback callback) {
-		if (Build.VERSION.SDK_INT &amp;gt;= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-			if (mCustomView != null) {
-				callback.onCustomViewHidden();
-				return;
-			}
-
-			mOriginalOrientation = mActivity.getRequestedOrientation();
-			FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
-			mFullscreenContainer = new FullscreenHolder(mActivity);
-			mFullscreenContainer.addView(view, COVER_SCREEN_PARAMS);
-			decor.addView(mFullscreenContainer, COVER_SCREEN_PARAMS);
-			mCustomView = view;
-			setFullscreen(true);
-			mCustomViewCallback = callback;
-//			mActivity.setRequestedOrientation(requestedOrientation);
-		}
-
-		super.onShowCustomView(view, callback);
-	}
-
-	@SuppressWarnings(&quot;deprecation&quot;)
-	@Override
-	public void onShowCustomView(View view, int requestedOrientation, WebChromeClient.CustomViewCallback callback) {
-		this.onShowCustomView(view, callback);
-	}
-
-	@Override
-	public void onHideCustomView() {
-		if (mCustomView == null) {
-			return;
-		}
-
-		setFullscreen(false);
-		FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
-		decor.removeView(mFullscreenContainer);
-		mFullscreenContainer = null;
-		mCustomView = null;
-		mCustomViewCallback.onCustomViewHidden();
-		mActivity.setRequestedOrientation(mOriginalOrientation);
-	}
-
-	private void setFullscreen(boolean enabled) {
-		Window win = mActivity.getWindow();
-		WindowManager.LayoutParams winParams = win.getAttributes();
-		final int bits = WindowManager.LayoutParams.FLAG_FULLSCREEN;
-		if (enabled) {
-			winParams.flags |= bits;
-		} else {
-			winParams.flags &amp;amp;= ~bits;
-			if (mCustomView != null) {
-				mCustomView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-			}
-		}
-		win.setAttributes(winParams);
-	}
-
-	private static class FullscreenHolder extends FrameLayout {
-		public FullscreenHolder(Context ctx) {
-			super(ctx);
-			setBackgroundColor(ContextCompat.getColor(ctx, android.R.color.black));
-		}
-
-		@Override
-		public boolean onTouchEvent(MotionEvent evt) {
-			return true;
-		}
-	}
-}
-
-
-사용법은 아래와 같다.
-
-webView.setWebChromeClient(new FullscreenableChromeClient(activity));
-
-
-비슷한 방법으로 Playing HTML5 video on fullscreen in android webview에서 안내하는 방법도 있다.
-
-어쨌든 결론은 Full Screen을 위한 별도의 View를 구성해줘야 한다는 것이다. 항상 느끼는 것이지만 이런 것들은 OS 또는 SDK 차원에서 기본적으로 제공하고 Custom이 필요할 경우만 처리하도록 하면 될 텐데 안드로이드는 이런 부분들이 너무 부족하다.</summary></entry></feed>
+오늘 확인해보니 역시나 9.6.1이 새로 올라왔으며 해당 권한에 대한 patch가 포함되어 있다.</summary></entry></feed>

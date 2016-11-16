@@ -113,105 +113,58 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/">
-								안드로이드 View.isLaidOut / View.post
+							<a class="title" href="https://blog.asamaru.net/2015/09/04/android-dialog-windowmanager-badtokenexception/">
+								안드로이드에서 Dialog 사용시 WindowManager$BadTokenException 발생
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/">2015.09.04.</span></a>
+								<a href="https://blog.asamaru.net/2015/09/04/android-dialog-windowmanager-badtokenexception/">2015.09.04.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>안드로이드 View는 isLaidOut이라는 함수를 가지고 있다. 단, API 19(KITKAT)부터 사용가능하다. 사실 그 이하의 기기에서도 다른 방법을 통해서 사용가능하다. 아주 간단히. 이 부분은 나중에 다시 설명하겠다.</p>
+							<p>안드로이드에서는 거의 모든 작업에 context를 사용한다. 그런데 이 context는 크게 application contet와 activity context가 있다. 문제는 사용시에 구분해서 사용하지 않는다는 것이다. 명시적으로 특정 context를 요구하지 않는다. 이로 인해 많은 혼란이 있고 crash도 많이 발생한다.</p>
 
-<p>우선 isLaidOut 함수에 대해 안드로이드 메뉴얼에는 다음과 같이 나와있다.</p>
+<p>사실 오류를 줄이려면 가능한한 activity context를 사용하는 것이 좋다.(경험상…) 하지만 안드로이드에서는 가급적 application context를 사용하기를 권장한다.</p>
 
-<blockquote>
-  <p>public boolean isLaidOut ()</p>
-</blockquote>
+<p>가장 대표적인 이유는 메모리릭 때문이다. 메모리릭에 대한 문제는 context의 종류에 직접적인 관련이 있는 것은 아니나 activity 내부에서 객체를 생성하면서 자신을 context로 넘겨줄 경우 순환참조 등의 이유로 객체가 소멸하지 못할 수 있다. 메모리릭 문제는 상상보다 더 다양한 경우에 발생하는데 여기서 논하고자하는 범위를 벋어나니 일단 넘어가자. 사실 검색해 보면 많은 자료가 있다.
+어쨌든 생성된 객체가 죽지 못한다면 activity도 소멸하지 못하므로 대량의 메모리 점유를 경험하게 될 수 있다. 당연히 앱이 크지 않다면 OOM(Out Of Memory)을 쉽게 만나지는 않을 것이다.
+사설이 길었는데 어쨌든 이러한 이유로 나는 가급적 application context를 사용하려고 한다.
+문제는 여기서 시작되었다.</p>
 
-<blockquote>
-  <p>Added in API level 19</p>
+<p>기존에 WebView를 생성할 때는 activity를 넘겨주었었다. 이 코드를 얼마전 확인하고 application context로 변경했다. 그리고 빌드, 실행. 문제가 없었다. 잘 나왔다. 안심했다.</p>
 
-  <p>Returns true if this view has been through at least one layout since it was last attached to or detached from a window.</p>
-</blockquote>
-
-<p>쉽게 말해서 “해당 View가 layout이 그려졌는가?”를 반환하는 함수다.</p>
-
-<p>다음은 post 함수에 대한 안드로이드 메뉴얼이다.</p>
+<p>그런데 오늘 동료 직원이 이상한 부분이 있다고 확인을 요청했다.</p>
 
 <blockquote>
-  <p>public boolean post (Runnable action)</p>
+  <p>WebView 내부에 있는 select box를 터치하면 앱이 죽는다.</p>
 </blockquote>
 
-<blockquote>
-  <p>Added in API level 1</p>
+<p>처음엔 뭔가 했다. 그런데 오류를 확인하니 다음과 같았다.</p>
 
-  <p>Causes the Runnable to be added to the message queue. The runnable will be run on the user interface thread.</p>
-</blockquote>
-
-<p>Runnalbe을 넘겨 받아 UIThread에서 실행시켜준다고 한다.</p>
-
-<p>그래서 어디에 써먹을 수 있나?
-한가지 예를들어 보자면 TextView의 getLineCount()의 반환값 문제를 해결할 수 있다.</p>
-
-<p>구글에서 “<a href="https://www.google.co.kr/search?q=isLaidOut&amp;gws_rd=ssl#newwindow=1&amp;safe=off&amp;q=textview+getlinecount">textview getlinecount</a>“로 검색하면 많이 나오는 것 중 하나가 “textview.getLineCount always 0 in android”라는 질문이다.</p>
-
-<p>textview의 getLineCount()를 요청하면 항상 0이 나오는 문제가 있다는 얘기인데, 이런 문제의 원인은 getLineCount() 함수가 TextView가 그려진 후 그 상황에 맞는 라인수를 반환한다는 것이다. 따라서 그려지기 전에는 항상 0을 반환한다.</p>
-
-<p>그럼 이 문제를 isLaidOut을 써서 해결해보자.</p>
-
-<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TextView</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
-
-<span class="o">...</span>
-
-<span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">"test message"</span><span class="o">);</span>
-<span class="k">if</span> <span class="o">(</span><span class="n">textView</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">())</span> <span class="o">{</span>
-    <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">"TEXTVIEW"</span><span class="o">,</span> <span class="s">"line count : "</span> <span class="o">+</span> <span class="n">textView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
-<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-    <span class="kd">final</span> <span class="n">TextView</span> <span class="n">postTextView</span> <span class="o">=</span> <span class="n">textView</span><span class="o">;</span>
-    <span class="n">textView</span><span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="k">new</span> <span class="n">Runnable</span><span class="o">()</span> <span class="o">{</span>
-        <span class="nd">@Override</span>
-        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
-            <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">"TEXTVIEW"</span><span class="o">,</span> <span class="s">"line count : "</span> <span class="o">+</span> <span class="n">postTextView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
-        <span class="o">}</span>
-    <span class="o">});</span>
-<span class="o">}</span>
+<div class="highlighter-rouge"><pre class="highlight"><code>W/System.err﹕ android.view.WindowManager$BadTokenException: Unable to add window -- token null is not for an application
+W/System.err﹕ at android.view.ViewRootImpl.setView(ViewRootImpl.java:691)
+W/System.err﹕ at android.view.WindowManagerGlobal.addView(WindowManagerGlobal.java:288)
+W/System.err﹕ at android.view.WindowManagerImpl.addView(WindowManagerImpl.java:69)
+W/System.err﹕ at android.app.Dialog.show(Dialog.java:312)
+W/System.err﹕ at org.chromium.content.browser.input.SelectPopupDialog.show(SelectPopupDialog.java:133)
+W/System.err﹕ at org.chromium.content.browser.ContentViewCore.showSelectPopup(ContentViewCore.java:2437)
+W/System.err﹕ at org.chromium.base.SystemMessageHandler.nativeDoRunLoopOnce(Native Method)
+W/System.err﹕ at org.chromium.base.SystemMessageHandler.handleMessage(SystemMessageHandler.java:53)
+W/System.err﹕ at android.os.Handler.dispatchMessage(Handler.java:102)
+W/System.err﹕ at android.os.Looper.loop(Looper.java:145)
+W/System.err﹕ at android.app.ActivityThread.main(ActivityThread.java:5942)
+W/System.err﹕ at java.lang.reflect.Method.invoke(Native Method)
+W/System.err﹕ at java.lang.reflect.Method.invoke(Method.java:372)
+W/System.err﹕ at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:1399)
 </code></pre>
 </div>
 
-<p>여러가지 상황이 있을 수 있다. 위의 예시와 다르게 layout xml에서 TextView가 정의될 수도 있고.
-중요한 것은 TextView가 그려지기 전에 getLineCount() 함수를 사용하려는 것이다.</p>
+<p>이런 Dialog를 생성하려는 시점에서 context가 적절하지 못하다. 그렇다. WebView에서 select box를 선택하면 앱의 경우는 선택 dialog가 자동으로 뜬다. 이때 이 dialog를 생성할 때 WebView 생성시 넣어 줬던 context를 사용하는 것이다.</p>
 
-<p>그런데 여기서도 한계는 있다. 값을 가져오는 부분이 비동기 방식이 된다는 것이다. 이를 해결하기 위해서는 다른 방법이 필요하다. 하지만 여기서는 isLaidOut에 대한 설명을 하고자 하는 것이므로 다음으로 넘긴다. 사실 찾아보면 여러가지 방법들이 제시되어 있는데 아주 깔끔한 방법은 현재로써는 찾기 힘들다.</p>
+<p>아… 그럼 처음부터 application context를 넣지 못하도록 하던지… 정말 안드로이드는 누가 설계 했는지 너무 엉망이다. UIThread 문제, Network Main Thread 문제.. 등등 상식적으로 해결 방법이 있을 법한데 모두 개발자가 알아서 하란다. 이런…</p>
 
-<p>위의 TextView 사례는 말그대로 예시일뿐 isLaidOut에 대한 활용 범위는 아주 다양할 수 있다.</p>
+<p>어쨌든 Dialog 생성시에는 activity context를 사용해야 한다. 일반 dialog는 테스트시에 바로 표시가 나니 금방 고칠 수 있지만 이런 경우는 참 난해하다.</p>
 
-<p>마지막으로 isLaidOut을 API 19 이하에서 사용할 수 있는 방법은 다음의 예시를 참고하자.</p>
-
-<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TextView</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
-
-<span class="o">...</span>
-
-<span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">"test message"</span><span class="o">);</span>
-<span class="k">if</span> <span class="o">(</span><span class="n">ViewCompat</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">(</span><span class="n">textView</span><span class="o">))</span> <span class="o">{</span>
-    <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">"TEXTVIEW"</span><span class="o">,</span> <span class="s">"line count : "</span> <span class="o">+</span> <span class="n">textView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
-<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-    <span class="kd">final</span> <span class="n">TextView</span> <span class="n">postTextView</span> <span class="o">=</span> <span class="n">textView</span><span class="o">;</span>
-    <span class="n">textView</span><span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="k">new</span> <span class="n">Runnable</span><span class="o">()</span> <span class="o">{</span>
-        <span class="nd">@Override</span>
-        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
-            <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="s">"TEXTVIEW"</span><span class="o">,</span> <span class="s">"line count : "</span> <span class="o">+</span> <span class="n">postTextView</span><span class="o">.</span><span class="na">getLineCount</span><span class="o">());</span>
-        <span class="o">}</span>
-    <span class="o">});</span>
-<span class="o">}</span>
-</code></pre>
-</div>
-
-<p>중요한 부분은 ViewCompat을 사용한다는 부분이다. 아주 간단한 방법으로 사용할 수 있으므로 하위 버전을 지원해야 한다하더라도 사용할 수 있다.</p>
-
-<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="n">ViewCompat</span><span class="o">.</span><span class="na">isLaidOut</span><span class="o">(</span><span class="n">textView</span><span class="o">)</span>
-</code></pre>
-</div>
+<p>결론은 WebView 생성시에는 activity context를 넣자.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -225,8 +178,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/09/04/android-view-dot-islaidout-and-view-dot-post/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/09/04/android-dialog-windowmanager-badtokenexception/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/09/04/android-dialog-windowmanager-badtokenexception/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

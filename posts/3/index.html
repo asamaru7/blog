@@ -113,71 +113,78 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/">
-								PHP 삼항 연산자 : Ternary Operator 와 Null Coalesce Operator
+							<a class="title" href="https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc/">
+								PHP에서 NFD(Normalization Form D) / NFC(Normalization Form C) 변환
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/">2016.11.07.</span></a>
+								<a href="https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc/">2016.11.15.</span></a>
 							</p>
 						</header>
 						<p>
-							<p><a href="http://php.net/">PHP</a>에도 <a href="http://php.net/manual/kr/language.operators.comparison.php#language.operators.comparison.ternary">삼항 연산자:Ternary operator</a>
-가 있다. <a href="http://php.net/manual/kr/language.operators.comparison.php#language.operators.comparison.ternary">메뉴얼</a>에는 아래와 같이 설명되어 있다.</p>
+							<p>Mac OSX는 경우 문자열을 <a href="http://unicode.org/reports/tr15/">Unicode Normalization Forms</a> 중 NFD(소리 마디를 첫가끝 코드로 분해)로 처리한다(일반적으로는 NFC(첫가끝 코드를 소리 마디로 결합)를 사용).
+이는 한글(<a href="http://www.unicode.org/charts/PDF/UAC00.pdf">U+AC00</a>) 영역을 사용하는 곳에서는 한글이 모두 풀어진 상태로 보이는 문제가 있다.
+따라서 <a href="http://www.unicode.org/charts/PDF/U1100.pdf">U+1100</a> 영역을 <a href="http://www.unicode.org/charts/PDF/UAC00.pdf">U+AC00</a> 영역으로 변환하는 과정이 필요하다.</p>
+
+<p><a href="http://d2.naver.com/helloworld/76650">한글 인코딩의 이해 2편: 유니코드와 Java를 이용한 한글 처리</a>에서는 <a href="https://ko.wikipedia.org/wiki/%EC%9C%A0%EB%8B%88%EC%BD%94%EB%93%9C_%EC%A0%95%EA%B7%9C%ED%99%94">유니코드 정규화</a>(<a href="https://en.wikipedia.org/wiki/Unicode_equivalence">Unicode equivalence</a>)를 아래와 같이 소개하고 있다.</p>
+
+<blockquote>
+  <p>한글 소리 마디와 한글자모, 한글 자모 확장 이렇게 두 개의 코드 영역이 있다는 것은 같은 글자를 표현하는 서로 다른 두 개의 방법이 있다는 것을 말한다.
+이것은 한글뿐만 아니라 다른 언어에서도 나타나는 현상이다. 가령 “ñ”을 표현할 때 U+00F1을 사용할 수도 있고, U+006E (라틴 소문자 “n”) 과 U+0303( 결합 틸데 “◌̃”)을 연이어 사용하여 표현할 수도 있다.
+유니코드 정규화(Unicode equivalence)란 이렇게 연속적인 코드를 사용하여 표현한 어떤 글자를 처리하는 방법을 다루는 명세이다. 유니코드 정규화에는 다음과 같은 네 가지 방법이 있다.</p>
+</blockquote>
+
+<table>
+  <thead>
+    <tr>
+      <th>정규화 방법</th>
+      <th>예</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>NFD (정준 분해) Normalization Form Canonical Decomposition</td>
+      <td>À (U+00C0) → A (U+0041) + ̀ (U+0300) 위 (U+C704) → ᄋ (U+110B) + ᅱ (U+1171)</td>
+    </tr>
+    <tr>
+      <td>NFC (정준 분해한 뒤 다시 정준 결합) Normalization Form Canonical Composition</td>
+      <td>A (U+0041) + ̀ (U+0300) → À (U+00C0) ᄋ (U+110B) + ᅱ (U+1171) → 위 (U+C704)</td>
+    </tr>
+    <tr>
+      <td>NFKD (호환 분해)  Normalization Form Compatibility Decomposition</td>
+      <td>ﬁ (U+FB01) → f (U+0066) + i (U+0069)</td>
+    </tr>
+    <tr>
+      <td>NFKC (호환 분해한 뒤 다시 정준 결합) Normalization Form Compatibility Composition</td>
+      <td>樂 (U+F914), 樂 (U+F95C), 樂 (U+F9BF) → 樂 (U+6A02)</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote>
+  <p>이중 한글 처리와 관련된 것은 NFD(소리 마디를 첫가끝 코드로 분해)와 NFC(첫가끝 코드를 소리 마디로 결합)이다.</p>
+</blockquote>
+
+<p>NFD에 관련된 내용은 위 링크들을 확인해보면 충분한 정보를 얻을 수 있을테니 오늘은 PHP에서 NFD를 다루는 부분을 소개한다.
+참고로 아래의 함수를 사용하기 위해서는 <a href="http://php.net/manual/kr/book.intl.php">intl</a> 모듈이 설치되어 있어야 한다.</p>
+
+<p>우선 간단한 코드부터 보자.</p>
 
 <div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
-<span class="c1">// 사용 예제: 삼항 연산자
-</span><span class="nv">$action</span> <span class="o">=</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">]))</span> <span class="o">?</span> <span class="s1">'default'</span> <span class="o">:</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">];</span>
-
-<span class="c1">// 위 예제는 다음의 if/else 구문과 동일합니다
-</span><span class="k">if</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">]))</span> <span class="p">{</span>
-    <span class="nv">$action</span> <span class="o">=</span> <span class="s1">'default'</span><span class="p">;</span>
-<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-    <span class="nv">$action</span> <span class="o">=</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">];</span>
+<span class="c1">// setlocale(LC_ALL, 'ko_KR.UTF-8');
+</span><span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">\Normalizer</span><span class="o">::</span><span class="na">isNormalized</span><span class="p">(</span><span class="nv">$text</span><span class="p">))</span> <span class="p">{</span>
+  <span class="nv">$text</span> <span class="o">=</span> <span class="nx">\Normalizer</span><span class="o">::</span><span class="na">normalize</span><span class="p">(</span><span class="nv">$text</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre>
 </div>
 
-<blockquote>
-  <p>(expr1) ? (expr2) : (expr3) 표현은 expr1이 TRUE이면 expr2로 평가되고, expr1이 FALSE이면 expr3로 평가됩니다.
-PHP 5.3부터, 삼항 연산자의 중간 부분을 비울 수 있습니다. 표현식 expr1 ?: expr3은 expr1이 TRUE이면 expr1, 아니면 expr3를 반환합니다.</p>
-</blockquote>
+<p>사실 위 코드를 보면 더 이상 설명이 필요 없을 정도로 간단하다.
+<a href="http://php.net/manual/kr/normalizer.isnormalized.php">\Normalizer::isNormalized</a> 함수를 사용해서 NFC 형식인지 검사한다.
+위 예시는 두번째 인자인 <code class="highlighter-rouge">$from</code>이 생략된 것이다(기본값 : <code class="highlighter-rouge">Normalizer::FORM_C</code>). 따라서 두번째 인자로 <code class="highlighter-rouge">Normalizer::FORM_D</code>를 넣어주면 NFD를 검사할 수 있다.</p>
 
-<p>PHP 5.3부터 <code class="highlighter-rouge">expr2</code>를 비울 수 있다고 되어 있다. 다시 말해 <code class="highlighter-rouge">(expr1) ?: (expr3)</code>라는 표현을 사용할 수 있다.</p>
+<p>NFC 형식이 아니라면 <a href="http://php.net/manual/kr/normalizer.normalize.php">\Normalizer::normalize</a> 함수를 이용해서 NFC 형식으로 변환한다.
+이 함수 또한 기본적으로 두번째 인자로 <code class="highlighter-rouge">Normalizer::FORM_C</code>를 사용한다.</p>
 
-<p>그리고 한가지. 아래와 같이 삼항식을 중첩할 경우는 괄호를 사용해서 묶어줄 것을 권장한다.</p>
-
-<blockquote>
-  <p>삼항 연사자를 “쌓는” 일을 피하길 권합니다. 하나의 구문에서 하나를 초과하는 삼항 연산자를 사용할 때, PHP 작동은 명확하지 않습니다:
-Example #3 명확하지 않은 삼항 작동</p>
-</blockquote>
-
-<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
-<span class="c1">// 얼핏 보기에, 'true'를 출력할 것 같습니다
-</span><span class="k">echo</span> <span class="p">(</span><span class="kc">true</span><span class="o">?</span><span class="s1">'true'</span><span class="o">:</span><span class="kc">false</span><span class="o">?</span><span class="s1">'t'</span><span class="o">:</span><span class="s1">'f'</span><span class="p">);</span>
-
-<span class="c1">// 그러나 위의 실제 출력은 't'입니다
-// 이는 삼항 표현이 왼쪽에서 오른쪽으로 평가되기 때문입니다
-</span>
-<span class="c1">// 다음이 위 코드와 동일한 더 명확한 버전입니다
-</span><span class="k">echo</span> <span class="p">((</span><span class="kc">true</span> <span class="o">?</span> <span class="s1">'true'</span> <span class="o">:</span> <span class="s1">'false'</span><span class="p">)</span> <span class="o">?</span> <span class="s1">'t'</span> <span class="o">:</span> <span class="s1">'f'</span><span class="p">);</span>
-
-<span class="c1">// 여기서, 첫 표현이 'true'로 평가되고, 이것이
-// (bool)true로 전환되어 평가된 후, 두번째
-// 삼항 표현의 true쪽을 반환합니다.
-</span><span class="cp">?&gt;</span>
-add a note add a note
-</code></pre>
-</div>
-
-<p>이와 유사하지만 다른 삼항 연산자인 <a href="https://wiki.php.net/rfc/isset_ternary">Null 병법 연산자:Null Coalesce Operator</a>가 PHP 7부터 지원된다. 한글 이름을 딱히 뭐라 부를지가 애매한데 <a href="https://ko.wikipedia.org/wiki/PHP">위키피디아</a>에서 “Null 병법 연산자”라는 이름을 사용하고 있다.</p>
-
-<div class="language-php highlighter-rouge"><pre class="highlight"><code>isset($_GET['mykey']) ? $_GET['mykey'] : ""
-</code></pre>
-</div>
-
-<p>위 두가지 삼항식은 동일한 것 같지만 자세히보면 다르다. 한가지는 <a href="http://php.net/manual/kr/function.empty.php">empty</a>를 다른 한가지는 <a href="http://php.net/manual/kr/function.isset.php">isset</a>을 대체한다.</p>
-
-<p>그리고 한가지 알아야할 중요한 사항이 있다. <a href="http://stackoverflow.com/a/34571460/6736772">PHP ternary operator vs null coalescing operator</a>에 예시가 나와 있듯이 <code class="highlighter-rouge">?:</code>는 선언되지 않은 변수를 사용할 경우 E_NOTICE가 발생한다. 다시말해 완전히 <a href="http://php.net/manual/kr/function.empty.php">empty</a> 처럼 동작하는 것은 아니다.</p>
+<p>마지막으로 주석 처리한 <code class="highlighter-rouge">setlocale</code> 부분은 필요 시에만 추가하면 된다(상황에 따라서는 <code class="highlighter-rouge">setlocale</code>을 추가하면 한글의 일부가 깨지는 상황이 발생했다.).</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -191,8 +198,8 @@ add a note add a note
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

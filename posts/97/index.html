@@ -113,211 +113,31 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/">
-								Swift 2.0에서 상속 가능한 Singleton 생성하기
+							<a class="title" href="https://blog.asamaru.net/2015/10/22/setting-swift-compiler-flags-in-cocoapods/">
+								CocoaPods의 Swift compiler flags(DEBUG) 설정하기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/">2015.10.21.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/22/setting-swift-compiler-flags-in-cocoapods/">2015.10.22.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>오늘은 swift에서 Singleton 객체를 생성하는 방법을 설명하고자 한다.</p>
+							<p><a href="/2015/10/21/xcode-create-sub-module-using-cocoapods/">Xcode에서 CocoaPods를 이용해 sub module 만들기</a>라는 글에서 Sub Module을 만드는 방법을 설명했었다. 그런데 이렇게 연결된 Module을 사용하는 과정에서 불편한 부분이 생겼다. 다름아닌 <code class="highlighter-rouge">#if DEBUG</code>를 Sub Module에서 적용이 되지 않는 것이다. 이 부분은 생각해보면 당연하다 별개의 Module을 빌드에서 연결하는 것이니 <code class="highlighter-rouge">DEBUG</code> 상수를 사용하기 위한 설정을 별도로 해야 하는 것이다(<code class="highlighter-rouge">DEBUG</code> 상수 설정 방법은 <a href="http://seorenn.blogspot.kr/2014/11/xcode-swift-debug.html">Swift 프로젝트의 디버그(DEBUG) 플래그</a>을 참고하면 된다). 그래서 CocoaPods에서 추가해준 프로젝트에 <code class="highlighter-rouge">DEBUG</code> 관련 설정을 해주니 원하는대로 <code class="highlighter-rouge">#if DEBUG</code>를 사용할 수 있었다. 그런데 여기서 모든 문제가 해결된 것이 아니었다. <code class="highlighter-rouge">pod update</code> 실행시 Module이 재설치 되면서 관련 설정이 다시 초기화 되는 것이다. 이걸 매번 해줄 수도 없고… 그래서 조금 찾아보니 <a href="http://marginalfutility.net/2015/10/11/swift-compiler-flags/">Setting Swift compiler flags in CocoaPods</a>라는 글에서 해결 방법을 제시하고 있었다.</p>
 
-<p>우선 Objective-C에서는 어떻게 생성하는지는 아래를 보면 알 수 있다.</p>
+<p>결론을 이야기하자면 <code class="highlighter-rouge">Podfile</code>에서 <code class="highlighter-rouge">post_install</code>을 사용해서 <code class="highlighter-rouge">DEBUG</code> 상수를 자동으로 추가하도록 하는 것이다. <code class="highlighter-rouge">Podfile</code>에 아래의 내용을 추가하면 된다.</p>
 
-<p>우선 Singleton Class 정의.</p>
-
-<pre><code class="language-ObjC">@implementation SingletonCls
-
-+ (id)sharedManager {
-    static SingletonCls *staticManager = nil;
-    static dispatch_once_t onceToken;
-
-    dispatch_once(&amp;onceToken, ^{
-        staticManager = [[self alloc] init];
-    });
-    return staticManager;
-}
-
-@end
-</code></pre>
-
-<p>그리고 사용시.</p>
-
-<pre><code class="language-ObjC">[SingletonCls sharedManager];
-</code></pre>
-
-<p>그럼 Swift에서는 어떻게 하는지를 살펴보자. 사실 아주 간단하다.</p>
-
-<p>Singleton Class 정의.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
-    <span class="kd">static</span> <span class="k">let</span> <span class="nv">sharedInstance</span> <span class="o">=</span> <span class="kt">SingletonCls</span><span class="p">()</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-
-<p>그리고 사용시.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kt">SingletonCls</span><span class="o">.</span><span class="n">sharedInstance</span>
-</code></pre>
-</div>
-
-<p>그런데 오늘 하고자하는 이야기는 이게 아니다. 기본적인 Singleton Class를 정의하는 것은 검색하면 많이 나온다. 하지만 내가 필요했던 것은 상속이 가능한 Swift Singleton Class다. 아래의 예를 보자.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
-	<span class="kd">static</span> <span class="k">let</span> <span class="nv">sharedInstance</span> <span class="o">=</span> <span class="kt">SingletonCls</span><span class="p">()</span>
-
-	<span class="k">var</span> <span class="nv">X</span><span class="p">:</span><span class="kt">Int</span><span class="p">?</span>
-<span class="p">}</span>
-
-<span class="kd">class</span> <span class="kt">SingletonClsChild</span> <span class="p">:</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
-	<span class="k">var</span> <span class="nv">Y</span><span class="p">:</span><span class="kt">Int</span> <span class="o">=</span> <span class="mi">9</span>
-<span class="p">}</span>
-
-<span class="k">let</span> <span class="nv">A</span> <span class="o">=</span> <span class="kt">SingletonClsChild</span><span class="o">.</span><span class="n">sharedInstance</span><span class="p">;</span>
-<span class="nf">print</span><span class="p">(</span><span class="kt">A</span><span class="p">);</span>
-<span class="nf">print</span><span class="p">((</span><span class="kt">A</span> <span class="k">as!</span> <span class="kt">SingletonClsChild</span><span class="p">)</span><span class="o">.</span><span class="kt">Y</span><span class="p">);</span>
-</code></pre>
-</div>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>test.SingletonCls
-Could not cast value of type 'test.SingletonCls' (0x10d89d2e0) to 'test.SingletonClsChild' (0x10d89d390).
-</code></pre>
-</div>
-
-<p>위 코드는 실행하면 오류가 난다. <code class="highlighter-rouge">SingletonClsChild.sharedInstance</code>의 결과가 <code class="highlighter-rouge">SingletonCls</code> 인스턴스이기 때문이다.</p>
-
-<p>우선 이 문제를 해결하기 위한 기본 코드부터 보자. <a href="http://www.scriptscoop.net/t/23f5fc2cdd82/swift-singleton-inheritance.html">Swift: Singleton Inheritance</a>에 나온 코드를 약간 수정했다.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
-	<span class="kd">static</span> <span class="k">var</span> <span class="nv">_singleton_instance</span> <span class="o">=</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">SingletonCls</span><span class="p">]()</span>
-	<span class="kd">public</span> <span class="kd">class</span> <span class="k">var</span> <span class="nv">shareInstance</span><span class="p">:</span><span class="kt">SingletonCls</span> <span class="p">{</span>
-		<span class="k">get</span> <span class="p">{</span>
-			<span class="k">let</span> <span class="nv">classname</span> <span class="o">=</span> <span class="kt">NSStringFromClass</span><span class="p">(</span><span class="k">self</span><span class="p">)</span>
-			<span class="k">if</span> <span class="p">((</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span> <span class="o">!=</span> <span class="kc">nil</span><span class="p">)</span> <span class="p">{</span>
-				<span class="nf">return</span> <span class="p">(</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span><span class="o">!</span>
-			<span class="p">}</span>
-			<span class="k">let</span> <span class="nv">singletonObject</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="nf">init</span><span class="p">()</span>
-			<span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">]</span> <span class="o">=</span> <span class="n">singletonObject</span>
-			<span class="k">return</span> <span class="n">singletonObject</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-
-	<span class="kd">required</span> <span class="kd">public</span> <span class="nf">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonClsChild</span> <span class="p">:</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kt">SingletonCls</span><span class="o">.</span><span class="n">sharedInstance</span>
-<span class="kt">SingletonClsChild</span><span class="o">.</span><span class="n">sharedInstance</span>
-</code></pre>
-</div>
-
-<p>위 코드에서 제시한 방법을 사용하면 상속이 가능한 Singleton Class를 정의할 수 있다. 사실 여기에 약간의 기능이 더 추가되어 있다. 호출하는 Class에 따라 각각의 Instance를 생성해서 보관하는 부분이다. 예를 들어 아래의 코드를 보자.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
-	<span class="kd">static</span> <span class="k">var</span> <span class="nv">_singleton_instance</span> <span class="o">=</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">SingletonCls</span><span class="p">]()</span>
-	<span class="kd">public</span> <span class="kd">class</span> <span class="k">var</span> <span class="nv">shareInstance</span><span class="p">:</span><span class="kt">SingletonCls</span> <span class="p">{</span>
-		<span class="k">get</span> <span class="p">{</span>
-			<span class="k">let</span> <span class="nv">classname</span> <span class="o">=</span> <span class="kt">NSStringFromClass</span><span class="p">(</span><span class="k">self</span><span class="p">)</span>
-			<span class="k">if</span> <span class="p">((</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span> <span class="o">!=</span> <span class="kc">nil</span><span class="p">)</span> <span class="p">{</span>
-				<span class="nf">return</span> <span class="p">(</span><span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">])</span><span class="o">!</span>
-			<span class="p">}</span>
-			<span class="k">let</span> <span class="nv">singletonObject</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="nf">init</span><span class="p">()</span>
-			<span class="n">_singleton_instance</span><span class="p">[</span><span class="n">classname</span><span class="p">]</span> <span class="o">=</span> <span class="n">singletonObject</span>
-			<span class="k">return</span> <span class="n">singletonObject</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-
-	<span class="kd">required</span> <span class="kd">public</span> <span class="nf">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
-
-	<span class="k">var</span> <span class="nv">X</span><span class="p">:</span><span class="kt">Int</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="p">}</span>
-
-<span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonClsChild</span> <span class="p">:</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
-	<span class="k">var</span> <span class="nv">Y</span><span class="p">:</span><span class="kt">Int</span> <span class="o">=</span> <span class="mi">9</span>
-<span class="p">}</span>
-
-<span class="k">let</span> <span class="nv">A</span> <span class="o">=</span> <span class="kt">SingletonClsChild</span><span class="o">.</span><span class="n">shareInstance</span><span class="p">;</span>
-<span class="nf">print</span><span class="p">(</span><span class="kt">A</span><span class="o">.</span><span class="kt">X</span><span class="p">);</span>
-<span class="nf">print</span><span class="p">((</span><span class="kt">A</span> <span class="k">as!</span> <span class="kt">SingletonClsChild</span><span class="p">)</span><span class="o">.</span><span class="kt">Y</span><span class="p">);</span>
-<span class="kt">A</span><span class="o">.</span><span class="kt">X</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="k">let</span> <span class="nv">B</span> <span class="o">=</span> <span class="kt">SingletonCls</span><span class="o">.</span><span class="n">shareInstance</span><span class="p">;</span>
-<span class="nf">print</span><span class="p">(</span><span class="kt">B</span><span class="o">.</span><span class="kt">X</span><span class="p">);</span>
-</code></pre>
-</div>
-
-<p>결과.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>1
-9
-1
-</code></pre>
-</div>
-
-<p>결과를 보면 맨 마지막 값이 2가 아닌 1이 나오는 것을 확인 할 수 있다. 이것은 Singleton이 만들어 졌으나 <code class="highlighter-rouge">SingletonCls</code>와 <code class="highlighter-rouge">SingletonClsChild</code>가 각각 만들어 졌음을 뜻한다.</p>
-
-<p>이런 추가적인 부분을 제외하고 기본적인 형태만 사용하고자 할 경우에는 아래와 같이 하면 된다.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
-	<span class="kd">static</span> <span class="k">var</span> <span class="nv">_singleton_instance</span><span class="p">:</span> <span class="kt">SingletonCls</span><span class="p">?</span>
-	<span class="kd">public</span> <span class="kd">class</span> <span class="k">var</span> <span class="nv">shareInstance</span><span class="p">:</span><span class="kt">SingletonCls</span> <span class="p">{</span>
-		<span class="k">get</span> <span class="p">{</span>
-			<span class="k">if</span> <span class="p">(</span><span class="n">_singleton_instance</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">)</span> <span class="p">{</span>
-				<span class="n">_singleton_instance</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="nf">init</span><span class="p">()</span>
-			<span class="p">}</span>
-			<span class="k">return</span> <span class="n">_singleton_instance</span><span class="o">!</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-
-	<span class="kd">required</span> <span class="kd">public</span> <span class="nf">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kt">SingletonCls</span><span class="o">.</span><span class="n">sharedInstance</span>
-</code></pre>
-</div>
-
-<p>위 코드를 기준으로 오류가 나던 코드를 다시 만들어 보자.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
-	<span class="kd">static</span> <span class="k">var</span> <span class="nv">_singleton_instance</span><span class="p">:</span> <span class="kt">SingletonCls</span><span class="p">?</span>
-	<span class="kd">public</span> <span class="kd">class</span> <span class="k">var</span> <span class="nv">shareInstance</span><span class="p">:</span><span class="kt">SingletonCls</span> <span class="p">{</span>
-		<span class="k">get</span> <span class="p">{</span>
-			<span class="k">if</span> <span class="p">(</span><span class="n">_singleton_instance</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">)</span> <span class="p">{</span>
-				<span class="n">_singleton_instance</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="nf">init</span><span class="p">()</span>
-			<span class="p">}</span>
-			<span class="k">return</span> <span class="n">_singleton_instance</span><span class="o">!</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-
-	<span class="kd">required</span> <span class="kd">public</span> <span class="nf">init</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
-
-	<span class="k">var</span> <span class="nv">X</span><span class="p">:</span><span class="kt">Int</span><span class="p">?</span>
-<span class="p">}</span>
-
-<span class="kd">public</span> <span class="kd">class</span> <span class="kt">SingletonClsChild</span> <span class="p">:</span> <span class="kt">SingletonCls</span> <span class="p">{</span>
-	<span class="k">var</span> <span class="nv">Y</span><span class="p">:</span><span class="kt">Int</span> <span class="o">=</span> <span class="mi">9</span>
-<span class="p">}</span>
-
-<span class="k">let</span> <span class="nv">A</span> <span class="o">=</span> <span class="kt">SingletonClsChild</span><span class="o">.</span><span class="n">shareInstance</span><span class="p">;</span>
-<span class="kt">A</span><span class="o">.</span><span class="kt">X</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="nf">print</span><span class="p">(</span><span class="kt">A</span><span class="p">)</span>
-<span class="nf">print</span><span class="p">(</span><span class="kt">A</span><span class="o">.</span><span class="kt">X</span><span class="p">);</span>
-<span class="nf">print</span><span class="p">((</span><span class="kt">A</span> <span class="k">as!</span> <span class="kt">SingletonClsChild</span><span class="p">)</span><span class="o">.</span><span class="kt">Y</span><span class="p">);</span>
-</code></pre>
-</div>
-
-<p>아래와 같은 결과가 출력된다. 원하던 결과를 얻었다.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>test.SingletonClsChild
-Optional(1)
-9
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">post_install</span> <span class="k">do</span> <span class="o">|</span><span class="n">installer</span><span class="o">|</span>
+	<span class="n">installer</span><span class="p">.</span><span class="nf">pods_project</span><span class="p">.</span><span class="nf">targets</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">target</span><span class="o">|</span>
+		<span class="k">if</span> <span class="n">target</span><span class="p">.</span><span class="nf">name</span> <span class="o">==</span> <span class="s1">'{원하는 모듈명}'</span>
+			<span class="n">target</span><span class="p">.</span><span class="nf">build_configurations</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+				<span class="k">if</span> <span class="n">config</span><span class="p">.</span><span class="nf">name</span> <span class="o">==</span> <span class="s1">'Debug'</span>
+					<span class="n">config</span><span class="p">.</span><span class="nf">build_settings</span><span class="p">[</span><span class="s1">'OTHER_SWIFT_FLAGS'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'-DDEBUG'</span>
+					<span class="k">else</span>
+					<span class="n">config</span><span class="p">.</span><span class="nf">build_settings</span><span class="p">[</span><span class="s1">'OTHER_SWIFT_FLAGS'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">''</span>
+				<span class="k">end</span>
+			<span class="k">end</span>
+		<span class="k">end</span>
+	<span class="k">end</span>
+<span class="k">end</span>
 </code></pre>
 </div>
 
@@ -333,8 +153,8 @@ Optional(1)
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/21/swift-2-dot-0-singleton/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/22/setting-swift-compiler-flags-in-cocoapods/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/22/setting-swift-compiler-flags-in-cocoapods/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

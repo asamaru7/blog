@@ -113,40 +113,40 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/10/26/nginx-504-error/">
-								nginx 504 Gateway Time-out 오류
+							<a class="title" href="https://blog.asamaru.net/2016/11/01/nokogiri-libxml2-missing-mac-os-x-10-12/">
+								OSX에서 Nokogiri 설치시 &#39;Libxml2 missing.&#39; 오류 해결
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/10/26/nginx-504-error/">2016.10.26.</span></a>
+								<a href="https://blog.asamaru.net/2016/11/01/nokogiri-libxml2-missing-mac-os-x-10-12/">2016.11.01.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>nginx에서 <em>504 Gateway Time-out</em> 오류가 발생할 경우는 리버스 프록시에서의 응답이 지정 시간보다 늦어질 경우다.</p>
+							<p>OSX (sierra)에서 jekyll을 설치하던 중 <a href="http://www.nokogiri.org/">Nokogiri</a>가 설치되는 과정에서 아래의 오류가 발생하고 더 이상이 진행되지 않는 문제가 발생했다.</p>
 
-<p><img src="/img/2016/10/504.png" alt="nginx 504 Gateway Time-out" /></p>
+<blockquote>
+  <p>libxml2 is missing.  Please locate mkmf.log to investigate how it is failing.</p>
+</blockquote>
 
-<p>접속이 지연되는 경우는 서버의 부하 문제나 WAS의 오류로 인한 것이니 nginx가 아닌 WAS 쪽에서 해결해야하는 것이 맞을 것이다.</p>
+<p>이 문제는 libxml2가 설치되지 않아서 발생하는 문제로 libxml2부터 설치해야 한다.</p>
 
-<p>간혹 특수한 경우에 WAS 쪽의 처리가 오랜 시간을 필요로 하는 경우 어쩔 수 없이 timeout을 늘려야 하는 경우가 있을 수 있다. 이런 경우라면 <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_connect_timeout">proxy_connect_timeout</a>, <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_send_timeout">proxy_send_timeout</a>, <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_read_timeout">proxy_read_timeout</a> 등을 사용해서 시간을 늘려줄 수 있다(기본은 60초다).</p>
-
-<div class="language-nginx highlighter-rouge"><pre class="highlight"><code><span class="k">server</span> <span class="p">{</span>
-	<span class="kn">...</span>
-
-	<span class="s">location</span> <span class="n">/</span> <span class="p">{</span>
-		<span class="kn">proxy_connect_timeout</span> <span class="mi">300</span><span class="p">;</span>
-		<span class="kn">proxy_send_timeout</span> <span class="mi">300</span><span class="p">;</span>
-		<span class="kn">proxy_read_timeout</span> <span class="mi">300</span><span class="p">;</span>
-		<span class="kn">send_timeout</span> <span class="mi">300</span><span class="p">;</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>brew install libxml2
 </code></pre>
 </div>
 
-<p>사실 이런 경우는 서비스 중에는 발생해서는 안된다. 사용자가 이렇게 오랜 시간을 기다려줄 리가 없기 때문이다. 이런 기능이 필요하다면 Job Queue를 이용하거나 사용자에게 안내 메시지를 보내고 백그라운드에서 계속 실행되도록 하는 것이 맞을 것이다.</p>
+<p>그런데 설치 후에도 동일한 문제가 발생한다면 <a href="http://www.nokogiri.org/">Nokogiri</a>를 직접 설치하면 된다.</p>
 
-<p>php 에서는 이런 경우에 대비해서 <a href="http://php.net/manual/kr/function.fastcgi-finish-request.php">fastcgi_finish_request</a>를 제공한다. 이 함수를 실행하면 사용자에게는 프로세스가 종료된 것처럼 response를 보내고 남은 작업을 계속 실행한다.</p>
+<p><a href="http://stackoverflow.com/questions/26878263/libxml2-missing-mac-os-x-10-10">Libxml2 missing mac os x 10.10</a> 글에 보면 아래와 같은 방법을 제시하고 있으나 정상적으로 동작하지 않았다.</p>
 
-<p>다른 방법은 <a href="http://php.net/manual/kr/function.ob-flush.php">ob_flush</a>와 <a href="http://php.net/manual/kr/function.flush.php">flush</a>를 이용해서 response를 지속적으로 보내서 timeout이 발생하지 않도록 하는 것이다.</p>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>sudo env <span class="nv">ARCHFLAGS</span><span class="o">=</span><span class="s2">"-arch x86_64"</span> gem install nokogiri:1.6.4.1 -- --use-system-libraries --with-xml<span class="o">=</span>/usr/local/Cellar/libxml2/
+</code></pre>
+</div>
+
+<p>나의 경우는 아래와 같이 실행하면 정상적으로 Nokogiri를 설치할 수 있었다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>gem install pkg-config -v <span class="s2">"~&gt; 1.1.7"</span>
+<span class="gp">$ </span>sudo gem install -n /usr/local/bin nokogiri -- --use-system-libraries<span class="o">=</span><span class="nb">true</span> --with-xml2-include<span class="o">=</span>/usr/include/libxml2/
+</code></pre>
+</div>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -160,8 +160,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/10/26/nginx-504-error/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/10/26/nginx-504-error/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/11/01/nokogiri-libxml2-missing-mac-os-x-10-12/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/11/01/nokogiri-libxml2-missing-mac-os-x-10-12/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

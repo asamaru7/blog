@@ -113,48 +113,133 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/08/01/android-webview-resumetimers-pausetimers/">
-								안드로이드 WebView resumeTimers() / pauseTimers() 적용하기
+							<a class="title" href="https://blog.asamaru.net/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview/">
+								안드로이드 WebView에서 HTML5 Video Full Screen 지원
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/08/01/android-webview-resumetimers-pausetimers/">2016.08.01.</span></a>
+								<a href="https://blog.asamaru.net/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview/">2016.08.12.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>안드로이드의 WebView를 사용하다 보면 처음 페이지를 보여줄 때는 정상적으로 보이나 두번째 이후부터 페이지를 정상적으로 표시하지 못하는 경우가 있다. 이 경우는 여러가지 이유로 발생할 수 있으나 오늘은  <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a> / <a href="https://developer.android.com/reference/android/webkit/WebView.html#resumeTimers%28%29">resumeTimers</a> 때문에 발생하는 경우에 대한 이야기를 하고자 한다.</p>
+							<p>안드로이드 WebView에서 HTML5 Video를 재생할 경우 “전체창으로 보기”를 사용할 수 있다. 그런데 자동적으로 사용할 수 있는 것이 아니라 관련된 처리를 직접 해주어야 한다.</p>
 
-<p>우선 이 함수들이 필요한 이유부터 간단히 알아보자.</p>
+<p>필요한 처리는 아래와 같다.</p>
 
-<p>메뉴얼에서 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 찾아보면 아래와 같이 설명되어 있다.</p>
+<ul>
+  <li>WebView에 WebChromeClient를 설정해 주어야 한다. 그렇지 않으면 4.0 이후에서 NullPointerException이 발생한다.</li>
+  <li>WebChromeClient를 설정하더라도  <a href="https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View, android.webkit.WebChromeClient.CustomViewCallback%29">onShowCustomView()</a>를 구현해주지 않으면 전체창 보기 상태에서 영상은 나오지 않고 소리만 재생되는 현상이 발생한다.</li>
+  <li><code class="highlighter-rouge">android:hardwareAccelerated="true"</code> 등을 사용해서 Application 또는 해당 Activity에 하드웨어 가속을 켜줘야 한다.</li>
+</ul>
 
-<blockquote>
-  <p>Pauses all layout, parsing, and JavaScript timers for all WebViews. This is a global requests, not restricted to just this WebView. This can be useful if the application has been paused.</p>
-</blockquote>
+<p><a href="https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View, android.webkit.WebChromeClient.CustomViewCallback%29">onShowCustomView()</a>를 구현한 소스는 아래와 같다.</p>
 
-<p>현재 보여지는 웹뷰뿐만 아니라 모든 웹뷰에 대해 layout, parsing, JavaScript timers 를 멈추도록 지시한다. 이것이 왜 필요할까? 안드로이드는 기본적으로 앱이 백그라운드 상태로 들어가더라도 웹뷰의 동작은 자동적으로 멈추지 않고 계속 동작하기 때문이다. 이렇게되면 앱을 사용하지 않더라도 지속적으로 연산 작업이 일어나므로 배터리를 더 많이 사용하게 된다(이런 문제라면 OS 차원에서 알아서 처리하면 될텐데 왜 개발자가 직접이 문제를 처리해 주어야하는지 이해가 안된다).</p>
+<pre><code class="language-Java">import android.app.Activity;
+import android.content.Context;
+import android.os.Build;
+import android.support.v4.content.ContextCompat;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.webkit.WebChromeClient;
+import android.widget.FrameLayout;
 
-<p>이 문제를 해결하기 위해서는 Activity를 벗어날 때 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 호출해주면 된다.</p>
+public class FullscreenableChromeClient extends WebChromeClient {
+	private Activity mActivity = null;
 
-<p>그런데 이렇게 처리해 주었다면 Activity에 복귀할 때는 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 필히 호출해줘야 한다. 그렇지 않으면 화면이 보여지지 않는 문제를 만날 수 있다. 여러 사람들의 이야기를 들어보면 이 현상은 기기마다 차이가 있는 것으로 보인다(문제가 발생하는 기기도 있고 그렇지 않은 기기도 있다는 뜻).</p>
+	private View mCustomView;
+	private WebChromeClient.CustomViewCallback mCustomViewCallback;
+	private int mOriginalOrientation;
 
-<p>간단한 해결 방법은 아래와 같이 WebView를 사용하는 Activity의 onResume, onPause에서 직접 처리해주면 된다.</p>
+	private FrameLayout mFullscreenContainer;
 
-<pre><code class="language-Java">@Override
-protected void onResume() {
-  super.onResume();
+	private static final FrameLayout.LayoutParams COVER_SCREEN_PARAMS = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-  webView.resumeTimers();
-}
+	public FullscreenableChromeClient(Activity activity) {
+		this.mActivity = activity;
+	}
 
-@Override
-protected void onPause() {
-  super.onPause();
+	@Override
+	public void onShowCustomView(View view, CustomViewCallback callback) {
+		if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			if (mCustomView != null) {
+				callback.onCustomViewHidden();
+				return;
+			}
 
-  webView.pauseTimers();
+			mOriginalOrientation = mActivity.getRequestedOrientation();
+			FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
+			mFullscreenContainer = new FullscreenHolder(mActivity);
+			mFullscreenContainer.addView(view, COVER_SCREEN_PARAMS);
+			decor.addView(mFullscreenContainer, COVER_SCREEN_PARAMS);
+			mCustomView = view;
+			setFullscreen(true);
+			mCustomViewCallback = callback;
+//			mActivity.setRequestedOrientation(requestedOrientation);
+		}
+
+		super.onShowCustomView(view, callback);
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public void onShowCustomView(View view, int requestedOrientation, WebChromeClient.CustomViewCallback callback) {
+		this.onShowCustomView(view, callback);
+	}
+
+	@Override
+	public void onHideCustomView() {
+		if (mCustomView == null) {
+			return;
+		}
+
+		setFullscreen(false);
+		FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
+		decor.removeView(mFullscreenContainer);
+		mFullscreenContainer = null;
+		mCustomView = null;
+		mCustomViewCallback.onCustomViewHidden();
+		mActivity.setRequestedOrientation(mOriginalOrientation);
+	}
+
+	private void setFullscreen(boolean enabled) {
+		Window win = mActivity.getWindow();
+		WindowManager.LayoutParams winParams = win.getAttributes();
+		final int bits = WindowManager.LayoutParams.FLAG_FULLSCREEN;
+		if (enabled) {
+			winParams.flags |= bits;
+		} else {
+			winParams.flags &amp;= ~bits;
+			if (mCustomView != null) {
+				mCustomView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+			}
+		}
+		win.setAttributes(winParams);
+	}
+
+	private static class FullscreenHolder extends FrameLayout {
+		public FullscreenHolder(Context ctx) {
+			super(ctx);
+			setBackgroundColor(ContextCompat.getColor(ctx, android.R.color.black));
+		}
+
+		@Override
+		public boolean onTouchEvent(MotionEvent evt) {
+			return true;
+		}
+	}
 }
 </code></pre>
 
-<p>Activity 단위로 처리하는 것이 귀찮다면 application의 life cycle에 맞춰서 일괄적으로 처리해도 된다. 메뉴얼에 나와 있듯이 application 전체의 웹뷰에 일괄적으로 적용되므로.</p>
+<p>사용법은 아래와 같다.</p>
+
+<pre><code class="language-Java">webView.setWebChromeClient(new FullscreenableChromeClient(activity));
+</code></pre>
+
+<p>비슷한 방법으로 <a href="http://stackoverflow.com/a/16179544">Playing HTML5 video on fullscreen in android webview</a>에서 안내하는 방법도 있다.</p>
+
+<p>어쨌든 결론은 Full Screen을 위한 별도의 View를 구성해줘야 한다는 것이다. 항상 느끼는 것이지만 이런 것들은 OS 또는 SDK 차원에서 기본적으로 제공하고 Custom이 필요할 경우만 처리하도록 하면 될 텐데 안드로이드는 이런 부분들이 너무 부족하다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -168,8 +253,8 @@ protected void onPause() {
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/08/01/android-webview-resumetimers-pausetimers/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/08/01/android-webview-resumetimers-pausetimers/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -113,133 +113,62 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview/">
-								안드로이드 WebView에서 HTML5 Video Full Screen 지원
+							<a class="title" href="https://blog.asamaru.net/2016/09/23/google-service-library-9-6-0-used-read-phone-state-permission/">
+								Google Service Library 9.6.0 사용시 READ_PHONE_STATE 권한이 추가되는 문제
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview/">2016.08.12.</span></a>
+								<a href="https://blog.asamaru.net/2016/09/23/google-service-library-9-6-0-used-read-phone-state-permission/">2016.09.23.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>안드로이드 WebView에서 HTML5 Video를 재생할 경우 “전체창으로 보기”를 사용할 수 있다. 그런데 자동적으로 사용할 수 있는 것이 아니라 관련된 처리를 직접 해주어야 한다.</p>
+							<p>최근 서비스 중인 앱에서 사용중이던 <a href="https://developers.google.com/android/guides/releases?hl=ko">Google Service Library</a>의 버전을 최신 버전으로 변경했다.
+기존에 사용중이던 버전은 9.2.1 이었다. 얼마전 9.4.0으로 변경된 것을 확인하고 9.4.0을 적용했다. debug 모드와 release 모드에서의 동작을 확인한 후 “베타 테스트”에 올려 보니 이상하게도 모든 테스트 기기에서 앱이 응답하지 않는 문제가 확인되었다. 오류 보고나 기록이 나타나는 것도 아니어서 문제 확인이 어려웠고 처음엔 다른 작업 중에 변경한 코드들에서 원인이 있을 것이라고 추측 했었다. 하지만 많은 부분의 작업을 했던 터라 정확한 원인을 찾기가 어려웠다.</p>
 
-<p>필요한 처리는 아래와 같다.</p>
+<p>기존에 firebase를 사용하지만 FCM이 아닌 GCM을 그대로 사용하고 있었는데 이것이 원인일 수 있겠다는 생각으로 FCM으로 변경했으나 문제가 해결되지 않았다.</p>
+
+<p>계속 테스트를 하던 중 <a href="https://developers.google.com/android/guides/releases?hl=ko">Google Service Library</a>를 다시 확인하니 21일자로 9.6.0이 새로 나온 것을 확인하고 혹시나하고 한번 더 버전업하고 사전 출시 테스트를 하니 앱이 응답하지 않는 문제가 해결 되었다. 아마도 9.4.0과 해당 앱의 코드가 충돌하는 문제가 있었거나 9.4.0 버전 자체에 버그가 있었던 것으로 생각된다.</p>
+
+<p>하지만 문제는 여기서 다시 시작된다. 9.6.0을 사용하니 앱을 업데이트 하려고 할 때 추가 권한을 요구하고 있었다. 요구하는 권한은 아래와 같다.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>android.permission.READ_PHONE_STATE
+android.permission.READ_EXTERNAL_STORAGE
+android.permission.WRITE_EXTERNAL_STORAGE
+</code></pre>
+</div>
+
+<p>문제는 다른 것은 두더라도 <code class="highlighter-rouge">READ_PHONE_STATE</code> 권한을 요구한다는 것이다. 이 부분은 사용자에게 불필요한 권한을 요구하는 부정적인 이미지를 줄 수 있어 문제가 있다고 생각하고 관련 정보를 찾아봤다.</p>
 
 <ul>
-  <li>WebView에 WebChromeClient를 설정해 주어야 한다. 그렇지 않으면 4.0 이후에서 NullPointerException이 발생한다.</li>
-  <li>WebChromeClient를 설정하더라도  <a href="https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View, android.webkit.WebChromeClient.CustomViewCallback%29">onShowCustomView()</a>를 구현해주지 않으면 전체창 보기 상태에서 영상은 나오지 않고 소리만 재생되는 현상이 발생한다.</li>
-  <li><code class="highlighter-rouge">android:hardwareAccelerated="true"</code> 등을 사용해서 Application 또는 해당 Activity에 하드웨어 가속을 켜줘야 한다.</li>
+  <li><a href="http://stackoverflow.com/questions/38307751/firebase-permissions">Firebase + Permissions</a></li>
+  <li><a href="https://code.google.com/p/android/issues/detail?id=223459">Issue 223459:	Play Services library adding unnecessary READ_PHONE_STATE permission</a></li>
 </ul>
 
-<p><a href="https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View, android.webkit.WebChromeClient.CustomViewCallback%29">onShowCustomView()</a>를 구현한 소스는 아래와 같다.</p>
+<p>확인해보니 나 말고도 이런 현상을 겪는 사람들이 있었던 것이다.</p>
 
-<pre><code class="language-Java">import android.app.Activity;
-import android.content.Context;
-import android.os.Build;
-import android.support.v4.content.ContextCompat;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.webkit.WebChromeClient;
-import android.widget.FrameLayout;
+<p>9.4.0을 사용하면 앱이 응답하지 않는 문제가 발생할 확률이 있고(모두에게 발생하는 문제로는 보이지 않는다) 9.6.0은 불필요한 권한들이 추가되는 문제가 있다.</p>
 
-public class FullscreenableChromeClient extends WebChromeClient {
-	private Activity mActivity = null;
+<p>그래서 현재로써는 9.2.1로 다시 되돌린 상태다. 당분간 <a href="https://code.google.com/p/android/">AOSP</a>에서 해당 이슈를 지켜봐야 할 것 같다.</p>
 
-	private View mCustomView;
-	private WebChromeClient.CustomViewCallback mCustomViewCallback;
-	private int mOriginalOrientation;
+<p>현재 나의 경우는 AdMob을 사용하는 경우에 이 문제가 발생하는 것으로 보인다.
+우선은 해당 권한이 실제로 필요 없다면 아래와 같이 부모 프로젝트에서 제거 할 수는 있다.</p>
 
-	private FrameLayout mFullscreenContainer;
-
-	private static final FrameLayout.LayoutParams COVER_SCREEN_PARAMS = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
-	public FullscreenableChromeClient(Activity activity) {
-		this.mActivity = activity;
-	}
-
-	@Override
-	public void onShowCustomView(View view, CustomViewCallback callback) {
-		if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-			if (mCustomView != null) {
-				callback.onCustomViewHidden();
-				return;
-			}
-
-			mOriginalOrientation = mActivity.getRequestedOrientation();
-			FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
-			mFullscreenContainer = new FullscreenHolder(mActivity);
-			mFullscreenContainer.addView(view, COVER_SCREEN_PARAMS);
-			decor.addView(mFullscreenContainer, COVER_SCREEN_PARAMS);
-			mCustomView = view;
-			setFullscreen(true);
-			mCustomViewCallback = callback;
-//			mActivity.setRequestedOrientation(requestedOrientation);
-		}
-
-		super.onShowCustomView(view, callback);
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public void onShowCustomView(View view, int requestedOrientation, WebChromeClient.CustomViewCallback callback) {
-		this.onShowCustomView(view, callback);
-	}
-
-	@Override
-	public void onHideCustomView() {
-		if (mCustomView == null) {
-			return;
-		}
-
-		setFullscreen(false);
-		FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
-		decor.removeView(mFullscreenContainer);
-		mFullscreenContainer = null;
-		mCustomView = null;
-		mCustomViewCallback.onCustomViewHidden();
-		mActivity.setRequestedOrientation(mOriginalOrientation);
-	}
-
-	private void setFullscreen(boolean enabled) {
-		Window win = mActivity.getWindow();
-		WindowManager.LayoutParams winParams = win.getAttributes();
-		final int bits = WindowManager.LayoutParams.FLAG_FULLSCREEN;
-		if (enabled) {
-			winParams.flags |= bits;
-		} else {
-			winParams.flags &amp;= ~bits;
-			if (mCustomView != null) {
-				mCustomView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-			}
-		}
-		win.setAttributes(winParams);
-	}
-
-	private static class FullscreenHolder extends FrameLayout {
-		public FullscreenHolder(Context ctx) {
-			super(ctx);
-			setBackgroundColor(ContextCompat.getColor(ctx, android.R.color.black));
-		}
-
-		@Override
-		public boolean onTouchEvent(MotionEvent evt) {
-			return true;
-		}
-	}
-}
+<div class="language-xml highlighter-rouge"><pre class="highlight"><code><span class="nt">&lt;uses-permission</span>
+	<span class="na">android:name=</span><span class="s">"android.permission.READ_PHONE_STATE"</span>
+	<span class="na">tools:node=</span><span class="s">"remove"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;uses-permission</span>
+	<span class="na">android:name=</span><span class="s">"android.permission.READ_EXTERNAL_STORAGE"</span>
+	<span class="na">tools:node=</span><span class="s">"remove"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;uses-permission</span>
+	<span class="na">android:name=</span><span class="s">"android.permission.WRITE_EXTERNAL_STORAGE"</span>
+	<span class="na">tools:node=</span><span class="s">"remove"</span> <span class="nt">/&gt;</span>
 </code></pre>
+</div>
 
-<p>사용법은 아래와 같다.</p>
+<hr />
 
-<pre><code class="language-Java">webView.setWebChromeClient(new FullscreenableChromeClient(activity));
-</code></pre>
+<p>update : 2016.09.27.</p>
 
-<p>비슷한 방법으로 <a href="http://stackoverflow.com/a/16179544">Playing HTML5 video on fullscreen in android webview</a>에서 안내하는 방법도 있다.</p>
-
-<p>어쨌든 결론은 Full Screen을 위한 별도의 View를 구성해줘야 한다는 것이다. 항상 느끼는 것이지만 이런 것들은 OS 또는 SDK 차원에서 기본적으로 제공하고 Custom이 필요할 경우만 처리하도록 하면 될 텐데 안드로이드는 이런 부분들이 너무 부족하다.</p>
+<p>오늘 확인해보니 역시나 9.6.1이 새로 올라왔으며 해당 권한에 대한 patch가 포함되어 있다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -253,8 +182,8 @@ public class FullscreenableChromeClient extends WebChromeClient {
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/09/23/google-service-library-9-6-0-used-read-phone-state-permission/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/09/23/google-service-library-9-6-0-used-read-phone-state-permission/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

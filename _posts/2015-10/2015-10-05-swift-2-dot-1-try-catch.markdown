@@ -163,7 +163,7 @@ let photo = try! loadImage("./Resources/John Appleseed.jpg")
 
 `loadImage(_:)` 함수의 경우 Resources에서 이미지를 호출하고 있으므로 런타임 상에서 오류가 발생하지 않는다(빌드시 이미지가 포함되므로). 이런 경우 `try!`를 사용하여 오류 제어를 줄일 수 있다.
 
-## Clearn-Up Actions 지정 (Specifying Clearn-Up Actions)
+## Clean-Up Actions 지정 (Specifying Clean-Up Actions)
 
 `defer`를 사용하면 코드의 실행이 코드 블럭을 벗어나기 전에 일련의 작업을 수행하게 할 수 있다. 다시말해 오류의 발생과 무관하게 반드시 실행되어야할 작업을 지정할 수 있다. 다른 언어의 finally와 유사하다고 볼 수 있다. 예를들면 열려진 파일을 닫거나, 수동으로 할당된 메모리를 해제하는 작업이 될 수 있다.
 
@@ -179,7 +179,7 @@ func processFile(filename:String) throws {
             close(file)
         }
 
-        while let = try file.readline() {
+        while let line = try file.readline() {
             // work with the file
         }
         // close(file) is called here, at the end of the scope.

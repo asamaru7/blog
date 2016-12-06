@@ -113,118 +113,29 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/03/09/phantomjs-2-1-1-render-pdf-zoomfactor-bug/">
-								PhantomJS 2.1.1: render PDF / zoomFactor 버그 해결
+							<a class="title" href="https://blog.asamaru.net/2016/03/10/android-error-could-not-read-entry-app-processdebugmanifest-from-cache-taskartifacts-bin/">
+								Android : Error:Could not read entry &#39;:app:processDebugManifest&#39; from cache taskArtifacts.bin 오류 수정
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/03/09/phantomjs-2-1-1-render-pdf-zoomfactor-bug/">2016.03.09.</span></a>
+								<a href="https://blog.asamaru.net/2016/03/10/android-error-could-not-read-entry-app-processdebugmanifest-from-cache-taskartifacts-bin/">2016.03.10.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>어제 작성했던 <a href="/2016/03/08/phantomjs-2-pagesize-format-bug/">PhantomJS 2.1.1: render PDF / pageSize format 버그 해결</a>에서 언급했던 PhantomJS에서 웹페이지를 PDF로 저장할 때 <a href="http://phantomjs.org/api/webpage/property/zoom-factor.html">zoomFactor</a>가 정상 동작하지 않는 문제를 개선한 코드를 새로 올린다. <a href="https://github.com/ariya/phantomjs/issues/12685">PhantomJS 2: PDF rendering too large, page.zoomFactor doesn’t work</a>에서 해결의 힌트가 있었음에도 불구하고 자세히 보지않아 해결하지 못했었는데 해당 부분을 조금 변형해서 조금 더 나은 방법을 적용했다(개인적인 생각).</p>
+							<p>안드로이드 빌드시 아래와 같은 오류가 날 때가 있다.</p>
 
-<p>일단 코드부터.</p>
-
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="s2">"use strict"</span><span class="p">;</span>
-<span class="cm">/*global phantom: false*/</span>
-
-<span class="kd">var</span> <span class="nx">dest</span><span class="p">,</span> <span class="nx">source</span><span class="p">;</span>
-<span class="kd">var</span> <span class="nx">v</span> <span class="o">=</span> <span class="nx">phantom</span><span class="p">.</span><span class="nx">version</span><span class="p">;</span>
-<span class="k">if</span> <span class="p">(</span><span class="nx">v</span><span class="p">.</span><span class="nx">major</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">system</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'system'</span><span class="p">);</span>
-	<span class="nx">dest</span> <span class="o">=</span> <span class="nx">system</span><span class="p">.</span><span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
-	<span class="nx">source</span> <span class="o">=</span> <span class="nx">system</span><span class="p">.</span><span class="nx">args</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
-<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-	<span class="nx">dest</span> <span class="o">=</span> <span class="nx">phantom</span><span class="p">.</span><span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-	<span class="nx">source</span> <span class="o">=</span> <span class="nx">phantom</span><span class="p">.</span><span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
-<span class="p">}</span>
-
-<span class="kd">var</span> <span class="nx">page</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'webpage'</span><span class="p">).</span><span class="nx">create</span><span class="p">();</span>	<span class="c1">// Web Page를 Control 하기 위한 Web Page Module 객체 생성</span>
-<span class="c1">// fixme phantomjs 2.1.1 에서 pageSize.format A4 버그 개선</span>
-<span class="kd">var</span> <span class="nx">width</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
-<span class="nx">page</span><span class="p">.</span><span class="nx">viewportSize</span> <span class="o">=</span> <span class="p">{</span><span class="na">width</span><span class="p">:</span> <span class="nx">width</span><span class="p">,</span> <span class="na">height</span><span class="p">:</span> <span class="nx">width</span> <span class="o">*</span> <span class="p">(</span><span class="mi">768</span> <span class="o">/</span> <span class="mi">1024</span><span class="p">)};</span>	<span class="c1">// PhantomJS에서 화면을 어떤 사이즈로 출력할 것인지에 대한 값 : 미디어 쿼리도 동작</span>
-<span class="nx">page</span><span class="p">.</span><span class="nx">zoomFactor</span> <span class="o">=</span> <span class="mi">585</span> <span class="o">/</span> <span class="nx">width</span><span class="p">;</span>	<span class="c1">// A4 / 72 DPI : 585px X 842px</span>
-
-<span class="kd">var</span> <span class="nx">pageSize</span> <span class="o">=</span> <span class="p">{</span>
-	<span class="na">format</span><span class="p">:</span> <span class="s1">'A4'</span><span class="p">,</span>
-	<span class="na">orientation</span><span class="p">:</span> <span class="s1">'portrait'</span><span class="p">,</span>
-	<span class="na">margin</span><span class="p">:</span> <span class="p">{</span>
-		<span class="na">top</span><span class="p">:</span> <span class="s1">'0.5cm'</span><span class="p">,</span>
-		<span class="na">bottom</span><span class="p">:</span> <span class="s1">'0.5cm'</span><span class="p">,</span>
-		<span class="na">left</span><span class="p">:</span> <span class="s1">'0.5cm'</span><span class="p">,</span>
-		<span class="na">right</span><span class="p">:</span> <span class="s1">'0.5cm'</span>
-	<span class="p">}</span>
-<span class="p">};</span>
-<span class="nx">page</span><span class="p">.</span><span class="nx">paperSize</span> <span class="o">=</span> <span class="nx">pageSize</span><span class="p">;</span>
-
-<span class="nx">page</span><span class="p">.</span><span class="nx">onLoadFinished</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">status</span><span class="p">)</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">zoom</span> <span class="o">=</span> <span class="nx">page</span><span class="p">.</span><span class="nx">zoomFactor</span><span class="p">;</span>
-	<span class="nx">page</span><span class="p">.</span><span class="nx">evaluate</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">zoom</span><span class="p">)</span> <span class="p">{</span>
-		<span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByTagName</span><span class="p">(</span><span class="s1">'body'</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nx">style</span><span class="p">.</span><span class="nx">zoom</span> <span class="o">=</span> <span class="nx">zoom</span><span class="p">;</span>
-	<span class="p">},</span> <span class="nx">zoom</span><span class="p">);</span>
-
-	<span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-		<span class="nx">page</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="nx">dest</span><span class="p">);</span>    <span class="c1">// 스크린 캡쳐파일 생성</span>
-		<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'Status: '</span> <span class="o">+</span> <span class="nx">status</span><span class="p">);</span>
-		<span class="nx">phantom</span><span class="p">.</span><span class="nx">exit</span><span class="p">();</span>
-
-	<span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
-<span class="p">};</span>
-
-<span class="nx">page</span><span class="p">.</span><span class="nx">open</span><span class="p">(</span><span class="nx">source</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">status</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">page</span><span class="p">.</span><span class="nx">evaluate</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-		<span class="c1">// 폰트 문제로 사용가능한 폰트로 교체</span>
-		<span class="kd">var</span> <span class="nx">cssCode</span> <span class="o">=</span> <span class="s1">'html body, html body * { font-family:"바른돋움OTF" !important; }'</span><span class="p">;</span><span class="c1">// html { zoom: 1; }</span>
-		<span class="kd">var</span> <span class="nx">styleElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s2">"style"</span><span class="p">);</span>
-		<span class="nx">styleElement</span><span class="p">.</span><span class="nx">type</span> <span class="o">=</span> <span class="s2">"text/css"</span><span class="p">;</span>
-		<span class="k">if</span> <span class="p">(</span><span class="nx">styleElement</span><span class="p">.</span><span class="nx">styleSheet</span><span class="p">)</span> <span class="p">{</span>
-			<span class="nx">styleElement</span><span class="p">.</span><span class="nx">styleSheet</span><span class="p">.</span><span class="nx">cssText</span> <span class="o">=</span> <span class="nx">cssCode</span><span class="p">;</span>
-		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-			<span class="nx">styleElement</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">createTextNode</span><span class="p">(</span><span class="nx">cssCode</span><span class="p">));</span>
-		<span class="p">}</span>
-		<span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByTagName</span><span class="p">(</span><span class="s2">"head"</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">styleElement</span><span class="p">);</span>
-	<span class="p">});</span>
-	<span class="k">if</span> <span class="p">(</span><span class="nx">status</span> <span class="o">!==</span> <span class="s1">'success'</span><span class="p">)</span> <span class="p">{</span>	<span class="c1">// status 인자를 통해 성공, 실패여부 확인</span>
-		<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'Cannot open webpage'</span><span class="p">);</span>
-		<span class="nx">phantom</span><span class="p">.</span><span class="nx">exit</span><span class="p">();</span>
-	<span class="p">}</span>
-<span class="p">});</span>
+<div class="highlighter-rouge"><pre class="highlight"><code>Error:Could not read entry ':app:processDebugManifest' from cache taskArtifacts.bin ~~~
 </code></pre>
 </div>
 
-<p>지난 글에서의 코드와 거의 유사하다. 변경된 부분 중 중요한 부분만 아래에 설명한다.</p>
+<p>흔하게 발생하지는 않는데 프로젝트의 Gradle 버전을 변경하는 경우 간혹 발생할 수 있다.</p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">width</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
-<span class="nx">page</span><span class="p">.</span><span class="nx">viewportSize</span> <span class="o">=</span> <span class="p">{</span><span class="na">width</span><span class="p">:</span> <span class="nx">width</span><span class="p">,</span> <span class="na">height</span><span class="p">:</span> <span class="nx">width</span> <span class="o">*</span> <span class="p">(</span><span class="mi">768</span> <span class="o">/</span> <span class="mi">1024</span><span class="p">)};</span>	<span class="c1">// PhantomJS에서 화면을 어떤 사이즈로 출력할 것인지에 대한 값 : 미디어 쿼리도 동작</span>
-<span class="nx">page</span><span class="p">.</span><span class="nx">zoomFactor</span> <span class="o">=</span> <span class="mi">585</span> <span class="o">/</span> <span class="nx">width</span><span class="p">;</span>	<span class="c1">// A4 / 72 DPI : 585px X 842px</span>
+<p>해결 방법은 대부분 아주 간단하다. 오류 내용 중 <code class="highlighter-rouge">from cache taskArtifacts.bin</code>에서 보듯이 cache 파일에서 필요한 정보를 가져오지 못하고 있으니 해당 cache 파일을 지우면 된다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>rm .gradle/2.10/taskArtifacts/taskArtifacts.bin
 </code></pre>
 </div>
 
-<p>보여줄 가로 width에 따라 zoomFactor를 결정한다. 585는 72 DPI 기준에서 A4용지의 가로 px 이다.</p>
-
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="nx">page</span><span class="p">.</span><span class="nx">onLoadFinished</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">status</span><span class="p">)</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">zoom</span> <span class="o">=</span> <span class="nx">page</span><span class="p">.</span><span class="nx">zoomFactor</span><span class="p">;</span>
-	<span class="nx">page</span><span class="p">.</span><span class="nx">evaluate</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">zoom</span><span class="p">)</span> <span class="p">{</span>
-		<span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByTagName</span><span class="p">(</span><span class="s1">'body'</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nx">style</span><span class="p">.</span><span class="nx">zoom</span> <span class="o">=</span> <span class="nx">zoom</span><span class="p">;</span>
-	<span class="p">},</span> <span class="nx">zoom</span><span class="p">);</span>
-
-	<span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-		<span class="nx">page</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="nx">dest</span><span class="p">);</span>    <span class="c1">// 스크린 캡쳐파일 생성</span>
-		<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'Status: '</span> <span class="o">+</span> <span class="nx">status</span><span class="p">);</span>
-		<span class="nx">phantom</span><span class="p">.</span><span class="nx">exit</span><span class="p">();</span>
-
-	<span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
-<span class="p">};</span>
-</code></pre>
-</div>
-
-<p>문제가 되던 부분이 zoomFactor가 적용되지 않는 것이었다. 이를 개선하기 위해 <code class="highlighter-rouge">body</code>의 zoom css를 사용해서 보정한다.</p>
-
-<p>다른 부분의 자세한 내용은 <a href="/2016/03/08/phantomjs-2-pagesize-format-bug/">PhantomJS 2.1.1: render PDF / pageSize format 버그 해결</a>을 참고하자.</p>
-
-<hr />
-
-<p>마지막으로 위 방법도 완전한 방법은 아니다. PhantomJS가 버전업 되면서 zoomFactor 버그가 해결되면 이번엔 반대로 너무 작게 출력하게되는 코드가 될 수 있다. 그런 경우을 감안한다면 지난 글에서 언급한 방법이 나을 수도 있다(실제 PDF가 A4 사이즈가 아니라는 것을 무시한다면 : 출력시에는 A4에 맞게 잘 나온다).</p>
+<p><code class="highlighter-rouge">taskArtifacts.bin</code> 파일의 경로는 Gradle 버전 등에 따라 다를 수 있으니 오류 로그에서 파일의 위치를 확인하거나 <code class="highlighter-rouge">.gradle</code> 하위에서 해당 파일을 찾으면 된다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -238,8 +149,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/03/09/phantomjs-2-1-1-render-pdf-zoomfactor-bug/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/03/09/phantomjs-2-1-1-render-pdf-zoomfactor-bug/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/03/10/android-error-could-not-read-entry-app-processdebugmanifest-from-cache-taskartifacts-bin/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/03/10/android-error-could-not-read-entry-app-processdebugmanifest-from-cache-taskartifacts-bin/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

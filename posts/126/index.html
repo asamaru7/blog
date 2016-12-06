@@ -113,198 +113,56 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/05/swift-2-dot-1-try-catch/">
-								Swift 2.1에서의 오류 처리(do try catch)
+							<a class="title" href="https://blog.asamaru.net/2015/10/06/resolving-the-functionality-not-enabled-message-in-google-apps/">
+								Google Apps Gmail에서 &#39;다른 주소에서 메일 보내기&#39; 사용시 &#39;Functionality Not Enabled.&#39; 오류 해결
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/05/swift-2-dot-1-try-catch/">2015.10.05.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/06/resolving-the-functionality-not-enabled-message-in-google-apps/">2015.10.06.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>애플이 2015.06.08.에 <a href="https://developer.apple.com/swift/blog/?id=29">‘세계개발자회의(WWDC) 2015’에서 스위프트 2.0을 공개</a> 했지만 최근 다시 iOS 작업을 시작하면서 이제서야 swift 2.0을 사용하게 되었다. 그런데 이제 2.0 보려고 하는데 벌써 Xcode 7.1 beta 2가 나오면서 swift 2.1이 공개되었다.</p>
+							<p>지금은 구글 앱스의 무료 계정이 없지만 예전에는 사용자 50명 이내에 한해서 무료 계정을 제공했다. 그때 나의 개인 계정과 회사 계정을 등록해 두어서 현재까지 무료로 사용중이다. 요즘에는 다음 등에서도 비슷한 서비스를 제공하지만 역시 구글이 훨씬 다양한 기능을 제공한다.</p>
 
-<p>오늘은 swift의 내용 중에서 오류 처리에 관련된 내용을 살펴보고자 한다. 아래의 내용은 <a href="http://qiita.com/koher/items/0c60b13ff0fe93220210">Swift 2.0 の try, catch ファーストインプレッション</a>와 공식 메뉴얼(<a href="https://developer.apple.com/library/prerelease/ios/documentation/Swift/Conceptual/Swift_Programming_Language/ErrorHandling.html">Error Handling</a>)의 내용을 참고하여 정리한 것이다.</p>
+<p>우선 나는 내 개인 계정 한군데에 다른 메일 서비스에 수신되는 모든 메일이 포워딩 되도록 사용중이다. 따라서 메일 발수신을 모두 내 계정에서 한다. 수신은 당연히 문제가 없지만 발신의 경우 특정 이메일을 사용해서 발신해야 하는 경우가 있다. 예를들어 회사 업무차 메일을 보낼때는 회사 메일 주소로 메일을 보내야 하는 것이다. 어런 경우에 유용하게 사용할 수 있는 것이 “다른 주소에서 메일 보내기” 기능이다. 이 기능은 “환경설정 &gt; 계정”에서 찾을 수 있다.</p>
 
-<p>공식 메뉴얼(<a href="https://developer.apple.com/library/prerelease/ios/documentation/Swift/Conceptual/Swift_Programming_Language/ErrorHandling.html">Error Handling</a>)에서는 swift 2.0이 아닌 swift 2.1로 안내하고 있으니 그냥 2.1을 기준으로 살펴보고자 한다(확실하지는 않지만 대충 알아본 결과 2.1에서의 변화에 Error Handling 부분은 포함되지 않는 것 같다).</p>
+<p>“다른 주소에서 메일 보내기”에서 발신을 위한 메일 주소를 등록해두면 메일 발신시 해당 메일 주소로 메일을 보낼 수 있다.</p>
 
-<p>메뉴얼의 내용을 빌어 Error Handling의 필요성에 대해 설명하자면 다음과 같다.</p>
+<p>그런데 어제 새로운 메일 주소를 등록하려고 하니 “Functionality Not Enabled.” 오류 메시지와 함께 정상 등록되지 않았다. 현재 등록하려던 곳은 일반 GMail이 아닌 Google Apps에서 제공하는 Gmail 이다. 분명 예전에는 새로운 메일 주소를 등록하면 해당 주소로 확인 메일을 보내주고 메일 내용에 들어있는 확인 코드를 넣으면 간단히 등록되었었다.</p>
 
-<blockquote>
-  <p>일부 작업은 항상 완전한 실행을 보증하거나 유용한 출력을 생성하지 않는다. Optionals를 사용하여 값의 유무를 전달함으로써 작업의 성공/실패 유무를 판단할 수 있지만 작업이 실패 할 때 코드가 적절히 응답 할 수 있도록 함으로써 오류의 원인을 이해하는 데 도움을 줄 수 있다. 예를들어 디스크상의 파일을 읽어서 처리하는 작업에서 발생할 수 있는 오류는 ‘존재하지 않는 파일’, ‘읽기 권한 없음’, ‘호환되는 형식이 아님’ 등의 여러가지가 존재할 수 있다. 이러한 경우처럼 오류의 원인에 따라 다양한 대응이 필요한 경우라면 오류의 정보를 정확히 전달함으로써 오류를 복구하는데 도움을 줄 수 있다.</p>
-</blockquote>
-
-<p><strong>Swift 2.0 이후부터는 Error Handling(런타임 상에서 오류를 발견하여 응답하고 복구하는 과정)을 위해 throwing, catching, propagating(전파), 런타임에서 복구할 수 있는 오류를 조작(manipulating recoverable errors at runtime) 할 수 있도록 지원한다.</strong></p>
-
-<h2 id="section">오류의 사용자 정의</h2>
-
-<p>Swift에서는 ErrorType protocol라는 빈 protocol을 사용하여 오류를 표시한다.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">enum</span> <span class="kt">VendingMachineError</span><span class="p">:</span> <span class="kt">ErrorType</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="kt">InvalidSelection</span>
-    <span class="k">case</span> <span class="kt">InsufficientFunds</span><span class="p">(</span><span class="nv">coinsNeeded</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span>
-    <span class="k">case</span> <span class="kt">OutOfStock</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-
-<p>이렇게 생성된 Error는 아래와 같이 발생시킬 수 있다.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">throw</span> <span class="kt">VendingMachineError</span><span class="o">.</span><span class="kt">InsufficientFunds</span><span class="p">(</span><span class="nv">coinsNeeded</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p>조금더 자세히 보자면 ErrorType은 enum으로 정의될 수 있다. Swift에서 try, catch는 항상 ErrorType를 throw 한다. Java에서는 오류 유형을 클래스로 취급하므로 종류마다 클래스를 정의하므로 개수가 많아지고 오류를 처리에 따라 묶어서 관리하기 어렵다. 하지만 Swift의 ErrorType는 관련 오류를 enum으로 정리할 수 있기 때문에 정리가 쉽다.</p>
-
-<p>예들들어 String을 Int로 변환하는 함수를 가정할 경우 발생할 수 있는 오류는 String이 nil이거나 숫자로 변환될 수 없는 문자열일 수 있다. 이를 ErrorType 로 구현하면 다음과 같이 정의할 수 있다.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">enum</span> <span class="kt">ParseError</span> <span class="p">:</span> <span class="kt">ErrorType</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="kt">Nil</span> <span class="c1">// nil 인 경우</span>
-    <span class="k">case</span> <span class="kt">IllegalFormat</span> <span class="c1">// Int로 해석 할 수 없었던 경우</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-
-<p>ErrorType는 오류의 종류를 나타낼뿐만 아니라 오류 정보를 함께 가질 수 있다.
-위의 예시에서 IllegalFormat 오류일 때 해당 String이 무엇이었는지를 함께 넘겨주고 싶을 수 있다.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">enum</span> <span class="kt">ParseError</span> <span class="p">:</span> <span class="kt">ErrorType</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="kt">Nil</span>
-    <span class="k">case</span> <span class="kt">IllegalFormat</span> <span class="p">(</span><span class="kt">String</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-
-<p>이 방식의 좋은 점은 오류의 종류에 따라 다른 유형의 인자를 가질 수 있어 Type Safe하게 값을 얻어낼 수 있다는 것이다.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">switch</span> <span class="n">error</span> <span class="p">{</span>
-    <span class="k">case</span><span class="o">.</span> <span class="kt">Nil</span> <span class="p">:</span>
-	    <span class="nf">print</span> <span class="p">(</span> <span class="s">"The text is nil."</span><span class="p">)</span>
-    <span class="k">case</span><span class="o">.</span> <span class="kt">IllegalFormat</span> <span class="p">(</span><span class="k">let</span> <span class="nv">string</span><span class="p">)</span> <span class="p">:</span>
-    	<span class="nf">print</span> <span class="p">(</span> <span class="s">"Illegal format : </span><span class="err">\</span><span class="s"> (string)"</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-
-<p>Objective-C의 NSError에서도 오류 정보를 가질 수 있지만, Type 정보가 사라져 버리기 때문에 Type Safe 하지 않다.</p>
-
-<h2 id="section-1">오류 제어</h2>
-
-<p>오류가 발생하면 문제를 보정하는 방법을 시도하거나 사용자에게 알림으로써 오류를 처리해야 한다. Swift에서는 오류를 처리 할 수있는 네 가지 방법이 있다.</p>
+<p>구글의 정책이 변경된 것으로 보인다. 어쨌든 등록을 해야해서 오류를 해결하는 방법을 찾아보았다. 일반 Gmail을 사용하는 경우라면 위 오류가 나타나지 않았을 것이니 이 단계가 필요없다. 단, 다른 구글 계정의 이메일 주소를 연결하는 방법을 보려면 조금 더 아래의 내용을 참고하자.</p>
 
 <ul>
-  <li>Throwing Functions을 이용한 오류 전파(Propagating Errors Using Throwing Functions)</li>
-  <li>Do-Catch를 이용한 오류 처리(Handling Errors Using Do-Catch)</li>
-  <li>Error를 Optional Values로 변환(Converting Errors to Optional Values)</li>
-  <li>오류 전파 비활성화(Disabling Error Propagation)</li>
+  <li><a href="https://productforums.google.com/forum/#!topic/apps/z1IS-ocp6yk">Send mail as - Add another email address you own - “Functionality not enabled” message.</a></li>
+  <li><a href="https://www.youtube.com/watch?v=kK7QpOWCz_A">Resolving The Functionality Not Enabled Message In Google Apps</a></li>
 </ul>
 
-<p>각각의 처리 방법을 하나씩 알아보자.</p>
+<p>위 링크들을 참고하면 이 문제를 쉽게 해결할 수 있다. 요약하자면 아래와 같다. 다시말하지만 이 경우는 Google Apps인 경우다.</p>
 
-<h3 id="throwing-functions---propagating-errors-using-throwing-functions">Throwing Functions을 이용한 오류 전파(Propagating Errors Using Throwing Functions)</h3>
+<ul>
+  <li>도메인 관리(Google Apps 관리) 페이지로 접속한다.</li>
+  <li>사용자 &gt; 해당 사용자 선택 &gt; 사용하도록 설정된 Google Apps &gt; GMail로 들어간다.</li>
+  <li>고급 설정 &gt; 최종 사용자 액세스 &gt; 사용자별 발신 게이트웨이 허용을 체크한다.</li>
+</ul>
 
-<p>함수, 메소드, 초기화시에 오류가 throw될 수 있음을 표시하려면 함수 선언시 인자 뒤에 throws 키워드를 추가할 수 있다. 아래의 예시를 보면 이해가 편할 것이다.</p>
+<p>일단 이렇게 설정하면 위 오류 메시지는 해결된다. 단, 이 변경이 적용되는데 어느 정도 시간이 걸린다. 저장시에 안내 메시지가 나오는데 내 경우는 1시간 이내라고 안내가 나왔었다.</p>
 
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">canThrowErrors</span><span class="p">()</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span>
+<p>자.. 그래서 1시간 후 다시 시도.</p>
 
-<span class="kd">func</span> <span class="nf">cannotThrowErrors</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">String</span>
-</code></pre>
-</div>
+<p>Gmail로 돌아와서 “다른 이메일 주소 추가”를 누르면 기존과 동일하게 아래의 화면이 나타난다.</p>
 
-<p><code class="highlighter-rouge">canThrowErrors</code> 함수 내부에서 오류가 발생하면 이 오류는 자신을 호출한 함수로 전파된다.</p>
+<p><img src="/img/2015-10-06-resolving-the-functionality-not-enabled-message-in-google-apps-1.png" alt="다른 이메일 주소를 추가하세요" /></p>
 
-<h3 id="do-catch---handling-errors-using-do-catch">Do-Catch를 이용한 오류 처리(Handling Errors Using Do-Catch)</h3>
+<p>원하는 이름과 이메일 주소를 입력하고 “다음 단계”를 선택. 그럼 아래와 같이 오류 대신 SMTP 서버 정보를 넣으라는 화면이 나온다(기존에는 이 단계가 없었다).</p>
 
-<p>오류를 제어 하고자하는 코드의 블록이 있을 경우는 do-catch를 사용할 수 있다. 문법 상의 차이는 있지만 다른 언어에서의 try-catch와 유사하므로 코드를 보는 것이 이해가 더 빠를 것으로 생각된다.</p>
+<p><img src="/img/2015-10-06-resolving-the-functionality-not-enabled-message-in-google-apps-2.png" alt="다른 이메일 주소를 추가하세요" /></p>
 
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">var</span> <span class="nv">vendingMachine</span> <span class="o">=</span> <span class="kt">VendingMachine</span><span class="p">()</span>
-<span class="n">vendingMachine</span><span class="o">.</span><span class="n">coinsDeposited</span> <span class="o">=</span> <span class="mi">8</span>
-<span class="k">do</span> <span class="p">{</span>
-    <span class="k">try</span> <span class="nf">buyFavoriteSnack</span><span class="p">(</span><span class="s">"Alice"</span><span class="p">,</span> <span class="nv">vendingMachine</span><span class="p">:</span> <span class="n">vendingMachine</span><span class="p">)</span>
-<span class="p">}</span> <span class="k">catch</span> <span class="kt">VendingMachineError</span><span class="o">.</span><span class="kt">InvalidSelection</span> <span class="p">{</span>
-    <span class="nf">print</span><span class="p">(</span><span class="s">"Invalid Selection."</span><span class="p">)</span>
-<span class="p">}</span> <span class="k">catch</span> <span class="kt">VendingMachineError</span><span class="o">.</span><span class="kt">OutOfStock</span> <span class="p">{</span>
-    <span class="nf">print</span><span class="p">(</span><span class="s">"Out of Stock."</span><span class="p">)</span>
-<span class="p">}</span> <span class="k">catch</span> <span class="kt">VendingMachineError</span><span class="o">.</span><span class="kt">InsufficientFunds</span><span class="p">(</span><span class="k">let</span> <span class="nv">coinsNeeded</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nf">print</span><span class="p">(</span><span class="s">"Insufficient funds. Please insert an additional </span><span class="se">\(</span><span class="n">coinsNeeded</span><span class="se">)</span><span class="s"> coins."</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-</div>
+<p>이 단계에서는 SMTP 서버 정보를 넣으면 되는데 추가하려는 이메일 주소가 Gmail 또는 Google Apps Gmail 인 경우라면 SMTP 서버에 “smtp.gmail.com”, 포트는 587을 선택하고 아이디와 비밀번호를 입력하면 된다. 단, 아이디(사용자 이름)은 abc@gmail.com 등과 같이 이메일 풀주소를 넣어야 한다. 조금더 상세한 정보는 <a href="https://www.digitalocean.com/community/tutorials/how-to-use-google-s-smtp-server">How To Use Google’s SMTP Server</a>를 참고하자. 단, 여기서는 포트를 465로 안내하고 있지만 내 경우는 587을 사용해야 했다.</p>
 
-<p><code class="highlighter-rouge">buyFavoriteSnack</code> 함수는 try에 의해 호출되며 오류가 발생하면 오류의 타입에 해당하는 catch에 의해 제어된다. 다른 예시를 하나 살펴보자.</p>
+<p>마지막 확인 코드 입력 화면이다. 정상적으로 정보가 확인된다면 입력한 이메일 주소로 확인 코드를 보내주는데 이 확인 코드를 아래의 화면에 입력하면 등록이 완료된다.</p>
 
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">do</span> <span class="p">{</span>
-	<span class="k">let</span> <span class="nv">number</span> <span class="o">=</span> <span class="k">try</span> <span class="nf">toInt</span> <span class="p">(</span><span class="n">label</span><span class="o">.</span> <span class="n">text</span><span class="p">)</span>
-    <span class="c1">// number를 사용한 처리</span>
-<span class="p">}</span> <span class="k">catch</span> <span class="kt">ParseError</span><span class="o">.</span> <span class="kt">Nil</span> <span class="p">{</span>
-	<span class="nf">print</span> <span class="p">(</span> <span class="s">"The text is nil."</span><span class="p">)</span>
-<span class="p">}</span> <span class="k">catch</span> <span class="kt">ParseError</span><span class="o">.</span> <span class="kt">IllegalFormat</span> <span class="p">(</span><span class="k">let</span> <span class="nv">string</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nf">print</span> <span class="p">(</span> <span class="s">"Illegal format : </span><span class="err">\</span><span class="s"> (string)"</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-</div>
+<p><img src="/img/2015-10-06-resolving-the-functionality-not-enabled-message-in-google-apps-3.png" alt="다른 이메일 주소를 추가하세요" /></p>
 
-<h3 id="error-optional-values-converting-errors-to-optional-values">Error를 Optional Values로 변환(Converting Errors to Optional Values)</h3>
-
-<p><code class="highlighter-rouge">try?</code> 구문을 이용해서 오류를 optional value로 변환할 수 있다. 예를들어 어떤 값을 반환하는 함수가 있을 때 내부에서 오류가 발생하면 오류를 무시하고 nil이 반환된 것과 동일하게 처리할 수 있다. 역시 아래의 예시를 보자.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">someThrowingFunction</span><span class="p">()</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Int</span> <span class="p">{</span>
-    <span class="c1">// ...</span>
-<span class="p">}</span>
-
-<span class="k">let</span> <span class="nv">x</span> <span class="o">=</span> <span class="k">try</span><span class="p">?</span> <span class="nf">someThrowingFunction</span><span class="p">()</span>
-<span class="k">let</span> <span class="nv">y</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span>
-<span class="k">do</span> <span class="p">{</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="k">try</span> <span class="nf">someThrowingFunction</span><span class="p">()</span>
-<span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="kc">nil</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-
-<p>아래와 같이 사용하는 것도 가능하다.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">fetchData</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Data</span><span class="p">?</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="k">let</span> <span class="nv">data</span> <span class="o">=</span> <span class="k">try</span><span class="p">?</span> <span class="nf">fetchDataFromDisk</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="n">data</span> <span class="p">}</span>
-    <span class="k">if</span> <span class="k">let</span> <span class="nv">data</span> <span class="o">=</span> <span class="k">try</span><span class="p">?</span> <span class="nf">fetchDataFromServer</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="n">data</span> <span class="p">}</span>
-    <span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-
-<h3 id="disabling-error-propagation">오류 전파 비활성화(Disabling Error Propagation)</h3>
-
-<p>실질적으로는 런타임시 오류를 발생시키지 않는 throwing 함수나 메서드를 사용할 경우가 있다. 이 경우 <code class="highlighter-rouge">try!</code>(forced-try)를 사용하여 throwing 함수나 메서드를 호출할 수 있다. <code class="highlighter-rouge">try!</code>를 사용하여 throwing 함수나 메서드를 호출하면 error 전파가 비활성화 되고 에러를 던지지 않는 런타임
-assertion 안에서의 호출로 랩핑된다. 따라서 만일 실제로 에러가 thrown 되면, 런타임 에러를 만나게 된다. 아래의 예시를 보자.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="k">let</span> <span class="nv">photo</span> <span class="o">=</span> <span class="k">try!</span> <span class="nf">loadImage</span><span class="p">(</span><span class="s">"./Resources/John Appleseed.jpg"</span><span class="p">)</span>
-</code></pre>
-</div>
-
-<p><code class="highlighter-rouge">loadImage(_:)</code> 함수의 경우 Resources에서 이미지를 호출하고 있으므로 런타임 상에서 오류가 발생하지 않는다(빌드시 이미지가 포함되므로). 이런 경우 <code class="highlighter-rouge">try!</code>를 사용하여 오류 제어를 줄일 수 있다.</p>
-
-<h2 id="clean-up-actions--specifying-clean-up-actions">Clean-Up Actions 지정 (Specifying Clean-Up Actions)</h2>
-
-<p><code class="highlighter-rouge">defer</code>를 사용하면 코드의 실행이 코드 블럭을 벗어나기 전에 일련의 작업을 수행하게 할 수 있다. 다시말해 오류의 발생과 무관하게 반드시 실행되어야할 작업을 지정할 수 있다. 다른 언어의 finally와 유사하다고 볼 수 있다. 예를들면 열려진 파일을 닫거나, 수동으로 할당된 메모리를 해제하는 작업이 될 수 있다.</p>
-
-<p>defer 내부의 구문은 제어흐픔을 벗어나게 할 수 있는 break, return, throw 등을 포함해서는 안된다. 또한 defer는 기술된 순서의 역순으로 실행된다. 다시말해 마지막에 있는 defer부터 실행되어 올라온다.</p>
-
-<p>아래의 예시는 파일을 열어서 내용을 읽어서 처리하며 defer를 사용하여 오류 발생과 무관하게 파일을 닫아주도록 하고 있다.</p>
-
-<div class="language-swift highlighter-rouge"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">processFile</span><span class="p">(</span><span class="nv">filename</span><span class="p">:</span><span class="kt">String</span><span class="p">)</span> <span class="k">throws</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="nf">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="nv">file</span> <span class="o">=</span> <span class="nf">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-        <span class="k">defer</span> <span class="p">{</span>
-            <span class="nf">close</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
-        <span class="p">}</span>
-
-        <span class="k">while</span> <span class="k">let</span> <span class="nv">line</span> <span class="o">=</span> <span class="k">try</span> <span class="n">file</span><span class="o">.</span><span class="nf">readline</span><span class="p">()</span> <span class="p">{</span>
-            <span class="c1">// work with the file</span>
-        <span class="p">}</span>
-        <span class="c1">// close(file) is called here, at the end of the scope.</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre>
-</div>
+<p>확인 코드를 정상적으로 입력했다면 추가한 이메일이 보일 것이다. 이제부터는 메일을 보낼때 이 이메일 주소를 사용할 수 있다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -318,8 +176,8 @@ assertion 안에서의 호출로 랩핑된다. 따라서 만일 실제로 에러
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/05/swift-2-dot-1-try-catch/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/05/swift-2-dot-1-try-catch/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/06/resolving-the-functionality-not-enabled-message-in-google-apps/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/06/resolving-the-functionality-not-enabled-message-in-google-apps/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

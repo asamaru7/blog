@@ -113,54 +113,71 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/11/04/contenteditable-set-caret-at-the-end-of-the-text-cross-browser/">
-								contenteditable이 설정된 개체의 시작 또는 끝에 커서(Caret) 넣기
+							<a class="title" href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/">
+								PHP 삼항 연산자 : Ternary Operator 와 Null Coalesce Operator
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/11/04/contenteditable-set-caret-at-the-end-of-the-text-cross-browser/">2016.11.04.</span></a>
+								<a href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/">2016.11.07.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>이번에 <a href="https://github.com/yabwe/medium-editor">MediumEditor</a>를 사용하면서 추가 기능을 개발하던 중 편집 개체에 내용을 추가하는 처리가 필요했다. 커서가 편집 개체 내부에 있다면 <a href="https://github.com/yabwe/medium-editor/blob/master/API.md#pastehtmlhtml-options">pasteHTML()</a> 함수를 간단하게 처리가 된다. 그런데 커서가 편집 개체 밖에 있을 경우엔 넣을 수 없다. 그래서 프로그램에서 커서를 넣어줘야 하는데 fucus를 이용하면 맨 앞으로 들어가서 원하는 결과를 얻을 수 없었다. 그레서 방법을 찾던 중 <a href="http://stackoverflow.com/a/4238971/6736772">contenteditable, set caret at the end of the text (cross-browser)</a>라는 글에서 방법을 찾았다.</p>
+							<p><a href="http://php.net/">PHP</a>에도 <a href="http://php.net/manual/kr/language.operators.comparison.php#language.operators.comparison.ternary">삼항 연산자:Ternary operator</a>
+가 있다. <a href="http://php.net/manual/kr/language.operators.comparison.php#language.operators.comparison.ternary">메뉴얼</a>에는 아래와 같이 설명되어 있다.</p>
 
-<p><code class="highlighter-rouge">contenteditable="true"</code>가 설정된 개체의 시작 또는 끝에 커서(Caret) 넣는 방법은 아래와 같다.</p>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="c1">// 사용 예제: 삼항 연산자
+</span><span class="nv">$action</span> <span class="o">=</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">]))</span> <span class="o">?</span> <span class="s1">'default'</span> <span class="o">:</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">];</span>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">createCaretPlacer</span><span class="p">(</span><span class="nx">atStart</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">el</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nx">el</span><span class="p">.</span><span class="nx">focus</span><span class="p">();</span>
-        <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nb">window</span><span class="p">.</span><span class="nx">getSelection</span> <span class="o">!=</span> <span class="s2">"undefined"</span>
-                <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createRange</span> <span class="o">!=</span> <span class="s2">"undefined"</span><span class="p">)</span> <span class="p">{</span>
-            <span class="kd">var</span> <span class="nx">range</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createRange</span><span class="p">();</span>
-            <span class="nx">range</span><span class="p">.</span><span class="nx">selectNodeContents</span><span class="p">(</span><span class="nx">el</span><span class="p">);</span>
-            <span class="nx">range</span><span class="p">.</span><span class="nx">collapse</span><span class="p">(</span><span class="nx">atStart</span><span class="p">);</span>
-            <span class="kd">var</span> <span class="nx">sel</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">getSelection</span><span class="p">();</span>
-            <span class="nx">sel</span><span class="p">.</span><span class="nx">removeAllRanges</span><span class="p">();</span>
-            <span class="nx">sel</span><span class="p">.</span><span class="nx">addRange</span><span class="p">(</span><span class="nx">range</span><span class="p">);</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">createTextRange</span> <span class="o">!=</span> <span class="s2">"undefined"</span><span class="p">)</span> <span class="p">{</span>
-            <span class="kd">var</span> <span class="nx">textRange</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">createTextRange</span><span class="p">();</span>
-            <span class="nx">textRange</span><span class="p">.</span><span class="nx">moveToElementText</span><span class="p">(</span><span class="nx">el</span><span class="p">);</span>
-            <span class="nx">textRange</span><span class="p">.</span><span class="nx">collapse</span><span class="p">(</span><span class="nx">atStart</span><span class="p">);</span>
-            <span class="nx">textRange</span><span class="p">.</span><span class="nx">select</span><span class="p">();</span>
-        <span class="p">}</span>
-    <span class="p">};</span>
+<span class="c1">// 위 예제는 다음의 if/else 구문과 동일합니다
+</span><span class="k">if</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">]))</span> <span class="p">{</span>
+    <span class="nv">$action</span> <span class="o">=</span> <span class="s1">'default'</span><span class="p">;</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nv">$action</span> <span class="o">=</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">];</span>
 <span class="p">}</span>
-
-<span class="kd">var</span> <span class="nx">placeCaretAtStart</span> <span class="o">=</span> <span class="nx">createCaretPlacer</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">placeCaretAtEnd</span> <span class="o">=</span> <span class="nx">createCaretPlacer</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
 </code></pre>
 </div>
 
-<p>이를 활용해 <a href="https://github.com/yabwe/medium-editor">MediumEditor</a>에 적용하는 코드는 아래와 같다.</p>
+<blockquote>
+  <p>(expr1) ? (expr2) : (expr3) 표현은 expr1이 TRUE이면 expr2로 평가되고, expr1이 FALSE이면 expr3로 평가됩니다.
+PHP 5.3부터, 삼항 연산자의 중간 부분을 비울 수 있습니다. 표현식 expr1 ?: expr3은 expr1이 TRUE이면 expr1, 아니면 expr3를 반환합니다.</p>
+</blockquote>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="nx">editor</span><span class="p">.</span><span class="nx">exportSelection</span><span class="p">()</span> <span class="o">==</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">placeCaretAtEnd</span> <span class="o">=</span> <span class="nx">createCaretPlacer</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
-	<span class="nx">placeCaretAtEnd</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="nx">id</span><span class="p">));</span>
-<span class="p">}</span>
-<span class="nx">editor</span><span class="p">.</span><span class="nx">pasteHTML</span><span class="p">(</span><span class="nx">html</span><span class="p">);</span>
+<p>PHP 5.3부터 <code class="highlighter-rouge">expr2</code>를 비울 수 있다고 되어 있다. 다시 말해 <code class="highlighter-rouge">(expr1) ?: (expr3)</code>라는 표현을 사용할 수 있다.</p>
+
+<p>그리고 한가지. 아래와 같이 삼항식을 중첩할 경우는 괄호를 사용해서 묶어줄 것을 권장한다.</p>
+
+<blockquote>
+  <p>삼항 연사자를 “쌓는” 일을 피하길 권합니다. 하나의 구문에서 하나를 초과하는 삼항 연산자를 사용할 때, PHP 작동은 명확하지 않습니다:
+Example #3 명확하지 않은 삼항 작동</p>
+</blockquote>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="c1">// 얼핏 보기에, 'true'를 출력할 것 같습니다
+</span><span class="k">echo</span> <span class="p">(</span><span class="kc">true</span><span class="o">?</span><span class="s1">'true'</span><span class="o">:</span><span class="kc">false</span><span class="o">?</span><span class="s1">'t'</span><span class="o">:</span><span class="s1">'f'</span><span class="p">);</span>
+
+<span class="c1">// 그러나 위의 실제 출력은 't'입니다
+// 이는 삼항 표현이 왼쪽에서 오른쪽으로 평가되기 때문입니다
+</span>
+<span class="c1">// 다음이 위 코드와 동일한 더 명확한 버전입니다
+</span><span class="k">echo</span> <span class="p">((</span><span class="kc">true</span> <span class="o">?</span> <span class="s1">'true'</span> <span class="o">:</span> <span class="s1">'false'</span><span class="p">)</span> <span class="o">?</span> <span class="s1">'t'</span> <span class="o">:</span> <span class="s1">'f'</span><span class="p">);</span>
+
+<span class="c1">// 여기서, 첫 표현이 'true'로 평가되고, 이것이
+// (bool)true로 전환되어 평가된 후, 두번째
+// 삼항 표현의 true쪽을 반환합니다.
+</span><span class="cp">?&gt;</span>
+add a note add a note
 </code></pre>
 </div>
 
-<p><a href="https://github.com/yabwe/medium-editor/blob/master/API.md#exportselection">exportSelection</a>를 사용해서 커서가 편집 개체 안에 있는지를 검사해서 커서가 없다면 맨 마지막에 필요한 html 코드를 추가한다.</p>
+<p>이와 유사하지만 다른 삼항 연산자인 <a href="https://wiki.php.net/rfc/isset_ternary">Null 병법 연산자:Null Coalesce Operator</a>가 PHP 7부터 지원된다. 한글 이름을 딱히 뭐라 부를지가 애매한데 <a href="https://ko.wikipedia.org/wiki/PHP">위키피디아</a>에서 “Null 병법 연산자”라는 이름을 사용하고 있다.</p>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>isset($_GET['mykey']) ? $_GET['mykey'] : ""
+</code></pre>
+</div>
+
+<p>위 두가지 삼항식은 동일한 것 같지만 자세히보면 다르다. 한가지는 <a href="http://php.net/manual/kr/function.empty.php">empty</a>를 다른 한가지는 <a href="http://php.net/manual/kr/function.isset.php">isset</a>을 대체한다.</p>
+
+<p>그리고 한가지 알아야할 중요한 사항이 있다. <a href="http://stackoverflow.com/a/34571460/6736772">PHP ternary operator vs null coalescing operator</a>에 예시가 나와 있듯이 <code class="highlighter-rouge">?:</code>는 선언되지 않은 변수를 사용할 경우 E_NOTICE가 발생한다. 다시말해 완전히 <a href="http://php.net/manual/kr/function.empty.php">empty</a> 처럼 동작하는 것은 아니다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -174,8 +191,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/11/04/contenteditable-set-caret-at-the-end-of-the-text-cross-browser/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/11/04/contenteditable-set-caret-at-the-end-of-the-text-cross-browser/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

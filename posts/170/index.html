@@ -113,36 +113,139 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/09/01/change-private-static-final-field-using-java-reflection/">
-								java reflection을 사용해서 private static final field 변경하기
+							<a class="title" href="https://blog.asamaru.net/2015/09/02/decoding-byte-escaped-strings-in-php/">
+								PHP에서 Byte-escaped(\xFF)된 문자열 decode하기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/09/01/change-private-static-final-field-using-java-reflection/">2015.09.01.</span></a>
+								<a href="https://blog.asamaru.net/2015/09/02/decoding-byte-escaped-strings-in-php/">2015.09.02.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>java에서 final로 지정한 것은 당연히 변경을 하지 말라는 뜻이다.
-하지만 간혹 작업을 하다보면 그 값을 수정하고 싶을 때가 있다. 이번에도 안드로이드 작업을 하던 중 중요한 값도 아닐뿐아니라 유연성을 위해 값 변경이 필요한 값을 상수라는 이유만으로 final을 붙여 놓은 필드가 있었다.(아마도 자바 개발자들의 습관인 것 같다.)</p>
+							<p>어제 회사 직원 한명이 협력사에서 데이터 전달을 위해 생성해서 알려준 URL에서 데이터를 받지 못해 고생을 하고 있었다. 협력사는 PC용 어플리케이션을 만드는 회사(Delphi 사용)로 웹에 대해서 잘 모른다.</p>
 
-<p>그래서 관련된 내용을 검색하던 중 해답을 알려주는 내용을 찾았다.</p>
+<p>처리하고자 하는 일은 다음과 같았다. PC용 어플리케이션에서 버튼을 누르면 해당 어플리케이션에서 가지고 있던 데이터를 특정 URL로 호출(전달)해주는 것이었다.</p>
 
-<p>http://stackoverflow.com/questions/3301635/change-private-static-final-field-using-java-reflection</p>
+<p>처음엔 데이터를 “뭐뭐 주세요” 했더니 그냥 넘겨주는 바람에 특수문자가 들어가 내용이 정상적으로 전달되지 않았다. 당연히 POST 방식으로 값을 전달해주면 문제가 없겠지만 그렇게는 더 어렵다고하니… 그냥 GET으로 달라고 했다. 그 바람에 이런 일들이 벌어진 것이다.</p>
 
-<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kd">static</span> <span class="kt">void</span> <span class="nf">setFinalStatic</span><span class="o">(</span><span class="n">Field</span> <span class="n">field</span><span class="o">,</span> <span class="n">Object</span> <span class="n">newValue</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
-  <span class="n">field</span><span class="o">.</span><span class="na">setAccessible</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+<p>그리하여 우여곡절 끝에 문자열을 인코딩해서 보내달라는 요청을하고 받은 결과가 다시 문제가 되었다. 분명 인코딩은 되어 있는데 일반적으로 웹에서 쓰는 인코딩이 아니었다.</p>
 
-  <span class="n">Field</span> <span class="n">modifiersField</span> <span class="o">=</span> <span class="n">Field</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getDeclaredField</span><span class="o">(</span><span class="s">"modifiers"</span><span class="o">);</span>
-  <span class="n">modifiersField</span><span class="o">.</span><span class="na">setAccessible</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
-  <span class="n">modifiersField</span><span class="o">.</span><span class="na">setInt</span><span class="o">(</span><span class="n">field</span><span class="o">,</span> <span class="n">field</span><span class="o">.</span><span class="na">getModifiers</span><span class="o">()</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">Modifier</span><span class="o">.</span><span class="na">FINAL</span><span class="o">);</span>
+<blockquote>
+  <p>\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</p>
+</blockquote>
 
-  <span class="n">field</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="n">newValue</span><span class="o">);</span>
-<span class="o">}</span>
+<p>뭐 이런식이다. 어딘가 낯익은 모양이면서도 흔히 보지못한 형태였다.</p>
+
+<p>검색을 해보니 javascript escape sequences라고 부르는 사람도 있고 Byte-escaped string이라고 하기도 하고.. 어쨌든 byte 단위로 변환된 문자열이다.</p>
+
+<p>이 문장을 decode 하려면 다음의 코드를 참조하면 된다. (인터넷에서 다른 소스를 참조해서 조금 개선했다.)</p>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>$string = "\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9";
+echo preg_replace_callback(
+    '/\\\x([0-9a-f]{2})/i',
+    function($matches) {
+        return chr(hexdec($matches[1]));
+    },
+    $string
+);
 </code></pre>
 </div>
 
-<p>상세한 내용은 원본 주소에 가서 보면 친절히 설명되어 있다. 사실 코드를 굳이 해석할 이유도 없고 그냥 저 함수를 써서 원하는 처리를 하면 그만이다.</p>
+<p>어땠든 이렇게 decode를 했는데도 글자가 깨졌다. 이런… 문자열이 UTF-8이 아니라 EUC-KR이다.
+그래서 조금더 추가. 여기서 UHC는 euc-kr과 거의 유사하다. 조금 더 확장되었다고 알고있는데 오래전 기억이라 확실치 않다.</p>
 
-<p>이번 작업과 상관은 없지만 개인적으로 java는 정말 맘에 들지 않는다. 개인적으로 느끼기에 너무 고지식한 언어 같다. 이렇게 얘기하면 java 추종자들이 난리나겠지만 길게 얘기할 맘은 없다. 난 Objective-C가 좋아.</p>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>$string = "\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9";
+echo iconv("UHC", "UTF-8", preg_replace_callback(
+    '/\\\x([0-9a-f]{2})/i',
+    function($matches) {
+        return chr(hexdec($matches[1]));
+    },
+    $string
+));
+</code></pre>
+</div>
+
+<p>이렇게 해피앤딩이 되면 좋겠지만 현실을 그렇지 않다. 문제는 이 인코딩이 특수문자는 인코딩하지 않는다는 것.(비 ascii 코드만 인코딩)
+따라서 웹에서 데이터로 URL에 사용해서는 안되는 &amp;, # 등이 그대로 남아있어 데이터가 잘려서 넘어오는 문제는 해결되지 않는다. 가장 좋은 해결책은 urlencode를 해서 넘겨 벋는 것이지만 협력사를 내맘대로 할 수는 없고…</p>
+
+<p>자체적인 해결을 위한 해결법(꼼수)은 다음과 같다.
+특히 #이 가장 큰 문제를 일으키므로 초출된 URL에서 데이터를 즉시 처리하지 않고 javascript로 현재 브라우저의 URL을 받아 다른 처리 페이지로 직접 넘겨서 파싱한다. 이렇게하면 일이 많이 번거로워지지만 협력사의 변경없이 여기서 모두 해결된다.
+다만.. urlencode만 제대로 해줘도 되는걸 이런 꼼수를 써가며 억지로 해야하는가? 하는…</p>
+
+<p>이왕 이 일로 글을 적는 김에 몇가지 함수도 덤으로…
+php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등을 사용하면되나 javascript에서 인코딩된 문자열을 그대로 전달받는 경우 등에 사용할 수 있다. 쉽게 말해서 javascript 문자열 인코딩 함수 php 대응 함수다.</p>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>/**
+ * @desc javascript의 encodeURIComponent함수와 같은기능으로 문자열을 변환한다.
+ * @param mixed $str 처리할 배열변수나 단일변수
+ * @param String $fromEncofing 입력 인코딩
+ * @return mixed 변환된 변수 그대로 반환
+ * @exam $arr = String::encodeURI($arr);
+ *       String::encodeURI($arr);
+ */
+static public function encodeURI(<span class="err">&amp;</span>$str, $fromEncofing = null)
+{
+    if (is_array($str)) {
+        String::arrayProc($str, 'String::encodeURI');
+        return $str;
+    }
+
+    if (!is_null($fromEncofing)) {
+        $trans = iconv($fromEncofing, "UTF-8", $str); // UHC 확장 완성형 한글
+    }
+    $trans = rawurlencode($trans);
+
+    $str = $trans;
+    return $str;
+}
+
+/**
+ * @desc javascript의 decodeURIComponent함수와 같은기능으로 문자열을 변환한다.
+ * @param mixed $str 처리할 배열변수나 단일변수
+ * @param String $toEncofing 반환 인코딩
+ * @return mixed 변환된 변수 그대로 반환
+ * @exam $arr = String::decodeURI($arr);
+ *       String::decodeURI($arr); //리턴받지 않아도 입력변수에 저장되어 나옴.
+ */
+static public function decodeURI(<span class="err">&amp;</span>$str, $toEncofing = null)
+{
+    if (is_array($str)) {
+        String::arrayProc($str, 'String::decodeURI');
+        return $str;
+    }
+
+    //  euc-kr의 경우 확장완성형 한글에 대한 처리가 불가능함(예 : ㅂ ㅞ ㄺ)
+    //  return iconv("UTF-8", "EUC-KR", rawurldecode($text));
+    $str = rawurldecode($str);
+    if (!is_null($toEncofing)) {
+        $str = iconv("UTF-8", $toEncofing, $str);
+    }
+    return $str;
+}
+
+/**
+ * @desc javascript의 escape함수로 인코딩된 문자를 디코딩한다.(encodeURIComponent추천)
+ * @param String $str 처리할 배열변수나 단일변수
+ * @param String $toEncofing 반환 인코딩
+ * @return mixed 변환된 변수 그대로 반환
+ * @exam $decStr = String::unescape($str);
+ */
+static public function unescape($text, $toEncofing = 'UTF-8')
+{
+    //return urldecode(preg_replace_callback('/%u([[:alnum:]]{4})/', array('self', 'tostring'), $text));
+    return urldecode(
+        preg_replace_callback(
+            '/%u([[:alnum:]]{4})/',
+            create_function(
+                '$text',
+                "echo '123'; return iconv('UTF-16LE', '" . $toEncofing . "', chr(hexdec(substr(\$text[1], 2, 2))).chr(hexdec(substr(\$text[1], 0, 2))));"
+            ),
+            $text
+        )
+    );
+}
+</code></pre>
+</div>
+
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -156,8 +259,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/09/01/change-private-static-final-field-using-java-reflection/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/09/01/change-private-static-final-field-using-java-reflection/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/09/02/decoding-byte-escaped-strings-in-php/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/09/02/decoding-byte-escaped-strings-in-php/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

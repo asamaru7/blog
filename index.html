@@ -113,53 +113,33 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/12/06/how-to-do-insertafter-in-javascript/">
-								자바스크립트 insertAfter() 구현하기
+							<a class="title" href="https://blog.asamaru.net/2016/12/06/windows-shared-network-folder-disconnect/">
+								Windows에서 네트워크 상의 공유 폴더 연결 끊기(로그인 아이디/암호를 저장했을 경우)
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/12/06/how-to-do-insertafter-in-javascript/">2016.12.06.</span></a>
+								<a href="https://blog.asamaru.net/2016/12/06/windows-shared-network-folder-disconnect/">2016.12.06.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>javascript는 <a href="http://www.w3schools.com/jsref/met_node_insertbefore.asp">insertBefore()</a>만 제공하고 <code class="highlighter-rouge">insertAfter()</code> 함수는 제공하지 않는다.</p>
+							<p>네트워크 상에 공유된 폴더를 연결하게되면 아이디/암호를 넣게되는 경우가 있는데 이때 암호를 저장 했다면 이후부터는 연결시 항상 그 계정을 사용하게 된다. 흔한 경우는 아니지만 이 계정을 변경하려는 경우 기존에 저장된 계정을 제거해야 하는데 그 방법은 아래와 같은 것들이 있다.</p>
 
-<p>웹 UI 개발시 대부분 <a href="https://jquery.com/">jQuery</a> 같은 라이브러리를 사용하니 <code class="highlighter-rouge">insertAfter()</code> 함수를 쉽게 사용할 수 있다. 그런데 추가 라이브러리를 사용할 수 없거나 간단히 이 기능만 필요한 경우가 있다.</p>
+<ul>
+  <li><code class="highlighter-rouge">net use * /d</code> 를 사용하여 기존의 접속을 끊고 다시 연결한다.</li>
+  <li>탐색기 - 도구 - 폴더옵션 - 보기 - 모든 사용자에게 동일한 폴더 공유 권한을 지정(권장)을 체크아웃 한다.</li>
+</ul>
 
-<p>아래는 검색시 주로 발견되는 예시 소스다.</p>
+<p>위 방법 중 하나만 적용해도 문제가 해결될 수 있으나 그렇지 않다면 아래의 방법을 사용한다.</p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="nb">Object</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">insertAfter</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">newNode</span><span class="p">)</span> <span class="p">{</span>     
-  <span class="k">this</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">.</span><span class="nx">insertBefore</span><span class="p">(</span><span class="nx">newNode</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">nextSibling</span><span class="p">);</span>
-<span class="p">};</span>
-<span class="c1">// 또는</span>
-<span class="kd">function</span> <span class="nx">insertAfter</span><span class="p">(</span><span class="nx">referenceNode</span><span class="p">,</span> <span class="nx">newNode</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">referenceNode</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">.</span><span class="nx">insertBefore</span><span class="p">(</span><span class="nx">newNode</span><span class="p">,</span> <span class="nx">referenceNode</span><span class="p">.</span><span class="nx">nextSibling</span><span class="p">);</span>
-<span class="p">}</span>
+<ul>
+  <li><code class="highlighter-rouge">cmd</code> 실행</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>net use \\ip\공유폴더이름 /d
+net use /persistent:no
 </code></pre>
 </div>
 
-<p>그런데 이 방식은 문제가 있다. 다음 노드를 찾는 <code class="highlighter-rouge">nextSibling</code> 값이 null이 될 수 있기 때문이다(대상이 맨 마지막 노드일때).</p>
-
-<p>따라서 아래와 같이 사용해야 한다.</p>
-
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="nb">Object</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">insertAfter</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">newNode</span><span class="p">)</span> <span class="p">{</span>     
-  <span class="k">if</span> <span class="p">(</span><span class="o">!!</span><span class="k">this</span><span class="p">.</span><span class="nx">nextSibling</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">.</span><span class="nx">insertBefore</span><span class="p">(</span><span class="nx">newNode</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">nextSibling</span><span class="p">);</span>
-  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">newNode</span><span class="p">);</span>
-  <span class="p">}</span>
-<span class="p">};</span>
-<span class="c1">// 또는</span>
-<span class="kd">function</span> <span class="nx">insertAfter</span><span class="p">(</span><span class="nx">referenceNode</span><span class="p">,</span> <span class="nx">newNode</span><span class="p">)</span> <span class="p">{</span>   
-  <span class="k">if</span> <span class="p">(</span><span class="o">!!</span><span class="nx">referenceNode</span><span class="p">.</span><span class="nx">nextSibling</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">referenceNode</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">.</span><span class="nx">insertBefore</span><span class="p">(</span><span class="nx">newNode</span><span class="p">,</span> <span class="nx">referenceNode</span><span class="p">.</span><span class="nx">nextSibling</span><span class="p">);</span>
-  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-    <span class="nx">referenceNode</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">newNode</span><span class="p">);</span>
-  <span class="p">}</span>  
-<span class="p">}</span>
-</code></pre>
-</div>
-
-<p>여기서도 <code class="highlighter-rouge">parentNode</code>가 null인 경우에 대해서는 고려되지 않았지만 대부분의 경우 굳이 고려할 필요가 없을 것이다. 필요하다면 이 부분도 추가해주면 된다.</p>
+<p>출처 : <a href="https://answers.microsoft.com/ko-kr/windows/forum/windows_xp-networking/%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC/74c60ce5-6730-4e96-aef1-f945bf332cec">네트워크 상의 다른 윈도우 운영체제에서 공유된 폴더에 접속시 로그인 암호를 저장 했을 경우 암호를 저장 해제하는 방법을 알려주십시요.</a></p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -173,8 +153,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/12/06/how-to-do-insertafter-in-javascript/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/12/06/how-to-do-insertafter-in-javascript/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/12/06/windows-shared-network-folder-disconnect/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/12/06/windows-shared-network-folder-disconnect/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

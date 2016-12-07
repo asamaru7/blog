@@ -113,57 +113,22 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/">
-								java setChunkedStreamingMode를 php-fpm 서버와 연결할 때 발생하는 문제
+							<a class="title" href="https://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/">
+								android apk download / decompile 하기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/">2015.10.29.</span></a>
+								<a href="https://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/">2015.11.02.</span></a>
 							</p>
 						</header>
 						<p>
-							<p><a href="/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/">ACRA : Please configure ‘buildConfigClass’ in your ACRA config 오류</a>에서  http 접속시 <code class="highlighter-rouge">setChunkedStreamingMode</code>를 사용하면 request의 body가 수신되지 못하는 문제를 언급하고 Github에 <a href="https://github.com/ACRA/acra/issues/310#issuecomment-151826809">issue로 등록</a> 했었다. 그런데 어제 ACRA로 부터 답변을 받았다.
-간단히 요약하자면 “일반적인 상황에 대한 문제가 아니므로 수정 해 줄 수 없다.”라는 것이다. 게다가 자신의 생각을 바꾸려면 정당한 근거를 제시하란다. 안그래도 영어가 안되서 겨우 report했는데 근거를 달라니…
-현재로써는 ACRA를 대체할만한 라이브러리를 찾지 못했기 때문에 어떻게든 방법을 찾아보려고 노력했다. 우선 proxy 상황에서만 문제가 되므로 apache에서 해결 방법이 있을 것이라고 생각하고 자료를 찾아봤다. 이와 관련된 문제와 해결 방법은 무수히 많았지만 정작 해결이 되는 자료는 찾을 수 없었다. 찾았던 정보 중에 도움이 될만한  것들을 링크하고 싶지만 다시 찾으려니 못찾겠다. 구글에서 “http chunked proxy”와 같은 키워드들로 검색하면 무지하게 나온다. 그중 그나마 기억에 남아있는 것 몇가지만 아래에 언급하려고 한다.</p>
+							<p>오늘은 <a href="https://play.google.com/store">Google Play</a>에서 apk 파일을 다운 받는 방법과 apk 파일을 decompile하는 방법을 소개하려고 한다.
+일반적인 상황에서는 apk를 받거나 decompile 할 일은 거의 없다. 하지만 안드로이드 개발을 하다보면 필요해지는 경우가 있다. 나의 경우는 ACRA를 이용해서 서비스 앱에서 crash가 발생하면 오류를 보고하도록 해두고 사용한다. 그런데 proguard를 사용해서 난독화가 되어 있다보니 오류 메시지만 보고는 어디에서 발생한 오류인지 확인할 수 없다. 그래서 서비스 중이 apk를 다운 받아 decompile해서 오류 위치를 파악한다. 배포 전에 apk 파일을 따로 보관해두는 방법도 있으나 귀찮아서 일일이 보관하지 않고 있다. 소스야 Git에서 tagging을 해두기 때문에 해당 버전을 바로 확인할 수 있지만 proguard가 적용되면서 package 등을 모두 바꾸게 되어 있어서 서비스 중인 apk가 따로 필요하다.</p>
 
-<p>일단 nginx를 web 서버로 사용하는 경우라면 <a href="http://serverfault.com/a/408131">Enabling Chunked Uploading in Nginx</a>를 참고하면 해결이 될지도 모르겠다. nginx는 현재 사용을 검토중이고 서비스 서버에 적용되지 않은 상황이라 적용해서 테스트해보지는 못했다.</p>
+<p>본론으로 들어가서 일단 APK 파일을 받으려면 <a href="http://apk-dl.com/">Online Google Play APK Downloader</a>를 사용하면 된다. 사이트에 가서 원하는 앱의 package명을 넣으면 다운 받아진다. 간혹 실패하는 경우가 있으나 다시 시도하면 대부분은 받아진다.</p>
 
-<p>내가 사용하는 apache에 대해서는 해결 방법을 찾지는 못했지만 관련된 bug report가 된 것이 있었다. <a href="https://bz.apache.org/bugzilla/show_bug.cgi?id=55475">mod_proxy breaks HTTP chunked transfer coding</a>. 사실 정확히 동일한 문제는 아니지만 mod_proxy와 관련이 있어서 내용을 봤다. 2.4.8버전에 수정되었다는 말이 있어서 apache도 버전업해서 확인 했지만 도움이 되지는 못했다. php-fpm을 사용하면서 mod_proxy_fcgi를 사용하고 있는데 여기에 문제인 것으로 추정만 하고 있다.</p>
+<p>받아진 apk 파일을 decompile 하려면 <a href="http://www.decompileandroid.com/">Android APK Decompiler</a>를 사용하면 된다. 다운 받은 파일을 업로드하면 잠시 후에 Manifest 파일 정보와 함께 다운로드 링크가 나온다. 다운 받으면 소스가 zip로 압축되어 있으니 압축을 풀어서 보면 된다. 당연히 완벽한 소스로 복구되지는 않는다. 하지만 오류 위치를 파악하거나 하는 경우에는 충분한 소스가 나온다.</p>
 
-<p><a href="https://gnunet.org/book/export/html/1932">Configuring HTTP(S) reverse proxy functionality using Apache or nginx</a>라는 글도 있으나 역시 도움이 되지 않았다.</p>
-
-<p>그 외에도 무수히 많은 자료를 봤지만 대부분 SenEnv를 사용해서 인자를 넘겨주는 방법들을 제시했는데 모두 해결에 도움이 되지 않았다. 결국 내 서버를 수정하는 것은 방법이 없다는 결론을 내리고 ACRA에 다시 요청했다.</p>
-
-<p>요청 내용은 이렇다.</p>
-<blockquote>
-  <p><code class="highlighter-rouge">setChunkedStreamingMode</code>를 사용하는 것은 proxy 상황에서 정상적인 동작을 하지 않는 웹 서버들이 많으니 <code class="highlighter-rouge">setFixedLengthStreamingMode</code> 함수로 교체하는 것이 어떠냐?</p>
-</blockquote>
-
-<p>사실 ACRA의 경우는 소스를 보면 굳이 <code class="highlighter-rouge">setChunkedStreamingMode</code>를 사용할 필요는 없다. 전송할 내용을 미리 다 생성해 놓았기 때문에 길이를 알 수 있는 상황이기 때문이다. 따라서 <code class="highlighter-rouge">setFixedLengthStreamingMode</code>를 사용해도 되며 실제로 테스트 결과 정상적으로 값을 받을 수 있었다. 가급적 ACRA를 custom해서 사용하는 것은 피하고 싶으므로 이 요구를 ACRA 측에서 받아들여 줬으면 한다.</p>
-
-<p>마지막으로 <code class="highlighter-rouge">setChunkedStreamingMode</code>와 <code class="highlighter-rouge">setFixedLengthStreamingMode</code>에 관련된 내용은 <a href="https://byunsooblog.wordpress.com/2013/03/26/urlconnection-httpurlconnection/">URLConnection &amp; HttpURLConnection</a>에서 <code class="highlighter-rouge">HttpURLconnection</code>를 설명하는 과정에 나와있다.</p>
-
-<p>내용을 일부를 발췌하여 아래에 추가해 둔다.</p>
-
-<blockquote>
-  <p><strong>Posting Content</strong></p>
-
-  <p>데이터를 웹 서버로 보내기 위해, setDoOutput(true)를 써서 커넥션을 구성한다.</p>
-
-  <p>setFixedLengthStreamingMode(int),setChunkedStreamingMode(int)</p>
-
-  <ul>
-    <li>좋은 성능을 위해서, 이 둘 중 하나의 함수를 불러야 한다.</li>
-    <li>setFixedLengthStreamingMode() : body의 길이를 미리 알고있을때 쓴다.</li>
-    <li>setChunkedStreamingMode(int) : body의 길이를 모를 때 쓴다.</li>
-    <li>안그러면 HttpURLConnection은 전송되기전에 완성된 request body를 메모리 buffer에 넣도록 강요된다.
-      <ul>
-        <li>이건 heap을 낭비하는 일이고 지연시간을 늘리는 일이다.</li>
-      </ul>
-    </li>
-  </ul>
-</blockquote>
-
-<p>첨언 : 방금 ACRA 측의 답변을 받았다. 다행히 나의 요구사항을 수용해서 패치를 완료했단다. <a href="https://github.com/ACRA/acra/pull/318">Configuring request length instead of using chunked streaming mode.</a></p>
+<p>물론 위의 사이트들을 사용해야만 가능한 일들은 아니다. apk 다운로드의 경우 별도의 app도 있고 decompile의 경우도 shell에서 직접할 수 있다. 하지만 위 사이트들을 사용하면 간단하게 처리가 가능하니 필요하다면 한번 쯤은 사용해 봐도 좋을 듯하다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -177,8 +142,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/29/java-setchunkedstreamingmode-with-php-fpm-problem/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/11/02/android-online-apk-download-and-decompile/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

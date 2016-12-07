@@ -113,47 +113,34 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/01/05/composer-github-token/">
-								composer 사용시 github token을 요구할 때
+							<a class="title" href="https://blog.asamaru.net/2016/01/06/xyz-domain-and-cloudflare/">
+								.xyz 도메인을 구매해서 CloudFlare에 연결하다
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/01/05/composer-github-token/">2016.01.05.</span></a>
+								<a href="https://blog.asamaru.net/2016/01/06/xyz-domain-and-cloudflare/">2016.01.06.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>php <a href="https://getcomposer.org/">composer</a>를 사용해서 의존성 모듈을 설치하려고 할 때 아래와 같이 Token을 요구하는 경우가 있다.</p>
+							<p>어제 <a href="/2016/01/05/cloudflare-free-plan/">CloudFlare Free Plan</a>에 대한 글을 쓰면서 CloudFlare를 적용하는 것에 대해 고민중이라고 했었다.</p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>composer update
-Loading composer repositories with package information
-Cloning failed using an ssh key <span class="k">for </span>authentication, enter your GitHub credentials to access private repos
-Head to https://github.com/settings/tokens/new?scopes<span class="o">=</span>repo&amp;description<span class="o">=</span>Composer+on+dev.vagrant.startupbridgeva.com+2015-12-30+0812
-to retrieve a token. It will be stored <span class="k">in</span> <span class="s2">"/home/web/.composer/auth.json"</span> <span class="k">for </span>future use by Composer.
-Token <span class="o">(</span>hidden<span class="o">)</span>:
-</code></pre>
-</div>
+<p>드디어 오늘 그 고민을 끝내고 CloudFlare를 사용하기 시작했다. 원래 계획은 개인적으로 사용하던 도메인에 적용해서 테스트하는 것이었는데 이 블로그뿐아니라 이메일등 여러 곳에서 사용하고 있어서 새로 도메인을 하나 구매했다. 사실 다른 용도로 도메인이 하나 더 필요하기도 했지만.</p>
 
-<p>여기서의 Token은 github에서 생성한 <a href="https://github.com/settings/tokens">Personal access tokens</a>을 넣으라는 것이다. 사실 대부분의 경우엔 여기서 그냥 Enter를 눌러도 설치가 된다(원래 그런 것인지는 몰라도 나의 경우엔 되는 경우가 많았다). 그런데 간혹 오류를 내면서 설치가 중단되는 경우가 있다. 사실 중단되지 않더라도 앞으로도 계속 물어보므로 그냥 한번 입력하는 것이 낫다.</p>
+<p>새로 구매한 도메인은 .xyz 도메인이다. Wix.com에서는 .xyz 도메인에 대해서 아래와 같이 안내하고 있다.</p>
 
-<p>우선 Github의 <a href="https://github.com/settings/tokens">Personal access tokens</a>에 가면 기존에 생성된 token이 목록으로 표시된다. 그런데 기존에 생성된 token은 그 값을 볼 수가 없고 수정(Edit)에서 재생성하거나 권한을 변경하거나 삭제하는 기능만 제공된다. 사실 이 token은 여러 개를 만들어도 상관없으므로 기존 token을 모른다면 상단에 “Generate new token”을 눌러서 그냥 새로 생성하면 된다. 권한도 기본 설정 상태로 만들어도 Composer를 사용하는데는 문제가 없다. 어쨌든 새로 생성하고 나면 token을 보여주는데 이 값을 복사해서 composer에 입력하면 된다. (hidden)이라고 표시된 것과 같이 입력값이 보이지 않지만 붙여넣기를 하면 입력된 것이므로 Enter를 누르면 된다.</p>
+<blockquote>
+  <p>.xyz – ‘.xyz’는 도메인 이름이 알파벳처럼 XYZ로 끝이 나도록 만드는 독창적인 최상급 도메인(TLD)입니다. 이 최상급 도메인은 짧은 URL 주소로 높은 검색 클릭률을 원하는 회사들에게 적합합니다.</p>
+</blockquote>
 
-<p>이렇게 한번 넣어주고 나면 앞으로는 물어보지 않는다. 이유는 Composer가 입력한 token 값을 <code class="highlighter-rouge">auth.json</code> 파일로 저장해주기 때문이다. 해당 파일을 열어보면 아래와 같이 저장되어 있다.</p>
+<p>간단히 이야기하자면 특별한 의미가 없는 최상위 도메인이다. 구글이 알파벳이라는 회사를 설립하면서 abc.xyz 라는 도메인을 사용하면서 유명해졌다.</p>
 
-<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
-    </span><span class="nt">"github-oauth"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="nt">"github.com"</span><span class="p">:</span><span class="w"> </span><span class="s2">"[입력한 token]"</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre>
-</div>
+<p>어쨌든 원래 나는 도메인을 <a href="http://cypack.com">CYPACK</a>에서 사용하고 있었다(그냥 조금 싼편이라). 그런데 여기서는 .xyz 도메인을 구매할 수 없었다. 그래서 할 수없이 비싼 <a href="https://www.gabia.com/">가비아</a>에서 구매했다. 사실 <a href="https://gen.xyz/">XYZ</a>에서 바로 구매하면 $10에 구매할 수 있다. 하지만 해외 사이트라 가비아에서 그냥 샀다. 국제 도메인은 해외에서 사는게 났다는 평이 많지만 그냥 귀찮아서 그냥 샀다.</p>
 
-<p>사실 이 방법은 Composer가 요청 시에 입력해주는 방식이었고 <a href="https://github.com/composer/composer/issues/3609">auth.json refers to “github.com” instead of “api.github.com” for authenticated api calls</a>에 언급된 것처럼 미리 설정해 두는 것도 가능하다.</p>
+<p>그런데 지금 행사중이라 .xyz 도메인이 무척 쌌다. 지금 1,400원이면 도메인을 구매할 수 있다. 부가세 포함 1,540원. 하지만 내년에 연장하려면 20,000원을 내고 연장해야 한다.</p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code>composer config -g --unset github-oauth.api.github.com
-composer config -g github-oauth.github.com TOKEN
-</code></pre>
-</div>
+<p>어쟀든 도메인을 구매하고 바로 CloudFlare에 연결했다. 연결은 아주 간단했고 DNS 변경 후 반영되는데 약간의 시간이 걸린 후 바로 적용되기 시작했다.</p>
 
-<p>여기서 <code class="highlighter-rouge">-g</code> 옵션은 global 설정으로 지정하는 것인데 현재 프로젝트에만 지정하고 싶다면 <code class="highlighter-rouge">-g</code>를 빼면 된다(나의 경우엔 <code class="highlighter-rouge">-g</code> 옵션 사용시 <code class="highlighter-rouge">~/.composer/auth.json</code>에 해당 내용이 추가되긴 했는데 계속 Token을 물어봐서 local에 그냥 추가했다).</p>
+<p>이제부터 CloudFlare를 사용해서 여러가지 테스트를 해봐야 할 것 같다.
+그리고 어제 <a href="/2016/01/05/cloudflare-free-plan/">CloudFlare Free Plan</a>에서 page rule을 사용할 수 없다고 했었는데 오늘 들어가보니 free plan의 경우도 3개까지는 사용이 가능한 것으로 나와있었다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -167,8 +154,8 @@ composer config -g github-oauth.github.com TOKEN
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/01/05/composer-github-token/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/01/05/composer-github-token/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/01/06/xyz-domain-and-cloudflare/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/01/06/xyz-domain-and-cloudflare/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

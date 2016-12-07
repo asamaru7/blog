@@ -113,65 +113,164 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/09/13/online-css-image-sprites-generator/">
-								필요해서 만들어본 CSS Image Sprites 생성기
+							<a class="title" href="https://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">
+								PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/09/13/online-css-image-sprites-generator/">2015.09.13.</span></a>
+								<a href="https://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">2015.09.14.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>웹 기반 프로그램 개발을 주업으로 하다보니 CSS에 관련된 작업도 많이 하게 된다. 게다가 웹 서비스 성능에 대해 고민을 많이 하게되는 것도 당연하다.
-그중에서도 간혹 필요하지만 마땅한 도구가 없어 고민을 하게되던 것 중 하나가 CSS Image Sprite 도구다.
-얼마전에도 비슷한 작업이 필요하게되어 온라인 도구들을 찾던 중 마땅한 것이 없어 필요에 의해 도구를 하나 만들어 버렸다.</p>
+							<p>php 프로그램 개발중 문자열의 유사도를 계산해야 할 일이 생겼다. 그래서 찾다보니 php 내장 함수에 해당 기능이 이미 구현되어 있었다. 비슷한 함수가 몇가지 존재하고 있어서 조금 더 자세히 알아 보았다.</p>
 
-<p>일단 이 도구에 대해 설명하기 전에 CSS Image Sprite가 무엇인지 부터 알아보자.</p>
+<h2 id="levenshteinhttpphpnetmanualenfunctionlevenshteinphp-"><a href="http://php.net/manual/en/function.levenshtein.php">levenshtein()</a> 함수</h2>
 
-<h2 id="css-image-sprite-">CSS Image Sprite 기법</h2>
+<p>위키피디아에 <a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein distance</a>에 대한 상세한 설명이 나와있다.</p>
 
-<p>간단하게 설명하자면 웹 페이지에서 필요한 이미지들을 한장의 이미지로 묶어 제작/배포하여 HTTP request를 줄임으로써 웹페이지 성능을 높이는 기법이다.
-이 부분을 이해하기 위해서는 왜 HTTP request를 줄이는 것이 성능에 관련이 있는지를 알아야한다.
-일반적으로 복잡한 웹페이지의 경우 페이지를 읽는데 수십에서 수백개의 request(CSS, JS, Image 등)가 발생한다. 이러한 페이지를 브라우저가 로딩할때 한꺼번에 모든 request를 처리하는 것이 아니라 순차적(보통 동시에 2~4개를 동시에 처리 : 브라우저마다 설정에 따라 다름)으로 처리함에 따라 이 수가 많다면 완료 시간이 늘어날 수 밖에 없다. 이와 관련된 자세한 내용은 얘기가 길어지므로 일단 이 정도만 설명하겠다. 조금 더 자세한 내용이 필요하다면 아래의 사이트를 참고하자.</p>
+<p><a href="http://php.net/manual/en/function.levenshtein.php">php 메뉴얼의 설명</a>에 따르면 Levenshtein distance는 문자열1을 문자열2로 변환하는데 필요한 최소한의 치환, 추가, 삭제의 횟수를 나타낸다고 되어 있다. 이 알고리즘의 시간복잡도는 <code class="highlighter-rouge">O(m*n)</code>이며, 여기서 m과 n은 str1, str2의 각각의 길이다. 비슷한 함수인 <a href="http://php.net/manual/en/function.similar-text.php">similar_text()</a>가 가지는 시간 복잡도 <code class="highlighter-rouge">O(max(n,m)**3)</code>에 비해서는 덜하지만 그래도 비싼 처리 비용이 든다.</p>
+
+<p>함수의 기본형 사용시 위의 설명대로 변환에 필요한 최소한의 치환, 추가, 삭제의 횟수를 계산하지만 추가 인자를 사용하면 각 변환에 필요한 비용을 지정할 수 있다. 이것은 더 일반적이고 적용성이 높지만 효율적이지 못하다.</p>
+
+<h3 id="section">기본 사용법</h3>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>int levenshtein ( string $str1 , string $str2 )
+</code></pre>
+</div>
+
+<h3 id="section-1">확장 사용법</h3>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>int levenshtein ( string $str1 , string $str2 , int $cost_ins , int $cost_rep , int $cost_del )
+</code></pre>
+</div>
+
+<h3 id="section-2">함수 인자</h3>
+
+<h4 id="str1">str1</h4>
+<p>Levenshtein distance를 계산할 문자열1</p>
+
+<h4 id="str2">str2</h4>
+<p>Levenshtein distance를 계산할 문자열2</p>
+
+<h4 id="costins">cost_ins</h4>
+<p>문자 추가 비용(가중치)</p>
+
+<h4 id="costrep">cost_rep</h4>
+<p>문자 치환 비용(가중치)</p>
+
+<h4 id="costdel">cost_del</h4>
+<p>문자 삭제 비용(가중치)</p>
+
+<h3 id="section-3">반환값</h3>
+
+<p>두 문자열의 Levenshtein-Distance 반환한다. 단, 입력된 두 문자열 중 하나라도 255 글자를 넘는다면 -1을 반환한다.</p>
+
+<h3 id="section-4">예시</h3>
+
+<p>메뉴얼에 나와 있는 예시 중 UTF-8 인코딩에 관련된 문제와 해결방법이 나와있어서 그 예시를 제시한다.</p>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="k">echo</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="s1">'notre'</span><span class="p">,</span> <span class="s1">'votre'</span><span class="p">);</span>
+<span class="k">echo</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span>
+<span class="k">echo</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="s1">'notre'</span><span class="p">,</span> <span class="s1">'nôtre'</span><span class="p">);</span>
+<span class="k">echo</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span>
+
+<span class="c1">// 결과
+// 1
+// 2
+</span></code></pre>
+</div>
+
+<p>위의 결과를 보면 의아할 수 있다. 분명 두 예시 모두에서 글자가 하나씩 다르므로 결과가 1과 1이 나올 것이라고 예상되지만 결과는 1과 2가 나왔다. 이유는 UTF-8문자열 때문이다. 이를 개선하는 함수의 예시는 다음과 같다.</p>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="c1">// Convert an UTF-8 encoded string to a single-byte string suitable for
+// functions such as levenshtein.
+//
+// The function simply uses (and updates) a tailored dynamic encoding
+// (in/out map parameter) where non-ascii characters are remapped to
+// the range [128-255] in order of appearance.
+//
+// Thus it supports up to 128 different multibyte code points max over
+// the whole set of strings sharing this encoding.
+//
+</span><span class="k">function</span> <span class="nf">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="o">&amp;</span><span class="nv">$map</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// find all multibyte characters (cf. utf-8 encoding specs)
+</span>    <span class="nv">$matches</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">preg_match_all</span><span class="p">(</span><span class="s1">'/[\xC0-\xF7][\x80-\xBF]+/'</span><span class="p">,</span> <span class="nv">$str</span><span class="p">,</span> <span class="nv">$matches</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span> <span class="c1">// plain ascii string
+</span>
+    <span class="c1">// update the encoding map with the characters not already met
+</span>    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">as</span> <span class="nv">$mbc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]))</span>
+            <span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">128</span> <span class="o">+</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$map</span><span class="p">));</span>
+
+    <span class="c1">// finally remap non-ascii characters
+</span>    <span class="k">return</span> <span class="nb">strtr</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$map</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Didactic example showing the usage of the previous conversion function but,
+// for better performance, in a real application with a single input string
+// matched against many strings from a database, you will probably want to
+// pre-encode the input only once.
+//
+</span><span class="k">function</span> <span class="nf">levenshtein_utf8</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nv">$charMap</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="nv">$s1</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
+    <span class="nv">$s2</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s2</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="cp">?&gt;</span>
+</code></pre>
+</div>
+
+<p>위의 함수를 이용해서 처음 예시를 다시 실행해보자.</p>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="k">function</span> <span class="nf">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="o">&amp;</span><span class="nv">$map</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nv">$matches</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">preg_match_all</span><span class="p">(</span><span class="s1">'/[\xC0-\xF7][\x80-\xBF]+/'</span><span class="p">,</span> <span class="nv">$str</span><span class="p">,</span> <span class="nv">$matches</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nv">$str</span><span class="p">;</span> <span class="c1">// plain ascii string
+</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">as</span> <span class="nv">$mbc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]))</span>
+            <span class="nv">$map</span><span class="p">[</span><span class="nv">$mbc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">128</span> <span class="o">+</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$map</span><span class="p">));</span>
+
+    <span class="k">return</span> <span class="nb">strtr</span><span class="p">(</span><span class="nv">$str</span><span class="p">,</span> <span class="nv">$map</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nf">levenshtein_utf8</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nv">$charMap</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="nv">$s1</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
+    <span class="nv">$s2</span> <span class="o">=</span> <span class="nx">utf8_to_extended_ascii</span><span class="p">(</span><span class="nv">$s2</span><span class="p">,</span> <span class="nv">$charMap</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="nb">levenshtein</span><span class="p">(</span><span class="nv">$s1</span><span class="p">,</span> <span class="nv">$s2</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">echo</span> <span class="nx">levenshtein_utf8</span><span class="p">(</span><span class="s1">'notre'</span><span class="p">,</span> <span class="s1">'votre'</span><span class="p">);</span>
+<span class="k">echo</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span>
+<span class="k">echo</span> <span class="nx">levenshtein_utf8</span><span class="p">(</span><span class="s1">'notre'</span><span class="p">,</span> <span class="s1">'nôtre'</span><span class="p">);</span>
+<span class="k">echo</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span>
+
+<span class="c1">// 결과
+// 1
+// 1
+</span></code></pre>
+</div>
+
+<p>결과는 개선되어 1과 1이 나온다. 하지만 정확한 값이 필요한 것이 아니라면 개선된 함수말고 기본 함수를 써도 무방하다. 일반적으로 사용할 때는 가장 비슷한 문자열을 찾는 등에 사용할테니 인코딩에 따른 값차이는 크게 의미를 가지지 않는다. 게다가 처리 비용도 더 많이 든다.</p>
+
+<h3 id="section-5">유사함수</h3>
+
+<p>비슷한 역할을 하는 함수에 대해 알고 싶다면 아래의 포스팅을 참고하자.</p>
 
 <ul>
-  <li>https://css-tricks.com/css-sprites/</li>
-  <li>http://alistapart.com/article/sprites</li>
-  <li>http://windtale.net/blog/css-image-sprite-automation-with-grunt-spritesmith/ (한글)</li>
+  <li><a href="/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/">PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()</a></li>
 </ul>
-
-<h2 id="css-image-sprites-">CSS Image Sprites 생성기</h2>
-
-<p>https://asamaru7.github.io/SpriteImageGenerator/  또는  http://sprite.asamaru.net  으로 접속해서 사용할 수 있다.</p>
-
-<p>Github :  https://github.com/asamaru7/SpriteImageGenerator
-(만들어서 나와 같은 필요을 느끼는 사람이 있을까 싶어 페이지도 개설할 겸 Github에 등록했다.)</p>
-
-<p>그리고 만든 김에 크롬 익스텐션도 만들어 올렸다. 사실 그냥 바로가기 링크랑 기능이 동일하다.</p>
-
-<p>https://chrome.google.com/webstore/detail/sprite-image-generator/ckdkgoopenkcogopkfpehfcjkkhhofgo?utm_source=gmail</p>
-
-<p>참고로 사이트는 내용이 크게 어려울 것이 없기 때문에 영어로 만들었다.(사실 영어 잘 못한다. 그래서 오탈자가 많을 수 있다.) 혹시나 다른 나라에서도 사용할까 싶어서 하긴 했는데 아직은 방문자가 거의 없다.</p>
-
-<p>사실 이미 잘만들어진 많은 도구들이 있다. 하지만 굳이 새로 만든 이유는 Export 기능 때문이다. 보통 sprite image를 생성한 후에 사용된 작은 이미지들을 따로 관리하지 않아서 수정하거나 추가할 것이 생겼을 때 골치 아플 수 있다. 그래서 export 기능을 추가 했다. sprite.json 파일을 함께 export하는데 이 파일에서 생성시에 설정한 옵션과 원본 이미지들이 모두 포함되어 있어서 수정이 필요하면 이 파일만 import해서 수정할 수 있다. 나의 경우는 프로그램 소스에 함께 포함시켜 두고 관리한다.</p>
-
-<h3 id="section">특징</h3>
-
-<ul>
-  <li>Retina/Normal sprites 동시 생성 가능</li>
-  <li>Drag and drop 파일 첨부</li>
-  <li>이미지 이름 변경 가능(CSS 클래스명에 사용됨)</li>
-  <li>이미지 이름별/사이즈별 정렬, drag and drop으로 직접 정렬</li>
-  <li>Support DataURL Export</li>
-  <li>Export: Sprites 이미지 / 설정 파일 다운로드</li>
-  <li>설정 파일 Import 기능 : *.sprite.json File (향후 수정시 기존 export를 첨부하여 재작업 가능)</li>
-</ul>
-
-<h3 id="section-1">스크린샷</h3>
-
-<p><img src="/img/2015-09-13-online-css-image-sprites-generator-1.png" alt="Sprite CSS Image Generator 설정" />
-<img src="/img/2015-09-13-online-css-image-sprites-generator-2.png" alt="Sprite CSS Image Generator 확인" />
-<img src="/img/2015-09-13-online-css-image-sprites-generator-3.png" alt="Sprite CSS Image Generator 생성" />
-<img src="/img/2015-09-13-online-css-image-sprites-generator-4.png" alt="Sprite CSS Image Generator 추출" /></p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -185,8 +284,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/09/13/online-css-image-sprites-generator/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/09/13/online-css-image-sprites-generator/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

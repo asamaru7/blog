@@ -113,45 +113,52 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/12/09/vagrant-box-repackage/">
-								Vagrant box repackage(unpacked box에서 box 파일 만들기)
+							<a class="title" href="https://blog.asamaru.net/2015/12/10/linux-login-error-with-selinux-enforcing/">
+								selinux enforcing 후 로그인이 되지 않을 때 복구 방법(CentOS 7)
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/12/09/vagrant-box-repackage/">2015.12.09.</span></a>
+								<a href="https://blog.asamaru.net/2015/12/10/linux-login-error-with-selinux-enforcing/">2015.12.10.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>vagrant box를 생성하는 것에 대해서는 <a href="/2015/10/14/creating-a-vagrant-base-box/">Vagrant BASE Box 만들기(CentOS 7)</a>에서 설명했었다. 이번에도 box를 생성하는 것에 대한 것이지만 대상이 다르다. 기존 글에서는 생성한 가상 머신을 대상으로 box 파일을 만들었지만 아래에서 설명하고자 하는 것은 <code class="highlighter-rouge">vagrant box add</code> 명령을 사용하거나 <code class="highlighter-rouge">vagrant up</code> 명령을 통해 box 파일을 unpacked(~/.vagrant.d/boxes에 보관)한 것을 다시 배포용(distributable) box 파일로 만드는 것이다.</p>
+							<p>이 글은 특수한 상황에 대한 이야기다. 하지만 여러가지 경우에 대한 설명이 포함되어 있어 향후 비슷한 상황에 대한 대처를 위해 남겨둔다.</p>
 
-<p>이 방법이 필요한 경우를 예를 들자면 box를 생성하고 unpacked 했지만 box 파일을 배포 경로(원격/로컬)로 이동하지 않고 지워버린 경우에 사용할 수 있다.</p>
+<p>일단 상황은 이렇다. CentOS 7을 selinux가 disabled 상태로 운영하던 중 selinux를 enforcing 상태로 변경해서 재시작했다. 그후로 부팅은 되나 모든 계정으로 로그인을 할 수 없었다.</p>
 
-<p>vagrant는 이런 경우를 위해 <code class="highlighter-rouge">repackage</code> 명령을 제공한다. <a href="https://docs.vagrantup.com/v2/cli/box.html">VAGRANT DOCS : BOX REPACKAGE</a>에는 아래와 같이 설명되어 있다.</p>
+<p><strong>이 상황의 발생 원인을 먼저 설명하자면 selinux가 켜지면서 권한 문제로 shell이 /etc/passwd와 /etc/shadow에 접근할 수 없어 로그인을 할 수 없었던 것이다.</strong></p>
 
-<blockquote>
-  <p>Command: vagrant box repackage NAME PROVIDER VERSION</p>
+<p>이런 상황이 왜 발생했을까? selinux가 꺼진 상태에서 운영하다가 켜서 재시작하게되면 파일에 대한 selinux rule이 적용하는 과정을 거치게 된다(이로인해 변경 후 최초 시작시 시간이 오래 걸리면 적용이 끝나면 다시 한번 재부팅된다). 이 과정이 정상적으로 완료되었었다면 위 문제가 발생하지 않았겠지만 나의 경우는 내가 설정해 놓은 다른 옵션으로 인해 문제가 발생했다.</p>
 
-  <p>This command repackages the given box and puts it in the current directory so you can redistribute it. The name, provider, and version of the box can be retrieved using vagrant box list.</p>
+<p>나의 경우는 보안상의 이유로 <code class="highlighter-rouge">chattr +i /etc/passwd</code>, <code class="highlighter-rouge">chattr +i /etc/shadow</code>를 적용한다. 그런데 내가 이걸 잊고 그냥 selinux만 켠 것이다. 그로인해 재시작시 두 파일에 대한 selinux rule이 적용되지 못했던 것이다.</p>
 
-  <p>When you add a box, Vagrant unpacks it and stores it internally. The original *.box file is not preserved. This command is useful for reclaiming a *.box file from an installed Vagrant box.</p>
-</blockquote>
+<p>로그인을 할 수 없었기 때문에 파일 상태를 확인할 수 없어 single mode로 부팅해서 확인해야 했다.
+single mode 부팅에 관련해서는 <a href="http://linux.systemv.pe.kr/centos-7-%EC%8B%B1%EA%B8%80%EB%AA%A8%EB%93%9C-%EB%B6%80%ED%8C%85/">CENTOS 7 싱글모드 부팅</a>에서 잘 설명하고 있다(CentOS 7부터 Grub2로 변경되었다고 한다. 그래서 처음엔 어떻게 single mode 부팅을 해야할지 몰라서 당황했다). 요약하자면 부팅 메시지가 나왔을 때 <code class="highlighter-rouge">e</code>를 눌러 편집 모드로 들어가서 <code class="highlighter-rouge">ro</code>가 나오는 부분을 찾아서 <code class="highlighter-rouge">rw init=/sysroot/bin/sh</code>로 변경한다(찾기가 어려울 수 있다. <code class="highlighter-rouge">ro</code>로 시작하는게 아니라 명령줄 내에 ` ro <code class="highlighter-rouge">라고 된 부분이 있다. 나의 경우는 linux16 /vmlinuz-3.10.0-~~ 으로 시작하는 라인에 있었다). 수정 후에는 </code>crtl+x<code class="highlighter-rouge">를 눌러서 부팅한다. 부팅이 되고나면 실제 서버의 </code>/<code class="highlighter-rouge">는 </code>/sysroot<code class="highlighter-rouge">로 마운트되어 있다. 따라서 </code>chroot /sysroot<code class="highlighter-rouge">를 하면 기존 서버처럼 </code>/` 경로로 변경할 수 있다. 사실 꼭 필요하진 않다. 경로가 헛갈리지 않도록 작업하기 위해서 한다.</p>
 
-<p><code class="highlighter-rouge">repackage</code> 명령은 NAME, PROVIDER, VERSION 인자 모두를 지정해야 한다. 각 인자에 어떤 정보를 넣는지 알아보자.</p>
+<p>single mode로 들어가서 일단 selinux를 끄고(permissive 모드 사용) 다시 부팅했다(여기서 바로 변경해도 되었을 수 있지만 확인을 위해서 일단 다시 부팅했다). 부팅 후 아래와 같이 확인했다.</p>
 
-<ul>
-  <li>NAME : <code class="highlighter-rouge">vagrant box list</code> 명령으로 확인할 수 있는 box명을 지정한다.</li>
-  <li>PROVIDER : 가상 머신을 구동하는 PROVIDER를 지정한다.</li>
-  <li>VERSION : box의 버전을 지정한다.</li>
-</ul>
-
-<p>우선 실제로 사용하는 예시를 보자.</p>
-
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>vagrant box repackage centos7-dev-1 virtualbox 0
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>ls -Z /etc/passwd
+-rw-r--r--. root root system_u:object_r:unlabeled_t:s0 /etc/passwd
 </code></pre>
 </div>
 
-<p>이 명령을 실행하면 box 파일이 실행한 경로에 생성된다.</p>
+<p>원래는 <code class="highlighter-rouge">/etc/passwd</code>는 <code class="highlighter-rouge">passwd_file_t</code>가 되어야 한다. 그런데 <code class="highlighter-rouge">unlabeled_t</code>로 되어있어 제대로 로그인 할 수 없었던 것이다. 그래서 <code class="highlighter-rouge">restorecon</code>를 사용해서 아래처럼 복구하려고 했다.</p>
 
-<p>예시를 보면 어떻게 사용해야 하는지 이해가 될 것이다. NAME은 별다를 것이 없고 PROVIDER의 경우는 일반적으로 <code class="highlighter-rouge">virtualbox</code>를 지정한다(box 생성시 virtualbox를 대부분 사용하므로). VERSION의 경우는 별도의 version을 사용하지 않았다면 그냥 0을 입력하면 된다.</p>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>restorecon -v /etc/passwd
+restorecon reset /etc/passwd context system_u:object_r:unlabeled_t:s0-&gt;system_u:object_r:passwd_file_t:s0
+restorecon <span class="nb">set </span>context /etc/passwd-&gt;system_u:object_r:passwd_file_t:s0 failed:<span class="s1">'Operation not permitted'</span>
+</code></pre>
+</div>
+
+<p>그런데 위와 같은 오류가 났다. 아마도 selinux를 켜고 최초 부팅시에도 동일한 오류로 인해 정상적으로 rule이 적용되지 않았을 것이다. 그래서 아래와 같이 다시 처리했다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>chattr -i /etc/passwd
+<span class="gp">$ </span>chattr -i /etc/shadow
+<span class="gp">$ </span>restorecon -v /etc/passwd
+<span class="gp">$ </span>restorecon -v /etc/shadow
+</code></pre>
+</div>
+
+<p>이제 다시 재부팅하면 기존처럼 로그인이 잘 된다. 아직 selinux를 잘 다루지 못해 발생한 문제이지만 덕분에 여러가지를 알게 되었다. 사실 다행히 이 문제를 vagrant로 띄운 가상 머신에서 겪어서 다양하게 시도해 보면서 좋은 경험을 했다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -165,8 +172,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/12/09/vagrant-box-repackage/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/12/09/vagrant-box-repackage/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/12/10/linux-login-error-with-selinux-enforcing/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/12/10/linux-login-error-with-selinux-enforcing/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

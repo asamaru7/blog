@@ -113,237 +113,153 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/">
-								AutoCompleteAdapter(ArrayAdapter with Filterable) 사용시 비주기적 오류 발생 해결
+							<a class="title" href="https://blog.asamaru.net/2015/09/19/x-ua-compatible-ie-equals-edge-compatibility-view/">
+								익스플로러 호환성 보기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/">2015.09.18.</span></a>
+								<a href="https://blog.asamaru.net/2015/09/19/x-ua-compatible-ie-equals-edge-compatibility-view/">2015.09.19.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>AppCompatAutoCompleteTextView를 사용하고자 할때 필요한 것이 데이터를 넘겨주는 Adapter이다. 단, 이 Adepter는 <code class="highlighter-rouge">extends ListAdapter &amp; Filterable</code> 가 적용되어야 한다. 그래서 보통은 <code class="highlighter-rouge">public class StringAutoCompleteAdapter extends ArrayAdapter&lt;String&gt; implements Filterable</code> 형태의 구현을 많이 사용한다. 그리고 대부분의 경우에 AutoCompleteTextView를 사용하는 이유는 검색어 자동완성 등에 사용되고 이 데이터는 서버에서 데이터를 호출해서 적용하도록 한다.</p>
+							<p>현재는 많이 줄었다고는 해도 아직도 인터넷 익스플로러의 사용자가 많은 편이다. 최근 11버전을 새로 출시하면서 예전 보다는 많이 좋아졌다는 평가들이 많다. 하지만 아직도 나에겐 좋지않은 인상이 더 많이 남은 것 같다. 본격적으로 일로써 브라우저를 접할 때에는 인터넷 익스폴로러가 5.5에서 6으로 막 넘어가던 시기였다. 그 시절만 하더라도 익스플로러에 대항할 브라우저는 없었다. 그 당시에도 파이어폭스, 오페라가 있었지만 점유율은 높지 않았다. 그 상태로 오랜 시간이 흘러 익스플로러7이 나오고 다시 8이 나왔다. 이 시점에 등장한 것이 호환성 보기라는 기능이다(사실 정확한 시점은 기억나지 않지만 8이 나오는 시점이었던 것 같다).</p>
 
-<p>위에 설명한 내용대로 하나의 예시를 보면 아래와 같다(미리 설명하자면 아래의 예제는 잘못된 예제이다. 생각지 못한 오류를 비주기적으로 만나게 된다).</p>
+<p>우선 호환성 보기란 무엇인가?</p>
 
-<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kn">package</span> <span class="n">net</span><span class="o">.</span><span class="na">asamaru</span><span class="o">.</span><span class="na">android</span><span class="o">.</span><span class="na">test</span><span class="o">;</span>
+<p>마이크로소프트의 윈도우 사이트에 보면 “<a href="http://windows.microsoft.com/ko-kr/windows/websites-display-incorrectly-internet-explorer-8#1TC=windows-7">왜 Internet Explorer 8에서 일부 웹 사이트가 올바르게 표시되지 않습니까?</a>“라는 글이 있다. 사실 이 글에서도 명확하게 설명하진 않지만 “이전 버전의 Internet Explorer(인터넷 익스플로러)용 웹 사이트는 현재 버전에서 올바르게 표시되지 않을 수도 있습니다. 하지만 호환성 보기를 사용하여 Internet Explorer(인터넷 익스플로러)에서 웹 사이트가 표시되는 방식을 개선할 수 있습니다.”라고 되어 있다.</p>
 
-<span class="kn">import</span> <span class="nn">android.content.Context</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">android.widget.ArrayAdapter</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">android.widget.Filter</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">android.widget.Filterable</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">com.google.gson.Gson</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.google.gson.reflect.TypeToken</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.io.InputStreamReader</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.HttpURLConnection</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.MalformedURLException</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.URL</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.URLEncoder</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
-
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">StringAutoCompleteAdapter</span> <span class="kd">extends</span> <span class="n">ArrayAdapter</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">Filterable</span> <span class="o">{</span>
-	<span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">resultList</span><span class="o">;</span>
-
-	<span class="kd">public</span> <span class="nf">StringAutoCompleteAdapter</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="kt">int</span> <span class="n">textViewResourceId</span><span class="o">)</span> <span class="o">{</span>
-		<span class="kd">super</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">textViewResourceId</span><span class="o">);</span>
-	<span class="o">}</span>
-
-	<span class="nd">@Override</span>
-	<span class="kd">public</span> <span class="kt">int</span> <span class="nf">getCount</span><span class="o">()</span> <span class="o">{</span>
-		<span class="k">return</span> <span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-	<span class="o">}</span>
-
-	<span class="nd">@Override</span>
-	<span class="kd">public</span> <span class="n">String</span> <span class="nf">getItem</span><span class="o">(</span><span class="kt">int</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
-		<span class="k">if</span> <span class="o">((</span><span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">&gt;=</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
-			<span class="k">return</span> <span class="n">resultList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">index</span><span class="o">);</span>
-		<span class="o">}</span>
-		<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-	<span class="o">}</span>
-
-	<span class="nd">@Override</span>
-	<span class="kd">public</span> <span class="n">Filter</span> <span class="nf">getFilter</span><span class="o">()</span> <span class="o">{</span>
-		<span class="k">return</span> <span class="k">new</span> <span class="nf">Filter</span><span class="o">()</span> <span class="o">{</span>
-			<span class="nd">@Override</span>
-			<span class="kd">protected</span> <span class="n">FilterResults</span> <span class="nf">performFiltering</span><span class="o">(</span><span class="n">CharSequence</span> <span class="n">constraint</span><span class="o">)</span> <span class="o">{</span>
-				<span class="n">FilterResults</span> <span class="n">filterResults</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FilterResults</span><span class="o">();</span>
-				<span class="k">if</span> <span class="o">(</span><span class="n">constraint</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-					<span class="n">resultList</span> <span class="o">=</span> <span class="n">autocomplete</span><span class="o">(</span><span class="n">constraint</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
-					<span class="k">if</span> <span class="o">(</span><span class="n">resultList</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-						<span class="n">filterResults</span><span class="o">.</span><span class="na">values</span> <span class="o">=</span> <span class="n">resultList</span><span class="o">;</span>
-						<span class="n">filterResults</span><span class="o">.</span><span class="na">count</span> <span class="o">=</span> <span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-					<span class="o">}</span>
-				<span class="o">}</span>
-				<span class="k">return</span> <span class="n">filterResults</span><span class="o">;</span>
-			<span class="o">}</span>
-
-			<span class="nd">@Override</span>
-			<span class="kd">protected</span> <span class="kt">void</span> <span class="nf">publishResults</span><span class="o">(</span><span class="n">CharSequence</span> <span class="n">constraint</span><span class="o">,</span> <span class="n">FilterResults</span> <span class="n">results</span><span class="o">)</span> <span class="o">{</span>
-				<span class="k">if</span> <span class="o">(</span><span class="n">results</span><span class="o">.</span><span class="na">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-					<span class="n">notifyDataSetChanged</span><span class="o">();</span>
-				<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-					<span class="n">notifyDataSetInvalidated</span><span class="o">();</span>
-				<span class="o">}</span>
-			<span class="o">}</span>
-		<span class="o">};</span>
-	<span class="o">}</span>
-
-	<span class="kd">public</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="nf">autocomplete</span><span class="o">(</span><span class="n">String</span> <span class="n">input</span><span class="o">)</span> <span class="o">{</span>
-		<span class="n">HttpURLConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-		<span class="n">StringBuilder</span> <span class="n">jsonResults</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringBuilder</span><span class="o">();</span>
-		<span class="k">try</span> <span class="o">{</span>
-			<span class="n">URL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="n">URL</span><span class="o">(</span><span class="s">"http://www.abc.com/search/?kwd="</span> <span class="o">+</span> <span class="n">URLEncoder</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="n">input</span><span class="o">,</span> <span class="s">"utf8"</span><span class="o">));</span>
-			<span class="n">conn</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="n">url</span><span class="o">.</span><span class="na">openConnection</span><span class="o">();</span>
-			<span class="n">InputStreamReader</span> <span class="n">in</span> <span class="o">=</span> <span class="k">new</span> <span class="n">InputStreamReader</span><span class="o">(</span><span class="n">conn</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">());</span>
-			<span class="kt">int</span> <span class="n">read</span><span class="o">;</span>
-			<span class="kt">char</span><span class="o">[]</span> <span class="n">buff</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[</span><span class="mi">1024</span><span class="o">];</span>
-			<span class="k">while</span> <span class="o">((</span><span class="n">read</span> <span class="o">=</span> <span class="n">in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buff</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
-				<span class="n">jsonResults</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">buff</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">read</span><span class="o">);</span>
-			<span class="o">}</span>
-		<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">MalformedURLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-			<span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-			<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-		<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-			<span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-			<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-		<span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
-			<span class="k">if</span> <span class="o">(</span><span class="n">conn</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-				<span class="n">conn</span><span class="o">.</span><span class="na">disconnect</span><span class="o">();</span>
-			<span class="o">}</span>
-		<span class="o">}</span>
-		<span class="k">return</span> <span class="o">(</span><span class="k">new</span> <span class="n">Gson</span><span class="o">()).</span><span class="na">fromJson</span><span class="o">(</span><span class="n">jsonResults</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="k">new</span> <span class="n">TypeToken</span><span class="o">&lt;</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;()</span> <span class="o">{}.</span><span class="na">getType</span><span class="o">());</span>
-	<span class="o">}</span>
-<span class="o">}</span>
-</code></pre>
-</div>
-
-<p>위의 예제를 보면 얼핏봐서는 문제가 없어 보인다. 실제로 동작도 잘된다. 하지만 아주 낮은 빈도로 Exception이 발생해 앱이 죽는다. 이 문제로 인하여 원인을 찾지못해 고생하는 경우가 많다. 내가 작업하면서 발생했던 오류는 다음과 같다.</p>
+<p><strong>MS 관련글</strong></p>
 
 <ul>
-  <li>The content of the adapter has changed but ListView did not receive a notification.</li>
-  <li>java.lang.NullPointerException: Attempt to invoke virtual method ‘java.lang.String java.lang.Object.toString()’ on a null object reference</li>
+  <li><a href="http://windows.microsoft.com/ko-kr/internet-explorer/use-compatibility-view#ie=ie-11">호환성 보기를 사용하여 사이트 표시 문제 해결하기</a></li>
+  <li><a href="https://support.microsoft.com/ko-kr/kb/2536204">Internet Explorer 9에서 호환성 보기 방법</a></li>
 </ul>
 
-<p>내부적 동작 코드들을 보면 이 외에도 View의 구성이나 기타 코딩에 따라 다른 오류가 날 수도 있을 것 같다. 하지만 원인은 대부분 아래의 부분 때문이다(정확하게는 저 부분에서 오류가 나는 것이 아니라 저 부분이 들어간 위치 때문에 다른 부분에서 오류가 난다).</p>
+<p>그렇다 새로운 인터넷 익스플로러에서 이전 버전의 익스플로러에 맞추어진 사이트가 정상적이지 보이지 않는 문제를 해결하기 위해 추가된 기능이다. 그럼 왜 정상적으로 보이지 않는 것일까? 인터넷 익스플로러는 웹 표준을 제대로 준수하지 않았기 때문에 버전이 올라가면서 호환성에 문제가 많이 발생한 것이다. 워낙에 점유율이 높은 상황이 이었으니 급진적 변화는 대란이 일어날 것이라는 생각에 호환성 보기를 추가했으리라 본다.</p>
 
-<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="n">resultList</span> <span class="o">=</span> <span class="n">autocomplete</span><span class="o">(</span><span class="n">constraint</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
+<p>하지만 나는 이 호환성 보기라는 것이 더 큰 문제들을 만들었다고 생각한다. 어짜피 새로운 웹 표준으로 전향되어야 하는 상황에 알아서 맞춰주는 기능을 제공하니 서비스들이 변화에 적응하는 것이 더 늦어진 것이다. 변화할 시간을 준다는 목적이었을지 모르나 제대로된 웹으로 전환되는데 걸림돌이 되는 상황이다. 특히 이 호환성 모드가 8에서만 제공되는 것이 아니라 그 이후 9, 10, 11에서 조차도 제공한다는 것이다. 게다가 호환성 보기를 사용자가 판단하여 도저히 볼 수 없는 사이트를 골라서 적용하게 해야 하는데 인터넷 익스플로러가 자체적인 판단을 해서 호환성 모드로 보여주는 경우가 많다. 여기서 심각한 문제가 발생한다. 정작 웹표준을 준수하여 만들어진 페이지가 호환성 보기로 렌더링되어 깨지는 경우가 생기는 것이다(참고 - 랜더링 모드 선택 순서도 : https://hsivonen.fi/doctype/ie-mode.pdf).</p>
+
+<p>나는 주변 지인들과이 대화에서 MS를 인터넷 발전의 “악의 축”이라고 자주 얘기하곤 한다. 그 이유를 나열하자면 한도 끝도 없을 것 같고… 웹 분야에 일을 하시는 분들이라면 대부분의 경우 무엇 때문에 그런 생각을 가지게 되었는지 공감할 것이라고 생각한다.</p>
+
+<p>어쨌든 다시 본론으로 돌아가서 이 호환성 보기는 현재 시점(HTML5를 채용하는 신규 웹 프로젝트)에서는 사용할 일이 없는 기능이다. 하지만 앞서 얘기한 것처럼 익스플로러가 제작된 페이지를 호환성 보기로 보여줘 버리는 문제를 해결하지 않으면 불편한 상황을 만나게 될 수 있으니 미리 대비해야 한다.</p>
+
+<p>인터넷 익스플로러가 호환성 보기가 아닌 지정된 모드로 랜더링되게 하는 방법을 하나씩 알아보자.</p>
+
+<h2 id="x-ua-compatible-meta------">X-UA-Compatible Meta 선언을 사용하여 브라우저의 호환성 모드를 조정</h2>
+
+<div class="language-html highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">"X-UA-Compatible"</span> <span class="na">content=</span><span class="s">"IE=edge,chrome=1"</span><span class="nt">&gt;</span>
 </code></pre>
 </div>
+<ul>
+  <li>IE=edge : 최신모드로 지정된 DOCTYPE에 상관없이 IE8 이상 버전에서 항상 최신 표준 모드로 렌더링</li>
+  <li>chrome=1 : 크롬이 설치되어있다면 IE에서도 크롬 렌더링을 사용</li>
+</ul>
 
-<p>이유를 설명하자면 Filter의 performFiltering() 함수는 백그라운드 쓰레드에서 동작하도록 되어 있다. 그런데 이 함수 안에서 Adapter의 데이터를 변경하는 코드가 들어있기 때문에 Adapter가 데이터의 변경을 확인하는 시점과 notify 되는 시점이 엉킬 경우 오류를 내게 된다. 따라서 타이밍에 따라서 오류가 발생하기도 안하기도 하는 것이다(나의 경우는 키워드를 입력하거나 지우는 등의 변경이 빠르게 반복될 때 데이터의 변경이 빈번히 반복되면서 오류가 나타났다). 실제로 오류를 재현하기가 어려울 정도로 잘 안나오는 경우도 있었다.</p>
-
-<p>그럼 잘못된 예제와 오류, 원인을 알아봤으니 정확한 처리 예시를 보자.</p>
-
-<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kn">package</span> <span class="n">net</span><span class="o">.</span><span class="na">asamaru</span><span class="o">.</span><span class="na">android</span><span class="o">.</span><span class="na">test</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">android.content.Context</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">android.widget.ArrayAdapter</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">android.widget.Filter</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">android.widget.Filterable</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">com.google.gson.Gson</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.google.gson.reflect.TypeToken</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.io.InputStreamReader</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.HttpURLConnection</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.MalformedURLException</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.URL</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.net.URLEncoder</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
-
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">StringAutoCompleteAdapter</span> <span class="kd">extends</span> <span class="n">ArrayAdapter</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">Filterable</span> <span class="o">{</span>
-	<span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">resultList</span><span class="o">;</span>
-
-	<span class="kd">public</span> <span class="nf">StringAutoCompleteAdapter</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="kt">int</span> <span class="n">textViewResourceId</span><span class="o">)</span> <span class="o">{</span>
-		<span class="kd">super</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">textViewResourceId</span><span class="o">);</span>
-	<span class="o">}</span>
-
-	<span class="nd">@Override</span>
-	<span class="kd">public</span> <span class="kt">int</span> <span class="nf">getCount</span><span class="o">()</span> <span class="o">{</span>
-		<span class="k">return</span> <span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-	<span class="o">}</span>
-
-	<span class="nd">@Override</span>
-	<span class="kd">public</span> <span class="n">String</span> <span class="nf">getItem</span><span class="o">(</span><span class="kt">int</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
-		<span class="k">if</span> <span class="o">((</span><span class="n">resultList</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">&gt;=</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
-			<span class="k">return</span> <span class="n">resultList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">index</span><span class="o">);</span>
-		<span class="o">}</span>
-		<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-	<span class="o">}</span>
-
-	<span class="nd">@Override</span>
-	<span class="kd">public</span> <span class="n">Filter</span> <span class="nf">getFilter</span><span class="o">()</span> <span class="o">{</span>
-		<span class="k">return</span> <span class="k">new</span> <span class="nf">Filter</span><span class="o">()</span> <span class="o">{</span>
-			<span class="nd">@Override</span>
-			<span class="kd">protected</span> <span class="n">FilterResults</span> <span class="nf">performFiltering</span><span class="o">(</span><span class="n">CharSequence</span> <span class="n">constraint</span><span class="o">)</span> <span class="o">{</span>
-				<span class="n">FilterResults</span> <span class="n">filterResults</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FilterResults</span><span class="o">();</span>
-				<span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">queryResults</span><span class="o">;</span>
-				<span class="k">if</span> <span class="o">((</span><span class="n">constraint</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">constraint</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">))</span> <span class="o">{</span>
-					<span class="n">queryResults</span> <span class="o">=</span> <span class="n">autocomplete</span><span class="o">(</span><span class="n">constraint</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
-				<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-					<span class="n">queryResults</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
-				<span class="o">}</span>
-				<span class="n">filterResults</span><span class="o">.</span><span class="na">values</span> <span class="o">=</span> <span class="n">queryResults</span><span class="o">;</span>
-				<span class="n">filterResults</span><span class="o">.</span><span class="na">count</span> <span class="o">=</span> <span class="n">queryResults</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-				<span class="k">return</span> <span class="n">filterResults</span><span class="o">;</span>
-			<span class="o">}</span>
-
-			<span class="nd">@Override</span>
-			<span class="kd">protected</span> <span class="kt">void</span> <span class="nf">publishResults</span><span class="o">(</span><span class="n">CharSequence</span> <span class="n">constraint</span><span class="o">,</span> <span class="n">FilterResults</span> <span class="n">results</span><span class="o">)</span> <span class="o">{</span>
-				<span class="c1">// noinspection unchecked</span>
-				<span class="n">resultList</span> <span class="o">=</span> <span class="o">(</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;)</span> <span class="n">results</span><span class="o">.</span><span class="na">values</span><span class="o">;</span>
-				<span class="k">if</span> <span class="o">(</span><span class="n">results</span><span class="o">.</span><span class="na">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-					<span class="n">notifyDataSetChanged</span><span class="o">();</span>
-				<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-					<span class="n">notifyDataSetInvalidated</span><span class="o">();</span>
-				<span class="o">}</span>
-			<span class="o">}</span>
-		<span class="o">};</span>
-	<span class="o">}</span>
-
-	<span class="kd">public</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="nf">autocomplete</span><span class="o">(</span><span class="n">String</span> <span class="n">input</span><span class="o">)</span> <span class="o">{</span>
-		<span class="n">HttpURLConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-		<span class="n">StringBuilder</span> <span class="n">jsonResults</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringBuilder</span><span class="o">();</span>
-		<span class="k">try</span> <span class="o">{</span>
-			<span class="n">URL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="n">URL</span><span class="o">(</span><span class="s">"http://www.abc.com/search/?kwd="</span> <span class="o">+</span> <span class="n">URLEncoder</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="n">input</span><span class="o">,</span> <span class="s">"utf8"</span><span class="o">));</span>
-			<span class="n">conn</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="n">url</span><span class="o">.</span><span class="na">openConnection</span><span class="o">();</span>
-			<span class="n">InputStreamReader</span> <span class="n">in</span> <span class="o">=</span> <span class="k">new</span> <span class="n">InputStreamReader</span><span class="o">(</span><span class="n">conn</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">());</span>
-			<span class="kt">int</span> <span class="n">read</span><span class="o">;</span>
-			<span class="kt">char</span><span class="o">[]</span> <span class="n">buff</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[</span><span class="mi">1024</span><span class="o">];</span>
-			<span class="k">while</span> <span class="o">((</span><span class="n">read</span> <span class="o">=</span> <span class="n">in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buff</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
-				<span class="n">jsonResults</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">buff</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">read</span><span class="o">);</span>
-			<span class="o">}</span>
-		<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">MalformedURLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-			<span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-			<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-		<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-			<span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
-			<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-		<span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
-			<span class="k">if</span> <span class="o">(</span><span class="n">conn</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-				<span class="n">conn</span><span class="o">.</span><span class="na">disconnect</span><span class="o">();</span>
-			<span class="o">}</span>
-		<span class="o">}</span>
-		<span class="k">return</span> <span class="o">(</span><span class="k">new</span> <span class="n">Gson</span><span class="o">()).</span><span class="na">fromJson</span><span class="o">(</span><span class="n">jsonResults</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="k">new</span> <span class="n">TypeToken</span><span class="o">&lt;</span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;()</span> <span class="o">{}.</span><span class="na">getType</span><span class="o">());</span>
-	<span class="o">}</span>
-<span class="o">}</span>
-</code></pre>
-</div>
-
-<p>주요 변경 지점은 <code class="highlighter-rouge">getFilter()</code>이다. 기존에 <code class="highlighter-rouge">resultList = autocomplete(constraint.toString());</code> 부분을 통해 미리 Adapter의 데이터를 변경하던 것을 publishResults로 옮긴 것이다. 그리고 검색된 결과가 없더라도 빈 ArrayList를 만들어 넣어준 것이다.
-코드 상으로는 큰 차이가 나지않고 굳이 이렇게 해야하나 싶지만 내부 동작 방식을 보면 이렇게 하지 않으면 앞서 설명한 것과 같이 예기치 못한 상황을 만날 수 있다.</p>
-
-<p><strong>첨언 :</strong></p>
+<p>당연히 위에 예시처럼 <code class="highlighter-rouge">IE=edge,chrome=1</code>을 사용하는 것이 권장된다. 하지만 그외에도 아래와 같은 설정도 있다.</p>
 
 <ul>
-  <li>안드로이드는 조금만 잘못써도 오류가 발생하는 이런 경우를 많이 보게 되는데 아위운 점은 정확한 사용법을 제시하는 메뉴얼을 찾기 어렵다는 것이다.</li>
-  <li>코드 중간에 보면 <code class="highlighter-rouge">// noinspection unchecked</code> 부분이 있는데 크게 중요한 부분은 아니지만 이 부분을 제외하면 warning이 뜬다(안드로이드 스튜디오에서 노란 밑줄). 이 warning을 안드로이드 스튜디오에서 숨기는 역할을 하는 코드다.</li>
+  <li>IE=5 : 관용모드(quirks mode)로 지정된 DOCTYPE에 상관없이 IE5 렌더링 방식이 사용됩니다.</li>
+  <li>IE=7 : IE7 표준모드로 지정된 DOCTYPE에 상관없이 IE7 표준 모드 렌더링 방식이 사용</li>
+  <li>IE=EmulateIE7 : IE7 에뮬레이션 모드로 지정된 DOCTYPE에 따라 IE7 표준모드나 관용모드로 렌더링</li>
+  <li>IE=8 : IE8 표준모드로 지정된 DOCTYPE에 상관없이 IE8 표준모드로 렌더링</li>
+  <li>IE=EmulateIE8 : IE8 에뮬레이션 모드로 지정된 DOCTYPE에 따라 IE8 표준모드나 관용모드로 렌더링</li>
 </ul>
+
+<p>X-UA-Compatible는 HTML5에서 비표준 속성으로 validation에서 경고가 나올 수 있다.</p>
+
+<h2 id="x-ua-compatible--">서버에서 응답 헤더에 X-UA-Compatible를 함께 전송</h2>
+
+<pre><code class="language-apacheconf"># ------------------------------------------------------------------------------
+# | Better website experience                                                  |
+# ------------------------------------------------------------------------------
+# Force IE to render pages in the highest available mode in the various
+# cases when it may not: http://hsivonen.iki.fi/doctype/ie-mode.pdf.
+&lt;IfModule mod_headers.c&gt;
+    Header set X-UA-Compatible "IE=edge"
+    # `mod_headers` can't match based on the content-type, however, we only
+    # want to send this header for HTML pages and not for the other resources
+    &lt;FilesMatch "\.(appcache|crx|css|cur|eot|gif|htc|ico|jpe?g|js|m4a|m4v|manifest|mp4|oex|oga|ogg|ogv|opus|otf|pdf|png|safariextz|svgz?|ttf|vcf|webapp|webm|webp|woff|xml|xpi)$"&gt;
+    Header unset X-UA-Compatible
+    &lt;/FilesMatch&gt;
+&lt;/IfModule&gt;
+
+# 또는
+
+&lt;IfModule mod_setenvif.c&gt;
+  &lt;IfModule mod_headers.c&gt;
+    BrowserMatch MSIE ie
+    Header set X-UA-Compatible "IE=Edge,chrome=1" env=ie
+  &lt;/IfModule&gt;
+&lt;/IfModule&gt;
+&lt;IfModule mod_headers.c&gt;
+  Header append Vary User-Agent
+&lt;/IfModule&gt;
+</code></pre>
+
+<div class="language-nginx highlighter-rouge"><pre class="highlight"><code><span class="k">server</span> <span class="p">{</span>
+  <span class="c1">#...
+</span>  <span class="kn">add_header</span> <span class="s">X-UA-Compatible</span> <span class="s">"IE=Edge,chrome=1"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<div class="language-xml highlighter-rouge"><pre class="highlight"><code><span class="nt">&lt;configuration&gt;</span>
+  <span class="nt">&lt;system.webServer&gt;</span>
+     <span class="nt">&lt;httpProtocol&gt;</span>
+        <span class="nt">&lt;customHeaders&gt;</span>
+           <span class="nt">&lt;add</span> <span class="na">name=</span><span class="s">"X-UA-Compatible"</span> <span class="na">value=</span><span class="s">"IE=edge,chrome=1"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;/customHeaders&gt;</span>
+     <span class="nt">&lt;/httpProtocol&gt;</span>
+  <span class="nt">&lt;/system.webServer&gt;</span>
+<span class="nt">&lt;/configuration&gt;</span>
+</code></pre>
+</div>
+
+<h2 id="section">크롬 프레임</h2>
+
+<p><a href="https://tools.google.com/dlpage/chromeframe?hl=ko&amp;prefersystemlevel=true">크롬 프레임</a>이라는 ActiveX를 설치해서 익스플로러에서 크롬처럼 랜더링하는 것도 가능했지만 크롬 프레임의 개발 종료로 이제 더 이상 추천하지 않는다.</p>
+
+<h2 id="section-1">추가적 문제</h2>
+
+<p>자.. 그럼 이로써 모든 문제가 해결된 것인가? 항상 그렇듯 프로그래머에게는 쉽게 해피엔딩이 찾아오지 않는다. 사실 위의 X-UA-Compatible는 브라우저에게 주는 권고사항일뿐 강제사항이 아니다.</p>
+
+<p><a href="http://blog.grotesq.com/post/380">IE에서 호환성 보기를 체크한 사용자 판별하기</a>에 소개된 내용을 기준으로 보조적 해결 방법을 제시한다.</p>
+
+<p>아래의 경우들을 보자.</p>
+
+<ul>
+  <li><strong>XP에서 IE8을 사용하는 경우</strong> : 호환성 보기 버튼이 항상 표시되므로 사용자들이 언제든 호환성 보기로 변경이 가능하다.</li>
+  <li><strong>Windows 7에서 IE8, 9를 사용하는 경우</strong> : 위와 같은 이유지만 이 경우는 윈도우 업데이트를 사용하지 않거나 일부러 업데이트를 막은 경우라고 볼 수 있다.</li>
+  <li><strong>모든 사이트를 호환성으로 보도록 설정한 경우</strong> : 이 옵션은 기본적으로 활성화 되지 않으므로 사용자가 스스로 이 옵션을 켰을 가능성이 높다. 개발자가 테스트 환경 구축을 위해서 이러는 경우도 있다.</li>
+  <li><strong>가끔 Tweek된 버전의 윈도에 이 옵션이 기본으로 활성화 된 경우</strong> : 사실 제일 곤란한 건 이런 경우이다.</li>
+</ul>
+
+<h3 id="section-2">호환성 보기 모드에서 사용자에게 호환성 보기 해제를 안내하기</h3>
+
+<p>우선 사용자가 호환성 보기 모드를 사용하는지를 판별해야 적절한 가이드를 제시할 수 있다. <a href="http://blog.grotesq.com/post/380">IE에서 호환성 보기를 체크한 사용자 판별하기</a>에 소개된 아래의 예시를 보자.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="k">if</span><span class="p">(</span> <span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgent</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span> <span class="s2">"MSIE 7"</span> <span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgent</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span> <span class="s2">"Trident"</span> <span class="p">)</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// 호환성 보기 활성화</span>
+<span class="p">}</span>
+
+<span class="c1">// or</span>
+
+<span class="k">if</span><span class="p">(</span> <span class="sr">/MSIE 7.*Trident/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span> <span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgent</span> <span class="p">)</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByTagName</span><span class="p">(</span> <span class="s2">"html"</span> <span class="p">)[</span> <span class="mi">0</span> <span class="p">].</span><span class="nx">className</span> <span class="o">+=</span> <span class="s2">" ie-compatible"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>판별 원리는 아래과 같다고도 소개되어 있다.</p>
+<blockquote>
+  <p>MS의 렌더링 엔진은 Trident 입니다. IE7에서 처음 도입되었습니다. 하지만 userAgent에 Trident가 명시되기 시작한건 IE8 부터죠.
+순정 IE7은 “MSIE 7″ 문자열은 포함하지만 “Trident”는 포함하지 않습니다.
+IE8 이상에서 호환성 보기를 전환하면 userAgent에 버전 정보가 MSIE 7로 표시가 되기 때문에, 두 가지 문자열을 다 포함하게 되죠.</p>
+</blockquote>
+
+<p>이렇게 판별이 완료되면 사용자에게 호환성 보기에서는 정상적 사용이 되지 않는다는 것을 안내하면 되겠다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -357,8 +273,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/09/18/autocompleteadapter-arrayadapter-with-filterable-the-content-of-the-adapter-has-changed-but-listview-did-not-receive-a-notification/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/09/19/x-ua-compatible-ie-equals-edge-compatibility-view/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/09/19/x-ua-compatible-ie-equals-edge-compatibility-view/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -113,121 +113,55 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/">
-								php composer 속도 개선하기
+							<a class="title" href="https://blog.asamaru.net/2016/03/21/php7-and-gearman/">
+								PHP 7에서 Gearman 모듈 사용하기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/">2016.03.17.</span></a>
+								<a href="https://blog.asamaru.net/2016/03/21/php7-and-gearman/">2016.03.21.</span></a>
 							</p>
 						</header>
 						<p>
-							<p><a href="https://getcomposer.org/">Composer</a>(컴포저)는 PHP의 의존성 관리도구이다. 이 Composer를 사용하면서 가장 큰 단점으로 꼽을 수 있는 것은 느린 속도다. 나만 그렇게 느끼는 것은 아닌지 국내외에 많은 이야기가 있다. 오늘은 그 이야기들을 정리해 보려고 한다.</p>
+							<p>PHP 7로 마이그레이션시에 걸림돌이 될 수 있는 것 중 하나가 PHP 모듈의 호환성 문제다. 나의 경우는 대부분 문제가 없었으나 <a href="http://gearman.org/">Gearman</a>이 걸렸다. 아직 Gearman의 PHP 모듈이 정식으로 PHP 7을 지원하지 않아서 공식 지원을 기다리고 있었다. 그런데 시간을 두고 기다려봐도 지원을 기대하기 어려워(버전업이 오래전부터 멈춰있음) 자체적으로 방법을 찾기로 했다.</p>
 
-<p>우선 Composer에 대한 상세한 내용은 <a href="https://xpressengine.github.io/Composer-korean-docs/">Composer 한국어 매뉴얼</a>을 참고하면 도움이 될 것 같다.</p>
-
-<p>그리고 Composer 속도에 관련된 참고글이다.</p>
-
-<ul>
-  <li><a href="http://findstar.pe.kr/archives/532">composer.phar 의 동작이 느릴 때 조치할 수 있는 것들.</a></li>
-  <li><a href="https://www.lesstif.com/pages/viewpage.action?pageId=30277898">컴포저(PHP Composer) 속도 향상 시키기</a></li>
-</ul>
-
-<p>그럼 하나씩 살펴보자.</p>
-
-<h3 id="composer-">Composer 진단</h3>
-
-<p>우선 <code class="highlighter-rouge">composer diagnose</code> 명령을 이용해서 Composer의 상태를 진단할 수 있다. 진단 결과에 따라 개선이 필요한 부분들을 확인하고 개선할 수 있다.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>$ composer diagnose
-
-Checking composer.json: OK
-require.~~~/~~~ : unbound version constraints (dev-master) should be avoided
-Checking platform settings: OK
-Checking git settings: OK
-Checking http connectivity to packagist: OK
-Checking https connectivity to packagist: OK
-Checking github.com oauth access: OK
-Checking disk free space: OK
-Checking pubkeys:
-Tags Public Key Fingerprint: ~~~
-Dev Public Key Fingerprint: ~~~
-OK
-Checking composer version: OK
-</code></pre>
-</div>
-
-<h3 id="composer--">Composer 최신버전 사용</h3>
-
-<p><code class="highlighter-rouge">composer diagnose</code>에서도 Composer의 최신 버전을 사용중인지 알려준다. 가급적 최신 버전의 Composer를 사용하는 것이 속도에 조금이나마 도움이 될 수 있다.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>$ sudo /usr/local/bin/composer self-update
-
-Updating to version 7c62e2b5346a6a656dd9587203719e35bb768056.
-    Downloading: 100%
-Use composer self-update --rollback to return to version d6d0435c5437111e42a123b06e4071e26ba7cb6e
-</code></pre>
-</div>
-
-<h3 id="prestissimo--">prestissimo 플러그인 사용</h3>
-
-<p><a href="https://github.com/hirak/prestissimo">prestissimo</a> 이라는 Composer 플러그인이 있다. “composer parallel install plugin”이라고 소개하고 있는 플러그인으로 의존성 라이브러리 설치시 병렬 처리를 지원하여 속도를 대폭 개선해 준다고 한다. 확실히 다운로드가 필요한 상황(신규 설치, 버전업)에서는 병렬 처리로 속도가 개선된다.</p>
-
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>composer global require hirak/prestissimo
-</code></pre>
-</div>
-
-<p>설치 후 Composer를 사용(install, update)하면 아래와 같이 다른 모습을 볼 수 있다.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Loading composer repositories with package information
-Updating dependencies
-    Prefetch start: total: 6
-    1/6:    https://codeload.github.com/symfony/polyfill-util/legacy.zip/8de62801aa12bc4dfcf85eef5d21981ae7bb3cc4
-    2/6:    https://codeload.github.com/symfony/polyfill-php56/legacy.zip/4d891fff050101a53a4caabb03277284942d1ad9
-    3/6:    https://codeload.github.com/Imangazaliev/DiDOM/legacy.zip/e492feae44321e2f4882f6e9466614732822f008
-    4/6:    https://codeload.github.com/symfony/polyfill-mbstring/legacy.zip/1289d16209491b584839022f29257ad859b8532d
-    5/6:    https://codeload.github.com/paragonie/random_compat/legacy.zip/b3313b618f4edd76523572531d5d7e22fe747430
-    6/6:    https://codeload.github.com/Seldaek/monolog/legacy.zip/a5f2734e8c16f3aa21b3da09715d10e15b4d2d45
-    Finished: success:6, skipped:0, failure:0, total: 6
-</code></pre>
-</div>
-
-<h3 id="prefer-dist-">–prefer-dist 사용</h3>
-
-<p><a href="http://stackoverflow.com/a/20827631">Faster composer install</a>에 보면 <code class="highlighter-rouge">--prefer-dist</code> 옵션을 사용함으로써 속도를 향상 시킬 수 있다고 한다.</p>
-
-<h3 id="hhvmhttphhvmcom--php-7-"><a href="http://hhvm.com/">HHVM</a> 또는 PHP 7 사용</h3>
-
-<p>Composer는 PHP로 제작된 프로그램으로 PHP의 성능에 영향을 많이 받는다. 따라서 보다 빠른 실행기를 사용하는 것이 속도에 도움이 된다. PHP 7을 사용할 수 없다면 <a href="http://hhvm.com/">HHVM</a>을 사용하는 것이 도움이 될 수 있다. 하지만 Prebuilt Packages를 지원하는 ubuntu나 debian을 사용하는 것이 아니라면 직접 빌드를 해야하므로 귀찮을 수 있다(개인적 생각).</p>
-
-<h3 id="disable-xdebug">Disable Xdebug</h3>
-
-<p>Xdebug가 켜진 상태에서 Composer를 사용하면 아래와 같은 경고가 나온다. Xdebug를 켠 상태에서는 성능에 매우 큰 영향이 있으니 Xdebug를 끄고 사용하라는 것이다.</p>
-
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>composer update
-
-You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug
-</code></pre>
-</div>
-
-<h3 id="packagist--">packagist 미러 사용</h3>
-
-<p>아래와 같이 packagist의 레포지토리를 http://packagist.jp로 설정함으로써 약간의 속도 향상(일본이 아무래도 더 가까우니)을 얻을 수 있다고 한다. 하지만 자칫 잘못하면 더 느려질수도 있으므로 테스트를 해서 결정할 것을 권장한다.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>$ composer config -g repositories.packagist composer http://packagist.jp
-# 제거는 아래와 같이
-$ composer config -g --unset repositories.packagist
-</code></pre>
-</div>
-
-<h3 id="disable-enablegc">Disable enable_gc</h3>
-
-<p><a href="https://laracasts.com/discuss/channels/tips/tip-speed-up-composer">[Tip] Speed Up Composer</a>에 보면 <code class="highlighter-rouge">enable_gc</code>를 disable 함으로써 속도를 향상시키는 방법을 안내하고 있다. 하지만 <a href="https://github.com/composer/composer/commit/ac676f47f7bbc619678a29deae097b6b0710b799">Disable GC when computing deps, refs #3482</a>에서 보면 이와 관련된 패치는 이미 Composer에 반영되어 있으므로 효과가 없다.</p>
+<p>Gearman 외에도 PHP 7과 모듈들의 호환성을 확인하려면 <a href="https://gist.github.com/lewisgoddard/459b450106cf1e5b754e">PHP 7 Extensions</a>을 참고하기 바란다.</p>
 
 <hr />
 
-<p>사실 서두에서 이야기한 것처럼 위 내용들은 여러 곳의 이야기를 나름대로 요약 정리한 것이다. 하지만 모두 효과가 있다고는 말하지 못하겠다. 현재 PHP 7을 사용하고 있는 상황에서 여러가지를 시도 해봐도 Composer의 속도는 느리기만 하다(약간씩의 도움은 되는 것들도 있다).</p>
+<p>우선 나의 경우는 PHP 7을 소스 설치하지 않고 <a href="https://webtatic.com/packages/php70/">Webtatic.com</a>에서 제공하는 바이너리를 yum으로 설치해서 사용중이다. CentOS에서 해당 레포지토리를 사용하려면 아래와 같이 webtatic 레포지토리를 yum에 추가하면 된다.</p>
 
-<p>느린 Composer로 인해 답답한 마음을 달래고자 시간이 되는대로 방법을 찾아보고 있으나 아직은 결론을 얻지 못했다. 그나마 prestissimo를 사용하는 것이 가장 효과적인 것 같다. 앞으로도 여러가지를 시도하여 도움이 될만한 방법을 발견하면 다시 글을 쓰도록 하겠다.</p>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+</code></pre>
+</div>
+
+<hr />
+
+<p>PECL에 등록된 Gearman 모듈은 <a href="http://pecl.php.net/package/gearman">PECL - Gearman</a>에서 확인할 수 있고 소스는 <a href="https://github.com/hjr3/pecl-gearman">hjr3/pecl-gearman</a>에서 확인할 수 있다. 보면 알겠지만 꽤 오래전부터 변경이 전혀 없다. 그래서 해당 라이브러리를 fork해서 문제를 개선하고 있는 <a href="https://github.com/wcgallego/pecl-gearman/network">wcgallego/pecl-gearman</a>을 사용해서 컴파일하기로 했다.</p>
+
+<p>설치는 아래와 같이 할 수 있다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>yum install -y php70w-devel libgearman-devel
+<span class="gp">$ </span>git clone https://github.com/wcgallego/pecl-gearman.git
+<span class="gp">$ </span><span class="nb">cd </span>pecl-gearman/
+<span class="gp">$ </span>./configure
+<span class="gp">$ </span>make
+<span class="gp">$ </span>make install
+</code></pre>
+</div>
+
+<p>앞서 언급했던 것과 같이 나의 경우는 <a href="https://webtatic.com/packages/php70/">Webtatic.com</a>의 바이너리를 사용한 경우이므로 상황에 따라 아래의 명령은 차이가 난다. 하지만 중요한 부분은 <a href="https://github.com/wcgallego/pecl-gearman/network">wcgallego/pecl-gearman</a>의 소스를 받아서 빌드하는 것이므로 자신의 환경에 맞춰 빌드하는 것에는 큰 문제가 없을 것으로 생각한다.</p>
+
+<p>빌드에 오류가 없다면 <code class="highlighter-rouge">/usr/lib64/php/modules/</code>에 <code class="highlighter-rouge">gearman.so</code> 파일이 만들어져 있을 것이다. modules의 경로 또한 차이가 날 수 있으나 설치 마지막 메시지를 보면 자신의 위치는 확인 할 수 있을 것이다. 이 파일이 만들어 졌다면 이제 거의 끝이다. 이제는 php에서 해당 모듈을 load 하도록 연결하면 된다.</p>
+
+<p><code class="highlighter-rouge">/etc/php.d/gearman.ini</code> 파일을 열어서 아래의 내용을 넣는다.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>; Enable gearman extension module
+extension = gearman.so
+</code></pre>
+</div>
+
+<p><code class="highlighter-rouge">php.ini</code> 파일에 <code class="highlighter-rouge">extension = gearman.so</code>를 추가해도 된다. 나의 경우는 ini 파일들이 분리되어 관리되기 때문에 따로 파일을 만든 것이다.</p>
+
+<p>이제는 php를 재시작(<code class="highlighter-rouge">service php-fpm restart</code>)하고 <code class="highlighter-rouge">phpinfo();</code>로 확인해보면 Gearman 모듈이 연결된 것을 확인 할 수 있다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -241,8 +175,8 @@ $ composer config -g --unset repositories.packagist
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/03/17/php-composer-speed-up/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/03/21/php7-and-gearman/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/03/21/php7-and-gearman/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -113,22 +113,38 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/">
-								리눅스에서 swap 메모리 초기화
+							<a class="title" href="https://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/">
+								Gradle applicationIdSuffix 사용시 AndroidAnnotations 설정
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/">2015.10.02.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/">2015.10.05.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>리눅스에서 swap 메모리를 초기화하는 것은 아주 간단하다.
-일시적 메모리 사용의 증가로 swap을 사용하게될 경우 메모리에 여유가 생겨도 swap 메모리는 자동으로 초기화되지 않는다. 이것을 수동으로 초기화하려면 아래의 명령을 입력하면 된다. 당연히 root 권한에서 실행해야 한다.</p>
+							<p><a href="/2015/10/05/gradle-dsl-method-not-found-packagenamesuffix/">Gradle DSL method not found: ‘packageNameSuffix()’ 오류 해결</a>에서 오류 해결 방법을 안내하면서 언급했던 applicationIdSuffix를 사용시 유의사항이 있다. <strong>applicationId가 debug 모드에서 변경됨에 따라 관련된 부분에서 문제가 일어날 수 있다는 것이다.</strong></p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code>swapoff -a <span class="o">&amp;&amp;</span> swapon -a
+<p>나의 경우는 AndroidAnnotations을 함께 사용하는 부분에서 오류를 만났다. AndroidAnnotations에서 applicationId를 기준으로 resource에 접근해서 자동 생성된 class들을 찾지 못하는 문제이다.</p>
+
+<p>이런 경우에 대비해서 AndroidAnnotations에는 resourcePackageName라는 속성을 제공한다.</p>
+
+<p><a href="https://github.com/excilys/androidannotations/wiki/CustomizeAnnotationProcessing">CustomizeAnnotationProcessing</a>에 보면 아래와 같이 안내되어 있다.</p>
+
+<blockquote>
+  <p><strong>resourcePackageName</strong></p>
+
+  <p>Type: string
+By default, AndroidAnnotations try to find the R class by extracting application package from AndroidManifest.xml file. But in some cases you may want to specify a custom package to look for the R class. This is why we added resourcePackageName option.</p>
+</blockquote>
+
+<p>결론은 아래처럼 resourcePackageName에 기존 packageName을 넣어줌으로써 해결이 가능하다.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>apt {
+    arguments {
+        resourcePackageName "net.yourdomain"
+    }
+}
 </code></pre>
 </div>
-
-<p>swapoff 처리에 시간이 조금 오래 걸릴 수 있는데 서버가 멈춘 것은 아니므로 걱정하지 않아도 된다. swap 메모리에서 필요한 부분을 물리 메모리로 옮기는 처리중인 것이다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -142,8 +158,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/02/linux-how-to-clear-memory-swap/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/05/using-applicationidsuffix-with-androidannotations/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

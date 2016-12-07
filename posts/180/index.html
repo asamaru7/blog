@@ -113,103 +113,82 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2012/10/03/android-tap-highlight-layer/">
-								안드로이드 tap highlight 레이어로 대체하기
+							<a class="title" href="https://blog.asamaru.net/2015/08/20/octopress-rake-deploy-error/">
+								옥토프레스 rake deploy에서 오류가 날 경우
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2012/10/03/android-tap-highlight-layer/">2012.10.03.</span></a>
+								<a href="https://blog.asamaru.net/2015/08/20/octopress-rake-deploy-error/">2015.08.20.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>오늘은 지난번 <a href="/2012/09/26/webkit-tap-highlight-color/">-webkit-tap-highlight-color 사용하기</a> 에서 얘기했던 안드로이드 tap highlight 버그를 회피할 수 있는 방법에 대해 포스팅하고자 한다.</p>
+							<p>옥토프레스를 설치하고 테스트 포스팅을 한 후 본격적으로 세팅을 하려고 시작했다.
+도메인도 세팅하고 구글 어날리틱스, disqus 등도 연결을 하고자 _config.xml 파일을 수정하고 몇가지 글도 포스팅하려고 저장 후 generate 했다.</p>
 
-<p>일단 기본적인 아이디어는 이렇다. webkit 브라우저는 기본적으로 tap highlight를 숨길 수 있으므로 tap highlight를 투명하게 변경하고 해당 링크의 위치에 원하는 모양의 레이어를 띄우는 것이다. 여기서 또 다른 문제를 함께 해결해야 하는데, 삼성 갤럭시 계열의 스마트폰에서는 숨기는 것 조차 안된다는 것.</p>
+<p>이제 배포를 하려고 rake deploy를 하니 아래와 같은 오류가 나타났다.</p>
 
-<p>그래서 조금 더 꼼수를 부려야 한다. tap highlight가 된다는 것은 결국 이벤트가 전달되기 때문이므로 브라우저에 전달될 이벤트를 가로채서 필요한 처리를 하고 브라우저에게는 이벤트를 전달하지 않는 것이다. (왜 이런 짓을 해야하는지는 위에 링크한 포스팅을 참고바람)</p>
-
-<p>그럼 하나씩 처리 방법을 정리 해보자.</p>
-
-<p>터치를 지원하는 기기는 mousedown, mouseup에 대응되는 touchstart, touchend라는 이벤트가 있다. (사실 대응된다고 하기엔 차이가 있긴하다. 하지만 이해를 쉽게하기 위해 그냥 그렇게 생각하자.)</p>
-
-<p>이 touchstart 이벤트를 사용해서 click 이벤트가 발생하는 것을 막을 수 있다. (touchstart가 발생하지 않으면 click 이벤트도 발생하지 않는다.)</p>
-
-<p>그래서 먼저 안드로이드 기기에서 테스트 다음과 같이 테스트를 해봤다.</p>
-
-<p>링크 객체에서 touchstart 이벤트를 받아 이벤트 버블링과 캡쳐링을 제거하여 이벤트를 전달하지 않고 상위 부모에게 이벤트를 trigger로 강제 생성했다. 결과는.. tap highlight 가 숨겨지지 않았다. 이런 삼성… 사실 특별한 경우가 아니라면 이벤트를 부모에게 전달하지 않아도 된다. click과 같은 효과만 내면 되므로. 하지만 경우에 따라 부모가 touchstart를 받아야 하는 상황이 자주 발생할 수 있다.</p>
-
-<p>부모를 한단계씩 건너뛰며 테스트 해볼 수 있지만 시간 관계상 나는 바로 touchstart를 받아야하는 객체에게 바로 trigger 했다. 결과는 일단 성공. touchstart는 정상적으로 동작하고 tap highlight는 보여지지 않았다.</p>
-
-<p>이제 남은 작업은 링크 객체에 tap highlight를 대신할 레이어를 띄우는 것과 click 이벤트를 대체하는 것이다.</p>
-
-<p>우선 click 이벤트를 대체하는 것에 대해서 생각해보자. 간단하게 생각해서 touchstart에서 바로 click 시 동작할 일을 수행해도 된다. 하지만 이것은 실제 click과 다르다. 테스트 해보면 알겠지만 click은 손가락이 화면에서 떨어질 때 발생한다. 따라서 touchend에서 click 이벤트를 대체해야 한다는 것이다. 문제는 여기서 끝나지 않는다. 터치를 시작하고 swife한 다음 터치를 종료하면 click 이벤트는 발생되지 않아야 한다. 이 문제를 해결하기 위해 touchstart에서 좌표를 기억하고 touchend에서 좌표를 검사하여 swife 되었는지를 확인하고 click 이벤트를 대체해야 한다. 그런데 문제는 끝이 없다. touchstart에서는 좌표를 받을 수 있으나 touchend에서는 좌표를 받을 수 없다. 따라서 touchmove 이벤트에서 좌표의 변경을 추적해야 한다.</p>
-
-<p>다음으로 링크 객체의 위에 tap highlight 대신 레이어를 올리는 방법이다. 이 부분은 간단할 것 같지만 한가지 문제가 있다. 정확하게 링크 객체의 위에 레이어를 올리려면 객체의 위치를 알아야 한다는 것. 이 부분도 여러가지 방법을 통해 알아낼 수 있지만 부모 중에 position:relative 속성을 가진 경우 등 신경써야 할 것이 많다. 하지만 아주 간단한 방법이 있다. 링크 객체의 앞에 레이어 객체를 넣고 position:absolute를 주면 레이어는 공간을 차지하지 않으므로 링크 객체의 위치는 유지되면서도 동일한 좌표에 위치 시킬 수 있다. 단, 당연히 top, left를 따로 지정하지 않아야 한다. 그리고 객체 사이즈는 간단히 구할 수 있으므로 사이즈만 지정해 주면 완료. top, left css 속성을 줄 수 없으므로 상대적인 위치 등의 조정은 margin으로 하면 된다. (예를들어 margin:-2px 0 0 -2px, width:+2px, height:+2px 이런 방법으로 링크객체보다 사방으로 2px 큰 레이어를 정확하게 위치 시킬 수 있다.)</p>
-
-<p>아주 상세히 설명하자면 더 해야 겠지만 이 정도면 원리 정도는 설명했다고 생각된다. 혹 이해가 안되는 부분은 블로그로 문의 바란다.</p>
-
-<p>자 그럼 소스를 첨부한다. 정리를 해야 겠지만 시간 관계상… (그리고 jquery는 기본적으로 사용한다는 가정하에서 제작된 소스다. jquery를 사용하지 않는다면 사용 부분은 수정이 필요하다. 사실 jquery 문제가 아니더라도 범용으로 사용하기 위해 제작되 것이 아니므로 그냥 그대로 가져다 쓸 수는 없으니 참고로만 보면 된다.)</p>
-
-<h3 id="css-">css 소스</h3>
-
-<div class="language-css highlighter-rouge"><pre class="highlight"><code><span class="nc">.p_tap_highlight</span> <span class="p">{</span> <span class="nl">position</span><span class="p">:</span><span class="nb">absolute</span><span class="p">;</span> <span class="nl">background-color</span><span class="p">:</span><span class="m">#333</span><span class="p">;</span> <span class="nl">-moz-opacity</span><span class="p">:</span><span class="m">.30</span><span class="p">;</span> <span class="nl">filter</span><span class="p">:</span><span class="n">alpha</span><span class="p">(</span><span class="n">opacity</span><span class="err">=</span><span class="m">30</span><span class="p">);</span> <span class="nl">opacity</span><span class="p">:</span><span class="m">.30</span><span class="p">;</span> <span class="p">}</span>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>To https://github.com/asamaru7/blog.git
+ ! <span class="o">[</span>rejected]        gh-pages -&gt; gh-pages <span class="o">(</span>non-fast-forward<span class="o">)</span>
+error: failed to push some refs to <span class="s1">'https://github.com/asamaru7/blog.git'</span>
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes <span class="o">(</span>e.g.
+hint: <span class="s1">'git pull ...'</span><span class="o">)</span> before pushing again.
+hint: See the <span class="s1">'Note about fast-forwards'</span> <span class="k">in</span> <span class="s1">'git push --help'</span> <span class="k">for </span>details.
 </code></pre>
 </div>
 
-<h3 id="js-">js 소스</h3>
+<p>구글에서 검색해서 여러가지 방법들을 따라 시도해도 진행이 되지 않다가 발견한 stackoverflow에서 강제 업데이트하는 방법을 안내하고 있었다.</p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-    <span class="kd">var</span> <span class="nx">isAndroid</span> <span class="o">=</span> <span class="p">(</span><span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgent</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">().</span><span class="nx">indexOf</span><span class="p">(</span><span class="s2">"android"</span><span class="p">)</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span> <span class="c1">//&amp;&amp; ua.indexOf("mobile");</span>
-    <span class="k">if</span><span class="p">(</span><span class="nx">isAndroid</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// 안드로이드 계열에서 탭 하이라이트 위치가 맞지 않아 프로그램으로 대체</span>
-    	<span class="c1">// 탭 하이라이트 숨김 : 삼성 계열은 소용없음</span>
-        <span class="nx">$</span><span class="p">(</span><span class="s2">"&lt;style type='text/css'&gt; html, body, body * { -webkit-tap-highlight-color:rgba(0,0,0,0); } &lt;/style&gt;"</span><span class="p">).</span><span class="nx">appendTo</span><span class="p">(</span><span class="s2">"head"</span><span class="p">);</span>
-
-        <span class="kd">var</span> <span class="nx">fcSx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="nx">fcSy</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
-        <span class="kd">var</span> <span class="nx">fcEx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="nx">fcEy</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
-        <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">'touchmove'</span><span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">event</span><span class="p">){</span>	<span class="c1">// touchmove로 터치 마지막 좌표 추적</span>
-            <span class="kd">var</span> <span class="nx">t</span><span class="o">=</span><span class="nx">event</span><span class="p">.</span><span class="nx">originalEvent</span><span class="p">.</span><span class="nx">targetTouches</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-            <span class="nx">fcSx</span><span class="o">=</span><span class="nx">t</span><span class="p">.</span><span class="nx">pageX</span><span class="p">;</span>
-            <span class="nx">fcSy</span><span class="o">=</span><span class="nx">t</span><span class="p">.</span><span class="nx">pageY</span><span class="p">;</span>
-        <span class="p">});</span>
-        <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">'touchstart'</span><span class="p">,</span><span class="s1">'a'</span><span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">event</span><span class="p">){</span>
-            <span class="kd">var</span> <span class="nx">t</span><span class="o">=</span><span class="nx">event</span><span class="p">.</span><span class="nx">originalEvent</span><span class="p">.</span><span class="nx">targetTouches</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-            <span class="nx">fcSx</span><span class="o">=</span><span class="nx">fcEx</span><span class="o">=</span><span class="nx">t</span><span class="p">.</span><span class="nx">pageX</span><span class="p">;</span>
-            <span class="nx">fcSy</span><span class="o">=</span><span class="nx">fcEy</span><span class="o">=</span><span class="nx">t</span><span class="p">.</span><span class="nx">pageY</span><span class="p">;</span>
-
-            <span class="nx">event</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
-            <span class="c1">// touchstart를 사용해야 하는 부모 객체에 이벤트 trigger</span>
-            <span class="nx">$</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">).</span><span class="nx">parents</span><span class="p">(</span><span class="s1">'.ui-scrollview-view'</span><span class="p">).</span><span class="nx">triggerHandler</span><span class="p">(</span><span class="s1">'touchstart'</span><span class="p">);</span>
-            <span class="nx">event</span><span class="p">.</span><span class="nx">stopPropagation</span><span class="p">();</span>
-            <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
-        <span class="p">}).</span><span class="nx">on</span><span class="p">(</span><span class="s1">'touchend'</span><span class="p">,</span><span class="s1">'a'</span><span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">event</span><span class="p">){</span>
-        	<span class="c1">// 가로/세로 이동 거리의 합이 10 이하인 경우만 click으로 인정(swife 제외를 위함)</span>
-            <span class="k">if</span><span class="p">((</span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">fcSx</span><span class="o">-</span><span class="nx">fcEx</span><span class="p">)</span><span class="o">+</span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">fcSy</span><span class="o">-</span><span class="nx">fcEy</span><span class="p">))</span><span class="o">&lt;</span><span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
-                <span class="kd">var</span> <span class="nx">target</span><span class="o">=</span><span class="nx">$</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">currentTarget</span><span class="p">);</span>
-                <span class="c1">// 탭 하이라이트 표시</span>
-                <span class="nx">$</span><span class="p">(</span><span class="s1">'&lt;div class="p_tap_highlight" style="width:'</span><span class="o">+</span><span class="p">(</span><span class="nx">target</span><span class="p">.</span><span class="nx">width</span><span class="p">())</span><span class="o">+</span><span class="s1">'px; height:'</span><span class="o">+</span><span class="p">(</span><span class="nx">target</span><span class="p">.</span><span class="nx">height</span><span class="p">())</span><span class="o">+</span><span class="s1">'px;"&gt;&lt;/div&gt;'</span><span class="p">).</span><span class="nx">insertBefore</span><span class="p">(</span><span class="nx">target</span><span class="p">).</span><span class="nx">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">).</span><span class="nx">queue</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">remove</span><span class="p">();});</span>
-                <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">t</span><span class="p">){</span> <span class="k">return</span> <span class="kd">function</span><span class="p">(){</span>
-                    <span class="kd">var</span> <span class="nx">href</span> <span class="o">=</span> <span class="nx">t</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s1">'href'</span><span class="p">);</span>
-                    <span class="k">if</span><span class="p">((</span><span class="k">typeof</span><span class="p">(</span><span class="nx">href</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'undefined'</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="nx">href</span> <span class="o">==</span> <span class="s1">''</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="nx">href</span> <span class="o">==</span> <span class="s1">'#'</span><span class="p">))</span> <span class="p">{</span>    <span class="c1">// 이동할 주소가 없을 경우 이벤트 트리거</span>
-                        <span class="nx">t</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s1">'click'</span><span class="p">);</span>
-                        <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
-                    <span class="p">}</span>
-                    <span class="c1">//event.preventDefault();</span>
-                    <span class="c1">//event.stopPropagation();</span>
-                    <span class="c1">// 링크 객체의 주소 형태에 맞게 처리</span>
-                    <span class="k">if</span><span class="p">(</span><span class="nx">href</span><span class="p">.</span><span class="nx">substring</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">==</span><span class="s1">'#'</span><span class="p">){</span>
-                        <span class="c1">// TODO hash 변경에 따른 처리</span>
-                    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nx">href</span><span class="p">.</span><span class="nx">substring</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">11</span><span class="p">).</span><span class="nx">toLowerCase</span><span class="p">()</span><span class="o">==</span><span class="s1">'javascript:'</span><span class="p">)</span> <span class="p">{</span>
-                        <span class="nb">eval</span><span class="p">(</span><span class="nx">href</span><span class="p">.</span><span class="nx">substring</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="nx">href</span><span class="p">.</span><span class="nx">length</span><span class="p">));</span>
-                    <span class="p">}</span>
-                    <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="o">=</span><span class="nx">href</span><span class="p">;</span>
-                <span class="p">};}(</span><span class="nx">target</span><span class="p">),</span><span class="mi">10</span><span class="p">);</span>
-                <span class="nx">target</span><span class="o">=</span><span class="kc">null</span><span class="p">;</span>
-            <span class="p">}</span>
-            <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
-        <span class="p">});</span>
-    <span class="p">}</span>
-<span class="p">})();</span>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>vi Rakefile
 </code></pre>
 </div>
+
+<p>Rakefile을 열어 deploy_branch로 검색하다 보면 아래와 같은 부분을 볼 수 있다.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">desc</span> <span class="s2">"deploy public directory to github pages"</span>
+<span class="n">multitask</span> <span class="ss">:push</span> <span class="k">do</span>
+  <span class="nb">puts</span> <span class="s2">"## Deploying branch to Github Pages "</span>
+  <span class="nb">puts</span> <span class="s2">"## Pulling any updates from Github Pages "</span>
+  <span class="n">cd</span> <span class="s2">"</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">"</span> <span class="k">do</span>
+    <span class="no">Bundler</span><span class="p">.</span><span class="nf">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">"git pull"</span> <span class="p">}</span>
+  <span class="k">end</span>
+  <span class="p">(</span><span class="no">Dir</span><span class="p">[</span><span class="s2">"</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">/*"</span><span class="p">]).</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">rm_rf</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">}</span>
+  <span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="p">[</span><span class="ss">:copydot</span><span class="p">].</span><span class="nf">invoke</span><span class="p">(</span><span class="n">public_dir</span><span class="p">,</span> <span class="n">deploy_dir</span><span class="p">)</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">## Copying </span><span class="si">#{</span><span class="n">public_dir</span><span class="si">}</span><span class="s2"> to </span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">"</span>
+  <span class="n">cp_r</span> <span class="s2">"</span><span class="si">#{</span><span class="n">public_dir</span><span class="si">}</span><span class="s2">/."</span><span class="p">,</span> <span class="n">deploy_dir</span>
+  <span class="n">cd</span> <span class="s2">"</span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2">"</span> <span class="k">do</span>
+    <span class="nb">system</span> <span class="s2">"git add -A"</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s2">"Site updated at </span><span class="si">#{</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">utc</span><span class="si">}</span><span class="s2">"</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">## Committing: </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">"</span>
+    <span class="nb">system</span> <span class="s2">"git commit -m </span><span class="se">\"</span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="se">\"</span><span class="s2">"</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">## Pushing generated </span><span class="si">#{</span><span class="n">deploy_dir</span><span class="si">}</span><span class="s2"> website"</span>
+    <span class="no">Bundler</span><span class="p">.</span><span class="nf">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">"git push origin </span><span class="si">#{</span><span class="n">deploy_branch</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">## Github Pages deploy complete"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>여기서 고칠 부분은 <code class="highlighter-rouge">Bundler.with_clean_env { system "git push origin #{deploy_branch}" }</code> 이 부분이다.
+<code class="highlighter-rouge">#{deploy_branch}"</code> 앞에 +를 붙여준다.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Bundler</span><span class="p">.</span><span class="nf">with_clean_env</span> <span class="p">{</span> <span class="nb">system</span> <span class="s2">"git push origin </span><span class="si">#{</span><span class="n">deploy_branch</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+</code></pre>
+</div>
+
+<p>이제 저장후 나와서 다시 deploy…</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c">## Pushing generated _deploy website</span>
+Counting objects: 36, <span class="k">done</span>.
+Delta compression using up to 4 threads.
+Compressing objects: 100% <span class="o">(</span>27/27<span class="o">)</span>, <span class="k">done</span>.
+Writing objects: 100% <span class="o">(</span>36/36<span class="o">)</span>, 12.90 KiB | 0 bytes/s, <span class="k">done</span>.
+Total 36 <span class="o">(</span>delta 14<span class="o">)</span>, reused 0 <span class="o">(</span>delta 0<span class="o">)</span>
+To https://github.com/asamaru7/blog.git
+ + 9295247...d6c0b14 gh-pages -&gt; gh-pages <span class="o">(</span>forced update<span class="o">)</span>
+</code></pre>
+</div>
+
+<p>이번엔 gh-pages (forced update) 안내를 보여주며 push 성공.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -223,8 +202,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2012/10/03/android-tap-highlight-layer/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2012/10/03/android-tap-highlight-layer/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/08/20/octopress-rake-deploy-error/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/08/20/octopress-rake-deploy-error/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

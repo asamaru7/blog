@@ -113,46 +113,67 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2012/09/23/stop-creating-ds-store-on-mac/">
-								네트워크 연결을 통해 .DS_Store 파일 생성을 방지하는 방법
+							<a class="title" href="https://blog.asamaru.net/2012/09/26/webkit-tap-highlight-color/">
+								-webkit-tap-highlight-color 사용하기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2012/09/23/stop-creating-ds-store-on-mac/">2012.09.23.</span></a>
+								<a href="https://blog.asamaru.net/2012/09/26/webkit-tap-highlight-color/">2012.09.26.</span></a>
 							</p>
 						</header>
 						<p>
-							<p><strong>애플 공식 <a href="http://support.apple.com/kb/HT1629?viewlocale=ko_KR">고객지원</a> 사이트에 따르면 다음의 명령을 터미널에 입력하면 된다.</strong></p>
+							<p>iOS와 안드로이드의 웹킷 기반 브라우저(사파리, 크롬 등)에서 링크를 터치하면 해당 위치를 표시하는 하이라이트가 나타난다.</p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code>defaults write com.apple.desktopservices DSDontWriteNetworkStores <span class="nb">true</span>
+<p>이 하이라이트의 색상을 바꾸고 싶을 때 사용할 수 있는 것이 -webkit-tap-highlight-color 이다.</p>
+
+<p>사용법은 아주 간단하다.</p>
+
+<div class="language-css highlighter-rouge"><pre class="highlight"><code><span class="nt">-webkit-tap-highlight-color</span><span class="o">:</span> <span class="o">&lt;</span><span class="nt">color</span><span class="o">&gt;;</span>
 </code></pre>
 </div>
 
-<p>잘 적용되었는지 확인하려면</p>
+<p>예를들어 검은색 계열에 불투명도 30%를 지정하고 싶다면</p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code>defaults <span class="nb">read </span>com.apple.desktopservices DSDontWriteNetworkStores
+<div class="language-css highlighter-rouge"><pre class="highlight"><code><span class="o">*</span> <span class="p">{</span> <span class="nl">-webkit-tap-highlight-color</span><span class="p">:</span><span class="n">rgba</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">0.3</span><span class="p">);</span> <span class="p">}</span>
 </code></pre>
 </div>
 
-<p>를 입력했을 때 “true”라는 글자가 나오면 된다.</p>
+<p>으로 지정하면 된다. *는 모든 개체를 뜻하므로 특정 객체만 해제하려면 CSS selector를 변경하면 된다.</p>
 
-<p>보다 상세한 정보를 얻길 원한다면 애플 공식 <a href="http://support.apple.com/kb/HT1629?viewlocale=ko_KR">고객지원</a> 사이트를 방문하기 바란다.</p>
+<p>그런데 여기서 문제가 있다.</p>
 
-<p>고객지원 사이트의 안내에는 “이 문서는 Apple에서 보관하던 문서로 더 이상 업데이트되지 않습니다.”라고 나와있고 지원되는 버전에도 10.6(스노우 레오파드)까지만 나와있지만 현재 최신 버전인 마운틴 라이언에서도 이상없이 동작한다. 당연히 라이언에도…</p>
+<p>바로 안드로이드… 안드로이드는 현재 아이스크림 샌드위치(4.0.4) 기준으로 색상 지정을 지원하지 않는다. (젤리빈에서는 아직 테스트하지 못했다. 향후 OS 업데이트가 되면 확인 후 내용을 수정하겠다.)</p>
 
-<p>위처럼 defaults로 설정할 수 있는 것들은 .DS_Store를 지우는 것 외에도 다양한데 아래의 링크에서 구경하시길…</p>
+<p>다만 아예 숨기는 것은 가능하다. (다시말해 주황색의 하이라이트를 쓰거나 아예 숨기는 것만 가능하다.)</p>
 
-<p><a href="http://nerdlogger.com/2012/07/30/get-control-of-mountain-lion-with-a-huge-list-of-command-line-tweaks/">링크1</a></p>
+<p>그렇다면 아예 숨기는 방법은</p>
 
-<p><a href="https://github.com/mathiasbynens/dotfiles/blob/master/.osx">링크2</a></p>
-
-<hr />
-
-<p><strong>기존에 이미 생성된 파일을 지우는 방법</strong></p>
-
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code>find . -name <span class="se">\.</span>DS_Store -exec rm <span class="o">{}</span> <span class="se">\;</span>
-find . -name <span class="se">\.</span>AppleDouble -exec rm -rf <span class="o">{}</span> <span class="se">\;</span>
+<div class="language-css highlighter-rouge"><pre class="highlight"><code><span class="o">*</span> <span class="p">{</span> <span class="nl">-webkit-tap-highlight-color</span><span class="p">:</span> <span class="n">rgba</span><span class="p">(</span><span class="m">255</span><span class="p">,</span><span class="m">255</span><span class="p">,</span><span class="m">255</span><span class="p">,</span><span class="m">0</span><span class="p">);</span> <span class="p">}</span>
 </code></pre>
 </div>
+
+<p>으로 하면 된다. 앞에 255,255,255는 의미가 없다. 마지막의 alpha값이 0으로 지정되면 된다. 다른 방법으로 rgba 대신 transparent를 지정하는 방법도 있으나 이건 iOS만 지원한다.</p>
+
+<p>애플에서는 <a href="http://developer.apple.com/library/safari/#documentation/appleapplications/reference/safaricssref/articles/standardcssproperties.html">iOS는 1.1.1 버전</a>부터 지원하던 것을 안드로이드는 아직도 제대로 지원하지 않고 있는 것이다.</p>
+
+<p>지난번에 포스팅 했던 <a href="/2012/09/22/i-like-apple/">나는 애플빠다</a>에서도 언급했던 개발 부분에서 다양한 안드로이드의 버그/부실함(?) 중에 하나다. (아래의 내용도 이어서…)</p>
+
+<p><strong>더 큰 문제는 여기서 끝나지 않는다는 것이다.</strong></p>
+
+<p>안드로이드 중 삼성 계열(현재 갤럭시 노트, 갤럭시 S2 등에서 문제가 있음)에서는 색상 변경이 안될 뿐 아니라 아예 숨겨지지도 않는다. 정말 개발자 입장에서 환장할 노릇이다.</p>
+
+<p>이 부분이 그냥 단순히 예쁘지 않아서 숨기려는 것이 아니라 이 하이라이트에 다른 버그(하이라이트의 위치가 잘못 표기되는 결함)가 존재함에 따라 부득이하게 아예 숨겨버려야 하는 상황임에도 숨기지도 못하는 것이다.</p>
+
+<p>난 정말 이래서 안드로이드가 싫다. 버그에 버그가 꼬리를 물고 나를 괴롭히기 때문이다. 게다가 많기까지 하다.</p>
+
+<p>하지만 이대로 물러설 수 없는, 문제를 해결해야하는 개발자로써 다른 방법을 찾아서 하이라이트를 숨기는 것까지는 성공했다.</p>
+
+<p>아.. 정말 미쳐 버릴 것 같은 상황은 링크 터치 하이라이트는 숨겼는데 인풋폼들의 하이라이트를 숨길 방법이 없다는 것… 이 부분은 결국 숨기지는 못하고 위치가 잘못 표기되는 버그를 다른 방법으로 해결했다. 마지막으로 버그를 개선하는 과정에서 또 다른 버그들을 발견했다는 것이 더욱 나를 슬프게 한다. 도대체 안드로이드 웹뷰의 버그는 어디까지 인가?</p>
+
+<p>사실 얼마전까지만 해도 익스플로러의 버그들이 나를 괴롭혔는데.. 이때까지만 해도 익스플로러가 최악이라 생각했다. 하지만 세상에는 항상 더 강한 자가 있는법. 안드로이드 버그들이 최강이다. (문제는 개발자가 아니면, 겪어보지 않은 사람은 아무도 공감하지 못한다는 것이 나를 슬프게 한다.)</p>
+
+<p>어쨌든 하이라이트 버그 회피에 대한 자세한 해결 과정은 복잡하므로 소스와 함께 <strike>따로 포스팅할 예정이다.</strike></p>
+
+<p><a href="/2012/10/03/android-tap-highlight-layer/">“안드로이드 tap highlight 레이어로 대체하기”</a>로 별도 포스팅 한다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -166,8 +187,8 @@ find . -name <span class="se">\.</span>AppleDouble -exec rm -rf <span class="o">
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2012/09/23/stop-creating-ds-store-on-mac/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2012/09/23/stop-creating-ds-store-on-mac/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2012/09/26/webkit-tap-highlight-color/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2012/09/26/webkit-tap-highlight-color/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -113,33 +113,188 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/06/punycode/">
-								퓨니코드(Punycode)
+							<a class="title" href="https://blog.asamaru.net/2015/10/08/useful-commands-for-linux/">
+								리눅스 명령어 모음(Centos 6)
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/06/punycode/">2015.10.06.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/08/useful-commands-for-linux/">2015.10.08.</span></a>
 							</p>
 						</header>
 						<p>
-							<blockquote>
-  <p>퓨니코드(Punycode)는 유니코드 문자열을 호스트 이름에서 허용된 문자만으로 인코딩하는 방법으로, <a href="https://tools.ietf.org/html/rfc3492">RFC 3492</a>에 기술되어 있다. 퓨니코드는 유니코드가 지원하는 모든 언어로 국제화 도메인을 쓸 수 있게 한 IDNA의 일부로, 변환은 전적으로 웹 브라우저와 같은 클라이언트에서 이루어진다.
-출처 : https://ko.wikipedia.org/wiki/%ED%93%A8%EB%8B%88%EC%BD%94%EB%93%9C</p>
-</blockquote>
+							<p>아래의 내용은 개인적으로 간혹 사용이 필요한 내용을 기록해 두기 위한 것으로 잘못된 정보일 수 있으니 참고만 하기 바란다.</p>
 
-<p>쉽게 얘기해서 기본적으로 도메인은 ASCII 문자 집합만 사용 가능한데 국제화 도메인을 사용하기 위해서 퓨니코드라는 것이 필요하다는 것이다. 퓨니코드는 <code class="highlighter-rouge">xn--</code> 접두어를 통해 구분된다. 예를들어 “wiki백과.한국” 도메인은 IDNA에서 xn–wiki-ei4p334e.xn–3e0b707e로 변환된다.</p>
+<h3 id="section">시스템 로그 삭제</h3>
 
-<p>국제화 도메인과 퓨니코드를 상호 변환을 테스트 해보려면 <a href="http://krnic.or.kr/jsp/resources/domainInfo/punyCode.jsp">KISA 퓨니코드 변환기</a>를 사용할 수 있다. 이 외에도 퓨니코드 변환기로 검색하면 많은 변환기들이 존재한다.</p>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>/etc/init.d/rsyslog restart
+</code></pre>
+</div>
 
-<p>사실 이 퓨니코드에 대한 소개를 하는 이유는 일반적인 상황에서는 직접 처리해야할 일이 없지만 특수한 경우에는 이것이 필요할 수 있기 때문이다. 예를들어 이런 경우가 있다. IE8 이하에서는 한글도메인과 퓨니코드로 변환된 도메인을 다르게 인식하여 AJAX 사용시 cross domain 문제를 일으킬 수 있다. 이런 경우엔 퓨니코드를 한글 도메인으로 다시 변환하여 URL을 사용해야 문제를 막을 수 있다.</p>
+<h3 id="sl---apache----">sl 인증서 + apache 시작시 비밀번호 입력 제거</h3>
 
-<p>따라서 퓨니코드에 대한 이해와 변환 방법에 대해 알아두면 도움이 될 것이다. 아래는 변환에 바로 사용할 수 있는 몇가지 오픈소스 프로젝트를 안내한다. 이외에도 조금만 검색하면 많은 오픈소스를 찾을 수 있다.</p>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>openssl rsa -in key.pem -out key.nopw.pem
+</code></pre>
+</div>
 
-<ul>
-  <li><a href="https://github.com/bestiejs/punycode.js">punycode.js</a></li>
-  <li><a href="https://github.com/true/php-punycode">php-punycode</a></li>
-  <li><a href="https://github.com/Wevah/Punycode-Cocoa">Punycode-Cocoa</a></li>
-  <li><a href="http://opensource.apple.com/source/ChatServer/ChatServer-262/libidn/java/gnu/inet/encoding/Punycode.java">Punycode.java</a></li>
-</ul>
+<h3 id="ssh---">ssh 접속자 강제 로그아웃</h3>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c"># 602 : userid</span>
+pkill -KILL -u 602
+</code></pre>
+</div>
+
+<h3 id="bash-script--">bash script에서 실행경로 구하기</h3>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="nb">cd</span> <span class="k">${</span><span class="nv">0</span><span class="p">%/*</span><span class="k">}</span> 2&gt;/dev/null
+<span class="nb">echo</span> <span class="nv">$PWD</span>/<span class="k">${</span><span class="nv">0</span><span class="p">##*/</span><span class="k">}</span>
+</code></pre>
+</div>
+
+<h3 id="section-1">서버 네트워크 상태 확인</h3>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>netstat -an|grep <span class="s2">":80"</span>|awk <span class="s1">'/tcp/ {print $6}'</span>|sort -nr| uniq -c
+</code></pre>
+</div>
+
+<h3 id="section-2">아파치 동시접속자 수 확인</h3>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>netstat -anp | grep :80 | grep ESTAB | wc -l
+</code></pre>
+</div>
+
+<h3 id="section-3">권한 파일 찾기 / 바꾸기</h3>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c"># root 권한 파일 찾기</span>
+find . -uid 0
+
+<span class="c"># chown 특정 사용자만 변경</span>
+chown web.usergroup <span class="k">*</span> -R --from<span class="o">=</span>root.root
+chown --from<span class="o">=</span>511 -R web account/
+</code></pre>
+</div>
+
+<h3 id="section-4">포트 강제로 죽이기</h3>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>sudo fuser -k -n tcp 444
+</code></pre>
+</div>
+
+<h3 id="stdout-stderr">실행 결과 숨기기(stdout, stderr)</h3>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>명력어 &gt; /dev/null 2&gt;&amp;1
+</code></pre>
+</div>
+
+<h3 id="vi-">검색된 파일만 vi 열기</h3>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>vi -p <span class="k">$(</span>find .|grep ModuleLink|grep -v <span class="s1">'.svn'</span>|grep -v CZFramework<span class="k">)</span>
+</code></pre>
+</div>
+
+<h3 id="section-5">내용 일괄변환</h3>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>find . -type f -name <span class="k">*</span>.php -exec perl -pi -e <span class="s1">'s|\\CZ\\CZFramework|\\CZF|g'</span> <span class="o">{}</span> <span class="se">\;</span>
+</code></pre>
+</div>
+
+<h3 id="ssh----1">ssh 비밀번호 없이 접속</h3>
+
+<h4 id="local">local</h4>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>ssh-keygen -t rsa
+<span class="c"># scp /root/.ssh/id_rsa.pub root@[ip]:/root/.ssh/authorized_keys</span>
+ssh-copy-id -i ~/.ssh/id_rsa.pub admin@[ip]
+</code></pre>
+</div>
+
+<h4 id="section-6">대상 서버(호스트)의 퍼미션</h4>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>750 /home/admin/
+700 /home/admin/.ssh/
+600 /home/admin/.ssh/authorized_keys
+</code></pre>
+</div>
+
+<h3 id="section-7">배드블럭 검사</h3>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>badblocks -v /dev/sda1
+</code></pre>
+</div>
+
+<h3 id="section-8">프로세스 실행경로 확인</h3>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c"># 프로세스 정보</span>
+ps ef
+ps aux
+
+<span class="c"># 프로세스 트리보기</span>
+pstree -aph
+
+<span class="c">#프로세스 상세보기</span>
+lsof -P
+</code></pre>
+</div>
+
+<h3 id="section-9">아파치 :  모든 페이지 요청시 동일페이지 노출</h3>
+
+<pre><code class="language-apacheconf">RewriteEngine On
+RewriteRule ^(.*)$ /target/index.html
+</code></pre>
+
+<h2 id="mysql--">Mysql 사용자 관리</h2>
+
+<h4 id="section-10">패턴</h4>
+
+<pre><code class="language-mysql">grant all privileges on 디비명.테이블명 to 사용자@'접속지 주소' identified by '암호' (with grant option);
+</code></pre>
+
+<h4 id="section-11">권한 생성</h4>
+
+<pre><code class="language-mysql"># 원격지에서 root로 접속하는 경우
+grant all privileges on *.* to root identified by '암호' with grant option;
+
+# '사용자'가 '암호'으로 모든 컴퓨터에서 모든 디비와 테이블에 접속하도록 허용
+grant all privileges on *.* to 사용자 identified by '암호';
+
+# '사용자'가 '암호'으로 localhost 에서 db1 디비의 table1에 접속하도록 허용
+grant all privileges on root.db1 to 사용자@'localhost' identified by '암호';
+
+# '사용자'가 '암호'으로 111.222.333.444 에서 db1 디비의 모든 테이블에 접속하도록 허용
+grant all privileges on root.* to 사용자@'111.222.333.444' identified by '암호';
+
+# '사용자'가 '암호'으로 111.222.333.0/24 에서 모든 디비와 테이블에 접속하도록 허용
+grant all privileges on *.* to 사용자 @'111.222.333.%' identified by '암호';
+</code></pre>
+
+<h4 id="section-12">권한 제거</h4>
+
+<pre><code class="language-mysql">revoke all on 디비명.테이블명 from 사용자;
+</code></pre>
+
+<h4 id="section-13">권한 적용</h4>
+
+<pre><code class="language-mysql"># 모든 명령 후에 항상 아래 명령을 실행해야 실제로 적용된다.
+flush privileges;
+</code></pre>
+
+<h4 id="connection--">Connection 상태 확인하기</h4>
+
+<pre><code class="language-mysql">SHOW FULL PROCESSLIST;
+</code></pre>
+
+<h4 id="connection---1">Connection 수 확인하기</h4>
+
+<pre><code class="language-mysql">SHOW STATUS LIKE 'Threads_connected';
+</code></pre>
+
+<h4 id="connection---2">동작중인 Connection 수 확인하기</h4>
+
+<pre><code class="language-mysql">SHOW STATUS LIKE 'Threads_running';
+</code></pre>
+
+<h4 id="connection---3">Connection 상태 확인하기</h4>
+
+<pre><code class="language-mysql">SHOW FULL PROCESSLIST;
+</code></pre>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -153,8 +308,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/06/punycode/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/06/punycode/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/08/useful-commands-for-linux/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/08/useful-commands-for-linux/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

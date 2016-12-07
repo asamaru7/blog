@@ -3,7 +3,7 @@ layout: post
 title: "자바스크립트 insertAfter() 구현하기"
 date: 2016-12-06 10:53:25 +09:00
 comments: true
-categories: javascript
+categories: js
 ---
 javascript는 [insertBefore()](http://www.w3schools.com/jsref/met_node_insertbefore.asp)만 제공하고 `insertAfter()` 함수는 제공하지 않는다.
 

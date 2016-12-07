@@ -113,62 +113,94 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/01/19/centos-emptying-the-buffers-cache/">
-								linux buffer/cache 비우기
+							<a class="title" href="https://blog.asamaru.net/2016/01/26/ssh-login-without-password/">
+								SSH 비밀번호 입력없이 로그인하기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/01/19/centos-emptying-the-buffers-cache/">2016.01.19.</span></a>
+								<a href="https://blog.asamaru.net/2016/01/26/ssh-login-without-password/">2016.01.26.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>예전에 <a href="/2015/10/02/linux-how-to-clear-memory-swap/">리눅스에서 swap 메모리 초기화</a>에서 swap 메모리를 비우는 방법을 남겼다. 이번엔 swap이 아닌 “buff/cache”를 비우는 방법을 남기고자 한다.</p>
+							<p>ssh 사용시 매번 비밀번호를 입력하는 것은 귀찮은 일이다. 그럼에도 불구하고 ssh의 기본 기능에 비밀번호를 미리 입력하는 기능을 제공하지 않는 것은 보안 상의 이유 때문일 것이다. 하지만 비밀번호를 입력하는 귀찮음을 해소하는 것 외에도 스케쥴링 처리 스크립트 등에서 사용자의 비밀번호 입력없이 ssh 접속을 해야할 경우가 있다. 이런 경우에 대비해서 ssh에서는 클라이언트의 공개키를 원격 서버에 미리 등록 시켜두는 방식으로 비밀번호 없이 접속할 수 있는 방법을 제공한다. 사실 이 방법이 보안 상으로도 안전한 편이고 등록하는 과정도 크게 복잡하지 않으므로 가장 권장되는 방법이라고 할 수 있다.</p>
 
-<p>linux에서 <code class="highlighter-rouge">top</code> 또는 <code class="highlighter-rouge">free</code> 명령으로 메모리 상황을 보면 “buff/cache” 항목이 있다. 이 부분은 실제로 직접 사용하고 있는 메모리가 아니라 말그대로 버퍼와 캐시에 사용된 메모리를 뜻한다. 그렇다면 “굳이 왜 이것을 비우려고 하는가?”하는 의문이 생길 수 있다.</p>
+<p>그렇다고 이 방법 외에는 대안이 없는 것은 아니다. <code class="highlighter-rouge">expect</code> 명령을 이용해서 비밀번호 입력을 자동화하는 방법과 <a href="http://sourceforge.net/projects/sshpass/">sshpass</a>를 사용하는 방법이 있다. 사실 <a href="http://sourceforge.net/projects/sshpass/">sshpass</a>를 몰랐을 때는 <code class="highlighter-rouge">expect</code>를 주로 사용했는데 <a href="http://sourceforge.net/projects/sshpass/">sshpass</a>를 사용하면 훨씬 쉽게 다양한 일을 할 수 있다.</p>
 
-<p>일반적으로 캐시는 느린 장치의 데이터를 빠른 장치에 임시 보관해두고 사용함으로써 성능을 높이는 것이 목적이다. 따라서 캐시는 당연히 사용하는게 좋다. 하지만 hit(적중률)가 낮은 경우엔 캐시를 사용하는 것이 부정적인 영향을 미칠 수 있다. 빠른 장치는 당연히 공간이 한정되어 있기 때문에 모든 정보를 캐시할 수 없으므로 캐시를 관리해야 한다. 이 과정에서 발생하는 비용이 캐시를 사용하는 것보다 크다면 캐시는 사용하지 않는 것이 좋다는 것이다. 캐시에 관한 자세한 내용은 여기서 다루고자하는 것이 아니니 이정도만 설명하고 넘어가자.</p>
+<p>자.. 이제부터 하나씩 방법을 설명하고자 한다. 아래는 CentOS 기준이며 기타 리눅스에서도 거의 동일한 것으로 알고 있다.</p>
 
-<p>실질적으로 이것이 어디에 필요한지에 대해 알아보자.</p>
+<h3 id="section">1. 공개키 등록 방식</h3>
 
-<p>linux에서는 기본적으로 디스크 상의 파일을 읽을 경우 해당 파일을 닫아도 free 메모리로 모두가 즉시 반환되지 않는다. 이유는 이 파일의 정보를 다음 사용에 대비해 cache하기 때문이다. 보다 자세한 내용을 확인하고 싶다면 <a href="https://wiki.kldp.org/Translations/html/The_Linux_Kernel-KLDP/tlk3.html">메모리 관리 (Memory Management)</a>를 참고하자. 이런 파일의 cache와 관련하여 os / mysql 등 여러 분야의 성능 튜닝 내용 등을 쉽게 찾을 수 있다.</p>
+<p>우선 <code class="highlighter-rouge">~/.ssh/id_rsa.pub</code>에 파일이 존재하는지 확인한다. 없다면 아래와 같이 <code class="highlighter-rouge">ssh-keygen</code>을 사용해서 개인용 개인키/공개키를 생성한다.</p>
 
-<p>대량의 파일이 관리되는 서버의 파일 cache hit가 낮은데 비해 buffer / cache 메모리 사용량이 높을 경우 해당 cache 기능을 끄거나 주기적으로 비움으로써 성능을 개선할 수 있다.</p>
-
-<p>우선 아래와 같이 선택적으로 cache를 비울 수 있다. <code class="highlighter-rouge">sync</code> 명령을 사용하는 이유는 해당 cache 기능을 비우기 전에 사용중인 데이터를 sync하기 위한 것이다.</p>
-
-<p>pagecache 비우기</p>
-
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code>sync
-<span class="nb">echo </span>1 &gt; /proc/sys/vm/drop_caches
-<span class="c"># 또는</span>
-sync
-sysctl -w vm.drop_caches<span class="o">=</span>1
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>ssh-keygen -t rsa
 </code></pre>
 </div>
 
-<p>dentries, inodes 비우기</p>
+<p>위 명령을 입력하면 몇가지를 물어보는데 특별한 이유가 없다면 그냥 엔터를 계속 눌러서 완료하면 된다.
+이렇게 생성하고나면 개인키는 <code class="highlighter-rouge">~/.ssh/id_rsa</code>로 공개키는 <code class="highlighter-rouge">~/.ssh/id_rsa.pub</code>로 생성된다.</p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code>sync
-<span class="nb">echo </span>2 &gt; /proc/sys/vm/drop_caches
-<span class="c"># 또는</span>
-sync
-sysctl -w vm.drop_caches<span class="o">=</span>2
+<p>이제는 공개키를 접속하려는 원격 서버에 등록해야 한다.
+아래와 같이 직접 해당 서버로 복사하는 방법이 있다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>scp ~/.ssh/id_rsa.pub <span class="o">[</span>user]@[host]:~/.ssh/authorized_keys
 </code></pre>
 </div>
 
-<p>pagecache, dentries, inodes 모두 비우기</p>
+<p>그런데 이렇게하면 기존 파일이 존재할 경우 덮어쓰게 되므로 권장하지 않는다. 대신 아래와 같이 <code class="highlighter-rouge">ssh-copy-id</code>를 사용하는 것을 권장한다. <code class="highlighter-rouge">ssh-copy-id</code>를 사용하면 원격 서버에 <code class="highlighter-rouge">authorized_keys</code> 파일이 없다면 생성해주고 있다면 공개키를 추가해 준다.</p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code>sync
-<span class="nb">echo </span>3 &gt; /proc/sys/vm/drop_caches
-<span class="c"># 또는</span>
-sync
-sysctl -w vm.drop_caches<span class="o">=</span>3
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>ssh-copy-id -i ~/.ssh/id_rsa.pub <span class="o">[</span>user]@[host]
 </code></pre>
 </div>
 
-<p>위에서 1,2,3으로 지정한 값들은 영구적 설정이 아니라 설정되는 그 시점에만 적용된다. 바꿔서 이야기 하자면 <code class="highlighter-rouge">/proc/sys/vm/drop_caches</code>는 파일이 아니라 명령어인 셈이다. 실제로 아래와 같이 기본값인 0으로 되돌리려고하면 오류가 난다.</p>
+<p>여기까지 완료 했다면 비밀번호 없이 ssh 접속이 가능해야 한다.
+그런데 간혹 작업을 완료했음에도 불구하고 계속 비밀번호를 물어보는 경우가 있다. 그런 경우는 대부분 원격 서버의 <code class="highlighter-rouge">authorized_keys</code> 파일 퍼미션 문제다. 원격 서버에서 퍼미션을 아래와 같은지 확인하고 맞지 않다면 변경해 준다. 대부분의 경우는 접속 문제가 해결된다.</p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span><span class="nb">echo </span>0 &gt; /proc/sys/vm/drop_caches
--bash: <span class="nb">echo</span>: write error: 부적절한 인수
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>chmod 700 ~/.ssh/
+chmod 600 ~/.ssh/authorized_keys
+</code></pre>
+</div>
+
+<h3 id="sshpasshttpsourceforgenetprojectssshpass--">2. <a href="http://sourceforge.net/projects/sshpass/">sshpass</a>를 사용하는 방식</h3>
+
+<p><a href="http://sourceforge.net/projects/sshpass/">sshpass</a>는 ssh와는 직접적인 관련이 없는 프로그램으로 별도 설치가 필요하다. 설치되어 있지 않다면 아래와 같이 설치한다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>yum --enablerepo<span class="o">=</span>epel -y install sshpass
+</code></pre>
+</div>
+
+<p>기본적인 사용은 아래와 같이 할 수 있다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>sshpass -p[password] ssh -o <span class="nv">StrictHostKeyChecking</span><span class="o">=</span>no <span class="o">[</span>user]@[host]
+</code></pre>
+</div>
+
+<p>위 방식은 서두에서도 이야기 했듯이 비밀번호가 명령 상에 노출되므로 보안상으로는 좋지는 않다. 하지만 필요할 때가 있으니 알아두면 요긴하게 쓰이리라 생각한다. 그리고 <a href="http://sourceforge.net/projects/sshpass/">sshpass</a>는 접속시 비밀번호를 자동 입력해주는 역할 외에 다음과 같은 일도 할 수 있다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c"># 원격 서버에서 command 실행</span>
+sshpass -p[password] ssh -o <span class="nv">StrictHostKeyChecking</span><span class="o">=</span>no <span class="o">[</span>user]@[host] <span class="o">[</span><span class="nb">command</span><span class="o">]</span>
+<span class="c"># 원격 서버로 test.txt 파일 복사(scp)</span>
+sshpass -p[password] scp -o <span class="nv">StrictHostKeyChecking</span><span class="o">=</span>no test.txt <span class="o">[</span>user]@[host]:~/test.txt
+</code></pre>
+</div>
+
+<h3 id="expect--">3. expect를 사용하는 방식</h3>
+
+<p><a href="http://sourceforge.net/projects/sshpass/">sshpass</a>를 사용하면 이 방식은 크게 의미가 없다. 하지만 sshpass를 사용할 수 없는 상황이다. expect를 활용해서 다른 곳에 응용할 수 있으니 참고 차원에서 ssh 자동 로그인 스크립트를 남긴다.</p>
+
+<p><strong>sshlogin</strong> 파일로 아래의 내용을 저장하고 실행 권한을 준다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c">#! /usr/bin/expect</span>
+<span class="nb">set </span>idNhost <span class="o">[</span>lrange <span class="nv">$argv</span> 0 0]
+<span class="nb">set </span>password <span class="o">[</span>lindex <span class="nv">$argv</span> 1]
+spawn ssh <span class="nv">$idNhost</span>
+expect -re <span class="s2">"password: "</span>
+send <span class="s2">"</span><span class="nv">$password</span><span class="se">\r</span><span class="s2">"</span>
+interact
+</code></pre>
+</div>
+
+<p>사용법은 다음과 같다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>./sshlogin <span class="o">[</span>user]@[host] <span class="s2">"[password]"</span>
 </code></pre>
 </div>
 
@@ -184,8 +216,8 @@ sysctl -w vm.drop_caches<span class="o">=</span>3
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/01/19/centos-emptying-the-buffers-cache/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/01/19/centos-emptying-the-buffers-cache/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/01/26/ssh-login-without-password/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/01/26/ssh-login-without-password/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

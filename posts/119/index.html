@@ -113,30 +113,116 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/12/bookmarklet/">
-								북마클릿(bookmarklet) 생성기
+							<a class="title" href="https://blog.asamaru.net/2015/10/13/octopress-github-flavored-markdown-redcarpet/">
+								Octopress에서 GitHub Flavored Markdown 사용하기(redcarpet)
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/12/bookmarklet/">2015.10.12.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/13/octopress-github-flavored-markdown-redcarpet/">2015.10.13.</span></a>
 							</p>
 						</header>
 						<p>
-							<p><a href="https://en.wikipedia.org/wiki/Bookmarklet">Bookmarklet</a>은 브라우저에 새로운 기능을 추가하는 자바스크립트 명령을 포함한 브라우저 북마크다.
-표준으로 정의된 형식은 없으나 일반적으로 아래와 같은 형태를 가진다.</p>
+							<p>옥토프레스에서는 markdown 해석기로 <a href="https://github.com/davidfstr/rdiscount">rdiscount</a>를 기본으로 사용하고 있다. 현재 사용해보니 rdiscount에서도 GitHub Flavored Markdown를 지원하는 것으로 보이는데 예전엔 제대로 지원이 안되고 있었는지 <a href="https://github.com/vmg/redcarpet">redcarpet</a>으로 바꾸서 사용하는 사람들이 많았다. 그래서 나도 바꿔 봤다.</p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="nx">javascript</span><span class="err">:</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
-  <span class="c1">//Statements returning a non-undefined type.</span>
-<span class="p">})();</span>
+<p>변경을 위해 참고한 글은 다음과 같다.</p>
+
+<ul>
+  <li><a href="http://blog.tdksk.com/2013/05/06/use-gfm-in-octopress.html">Octopress で GitHub Flavored Markdown (GFM) を使う</a></li>
+  <li><a href="http://yangsu.github.io/blog/2012/10/11/using-octopress-with-github-flavored-markdown-redcarpet/">Using Octopress With Github Flavored Markdown (RedCarpet)</a></li>
+</ul>
+
+<p>그런데 위 글들이 작성된 시점이 조금 오래되어서 그런지 그대로 따라해서는 정상적으로 적용이 되지 않았다. 그래서 몇가지를 수정해서 적용을 완료했다.</p>
+
+<h2 id="redcarpet-">redcarpet 설치</h2>
+
+<p>Gemfile에 아래의 내용을 추가 한다.</p>
+
+<p><strong>Gemfile</strong></p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">gem</span> <span class="s1">'redcarpet'</span><span class="p">,</span> <span class="s1">'~&gt; 3.3.2'</span>
+<span class="n">gem</span> <span class="s1">'albino'</span><span class="p">,</span> <span class="s1">'~&gt; 1.3.3'</span>
 </code></pre>
 </div>
 
-<p>북마클릿에 대해 상세히 설명할 내용은 없다. 북마클릿을 사용해서 할 수 있는 일은 무궁무진하다. 단, 브라우저에 사용자가 직접 추가해야하며 직접 북마크를 눌러 실행해야 한다. 예를들어 핀터레스트에서는 “Pin it” 기능을 <a href="https://about.pinterest.com/en/goodies">The Pin It button</a> 북마클릿으로 제공하고 있다.</p>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="o">[</span>sudo] bundle install
+</code></pre>
+</div>
 
-<p>마지막으로 북마클릿을 쉽게 만들수 있도록 도와주는 도구를 소개하고자 한다.</p>
+<h2 id="redcarpet--">redcarpet 플러그인 설치</h2>
 
-<p><strong><a href="http://bookmarklet.asamaru.net/">Bookmarklet Generator</a></strong></p>
+<p>plugins/redcarpet2_markdown.rb 파일을 추가한다. 원본은 https://github.com/nono/Jekyll-plugins에 가면 볼 수 있다. 거의 그대로인데 약간 수정을 했다.</p>
 
-<p>여러가지 도구가 있지만 이게 가장 직관적인 것 같다. 이 도구는 <a href="http://web-development.cc/bookmarklet-generator/">bookmarklet generator</a>을 fork하여 jquery 버전만 수정했다. 기존 프로젝트는 사용중인 jquery의 버전이 낮아서 만들어진 북마크릿이 정상 동작하지 않는다. 향후 시간이 된다면 불편한 부분들을 개선하도록 하겠다.</p>
+<p><strong>plugins/redcarpet2_markdown.rb</strong></p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'fileutils'</span>
+<span class="nb">require</span> <span class="s1">'digest/md5'</span>
+<span class="nb">require</span> <span class="s1">'redcarpet'</span>
+<span class="nb">require</span> <span class="s1">'albino'</span>
+
+<span class="c1"># PYGMENTS_CACHE_DIR = File.expand_path('../../_cache', __FILE__)</span>
+<span class="no">FileUtils</span><span class="p">.</span><span class="nf">mkdir_p</span><span class="p">(</span><span class="no">PYGMENTS_CACHE_DIR</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Redcarpet2Markdown</span> <span class="o">&lt;</span> <span class="no">Redcarpet</span><span class="o">::</span><span class="no">Render</span><span class="o">::</span><span class="no">HTML</span>
+  <span class="k">def</span> <span class="nf">block_code</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+    <span class="n">lang</span> <span class="o">=</span> <span class="n">lang</span> <span class="o">||</span> <span class="s2">"text"</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="no">PYGMENTS_CACHE_DIR</span><span class="p">,</span> <span class="s2">"</span><span class="si">#{</span><span class="n">lang</span><span class="si">}</span><span class="s2">-</span><span class="si">#{</span><span class="no">Digest</span><span class="o">::</span><span class="no">MD5</span><span class="p">.</span><span class="nf">hexdigest</span> <span class="n">code</span><span class="si">}</span><span class="s2">.html"</span><span class="p">)</span>
+    <span class="n">cache</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">do</span>
+      <span class="n">colorized</span> <span class="o">=</span> <span class="no">Albino</span><span class="p">.</span><span class="nf">colorize</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lang</span><span class="p">.</span><span class="nf">downcase</span><span class="p">)</span>
+      <span class="n">add_code_tags</span><span class="p">(</span><span class="n">colorized</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">add_code_tags</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+    <span class="n">code</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/&lt;pre&gt;/</span><span class="p">,</span> <span class="s2">"&lt;pre&gt;&lt;code class=</span><span class="se">\"</span><span class="si">#{</span><span class="n">lang</span><span class="si">}</span><span class="se">\"</span><span class="s2">&gt;"</span><span class="p">).</span>
+         <span class="nf">sub</span><span class="p">(</span><span class="sr">/&lt;\/pre&gt;/</span><span class="p">,</span> <span class="s2">"&lt;/code&gt;&lt;/pre&gt;"</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">cache</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="no">File</span><span class="p">.</span><span class="nf">exist?</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+      <span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="n">content</span> <span class="o">=</span> <span class="k">yield</span>
+      <span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">f</span><span class="p">.</span><span class="nf">print</span><span class="p">(</span><span class="n">content</span><span class="p">)</span> <span class="p">}</span>
+      <span class="n">content</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Jekyll</span><span class="o">::</span><span class="no">MarkdownConverter</span>
+  <span class="k">def</span> <span class="nf">extensions</span>
+    <span class="no">Hash</span><span class="p">[</span> <span class="o">*</span><span class="vi">@config</span><span class="p">[</span><span class="s1">'redcarpet'</span><span class="p">][</span><span class="s1">'extensions'</span><span class="p">].</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span><span class="n">e</span><span class="o">|</span> <span class="p">[</span><span class="n">e</span><span class="p">.</span><span class="nf">to_sym</span><span class="p">,</span> <span class="kp">true</span><span class="p">]</span> <span class="p">}.</span><span class="nf">flatten</span> <span class="p">]</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">markdown</span>
+    <span class="vi">@markdown</span> <span class="o">||=</span> <span class="no">Redcarpet</span><span class="o">::</span><span class="no">Markdown</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">Redcarpet2Markdown</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">extensions</span><span class="p">),</span> <span class="n">extensions</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+    <span class="k">return</span> <span class="k">super</span> <span class="k">unless</span> <span class="vi">@config</span><span class="p">[</span><span class="s1">'markdown'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'redcarpet'</span>
+    <span class="n">markdown</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h2 id="config-">config 설정</h2>
+
+<p>_config.yml 파일을 열어서 rdiscount 부분을 아래와 같이 수정한다.</p>
+
+<p>```yaml _config.yml
+#markdown: rdiscount
+markdown: redcarpet
+redcarpet:
+  extensions: [“no_intra_emphasis”, “fenced_code_blocks”, “autolink”, “tables”, “with_toc_data”, “strikethrough”, “superscript”]
+#rdiscount:</p>
+<h1 id="extensions">extensions:</h1>
+<h1 id="autolink">- autolink</h1>
+<h1 id="footnotes">- footnotes</h1>
+<h1 id="smart">- smart</h1>
+<p>```</p>
+
+<p>참고 사이트들 설명을 보면 extensions에 hard_wrap을 추가하라고 되어 있는데 나의 경우는 이 옵션을 추가하면 Pygments에서 오류가 났다.</p>
+
+<p>이것으로 설치는 끝이다. generate를 해보면 페이지가 잘 생성된다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -150,8 +236,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/12/bookmarklet/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/12/bookmarklet/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/13/octopress-github-flavored-markdown-redcarpet/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/13/octopress-github-flavored-markdown-redcarpet/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -113,78 +113,65 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc/">
-								PHP에서 NFD(Normalization Form D) / NFC(Normalization Form C) 변환
+							<a class="title" href="https://blog.asamaru.net/2016/11/16/redex-error-writing-mapping-file-no-such-file-or-directory/">
+								OSX에서 Facebook redex 사용시 Error writing mapping file: No such file or directory 오류 해결
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc/">2016.11.15.</span></a>
+								<a href="https://blog.asamaru.net/2016/11/16/redex-error-writing-mapping-file-no-such-file-or-directory/">2016.11.16.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>Mac OSX는 경우 문자열을 <a href="http://unicode.org/reports/tr15/">Unicode Normalization Forms</a> 중 NFD(소리 마디를 첫가끝 코드로 분해)로 처리한다(일반적으로는 NFC(첫가끝 코드를 소리 마디로 결합)를 사용).
-이는 한글(<a href="http://www.unicode.org/charts/PDF/UAC00.pdf">U+AC00</a>) 영역을 사용하는 곳에서는 한글이 모두 풀어진 상태로 보이는 문제가 있다.
-따라서 <a href="http://www.unicode.org/charts/PDF/U1100.pdf">U+1100</a> 영역을 <a href="http://www.unicode.org/charts/PDF/UAC00.pdf">U+AC00</a> 영역으로 변환하는 과정이 필요하다.</p>
+							<p>안드로이드 앱을 개발하면서 <a href="http://fbredex.com/">redex</a>를 이용해 최적화를 하고 있다. 이미 proguard를 사용하고 있기 때문에 용량에서는 큰 차이가 나지 않지만 성능면에서 도움이 된다고 소개하고 있어 사용하는 것이다(체감으로는 잘 느끼지 못하겠다).</p>
 
-<p><a href="http://d2.naver.com/helloworld/76650">한글 인코딩의 이해 2편: 유니코드와 Java를 이용한 한글 처리</a>에서는 <a href="https://ko.wikipedia.org/wiki/%EC%9C%A0%EB%8B%88%EC%BD%94%EB%93%9C_%EC%A0%95%EA%B7%9C%ED%99%94">유니코드 정규화</a>(<a href="https://en.wikipedia.org/wiki/Unicode_equivalence">Unicode equivalence</a>)를 아래와 같이 소개하고 있다.</p>
+<p>그런데 오늘 redex에서 오류가 발생했다.</p>
 
-<blockquote>
-  <p>한글 소리 마디와 한글자모, 한글 자모 확장 이렇게 두 개의 코드 영역이 있다는 것은 같은 글자를 표현하는 서로 다른 두 개의 방법이 있다는 것을 말한다.
-이것은 한글뿐만 아니라 다른 언어에서도 나타나는 현상이다. 가령 “ñ”을 표현할 때 U+00F1을 사용할 수도 있고, U+006E (라틴 소문자 “n”) 과 U+0303( 결합 틸데 “◌̃”)을 연이어 사용하여 표현할 수도 있다.
-유니코드 정규화(Unicode equivalence)란 이렇게 연속적인 코드를 사용하여 표현한 어떤 글자를 처리하는 방법을 다루는 명세이다. 유니코드 정규화에는 다음과 같은 네 가지 방법이 있다.</p>
-</blockquote>
+<p><a href="https://github.com/facebook/redex/issues/185">Error writing mapping file: No such file or directory</a></p>
 
-<table>
-  <thead>
-    <tr>
-      <th>정규화 방법</th>
-      <th>예</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>NFD (정준 분해) Normalization Form Canonical Decomposition</td>
-      <td>À (U+00C0) → A (U+0041) + ̀ (U+0300) 위 (U+C704) → ᄋ (U+110B) + ᅱ (U+1171)</td>
-    </tr>
-    <tr>
-      <td>NFC (정준 분해한 뒤 다시 정준 결합) Normalization Form Canonical Composition</td>
-      <td>A (U+0041) + ̀ (U+0300) → À (U+00C0) ᄋ (U+110B) + ᅱ (U+1171) → 위 (U+C704)</td>
-    </tr>
-    <tr>
-      <td>NFKD (호환 분해)  Normalization Form Compatibility Decomposition</td>
-      <td>ﬁ (U+FB01) → f (U+0066) + i (U+0069)</td>
-    </tr>
-    <tr>
-      <td>NFKC (호환 분해한 뒤 다시 정준 결합) Normalization Form Compatibility Composition</td>
-      <td>樂 (U+F914), 樂 (U+F95C), 樂 (U+F9BF) → 樂 (U+6A02)</td>
-    </tr>
-  </tbody>
-</table>
+<p>정확히는 내 작업 PC가 아닌 동료의 PC에서 redex를 사용하면서 발생했다. 내 작업 PC에서는 이상이 없어서 확인을 하던 중 redex의 버전 문제인가? 하고 최신 버전을 받아 빌드해서 실행해보니 동일한 오류가 발생했다.</p>
 
-<blockquote>
-  <p>이중 한글 처리와 관련된 것은 NFD(소리 마디를 첫가끝 코드로 분해)와 NFC(첫가끝 코드를 소리 마디로 결합)이다.</p>
-</blockquote>
+<p>그래서 redex 소스를 뒤져서 원인을 확인하고 오류를 해결했다. 원인은 나중에 다시 언급하도록 하고 일단 해결 방법부터 보자.</p>
 
-<p>NFD에 관련된 내용은 위 링크들을 확인해보면 충분한 정보를 얻을 수 있을테니 오늘은 PHP에서 NFD를 다루는 부분을 소개한다.
-참고로 아래의 함수를 사용하기 위해서는 <a href="http://php.net/manual/kr/book.intl.php">intl</a> 모듈이 설치되어 있어야 한다.</p>
+<p>아래의 내용을 <strong>redex.conf</strong> 파일로 저장한다(파일 이름은 상관없다).</p>
 
-<p>우선 간단한 코드부터 보자.</p>
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nt">"redex"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nt">"passes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="s2">"ReBindRefsPass"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"BridgePass"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"SynthPass"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"FinalInlinePass"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"DelSuperPass"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"SingleImplPass"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"SimpleInlinePass"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"StaticReloPass"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"RemoveEmptyClassesPass"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"ShortenSrcStringsPass"</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nt">"ShortenSrcStringsPass"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nt">"filename_mappings"</span><span class="p">:</span><span class="w"> </span><span class="s2">"filename_mappings.txt"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
 
-<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
-<span class="c1">// setlocale(LC_ALL, 'ko_KR.UTF-8');
-</span><span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">\Normalizer</span><span class="o">::</span><span class="na">isNormalized</span><span class="p">(</span><span class="nv">$text</span><span class="p">))</span> <span class="p">{</span>
-  <span class="nv">$text</span> <span class="o">=</span> <span class="nx">\Normalizer</span><span class="o">::</span><span class="na">normalize</span><span class="p">(</span><span class="nv">$text</span><span class="p">);</span>
-<span class="p">}</span>
+<p>그리고 redex 실행시 <code class="highlighter-rouge">-c CONFIG, --config CONFIG Configuration file</code> 옵션을 추가하면 이 오류는 해결된다. 예를들면 아래와 같다(~~ 부분은 기존 옵션).</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>redex ~~ -c redex.conf
 </code></pre>
 </div>
 
-<p>사실 위 코드를 보면 더 이상 설명이 필요 없을 정도로 간단하다.
-<a href="http://php.net/manual/kr/normalizer.isnormalized.php">\Normalizer::isNormalized</a> 함수를 사용해서 NFC 형식인지 검사한다.
-위 예시는 두번째 인자인 <code class="highlighter-rouge">$from</code>이 생략된 것이다(기본값 : <code class="highlighter-rouge">Normalizer::FORM_C</code>). 따라서 두번째 인자로 <code class="highlighter-rouge">Normalizer::FORM_D</code>를 넣어주면 NFD를 검사할 수 있다.</p>
+<p>오류 해결을 위해 추가된 부분은 아래와 같다. 나머지 부분은 redex 소스의 <code class="highlighter-rouge">redex/config/default.config</code> 파일 내용과 같다(이 파일이 기본 옵션이 저장된 파일이다).</p>
 
-<p>NFC 형식이 아니라면 <a href="http://php.net/manual/kr/normalizer.normalize.php">\Normalizer::normalize</a> 함수를 이용해서 NFC 형식으로 변환한다.
-이 함수 또한 기본적으로 두번째 인자로 <code class="highlighter-rouge">Normalizer::FORM_C</code>를 사용한다.</p>
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="s2">"ShortenSrcStringsPass"</span><span class="err">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"filename_mappings"</span><span class="p">:</span><span class="w"> </span><span class="s2">"filename_mappings.txt"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
 
-<p>마지막으로 주석 처리한 <code class="highlighter-rouge">setlocale</code> 부분은 필요 시에만 추가하면 된다(상황에 따라서는 <code class="highlighter-rouge">setlocale</code>을 추가하면 한글의 일부가 깨지는 상황이 발생했다.).</p>
+<p>이 문제의 원인은 <code class="highlighter-rouge">filename_mappings</code> 옵션의 기본값인 <code class="highlighter-rouge">/tmp/filename_mappings.txt</code> 때문이다. <code class="highlighter-rouge">/tmp/</code> 폴더가 시스템 폴더로 redex에서 접근할 권한이 없기 때문에 해당 파일을 찾을 수 없다는 오류가 나는 것이다.</p>
+
+<p>아마도 머지않아 패치가 되겠지만 그 전에 이 오류가 발생하는 사람들에게 도움이 될 수 있기를 바라며 글을 남긴다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -198,8 +185,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/11/16/redex-error-writing-mapping-file-no-such-file-or-directory/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/11/16/redex-error-writing-mapping-file-no-such-file-or-directory/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

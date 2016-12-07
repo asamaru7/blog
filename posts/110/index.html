@@ -113,90 +113,130 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/10/16/centos-7-firewalld/">
-								CentOS 7 firewalld vs iptables
+							<a class="title" href="https://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/">
+								Vagrant Port Forwarding : Mac에서 1024 이하 포트 사용
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/10/16/centos-7-firewalld/">2015.10.16.</span></a>
+								<a href="https://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/">2015.10.19.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>CentOS 7부터 방화벽으로 iptables를 사용하지 않고 firewalld를 사용한다. <code class="highlighter-rouge">/etc/sysconfig/iptables</code> 파일도 존재하지 않는다. 따라서 <code class="highlighter-rouge">firewall-cmd</code>를 사용해서 방화벽을 설정해야 한다(x windows에서는 firewall-config를 사용한다고하나 콘솔만 사용해봐서 firewall-config는 어떻게 생겼는지 모르겠다).</p>
+							<p>Vagrant는 포트 포워딩을 지원한다. VAGRANT DOCS의 <a href="https://docs.vagrantup.com/v2/networking/forwarded_ports.html">FORWARDED PORTS</a> 문서를 보면 설명되어 있다.</p>
 
-<p><a href="https://access.redhat.com/documentation/ko-KR/Red_Hat_Enterprise_Linux/7/html/Migration_Planning_Guide/ch04s11.html#idp7905344">Redhat Products &amp; Servies의 4.11. 보안 및 액세스 제어</a>에 아래와 같이 설명되어 있다.</p>
+<p>간단하게 살펴보자면 아래와 같이 설정할 수 있다.</p>
 
-<blockquote>
-  <p><strong>4.11.1. 새로운 방화벽 (firewalld)</strong></p>
-
-  <p>Red Hat Enterprise Linux 6에서 방화벽 기능은 iptables 유틸리티에 의해 제공되어 명령행이나 그래픽 설정 도구, system-config-firewall에서 설정되었습니다. Red Hat Enterprise Linux 7에서 방화벽 기능은 iptables에 의해 제공되지만 관리자는 동적 방화벽 데몬, firewalld, 설정 도구를 통해 iptables와 상호 작용합니다. 설정 도구에는 firewall-config, firewall-cmd, firewall-applet이 있으며 이는 Red Hat Enterprise Linux 7 기본값 설치에 포함되어 있지 않습니다.</p>
-
-  <p>firewalld는 동적이기 때문에 언제든지 설정을 변경할 수 있고 바로 실행됩니다. 방화벽을 다시 로딩할 필요가 없으므로 기존 네트워크 연결에서 의도하지 않은 중단이 발생하지 않습니다.</p>
-</blockquote>
-
-<blockquote>
-  <p>Red Hat Enterprise Linux 6와 7 간의 방화벽에서의 주요 차이점은 다음과 같습니다:</p>
-
-  <ul>
-    <li>
-      <p>방화벽 설정에 대한 자세한 내용은 /etc/sysconfig/iptables에 저장되어 있지 않고 이 파일이 존재하지도 않습니다. 대신 설정 상세 정보는 /usr/lib/firewalld 및 /etc/firewalld 디렉토리에 있는 다양한 파일에 저장됩니다.</p>
-    </li>
-    <li>
-      <p>Red Hat Enterprise Linux 6의 방화벽 시스템에서는 설정 변경 사항이 있을 때 마다 모든 규칙이 삭제되고 다시 적용되어 firewalld는 설정 차이만을 적용합니다. 그 결과 firewalld는 기존 연결을 중단하지 않고 런타임 동안 설정을 변경할 수 있습니다.</p>
-    </li>
-  </ul>
-</blockquote>
-
-<p>또한 <a href="http://www.slideshare.net/sukkim737/oracle-enterprise-linux-new-featurefirewalld">firewalld concept and configuration</a>에 보면 “firewalld의 필요성”에 대해 설명하고 있다(6 page). 편의를 위해 해당 부분만 아래에 안내한다.</p>
-
-<blockquote>
-  <p><strong>firewalld 의 필요성</strong></p>
-
-  <ul>
-    <li>기존 iptables의 한계</li>
-    <li>룰 변경시 서비스 중지 및 설정 변경</li>
-    <li>오픈스택이나 KVM과 같은 가상화 호스트에서는 네트워크 변 화가 수시로 발생되므로 필터링 정책에 변경이 필요</li>
-    <li>응용프로그램 자체에서 필터링 정책을 구성하는 경우 iptables 정책과 충돌되는 등의 문제 야기</li>
-    <li>firewalld가 필요한 이유?
-      <ul>
-        <li>KVM , openstack 과 같은 가상화, 클라우드 환경하에서의 필 터링 정책 동적 추가 가능</li>
-        <li>DBUS API를 통한 정보 공유를 통해 정책 충돌 문제 해결</li>
-      </ul>
-    </li>
-    <li>DBUS란? 어플리케이션간의 통신을 지원하는 인터페이스</li>
-  </ul>
-</blockquote>
-
-<p>마지막으로 <a href="https://www.linux.co.kr/home2/board/subbs/board.php?bo_table=lecture&amp;wr_id=1860&amp;sca=&amp;page=0">Doly의 CentOS7 강좌30 12. 네트워크 보안설정 12.2 iptables 서비스 (1/3)</a>에서는 아래와 같이 안내하고 있다.</p>
-
-<blockquote>
-  <p><strong>12.2. iptables 서비스</strong></p>
-
-  <p>firewalld는 분명 CentOS7의 아주 혁신적인 기능중의 하나이다. 하지만 필자는 본 서적을 집필하면서 인터페이스가 편리 하나 많은 부분에서 부족함을 느꼈다. 특히 소스IP를 명시하는 부분이 명확하지 않다. 방화벽의 기본은 출발지 IP, 프로토콜, 포트 도착지 IP, 프로토콜, 포트를 기본으로 방화벽 규칙을 만들어간다. 하지만, firewalld는 출발지 IP와 목적지 IP에 대한 정의가 명확하지 않다. 리눅스 스킬이 중급 이상이라면 이러한 이유로 firewalld 서비스를 제거하고 예전 iptables 서비스로 돌아가길 권장하고 싶다.</p>
-</blockquote>
-
-<p>사실 “소스IP를 명시하는 부분이 명확하지 않다.” 라는 부분은 글쓴이의 정확한 의도를 알 수 없어 단언하기는 힘들지만 틀린 부분이 있을 수 있다고 생각한다. firewalld를 사용하더라도 소스 IP를 지정할 수 없는 것은 아니다.</p>
-
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code>firewall-cmd --permanent --zone<span class="o">=</span>public --add-rich-rule<span class="o">=</span><span class="s1">'rule family="ipv4" source address="1.2.3.4/32" port protocol="tcp" port="80" accept'</span>
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Vagrant</span><span class="p">.</span><span class="nf">configure</span><span class="p">(</span><span class="s2">"2"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">network</span> <span class="s2">"forwarded_port"</span><span class="p">,</span> <span class="ss">guest: </span><span class="mi">80</span><span class="p">,</span> <span class="ss">host: </span><span class="mi">8080</span>
+<span class="k">end</span>
 </code></pre>
 </div>
 
-<p>위 명령에서 보는 것과 같이 <code class="highlighter-rouge">rich-rule</code>를 사용해서 소스 IP를 지정할 수 있다. 그리고 지정된 내역을 보는 방법은 <code class="highlighter-rouge">firewall-cmd</code>을 사용하면 되지만 개인적으로는 <code class="highlighter-rouge">cat /etc/firewalld/zones/public.xml</code>를 사용해서 확인하는게 더 편한 것 같다. 사실은 아직 <code class="highlighter-rouge">firewall-cmd</code>를 능숙하게 사용하지를 못해서 어떻게하면 보기 쉽게 나오는지 잘 모르겠다(몇가지 명령을 시도해 봤는데 내용이 너무 많이 나온다.).</p>
+<p>위 설정의 의미는 host(PC)에 8080 포트로 접근하면 guest(VM)의 80 포트로 포워딩 한다는 뜻이다. 따라서 host에서 <code class="highlighter-rouge">localhost:8080</code>로 접속하면 guest의 웹 서버에 접근할 수 있다.</p>
 
-<p>결론적으로 <strong>무조건 firewalld를 사용해야 하는 것은 아니다.</strong> firewalld를 중지시키고 iptables를 설치해서 기존처럼 관리하는 것도 가능하다. 아래의 명령을 실행하면 된다.</p>
+<p>사용할 수 있는 옵션은 아래와 같이 설명되어 있다.</p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>systemctl stop firewalld
-<span class="gp">$ </span>systemctl mask firewalld
+<ul>
+  <li>guest (int) - The port on the guest that you want to be exposed on the host. This can be any port.</li>
+  <li>guest_ip (string) - The guest IP to bind the forwarded port to. If this is not set, the port will go to the every interface. By default, this is empty.</li>
+  <li>host (int) - The port on the host that you want to use to access the port on the guest. This must be greater than port 1024 unless Vagrant is running as root (which is not recommended).</li>
+  <li>host_ip (string) - The IP on the host you want to bind the forwarded port to. If not specified, it will be bound to every IP. By default, this is empty.</li>
+  <li>protocol (string) - Either “udp” or “tcp”. This specifies the protocol that will be allowed through the forwarded port. By default this is “tcp”.</li>
+</ul>
 
-<span class="gp">$ </span>yum install iptables-services
-<span class="gp">$ </span>systemctl <span class="nb">enable </span>iptables
+<p>크게 어려운 부분은 없기 때문에 더욱 자세한 설명은 필요없을 듯 하다.</p>
 
-<span class="gp">$ </span>service iptables save
+<p>그런데 여기서 한가지 상황을 생각해보자. <code class="highlighter-rouge">localhost:8080</code>로 접속하기는 싫고 <code class="highlighter-rouge">localhost</code>로 접속하고 싶다면 어떻게 해야 하나? 위의 설명대로라면 아래와 같이 설정하면 된다.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">Vagrant</span><span class="p">.</span><span class="nf">configure</span><span class="p">(</span><span class="s2">"2"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">network</span> <span class="s2">"forwarded_port"</span><span class="p">,</span> <span class="ss">guest: </span><span class="mi">80</span><span class="p">,</span> <span class="ss">host: </span><span class="mi">80</span>
+<span class="k">end</span>
 </code></pre>
 </div>
 
-<p><strong>firewalld를 사용할지 iptables를 사용할지는 자신의 선택이다.</strong></p>
+<p>그런데 위와 같이 설정하면 vagrant 실행시 오류를 만나게 된다. 이와 관련된 정보는 virtualbox 메뉴얼 <a href="https://www.virtualbox.org/manual/ch06.html#nat-limitations">6.3.3. NAT limitations</a>에서 찾을 수 있다.</p>
 
-<p>현재 시점에서의 내 생각은 firewalld로 이전하는 것이다. 아직은 사용이 익숙치 않아 정확한 이전이 가능할지는 모르겠다. 이제부터 방법을 하나씩 찾아봐야 할 것이다. 하지만 Redhat에서 설명하는 것 처럼 결국은 iptables와 상호 작용하는 형태라고는 해도 접근 지점이 firewalld로 변경되었으며 앞으로도 그럴 것이기 때문이다. 주로 개발업무를 하다보니 서버를 전문적으로 운영했다고는 할 수 없으나 나름의 경험으로 볼 때 일시적인 대응은 결국 대세를 따르도록 변하게 된다.</p>
+<blockquote>
+  <p>Forwarding host ports &lt; 1024 impossible:
+On Unix-based hosts (e.g. Linux, Solaris, Mac OS X) it is not possible to bind to ports below 1024 from applications that are not run by root. As a result, if you try to configure such a port forwarding, the VM will refuse to start. ipfw deprecated as of mavericks</p>
+</blockquote>
+
+<p>간단히 말하자면 <strong>Unix 계열에서는 1024 이하 포트에 대한 포워딩을 하려면 root 권한이 있어야 한다는 것</strong>.
+그렇다면 해결 방법은 나왔다. 간단하게 vagrant 자체를 root 권한으로 실행하면 된다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>sudo vagrant up
+</code></pre>
+</div>
+
+<p>그런데 이렇게하면 vagrant나 virtualbox가 별개로 실행된다(로그인된 계정이 아닌 root계정에서 실행하게 된다). 따라서 virtualbox를 실행해보아도 해당 VM을 볼 수 없을 것이다. 일단 어디에 있는지 보려면 아래의 명령으로 virtualbox를 실행해보자.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$ sudo VirtualBox
+</code></pre>
+</div>
+
+<p>VirtualBox가 따로 실행되면서 추가된 VM도 볼 수 있다.</p>
+
+<p>나는 다른 방법을 찾을 수 없어 얼마전까지 이렇게 사용해 왔다. 그런데 최근에 다시 vagrant를 설정할 일이 생겨 작업을 하면서 다시 찾아봤더니 그 사이에 해결 방법이 나와 있었다. 게다가 더욱 세련된(?) 방법으로.</p>
+
+<ul>
+  <li><a href="http://salvatore.garbesi.com/vagrant-port-forwarding-on-mac/">Vagrant Port Forwarding On Mac</a></li>
+  <li><a href="https://www.danpurdy.co.uk/web-development/osx-yosemite-port-forwarding-for-vagrant/">OSX Yosemite Port Forwarding for Vagrant</a></li>
+  <li><a href="http://www.dmuth.org/node/1404/web-development-port-80-and-443-vagrant">Web Development on Port 80 and 443 in Vagrant</a></li>
+</ul>
+
+<p>여러개의 글을 링크했지만 모두 비슷한 방법이다. 그러나 마지막 글의 경우는 확인이 필요하다. 마지막 글에서 사용하는 ipfw는 요세미티에서 deprecated 되었다는 이야기가 있다. 나머지 두개는 같은 방법인데 간단히 요약하자면 아래와 같다.</p>
+
+<p>우선 vagrant-triggers 플러그인을 설치한다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>vagrant plugin install vagrant-triggers
+</code></pre>
+</div>
+
+<p>Vagrantfile에 아래의 내용을 추가한다. 당연히 원하는 포트가 다르다면 조정해서 추가하면 된다.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest: </span><span class="mi">80</span><span class="p">,</span> <span class="ss">host: </span><span class="mi">8080</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest: </span><span class="mi">443</span><span class="p">,</span> <span class="ss">host: </span><span class="mi">8443</span>
+
+<span class="n">config</span><span class="p">.</span><span class="nf">trigger</span><span class="p">.</span><span class="nf">after</span> <span class="p">[</span><span class="ss">:provision</span><span class="p">,</span> <span class="ss">:up</span><span class="p">,</span> <span class="ss">:reload</span><span class="p">]</span> <span class="k">do</span>
+      <span class="nb">system</span><span class="p">(</span><span class="s1">'echo "
+		rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 80 -&gt; 127.0.0.1 port 8080
+		rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 443 -&gt; 127.0.0.1 port 8443
+		" | sudo pfctl -f - &gt; /dev/null 2&gt;&amp;1; echo "==&gt; Fowarding Ports: 80 -&gt; 8080, 443 -&gt; 8443"'</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="n">config</span><span class="p">.</span><span class="nf">trigger</span><span class="p">.</span><span class="nf">after</span> <span class="p">[</span><span class="ss">:halt</span><span class="p">,</span> <span class="ss">:destroy</span><span class="p">]</span> <span class="k">do</span>
+    <span class="nb">system</span><span class="p">(</span><span class="s2">"sudo pfctl -f /etc/pf.conf &gt; /dev/null 2&gt;&amp;1; echo '==&gt; Removing Port Forwarding'"</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>한가지 설명을 더 추가 해야할 것 같다. 위 명령은 pf가 enabled 되어 있을 경우만 제대로 동작한다. 하지만 대부분의 경우 pf가 disabled 되어 있을 것이다. <code class="highlighter-rouge">pfctl -ef</code>와 같이 <code class="highlighter-rouge">e</code> 옵션을 추가해 주면 pf를 강제로 켜서 실행해 준다. 하지만 이 방법은 vagrant가 <code class="highlighter-rouge">halt</code>된 후에도 pf가 enabled된 상태를 유지하므로 뭔가 꺼림직하다. 개선 방법은 <code class="highlighter-rouge">halt</code>시 <code class="highlighter-rouge">d</code> 옵션을 줘서 다시 pfctl을 disabled 상태로 변경하면 된다. 그런데 이렇게하면 반대로 enabled가 기본인 상태였다면 pf를 disabled 상태로 바꿔버리는 결과를 가져온다. 그래서 이 부분을 해결한 스크립트를 아래에 추가한다. 기존 pf의 상태와 무관하게 룰을 추가하고 사용이 끝나면 해당 룰만 제거하는 것이다.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest: </span><span class="mi">80</span><span class="p">,</span> <span class="ss">host: </span><span class="mi">8080</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">network</span> <span class="ss">:forwarded_port</span><span class="p">,</span> <span class="ss">guest: </span><span class="mi">443</span><span class="p">,</span> <span class="ss">host: </span><span class="mi">8443</span>
+
+<span class="n">config</span><span class="p">.</span><span class="nf">trigger</span><span class="p">.</span><span class="nf">after</span> <span class="p">[</span><span class="ss">:provision</span><span class="p">,</span> <span class="ss">:up</span><span class="p">,</span> <span class="ss">:reload</span><span class="p">]</span> <span class="k">do</span>
+      <span class="nb">system</span><span class="p">(</span><span class="s1">'echo "
+		rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 80 -&gt; 127.0.0.1 port 8080
+		rdr pass on lo0 inet proto tcp from any to 127.0.0.1 port 443 -&gt; 127.0.0.1 port 8443
+		" | sudo pfctl -Ef - &gt; /dev/null 2&gt; pfctl.token; echo "==&gt; Fowarding Ports: 80 -&gt; 8080, 443 -&gt; 8443"'</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="n">config</span><span class="p">.</span><span class="nf">trigger</span><span class="p">.</span><span class="nf">after</span> <span class="p">[</span><span class="ss">:halt</span><span class="p">,</span> <span class="ss">:destroy</span><span class="p">]</span> <span class="k">do</span>
+	<span class="nb">system</span><span class="p">(</span><span class="s2">"PFCTL_TOKEN=</span><span class="se">\"</span><span class="s2">$(cat pfctl.token |grep Token| awk '{ split($0,numbers,</span><span class="se">\"</span><span class="s2">:</span><span class="se">\"</span><span class="s2">); print numbers[2]; }'| tr -d '[[:space:]]')</span><span class="se">\"</span><span class="s2">; sudo pfctl -X $PFCTL_TOKEN -f /etc/pf.conf &gt; /dev/null 2&gt;&amp;1; echo </span><span class="se">\"</span><span class="s2">==&gt; Removing Port Forwarding : $PFCTL_TOKEN</span><span class="se">\"</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>원리를 간단히 설명하겠다. 우선 pfctl에 있는 옵션 중 <code class="highlighter-rouge">E</code> 옵션을 추가했다. 소문자 <code class="highlighter-rouge">e</code>와는 다르다.</p>
+
+<ul>
+  <li>-e : Enable the packet filter.</li>
+  <li>-E : Enable the packet filter and increment the pf enable reference count.</li>
+</ul>
+
+<p><code class="highlighter-rouge">E</code>를 사용하면 pf enable reference count를 증가시키고 token을 반환해 준다. 이 토큰을 <code class="highlighter-rouge">pfctl.token</code>에 저장해 놨다가 <code class="highlighter-rouge">halt</code>시 <code class="highlighter-rouge">X</code> 옵션을 통해서 pf에게 disabled 요청을 한다.</p>
+
+<p>이제부터는 80포트와 443 포트가 guest로 포워딩 된다. 이젠 <code class="highlighter-rouge">http://127.0.0.1</code>로 접속할 수 있다. 나의 경우엔 DNS에 별도의 도메인을 127.0.0.1로 지정해서 사용중이다. 따라서 <code class="highlighter-rouge">http://vagrant.mydomain.com</code>으로 웹 화면을 확인할 수 있다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -210,8 +250,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/10/16/centos-7-firewalld/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/10/16/centos-7-firewalld/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/10/19/vagrant-port-forwarding-on-mac/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

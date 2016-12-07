@@ -113,47 +113,54 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/11/04/decompile-actionscript-from-swf-by-show-my-code/">
-								Flash swf 파일에서 ActionScript 추출하기(Show My Code)
+							<a class="title" href="https://blog.asamaru.net/2016/11/04/contenteditable-set-caret-at-the-end-of-the-text-cross-browser/">
+								contenteditable이 설정된 개체의 시작 또는 끝에 커서(Caret) 넣기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/11/04/decompile-actionscript-from-swf-by-show-my-code/">2016.11.04.</span></a>
+								<a href="https://blog.asamaru.net/2016/11/04/contenteditable-set-caret-at-the-end-of-the-text-cross-browser/">2016.11.04.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>예전에는 Flash를 가끔씩 사용했던 적이 있었지만 최근 몇년 동안에는 관련된 처리를 할 일이 없었다(요즘엔 거의 사용을 하지 않으니 개발할 이유도 없었다). 그런데 이번에 작업을 하던 중 직접 Flash를 제작하는 것이 아니라 이미 만들어진 swf 파일의 ActionScript 소스 코드를 확인해야 하는 일이 생겼다. swf Decompiler는 검색하면 많이 나오기 때문에 크게 어려운 일은 아니지만 대부분 데모 버전으로 ActionScript를 확인하는데 불편함이 있어서 찾아보던 중 <a href="http://www.showmycode.com/">ShowMyCode.com</a>이란 사이트를 발견했다. 여기선 swf 파일을 올리면 바로 ActionScript를 확인 할 수 있고 다운 받을 수도 있다.</p>
+							<p>이번에 <a href="https://github.com/yabwe/medium-editor">MediumEditor</a>를 사용하면서 추가 기능을 개발하던 중 편집 개체에 내용을 추가하는 처리가 필요했다. 커서가 편집 개체 내부에 있다면 <a href="https://github.com/yabwe/medium-editor/blob/master/API.md#pastehtmlhtml-options">pasteHTML()</a> 함수를 간단하게 처리가 된다. 그런데 커서가 편집 개체 밖에 있을 경우엔 넣을 수 없다. 그래서 프로그램에서 커서를 넣어줘야 하는데 fucus를 이용하면 맨 앞으로 들어가서 원하는 결과를 얻을 수 없었다. 그레서 방법을 찾던 중 <a href="http://stackoverflow.com/a/4238971/6736772">contenteditable, set caret at the end of the text (cross-browser)</a>라는 글에서 방법을 찾았다.</p>
 
-<p>그런데 이 사이트는 swf decompile 만 제공하는 것이 아니라 아래의 프로그램들도 decompile 가능하다.</p>
+<p><code class="highlighter-rouge">contenteditable="true"</code>가 설정된 개체의 시작 또는 끝에 커서(Caret) 넣는 방법은 아래와 같다.</p>
 
-<ul>
-  <li>PHP file encoded with Zend Guard
-    <blockquote>
-      <p>Decode and get source of php files encoded with Zend Guard. This process also called dezending and the program called dezender (de-zender). So, dezend php files and get the source code!</p>
-    </blockquote>
-  </li>
-  <li>Java class
-    <blockquote>
-      <p>Decompile java CLASS files and save source code in text. Reconstruct the original source code from the compiled binary.</p>
-    </blockquote>
-  </li>
-  <li>Adobe flash swf
-    <blockquote>
-      <p>Decompile flash ActionScript from the swf flash file. Use this online flash swf decompiler to get the source code of the swf file.</p>
-    </blockquote>
-  </li>
-  <li>.NET application
-    <blockquote>
-      <p>Decompile .NET application and get it source code. Now you can get close to original source code of C# (c sharp), Visual Basic .NET (VB.NET.), Visual C++ .NET (VC++.NET) and J# (jay-sharp).</p>
-    </blockquote>
-  </li>
-  <li>QR Code Image
-    <blockquote>
-      <p>QR-code Reader. Decode a QR Code and get text! It’s a two-dimensional bar code. The “QR” is derived from “Quick Response”. Most current mobile phones can read this code with their camera. UTF-8 is supported.</p>
-    </blockquote>
-  </li>
-</ul>
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">createCaretPlacer</span><span class="p">(</span><span class="nx">atStart</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">el</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">el</span><span class="p">.</span><span class="nx">focus</span><span class="p">();</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nb">window</span><span class="p">.</span><span class="nx">getSelection</span> <span class="o">!=</span> <span class="s2">"undefined"</span>
+                <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createRange</span> <span class="o">!=</span> <span class="s2">"undefined"</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">range</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createRange</span><span class="p">();</span>
+            <span class="nx">range</span><span class="p">.</span><span class="nx">selectNodeContents</span><span class="p">(</span><span class="nx">el</span><span class="p">);</span>
+            <span class="nx">range</span><span class="p">.</span><span class="nx">collapse</span><span class="p">(</span><span class="nx">atStart</span><span class="p">);</span>
+            <span class="kd">var</span> <span class="nx">sel</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">getSelection</span><span class="p">();</span>
+            <span class="nx">sel</span><span class="p">.</span><span class="nx">removeAllRanges</span><span class="p">();</span>
+            <span class="nx">sel</span><span class="p">.</span><span class="nx">addRange</span><span class="p">(</span><span class="nx">range</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">createTextRange</span> <span class="o">!=</span> <span class="s2">"undefined"</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">textRange</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">createTextRange</span><span class="p">();</span>
+            <span class="nx">textRange</span><span class="p">.</span><span class="nx">moveToElementText</span><span class="p">(</span><span class="nx">el</span><span class="p">);</span>
+            <span class="nx">textRange</span><span class="p">.</span><span class="nx">collapse</span><span class="p">(</span><span class="nx">atStart</span><span class="p">);</span>
+            <span class="nx">textRange</span><span class="p">.</span><span class="nx">select</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
 
-<p>대부분 전문적인 decompiler 들이 있겠지만 간단히 확인이 필요할 때는 유용하게 사용할 수 있을 것 같아 남겨둔다.</p>
+<span class="kd">var</span> <span class="nx">placeCaretAtStart</span> <span class="o">=</span> <span class="nx">createCaretPlacer</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">placeCaretAtEnd</span> <span class="o">=</span> <span class="nx">createCaretPlacer</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<p>이를 활용해 <a href="https://github.com/yabwe/medium-editor">MediumEditor</a>에 적용하는 코드는 아래와 같다.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="nx">editor</span><span class="p">.</span><span class="nx">exportSelection</span><span class="p">()</span> <span class="o">==</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">placeCaretAtEnd</span> <span class="o">=</span> <span class="nx">createCaretPlacer</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+	<span class="nx">placeCaretAtEnd</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="nx">id</span><span class="p">));</span>
+<span class="p">}</span>
+<span class="nx">editor</span><span class="p">.</span><span class="nx">pasteHTML</span><span class="p">(</span><span class="nx">html</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<p><a href="https://github.com/yabwe/medium-editor/blob/master/API.md#exportselection">exportSelection</a>를 사용해서 커서가 편집 개체 안에 있는지를 검사해서 커서가 없다면 맨 마지막에 필요한 html 코드를 추가한다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -167,8 +174,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/11/04/decompile-actionscript-from-swf-by-show-my-code/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/11/04/decompile-actionscript-from-swf-by-show-my-code/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/11/04/contenteditable-set-caret-at-the-end-of-the-text-cross-browser/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/11/04/contenteditable-set-caret-at-the-end-of-the-text-cross-browser/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

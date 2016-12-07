@@ -113,71 +113,27 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/">
-								PHP 삼항 연산자 : Ternary Operator 와 Null Coalesce Operator
+							<a class="title" href="https://blog.asamaru.net/2016/11/15/linux-find-empty-directory-and-delete/">
+								리눅스에서 모든 빈 디렉토리 찾기 / 지우기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/">2016.11.07.</span></a>
+								<a href="https://blog.asamaru.net/2016/11/15/linux-find-empty-directory-and-delete/">2016.11.15.</span></a>
 							</p>
 						</header>
 						<p>
-							<p><a href="http://php.net/">PHP</a>에도 <a href="http://php.net/manual/kr/language.operators.comparison.php#language.operators.comparison.ternary">삼항 연산자:Ternary operator</a>
-가 있다. <a href="http://php.net/manual/kr/language.operators.comparison.php#language.operators.comparison.ternary">메뉴얼</a>에는 아래와 같이 설명되어 있다.</p>
+							<p>리눅스에서 지정한 디렉토리 하위의 모든 빈 디렉토리를 찾거나 지우려면 어떻게 하면 될까?</p>
 
-<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
-<span class="c1">// 사용 예제: 삼항 연산자
-</span><span class="nv">$action</span> <span class="o">=</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">]))</span> <span class="o">?</span> <span class="s1">'default'</span> <span class="o">:</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">];</span>
+<p><a href="https://linux.die.net/man/1/find">find</a> 명령을 사용하면 아주 간단히 해결할 수 있다.</p>
 
-<span class="c1">// 위 예제는 다음의 if/else 구문과 동일합니다
-</span><span class="k">if</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">]))</span> <span class="p">{</span>
-    <span class="nv">$action</span> <span class="o">=</span> <span class="s1">'default'</span><span class="p">;</span>
-<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-    <span class="nv">$action</span> <span class="o">=</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">];</span>
-<span class="p">}</span>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>find . -empty -type d -delete -print
 </code></pre>
 </div>
 
-<blockquote>
-  <p>(expr1) ? (expr2) : (expr3) 표현은 expr1이 TRUE이면 expr2로 평가되고, expr1이 FALSE이면 expr3로 평가됩니다.
-PHP 5.3부터, 삼항 연산자의 중간 부분을 비울 수 있습니다. 표현식 expr1 ?: expr3은 expr1이 TRUE이면 expr1, 아니면 expr3를 반환합니다.</p>
-</blockquote>
+<p>위 명령을 사용하면 현재 폴더 하위의 모든 빈 디렉토리를 찾아 출력하고 지운다.</p>
 
-<p>PHP 5.3부터 <code class="highlighter-rouge">expr2</code>를 비울 수 있다고 되어 있다. 다시 말해 <code class="highlighter-rouge">(expr1) ?: (expr3)</code>라는 표현을 사용할 수 있다.</p>
+<p>빈 디렉토리를 찾기만 하려면 <code class="highlighter-rouge">-delete</code>를 제외하면 되고 반대로 출력없이 모두 지우려면 <code class="highlighter-rouge">-print</code>를 제외하면 된다.</p>
 
-<p>그리고 한가지. 아래와 같이 삼항식을 중첩할 경우는 괄호를 사용해서 묶어줄 것을 권장한다.</p>
-
-<blockquote>
-  <p>삼항 연사자를 “쌓는” 일을 피하길 권합니다. 하나의 구문에서 하나를 초과하는 삼항 연산자를 사용할 때, PHP 작동은 명확하지 않습니다:
-Example #3 명확하지 않은 삼항 작동</p>
-</blockquote>
-
-<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
-<span class="c1">// 얼핏 보기에, 'true'를 출력할 것 같습니다
-</span><span class="k">echo</span> <span class="p">(</span><span class="kc">true</span><span class="o">?</span><span class="s1">'true'</span><span class="o">:</span><span class="kc">false</span><span class="o">?</span><span class="s1">'t'</span><span class="o">:</span><span class="s1">'f'</span><span class="p">);</span>
-
-<span class="c1">// 그러나 위의 실제 출력은 't'입니다
-// 이는 삼항 표현이 왼쪽에서 오른쪽으로 평가되기 때문입니다
-</span>
-<span class="c1">// 다음이 위 코드와 동일한 더 명확한 버전입니다
-</span><span class="k">echo</span> <span class="p">((</span><span class="kc">true</span> <span class="o">?</span> <span class="s1">'true'</span> <span class="o">:</span> <span class="s1">'false'</span><span class="p">)</span> <span class="o">?</span> <span class="s1">'t'</span> <span class="o">:</span> <span class="s1">'f'</span><span class="p">);</span>
-
-<span class="c1">// 여기서, 첫 표현이 'true'로 평가되고, 이것이
-// (bool)true로 전환되어 평가된 후, 두번째
-// 삼항 표현의 true쪽을 반환합니다.
-</span><span class="cp">?&gt;</span>
-add a note add a note
-</code></pre>
-</div>
-
-<p>이와 유사하지만 다른 삼항 연산자인 <a href="https://wiki.php.net/rfc/isset_ternary">Null 병법 연산자:Null Coalesce Operator</a>가 PHP 7부터 지원된다. 한글 이름을 딱히 뭐라 부를지가 애매한데 <a href="https://ko.wikipedia.org/wiki/PHP">위키피디아</a>에서 “Null 병법 연산자”라는 이름을 사용하고 있다.</p>
-
-<div class="language-php highlighter-rouge"><pre class="highlight"><code>isset($_GET['mykey']) ? $_GET['mykey'] : ""
-</code></pre>
-</div>
-
-<p>위 두가지 삼항식은 동일한 것 같지만 자세히보면 다르다. 한가지는 <a href="http://php.net/manual/kr/function.empty.php">empty</a>를 다른 한가지는 <a href="http://php.net/manual/kr/function.isset.php">isset</a>을 대체한다.</p>
-
-<p>그리고 한가지 알아야할 중요한 사항이 있다. <a href="http://stackoverflow.com/a/34571460/6736772">PHP ternary operator vs null coalescing operator</a>에 예시가 나와 있듯이 <code class="highlighter-rouge">?:</code>는 선언되지 않은 변수를 사용할 경우 E_NOTICE가 발생한다. 다시말해 완전히 <a href="http://php.net/manual/kr/function.empty.php">empty</a> 처럼 동작하는 것은 아니다.</p>
+<p>폴더를 지정하려면 당연히 <code class="highlighter-rouge">.</code> 대신에 원하는 경로를 넣으면 되고 <a href="https://linux.die.net/man/1/find">find</a>의 다양한 옵션을 사용해서 원하는 조건을 추가해서 처리 할 수 있다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -191,8 +147,8 @@ add a note add a note
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/11/15/linux-find-empty-directory-and-delete/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/11/15/linux-find-empty-directory-and-delete/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

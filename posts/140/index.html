@@ -113,101 +113,161 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/09/25/if-android-theme-parent-doesnt-set-attribute/">
-								안드로이드 테마 정의시 parent를 지정하지 않을 경우 Error: Style Resource definition cycle 발생
+							<a class="title" href="https://blog.asamaru.net/2015/09/30/service-not-available-geocoder-android/">
+								안드로이드 Geocoder 사용시 Service not Available 오류
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/09/25/if-android-theme-parent-doesnt-set-attribute/">2015.09.25.</span></a>
+								<a href="https://blog.asamaru.net/2015/09/30/service-not-available-geocoder-android/">2015.09.30.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>이번 포스팅은 정확하지 않은 정보일 확률이 높다. 하지만 비슷한 경우를 만나게되면 임시 해결 방법으론 도움이 될 것 같아 글을 남겨 본다.
-이번에 작업하면서 발생한 문제를 해결하는 과정에서 이것저것 해보면서 알게된 부분을 정리해보려고 한다. 일단 문제를 만난 상황부터 이야기하자면 이렇다.</p>
+							<p>안드로이드에서 특정 지점의 좌표를 주소로 변환하는 것이 필요해서 Geocoder 사용했다. 대략적인 코드는 아래와 같다.</p>
 
-<p>작업 중에 DialogTheme를 정의해서 사용할 일이 있었다. 그래서 다음과 같이 정의해서 사용중이었다. Theme가 무엇인지에 대해서는 http://developer.android.com/intl/ko/guide/topics/ui/themes.html 를 참고하자.</p>
-
-<p>**values/styles.xml **</p>
-
-<pre><code class="language-XML">&lt;style name="af_DialogTheme.Base"&gt;
-    &lt;item name="android:windowNoTitle"&gt;true&lt;/item&gt;
-    &lt;item name="android:windowFullscreen"&gt;false&lt;/item&gt;
-    &lt;item name="android:windowBackground"&gt;@android:color/transparent&lt;/item&gt;
-    &lt;item name="android:colorBackgroundCacheHint"&gt;@null&lt;/item&gt;
-    &lt;item name="android:windowIsTranslucent"&gt;true&lt;/item&gt;
-&lt;/style&gt;
-&lt;style name="af_DialogTheme" parent="af_DialogTheme.Base"/&gt;
-</code></pre>
-
-<p>굳이 <code class="highlighter-rouge">af_DialogTheme.Base</code>를 정의하고 다시 <code class="highlighter-rouge">af_DialogTheme</code>에서 이를 상속받아 처리하는 것에는 이유가 있다. Theme에서 사용하는 속성들 또는 상황이 API 버전에 따라 다르기 때문이다. 예를 들어 내가 버전별로 다르게 사용한 style은 아래와 같다.</p>
-
-<p><strong>values-v19/styles.xml</strong></p>
-
-<pre><code class="language-XML">&lt;style name="af_DialogTheme" parent="af_DialogTheme.Base"&gt;
-    &lt;item name="android:windowTranslucentStatus"&gt;true&lt;/item&gt;
-&lt;/style&gt;
-</code></pre>
-
-<p><strong>values-v21/styles.xml</strong></p>
-
-<pre><code class="language-XML">&lt;style name="af_DialogTheme" parent="af_DialogTheme.Base"&gt;
-    &lt;item name="android:statusBarColor"&gt;@android:color/transparent&lt;/item&gt;
-    &lt;item name="android:windowTranslucentStatus"&gt;false&lt;/item&gt;
-&lt;/style&gt;
-</code></pre>
-
-<p>위 처럼 일부 속성만 replace하려면 공통 부분을 부모 스타일로 정의하고 받아서 쓰도록 해야한다. 같은 테마 이름을 사용하게되면 대체 xml 문서(values-v19/styles.xml, values-v21/styles.xml)에서 정의된 속성을 반영하는게 아니라 통째로 덮어써서 공통 부분은 정의가 안된 것과 동일하게 처리된다. 이렇게 통째로 덮어쓰지 않고 부분만 변경되게 하기 위해 parent 속성을 사용하는 것이다.</p>
-
-<p>여기까지가 문제가 되는 부분에 대한 설명이다. 위의 내용을 보고 문제가 될 수 있는 부분을 찾을 수 있겠는가? 이유를 안다면 아래의 내용을 볼 필요가 없다. 나는 몰랐기 때문에 당혹스러웠다.</p>
-
-<p>이 상태로 빌드해서 테스트하면 아무 이상도 없고 예상대로 동작한다. 그런데 release를 위해 빌드를 하는 순간 아래의 에러를 만나게 된다.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Error:(11) Error: Style Resource definition cycle: AppThemeDialog =&gt; af_DialogTheme =&gt; af_DialogTheme.Base =&gt; af_DialogTheme [ResourceCycle]
-    &lt;style name="AppThemeDialog" parent="af_DialogTheme"/&gt;
-                                 ~~~~~~~~~~~~~~~~~~~~~~~
-   Explanation for issues of type "ResourceCycle":
-   There should be no cycles in resource definitions as this can lead to
-   runtime exceptions.
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kd">static</span> <span class="kd">abstract</span> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">GeoCoderTask</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">LatLng</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Address</span><span class="o">[]&gt;</span> <span class="o">{</span>
+	<span class="nd">@Override</span>
+	<span class="kd">protected</span> <span class="n">Address</span><span class="o">[]</span> <span class="nf">doInBackground</span><span class="o">(</span><span class="n">LatLng</span><span class="o">...</span> <span class="n">arg0</span><span class="o">)</span> <span class="o">{</span>
+		<span class="n">List</span><span class="o">&lt;</span><span class="n">Address</span><span class="o">&gt;</span> <span class="n">res</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+		<span class="k">if</span> <span class="o">(</span><span class="n">arg0</span><span class="o">.</span><span class="na">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+			<span class="k">try</span> <span class="o">{</span>
+				<span class="n">Geocoder</span> <span class="n">geocoder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Geocoder</span><span class="o">(</span><span class="n">Helper</span><span class="o">.</span><span class="na">getAppContext</span><span class="o">(),</span> <span class="n">Locale</span><span class="o">.</span><span class="na">KOREA</span><span class="o">);</span>
+				<span class="n">List</span><span class="o">&lt;</span><span class="n">android</span><span class="o">.</span><span class="na">location</span><span class="o">.</span><span class="na">Address</span><span class="o">&gt;</span> <span class="n">addresses</span> <span class="o">=</span> <span class="n">geocoder</span><span class="o">.</span><span class="na">getFromLocation</span><span class="o">(</span><span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">latitude</span><span class="o">,</span> <span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">longitude</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+				<span class="k">if</span> <span class="o">((</span><span class="n">addresses</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">addresses</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">))</span> <span class="o">{</span>
+					<span class="n">android</span><span class="o">.</span><span class="na">location</span><span class="o">.</span><span class="na">Address</span> <span class="n">result</span> <span class="o">=</span> <span class="n">addresses</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+					<span class="n">Address</span> <span class="n">resultAddress</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Address</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">address</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getAddressLine</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">lat</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getLatitude</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">lng</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getLongitude</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">premise</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getPremises</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">administrative_area_level_1</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getAdminArea</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_1</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getSubLocality</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">country</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getCountryName</span><span class="o">();</span>
+					<span class="n">resultAddress</span><span class="o">.</span><span class="na">postal_code</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getPostalCode</span><span class="o">();</span>
+					<span class="n">res</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">resultAddress</span><span class="o">);</span>
+				<span class="o">}</span>
+			<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+				<span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+			<span class="o">}</span>
+		<span class="o">}</span>
+		<span class="n">Address</span><span class="o">[]</span> <span class="n">array</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Address</span><span class="o">[</span><span class="n">res</span><span class="o">.</span><span class="na">size</span><span class="o">()];</span>
+		<span class="n">res</span><span class="o">.</span><span class="na">toArray</span><span class="o">(</span><span class="n">array</span><span class="o">);</span>
+		<span class="k">return</span> <span class="n">array</span><span class="o">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
 </code></pre>
 </div>
 
-<p>당황스럽다. 분명 테스트시에는 한번도 본 적 없는 오류다. 내용을 보자. <code class="highlighter-rouge">ResourceCycle</code>에 관련된 문제로 보인다. 맨 위의 문장과 함께 보면 Resource의 순환참조라는 이야기로 보인다. 하지만 위의 코드들을 보면 알겠지만 순환참조라고 할만한 내용은 없다. 난 절대로 오류 메시지처럼 참조 시키지 않았다.</p>
+<p>위 코드는 데이터를 다른 클래스로 넘겨서 반환하는 형태로 그대로 사용할 수는 없다. 그냥 이렇게 사용했다는 것을 보여주고자 넣은 코드니 참고만하기 바란다.</p>
 
-<p>처음엔 이유를 몰라 어떻게 해야 할지 몰랐다. <code class="highlighter-rouge">af_DialogTheme.Base =&gt; af_DialogTheme</code>라고 나오는데 그렇게 지정하지 않았는데 왜 알아서 참조를 한다고 난리일까? 고민을 하던 중 옆에 있던 후배가 하는 말이 “저기 이름에 있는 . 때문에 그런것 아니냐?”라는 것이다. 난 말도 안된다고 했다. 어떻게 그렇게 해석 될 수 있느냐? 게다가 .Base라는 구문은 안드로이드 내부 테마들이 정의될 때 사용하던 네이밍 규칙을 따라 한 것인데 그럴리가 없다는 것이 내 생각이었다. 하지만 <strong>결함의 발견은 절대 그럴리가 없다는 부분부터 시작해야 한다.</strong></p>
+<p>어쨌든 중요한 것은 잘 동작하던 코드가 테스트 기기에서 Service not Available 오류가 난다는 것이다. 테스트 기기는 nexus s에 4.0.4로 오래된 기기다. 처음엔 OS 버전 문제로 생각했다. 그래서 일단 검색해 봤다. 결론은 아래의 링크를 보고 해결했다.</p>
 
-<p>결론은 후배의 말이 맞았다. name을 <code class="highlighter-rouge">af_DialogTheme.Base</code>에서 <code class="highlighter-rouge">af_DialogTheme_Base</code>로 변경하자 오류는 사라졌다. 아… 어의없다.
-보다 확실히 하기 위해 아래와 같이 name을 둔 채로 parent를 추가했다. 당연히 상속받을 것은 없으므로 공백으로…</p>
+<p><a href="http://stackoverflow.com/a/13856839">Service not Available - Geocoder Android</a></p>
 
-<p><strong>values/styles.xml</strong></p>
+<p>해결 방법은 <strong>기기 재부팅</strong>. 어의없다. 정말 안드로이드는 정이 안간다.</p>
 
-<pre><code class="language-XML">&lt;style name="af_DialogTheme.Base" parent=""&gt;
-    &lt;item name="android:windowNoTitle"&gt;true&lt;/item&gt;
+<p>사실 동일한 오류를 만났을 때 위의 방법으로 해결되지 않을 수 있다. 원인은 다양할 수 있으니… 그래서 조금 더 찾아보니 여러가지 이슈가 있는 것을 확인 했다. 해결되지 않는다면 구글에서 검색해 보면 여러가지 정보를 얻을 수 있다.</p>
+
+<p>이러한 정보 중에서 한가지는 Geocoder를 사용하지 않고 웹으로 호출해서 결과를 받는 것이다. 사실 나의 경우는 오류 때문이 아니라 api 사용량 때문에 사용하던 코드(API 키를 전달하지 않는 코드로 사용량에 제한을 받지 않는 것으로 보임)였는데 참고할 사람이 있을까하고 남겨본다. 그리고 한가지. 조금 전에 API key를 전달하지 않는다고 했는데 기존에는 이 방법으로 정상 동작했다. 그런데 최근 WIFI에서는 이상이 없는데 LTE 상태에서는 api 한계량 초과라는 메시지를 반환하고 있어서 사용하고 있지 않다. 이 부분은 이유를 정확히 확인해보지 못했다.</p>
+
+<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="kd">static</span> <span class="kd">abstract</span> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">WebGeoCoderTask</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">LatLng</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Address</span><span class="o">[]&gt;</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">final</span> <span class="kd">protected</span> <span class="n">Address</span><span class="o">[]</span> <span class="nf">doInBackground</span><span class="o">(</span><span class="n">LatLng</span><span class="o">...</span> <span class="n">arg0</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">Address</span><span class="o">&gt;</span> <span class="n">res</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">arg0</span><span class="o">.</span><span class="na">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">String</span> <span class="n">address</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="n">Locale</span><span class="o">.</span><span class="na">getDefault</span><span class="o">(),</span> <span class="s">"https://maps.googleapis.com/maps/api/geocode/json?latlng=%1$f,%2$f&amp;sensor=false&amp;language="</span> <span class="o">+</span> <span class="n">Locale</span><span class="o">.</span><span class="na">getDefault</span><span class="o">(),</span> <span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">latitude</span><span class="o">,</span> <span class="n">arg0</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">longitude</span><span class="o">);</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">URL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="n">URL</span><span class="o">(</span><span class="n">address</span><span class="o">);</span>
+                <span class="n">HttpURLConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="n">url</span><span class="o">.</span><span class="na">openConnection</span><span class="o">();</span>
+                <span class="n">InputStreamReader</span> <span class="n">in</span> <span class="o">=</span> <span class="k">new</span> <span class="n">InputStreamReader</span><span class="o">(</span><span class="n">conn</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">());</span>
+                <span class="n">StringBuilder</span> <span class="n">jsonResults</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringBuilder</span><span class="o">();</span>
+
+                <span class="kt">int</span> <span class="n">read</span><span class="o">;</span>
+                <span class="kt">char</span><span class="o">[]</span> <span class="n">buff</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[</span><span class="mi">1024</span><span class="o">];</span>
+                <span class="k">while</span> <span class="o">((</span><span class="n">read</span> <span class="o">=</span> <span class="n">in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buff</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">jsonResults</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">buff</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">read</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="n">String</span> <span class="n">json</span> <span class="o">=</span> <span class="n">jsonResults</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+                <span class="n">JSONObject</span> <span class="n">jsonObject</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JSONObject</span><span class="o">(</span><span class="n">json</span><span class="o">);</span>
+                <span class="n">AFLog</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="n">json</span><span class="o">);</span>
+
+                <span class="k">if</span> <span class="o">(</span><span class="s">"OK"</span><span class="o">.</span><span class="na">equalsIgnoreCase</span><span class="o">(</span><span class="n">jsonObject</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"status"</span><span class="o">)))</span> <span class="o">{</span>
+                    <span class="n">JSONArray</span> <span class="n">results</span> <span class="o">=</span> <span class="n">jsonObject</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">"results"</span><span class="o">);</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">results</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">,</span> <span class="n">iCnt</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="na">length</span><span class="o">();</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">iCnt</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+                            <span class="k">try</span> <span class="o">{</span>
+                                <span class="n">JSONObject</span> <span class="n">result</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="na">getJSONObject</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+
+                                <span class="n">Address</span> <span class="n">resultAddress</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Address</span><span class="o">();</span>
+                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">address</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"formatted_address"</span><span class="o">);</span>
+                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">placeId</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"place_id"</span><span class="o">);</span>
+                                <span class="n">JSONObject</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">optJSONObject</span><span class="o">(</span><span class="s">"geometry"</span><span class="o">);</span>
+                                <span class="k">if</span> <span class="o">(</span><span class="n">geometry</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                                    <span class="n">geometry</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="na">optJSONObject</span><span class="o">(</span><span class="s">"location"</span><span class="o">);</span>
+                                    <span class="k">if</span> <span class="o">(</span><span class="n">geometry</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                                        <span class="n">resultAddress</span><span class="o">.</span><span class="na">lat</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="na">getDouble</span><span class="o">(</span><span class="s">"lat"</span><span class="o">);</span>
+                                        <span class="n">resultAddress</span><span class="o">.</span><span class="na">lng</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="na">getDouble</span><span class="o">(</span><span class="s">"lng"</span><span class="o">);</span>
+                                    <span class="o">}</span>
+                                <span class="o">}</span>
+
+                                <span class="n">JSONArray</span> <span class="n">components</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">"address_components"</span><span class="o">);</span>
+                                <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">components</span><span class="o">.</span><span class="na">length</span><span class="o">();</span> <span class="n">a</span><span class="o">++)</span> <span class="o">{</span>
+                                    <span class="n">JSONObject</span> <span class="n">component</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="na">getJSONObject</span><span class="o">(</span><span class="n">a</span><span class="o">);</span>
+                                    <span class="n">JSONArray</span> <span class="n">types</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">"types"</span><span class="o">);</span>
+                                    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">types</span><span class="o">.</span><span class="na">length</span><span class="o">();</span> <span class="n">j</span><span class="o">++)</span> <span class="o">{</span>
+                                        <span class="n">String</span> <span class="n">type</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="n">j</span><span class="o">);</span>
+                                        <span class="k">switch</span> <span class="o">(</span><span class="n">type</span><span class="o">)</span> <span class="o">{</span>
+                                            <span class="k">case</span> <span class="s">"premise"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">premise</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">"administrative_area_level_1"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">administrative_area_level_1</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">"sublocality_level_1"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_1</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">"sublocality_level_2"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_2</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">"sublocality_level_3"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_3</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">"sublocality_level_4"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">sublocality_level_4</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">"country"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">country</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">"postal_code"</span><span class="o">:</span>
+                                                <span class="n">resultAddress</span><span class="o">.</span><span class="na">postal_code</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="na">optString</span><span class="o">(</span><span class="s">"long_name"</span><span class="o">);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">case</span> <span class="s">"political"</span><span class="o">:</span>
+                                            <span class="k">case</span> <span class="s">"sublocality"</span><span class="o">:</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                            <span class="k">default</span><span class="o">:</span>
+<span class="c1">//													AFLog.d("Not catched : " + type);</span>
+                                                <span class="k">break</span><span class="o">;</span>
+                                        <span class="o">}</span>
+                                    <span class="o">}</span>
+                                <span class="o">}</span>
+                                <span class="n">res</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">resultAddress</span><span class="o">);</span>
+                            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">JSONException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                                <span class="n">AFLog</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+                            <span class="o">}</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">AFLog</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="n">Address</span><span class="o">[]</span> <span class="n">array</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Address</span><span class="o">[</span><span class="n">res</span><span class="o">.</span><span class="na">size</span><span class="o">()];</span>
+        <span class="n">res</span><span class="o">.</span><span class="na">toArray</span><span class="o">(</span><span class="n">array</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">array</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
 </code></pre>
+</div>
 
-<p>이렇게 처리해도 오류는 사라졌다. 그럼 이제 경험에 의한 결론을 내려보자(서두에 이야기한 것 처럼 그냥 내가 추측하는 것이니 틀릴 확률이 높다는 것을 감안하고 보자).</p>
-
-<blockquote>
-  <p>style 정의시 name에 .을 사용하고 parent가 지정되지 않았다면 . 앞부분의 name을 parent로 정의한 것으로 보고 상속을 시도한다.</p>
-</blockquote>
-
-<p>결론적으로 내 의도는 .Base가 붙은 녀석이 부모가 되는 것을 원하고 네이밍한 것이 반대로 자식이 되어 순환참조를 발생시키게 한 것이다.</p>
-
-<p>그런데 상황을 보자면 위에 정리한 내용이 맞다고 보아진다. 그런데 이상하다. 왜 release 모드에서만 오류가 나는가? 그래서 오류 부분을 조금 더 자세히 보니 <code class="highlighter-rouge">:app:lintVitalRelease</code> 영역에서 오류가 난다. 그렇다. <a href="https://ko.wikipedia.org/wiki/Lint">lint</a> 오류다. 오류가 의심되는 코드를 검증하는 과정에서 오류를 발생시킨 것이다.</p>
-
-<p>여기서 최종적인 나의 생각(추측)을 정리하겠다.</p>
-
-<blockquote>
-  <p>예전(구버전 안드로이드)에는 위의 설명대로 .을 기준으로한 theme(style) 상속의 개념이 사용되었기 때문에 lint에 추가되어 있었다. 그런데 시간이 지나면서 이 기능은 제거되고 parent라는 속성이 추가되었으나 lint에서는 검증 코드가 제외되지 않았다.</p>
-</blockquote>
-
-<p>이렇게 생각하는 이유는 실제로 lint 영역에서만 오류가 나지 동작시에는 아무런 문제가 없다.</p>
-
-<h3 id="section">그래서 어떻게 하면 되나?</h3>
-
-<blockquote>
-  <p>style를 사용한 theme 정의시 parent가 없다면 name에 .을 사용하지 말거나 공백으로라도 parent 속성을 사용하자.</p>
-</blockquote>
-
-<p><code class="highlighter-rouge">Style Resource definition cycle</code> 오류를 만난다면 위의 글을 참고해서 해결에 도움이 되었으면 하는 바램이다. 나도 오늘 후배의 한마디가 아니었다면 아직도 헬게이트를 경험하고 있을지도 모른다.</p>
+<p>이 코드도 마찬가지로 참고만 하기 바란다. 내부적으로 사용중인 클래스들이 있어서 그대로 넣으면 동작하지 않는다. 하지만 코드를 보면 반환 클래스에 관련된 부분이므로 어디를 수정해야 할지 바로 알 수 있을 것으로 보인다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -221,8 +281,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/09/25/if-android-theme-parent-doesnt-set-attribute/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/09/25/if-android-theme-parent-doesnt-set-attribute/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/09/30/service-not-available-geocoder-android/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/09/30/service-not-available-geocoder-android/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

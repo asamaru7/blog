@@ -113,113 +113,55 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2015/12/10/realm/">
-								안드로이드 Realm 0.82.2 -&gt; 0.86.0 버전업
+							<a class="title" href="https://blog.asamaru.net/2015/12/16/delta-rpm/">
+								Yum Delta RPM 사용하기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2015/12/10/realm/">2015.12.10.</span></a>
+								<a href="https://blog.asamaru.net/2015/12/16/delta-rpm/">2015.12.16.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>모바일 앱 개발시에 DB는 주로 Sqlite 또는 Core Data를 많이 사용한다. 그런데 Sqlite 등을 사용하는 것이 조금 불편한 부분들이 많아서 지난 앱 개발시 <a href="https://realm.io/kr/">Realm</a>을 사용했다. <a href="https://realm.io/kr/">Realm</a>을 사용하면 개발이 용이해지기는 한데 간혹 다루기가 까다로워지는 경우가 있다. 사실 그런 문제 상황은 내가 사용시 뭔가를 잘못했을 확률이 높지만 개인적으로 다소 예민한 라이브러리라고 생각한다. 어찌보면 당연할 수도 있는 것이 아직 1.0 버전이 되지도 못한 라이브러리니 그럴만도 하다. 실제로 아직은 버전업이 자주 발생하고 버전업시에 변경 사항이 다소 있는 편이다. 중요 변경이 있을 때 마이그레이션을 잘못하거나 하면 앱 크래시의 원인이 되기도 하니 버전업시에는 유의해야 한다.
-<strong>그렇지만 다행인 것은 <a href="https://realm.io/kr/docs/java/latest/">문서화</a>가 잘되어 있고 한글본도 번역도 빠르게 올라온다.</strong></p>
+							<p>최근부터 CentOS 7을 사용하면서 yum으로 update를 하면서 아래와 같은 오류가 자주 발생했다. 하지만 항상 나오는 것은 아니다.</p>
 
-<hr />
-
-<p>얼마전 기존 프로젝트의 Realm의 0.82.2에서 0.86.0으로 버전업을 했다(버전을 확인한지 그리 오래되지 않았는데 그 사이 많이도 버전업되었다). 그랬더니 아래와 같은 오류가 발생했다.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Field 'date' is required. Either set @Required to field 'date' or migrate using io.realm.internal.Table.convertColumnToNullable(). : io.realm.exceptions.RealmMigrationNeededException: Field 'date' is required. Either set @Required to field 'date' or migrate using io.realm.internal.Table.convertColumnToNullable().
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>Error: Delta RPMs disabled because /usr/bin/applydeltarpm not installed.
 </code></pre>
 </div>
 
-<p>사용하는 테이블의 <code class="highlighter-rouge">date</code> 필드가 <code class="highlighter-rouge">required</code>이니 <code class="highlighter-rouge">@Required</code> 어노테이션을 붙이거나 테이블을 마이그레이션하라는 안내다. 이미 Realm에서 해결 방법을 친절히도 안내해주고 있다. <code class="highlighter-rouge">@Required</code>는 기존에 사용하지 않던 것이라 찾아봤다. <a href="https://realm.io/kr/news/realm-java-0.83.0/">Realm 자바 0.83 — Null 지원!</a>를 보니 0.83 버전에서 데이터값으로 null을 사용할 수 있게 됨에 따라 추가된 어노테이션이다. 그러니 기존 0.82.2의 데이터는 null이 될 수 없었으므로 required 타입으로 인식하는 것이다. 그외에도 다른 변경 사항을 보고 싶다면 <a href="https://github.com/realm/realm-java/blob/master/changelog.txt">changelog</a>를 참고하자.</p>
+<p>이 메시지가 나오지만 실제로는 동작에는 이상이 없다. 하지만 계속 메시지가 나오니 보기도 싫고 다른 문제가 생길 수도 있을 것으로 생각되어 좀 찾아봤다.</p>
 
-<p>기존에도 null이 들어올 수 없는 구조로 프로그램되어 있었으니 <code class="highlighter-rouge">@Required</code>를 해당 필드(변수)에 붙이는 것으로 해결하는 것이 맞겠다. 나는 여기서 다른 문제를 겪었었는데 <code class="highlighter-rouge">@Required</code>만 붙이면 될 것을 스키마 버전 정보까지 올리는 바람에 엉망이 되었었다. 어쨌든 결론은 이 문제에 대해서는 <code class="highlighter-rouge">@Required</code>를 붙이는 방법으로 간단히 해결된다.</p>
+<p>일단 <strong><a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a> 이라고 하는 것은 RPM 패키지 버전별로 변경사항만 가지고 있는 것을 뜻한다.</strong> 다시 말해 update 시에 전체 RPM을 다운 받아서 설치하지 않고 변경사항만 다운 받아서 update를 하게 해준다는 것이다.</p>
 
-<hr />
+<p>처리 과정을 보자면 yum에서 DRPM(Delta RPM)을 다운 받아 이전 패키지에 변경 사항을 병합하여 새로운 RPM을 빌드한 후 설치가 이루어 진다고 한다. 따라서 다운 받는 시간은 줄어들지만 병합하는 시간이 추가로 소요된다. 하지만 네트워크 비용이 더 크기 때문에 사용하는 것이 더 유리하다.</p>
 
-<p>그런데 문제는 여기서 끝나지 않았다. <a href="https://realm.io/docs/java/latest/api/io/realm/RealmMigration.html">RealmMigration</a> 클래스도 방식이 변경되어 맞춰줬다.</p>
+<p><a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>은 Fedora 11부터 적용되었다고 하며 RPM을 사용하는 다른 Linux에서도 사용중이라고 한다. 그런데 CentOS의 minimal 설치시에는 포함되지 않기 때문에 위 오류가 난다고 한다. 그리고 update 대상이 DRPM을 지원할 경우만 위 오류가 표시되는 것으로 보인다.</p>
 
-<p>그리고 또 하나. 기존에는 아래와 같이 인스턴스를 생성해서 사용했다.</p>
+<p>이 오류를 제거하고 <a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>을 사용하는 방법은 간단하다. deltarpm 패키지를 설치하면 된다.</p>
 
-<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="n">RealmConfiguration</span><span class="o">.</span><span class="na">Builder</span> <span class="n">realmBuilder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">RealmConfiguration</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="n">context</span><span class="o">).</span><span class="na">name</span><span class="o">(</span><span class="n">realmName</span><span class="o">)</span> <span class="o">.</span><span class="na">schemaVersion</span><span class="o">(</span><span class="n">SCHEME_VERSION</span><span class="o">);</span>
-<span class="n">RealmConfiguration</span> <span class="n">config</span> <span class="o">=</span> <span class="n">realmBuilder</span><span class="o">.</span><span class="na">build</span><span class="o">();</span>
-<span class="n">Realm</span> <span class="n">realm</span> <span class="o">=</span> <span class="n">Realm</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">config</span><span class="o">);</span>
+<p>우선 오류에 나와있는 프로그램의 경로(<code class="highlighter-rouge">/usr/bin/applydeltarpm</code>)를 이용해서 패키지명을 찾는다. 사실 이 과정은 굳이 할 필요가 없다(이미 패키지명을 알고 있으니).</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>yum provides /usr/bin/applydeltarpm
+
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ <span class="k">*</span> base: ftp.daumkakao.com
+ <span class="k">*</span> epel: ftp.cuhk.edu.hk
+ <span class="k">*</span> extras: ftp.daumkakao.com
+ <span class="k">*</span> updates: ftp.daumkakao.com
+ <span class="k">*</span> webtatic: sp.repo.webtatic.com
+deltarpm-3.6-3.el7.x86_64 : Create deltas between rpms
+Repo        : base
+Matched from:
+Filename    : /usr/bin/applydeltarpm
 </code></pre>
 </div>
 
-<p>그런데 여기서 문제가 발생하기 시작했다. 이 부분은 realm 접속을 생성하는 과정으로 사용하는 시점에 처리하고 있었다. 기존에 사용처 자체가 워낙에 간단한 부분이라서 그랬는지는 몰라도 문제가 없었다. 그런데 버전업 이후 이상하게 앱 크래시가 발생했다.</p>
+<p>패키지명을 알았으니 이제 설치만 하면 된다.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>E/AndroidRuntime: FATAL EXCEPTION: main
-                  Process: ~~~, PID: 21532
-                  java.lang.RuntimeException: Unable to start activity ComponentInfo{~~~/~~~}: java.lang.IllegalArgumentException: Configurations cannot be different if used to open the same file.
-...
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>yum install deltarpm
 </code></pre>
 </div>
 
-<p>오류 내용은 이렇다. 동일 table 파일을 다른 Configurations으로 열 수 없다. 이 오류는 처음에 앱이 열릴 때는 발생하지 않다가 종료 후 다시 들어오면 발생했다. 이상했다. 분명이 앱을 종료 했음에도 불구하고 왜 다른 Configurations을 넣고 있다는 것인지.</p>
-
-<p>이번에 알게 되었는데 root activity에서의 finish()는 앱의 종료를 의미하는 것이 아니었다. 마지막 activity가 finish()되면 화면에서는 즉시 종료된 것으로 보이나 프로세스는 살아 남는다. 아마도 시스템 자원이 부족해지면 프로세스가 OS에 의해 죽을 수는 있다. 이와 관련해서 앱을 완전히 종료하는 방법에 대해서는 <del>조만간 별도로 글을 남기려고 한다.</del> <a href="/2015/12/15/android-app-finish/">안드로이드 앱 종료 방법</a>에서 설명하고 있다.</p>
-
-<p>어쨌든 이러한 상황이 발생하는 것으로 보아 기존 버전과 최신 버전의 Realm 생명 주기를 관리하는 방법이 변경된 것으로 보인다. 메뉴얼에 보면 <a href="https://realm.io/kr/docs/java/0.86.0/#section-52">모범 사용예 - Realm 인스턴스들의 생명주기 관리하기</a>라는 부분이 있다. “모범 사용예”라는 항목 자체가 0.85.0 버전부터 있는 것으로 보아 그 시점에 변경이 된 것으로 생각한다. 그런데 여기서 사용하는 함수는 <a href="https://realm.io/news/realm-java-0.81.1/">Realm Java 0.81.1</a>에서 추가된 것으로 소개하고 있다. 기존에 내가 사용하던 것이 0.82.2 였지만 위 문제가 발생하지 않았던 것으로 보아 앞선 예상대로 그 후에 관리 방법이 변경된 것 같기는 하다. 어쨌든 이 부분에 관련된 정보가 있어 발췌한다.</p>
-
-<blockquote>
-  <p><strong>Realm 인스턴스들의 생명주기 관리하기</strong></p>
-
-  <p>RealmObjects과 RealmResults는 데이터 전체를 느긋하게 가져옵니다. 이런 이유로 Realm 오브젝트나 질의 결과를 접근할 때 가능한 오래 Realm 인스턴스를 유지하는 것이 중요합니다. Realm 데이터 커넥션을 열고 닫는 추가 비용을 줄이기 위해 레퍼런스 카운트화된 캐시를 가집니다. 이는 Realm.getDefaultInstance()를 같은 스레드에서 여러번 호출하는 것은 비용이 들지 않고 내부의 리소스는 자체적으로 모든 인스턴스가 닫히면 해제됨을 의미합니다.</p>
-
-  <p>모든 액티비티와 프래그먼트의 UI 스레드에서 Realm 인스턴스를 열고 Activity나 Fragment가 파괴될 때 닫는 것은 쉽고 안전한 접근 법입니다.</p>
-</blockquote>
-
-<div class="language-java highlighter-rouge"><pre class="highlight"><code><span class="c1">// 애플리케이션에서 Realm 설정하기</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyApplication</span> <span class="kd">extends</span> <span class="n">Application</span> <span class="o">{</span>
-    <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">()</span> <span class="o">{</span>
-        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">();</span>
-        <span class="n">RealmConfiguration</span> <span class="n">realmConfiguration</span> <span class="o">=</span> <span class="k">new</span> <span class="n">RealmConfiguration</span><span class="o">.</span><span class="na">Builder</span><span class="o">(</span><span class="k">this</span><span class="o">).</span><span class="na">build</span><span class="o">();</span>
-        <span class="n">Realm</span><span class="o">.</span><span class="na">setDefaultConfiguration</span><span class="o">(</span><span class="n">realmConfiguration</span><span class="o">);</span>
-    <span class="o">}</span>
-<span class="o">}</span>
-
-<span class="c1">// 액티비티들을 전환하며 onCreate()/onDestroy()가 중첩되면 Activity 2의 onCreate가</span>
-<span class="c1">// Activity 1의 onDestroy()보다 먼저 호출 됩니다.</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyActivity</span> <span class="kd">extends</span> <span class="n">Activity</span> <span class="o">{</span>
-    <span class="kd">private</span> <span class="n">Realm</span> <span class="n">realm</span><span class="o">;</span>
-
-    <span class="nd">@Override</span>
-    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
-        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
-        <span class="n">realm</span> <span class="o">=</span> <span class="n">Realm</span><span class="o">.</span><span class="na">getDefaultInstance</span><span class="o">();</span>
-    <span class="o">}</span>    
-
-    <span class="nd">@Override</span>
-    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onDestroy</span><span class="o">()</span> <span class="o">{</span>
-        <span class="kd">super</span><span class="o">.</span><span class="na">onDestroy</span><span class="o">();</span>
-        <span class="n">realm</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
-    <span class="o">}</span>
-<span class="o">}</span>
-
-<span class="c1">// 프래그먼트에서 onStart()/onStop()를 사용합니다.</span>
-<span class="c1">// 프래그먼트의 onDestroy()는 호출되지 않을 수 있습니다.</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyFragment</span> <span class="kd">extends</span> <span class="n">Fragment</span> <span class="o">{</span>
-    <span class="kd">private</span> <span class="n">Realm</span> <span class="n">realm</span><span class="o">;</span>
-
-    <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onStart</span><span class="o">()</span> <span class="o">{</span>
-        <span class="kd">super</span><span class="o">.</span><span class="na">onStart</span><span class="o">();</span>
-        <span class="n">realm</span> <span class="o">=</span> <span class="n">Realm</span><span class="o">.</span><span class="na">getDefaultInstance</span><span class="o">();</span>
-    <span class="o">}</span>
-
-    <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onStop</span><span class="o">()</span> <span class="o">{</span>
-        <span class="kd">super</span><span class="o">.</span><span class="na">onStop</span><span class="o">();</span>
-        <span class="n">realm</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
-    <span class="o">}</span>
-<span class="o">}</span>
-</code></pre>
-</div>
-
-<p>그렇다. 이제는 앱 생성시 <code class="highlighter-rouge">Realm.setDefaultConfiguration()</code>를 이용해서 Configuration을 지정하고 필요한 곳에서 <code class="highlighter-rouge">Realm.getDefaultInstance()</code>으로 인스턴스를 받아 사용하는 것을 권장한다. 위에 이야기한 문제도 이 방식을 사용하면 발생하지 않는다.</p>
+<p>끝이다. 이제부터 <a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>이 지원되는 패키지는 DRPM을 이용해서 다운받는 시간이 줄어들 것이다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -233,8 +175,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2015/12/10/realm/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2015/12/10/realm/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2015/12/16/delta-rpm/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2015/12/16/delta-rpm/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

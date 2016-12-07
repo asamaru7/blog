@@ -113,50 +113,31 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/04/26/gulp-watch-is-very-slow-to-recognize-file-modifications/">
-								NFS로 연결된 디스크에서 Gulp Watch 사용시 파일 변경 감지가 느릴 때
+							<a class="title" href="https://blog.asamaru.net/2016/05/30/mysql-table-name-is-specified-twice-both-as-a-target-for-update-and-as-a-separate-source-for-data/">
+								Mysql: Table &#39;name&#39; is specified twice, both as a target for &#39;UPDATE&#39; and as a separate source for data 오류 해결
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/04/26/gulp-watch-is-very-slow-to-recognize-file-modifications/">2016.04.26.</span></a>
+								<a href="https://blog.asamaru.net/2016/05/30/mysql-table-name-is-specified-twice-both-as-a-target-for-update-and-as-a-separate-source-for-data/">2016.05.30.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>얼마 전부터 프로젝트에서 <a href="https://lumen.laravel.com/">Lumen</a>을 사용하고 있다. <a href="https://laravel.com/">Laravel</a>을 사용하려고 하다가 경량 프레임워크에 더 끌려서 Lumen을 사용중이다. 사실 이 부분에 관련해서 약간의 후회(고민)를 하고 있다. lumen은 아무래도 자료도 부족한 면이 있고 Laravel 모듈과의 연동이 원활하지 않은 부분이 있어서 불편한 면이 있다.</p>
+							<p>아래의 Query는 계층형 카테고리에서 해당 노드와 상위 노드의 ‘itemCount’를 모두 1 증가 시키기 위한 Query다.</p>
 
-<p>Lumen에는 Laravel에서 기본적으로 제공하는 기능 중 많은 부분이 제외되어 있는데 그 중 하나가 <a href="https://laravel.com/docs/master/elixir">Elixir</a>이다. 하지만 Elixir를 Lumen에 연결하는 것은 크게 어렵지 않다. Elixir는 <a href="http://gulpjs.com/">Gulp</a>를 기반으로 제작되어 있다. 따라서 작업시 gulp의 watch 기능을 사용하게 되는데 나의 작업 환경인 vagrant(centos) 내에서 파일의 변경을 잘 인식하지 못했다.</p>
+<pre><code class="language-mysql">UPDATE `storeCategory` SET itemCount=itemCount+1 WHERE (SELECT X.`_lft` FROM `storeCategory` as X WHERE X.`fullCode` = 'ab' LIMIT 1) BETWEEN `_lft` AND `_rgt`;
+</code></pre>
 
-<p>그래서 관련자료를 찾다가 <a href="https://github.com/gulpjs/gulp/issues/448">Watch is very slow to recognize file modifications</a>라는 글을 찾았다. 여기서 원인을 찾았는데 원인은 바로 NFS로 연결된 디스크로 인한 문제였다.</p>
+<p>위 Query 에서는 자신의 Table의 검색 결과를 자신의 데이터를 변경하는데 사용하고 있다. 이 경우 아래와 같은 오류가 난다.</p>
 
-<p>이 글에서의 해결책은 아래와 같다. 중요한 부분은 <code class="highlighter-rouge">actimeo=2</code> 이다.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>config.vm.synced_folder "dev", "/dev/vagrant",
-    :nfs =&gt; true,
-    :mount_options =&gt; ['actimeo=2']
+<div class="highlighter-rouge"><pre class="highlight"><code>Table 'storeCategory' is specified twice, both as a target for 'UPDATE' and as a separate source for data
 </code></pre>
 </div>
 
-<p>하지만 나의 경우는 <code class="highlighter-rouge">synced_folder</code>를 사용하지 않고 부팅시 직접적으로 NFS 디스크를 마운트하고 있다. 그래서 아래와 같이 적용했다.</p>
+<p>이 경우는 아래와 같은 방식으로 문제를 회피할 수 있다.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>mount -o "vers=3,udp,nolock,actimeo=2" 192.168.99.1:"/subdev/web" /home/web
+<pre><code class="language-mysql">UPDATE `storeCategory` SET itemCount=itemCount+1 WHERE (SELECT * FROM (SELECT X.`_lft` FROM `storeCategory` as X WHERE X.`fullCode` = new.categoryId LIMIT 1) _dummy) BETWEEN `_lft` AND `_rgt`;
 </code></pre>
-</div>
 
-<p>그럼 여기서 <code class="highlighter-rouge">actimeo</code>는 무엇인가? <a href="http://linux.die.net/man/5/nfs">Linux man page</a>에 아래와 같이 설명되어 있다.</p>
-
-<blockquote>
-  <p><em>actimeo=n</em></p>
-
-  <p>Using actimeo sets all of acregmin, acregmax, acdirmin, and acdirmax to the same value. If this option is not specified, the NFS client uses the defaults for each of these options listed above.</p>
-</blockquote>
-
-<p>간단히 이야기하자면 위의 방법은 NFS의 파일 cache time을 2초로 줄여서 파일의 변경을 빠르게 인지할 수 있도록 해주는 것이다.</p>
-
-<p>다른 방법으로는 <code class="highlighter-rouge">lookupcache=none</code> 옵션을 사용하는 것도 가능하다(<a href="http://stackoverflow.com/a/28571327">Watching files for changes on Vagrant, file modification times not updating</a>
-).</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>config.vm.synced_folder "./", "/vagrant", type: "nfs", mount_options: ["lookupcache=none"]
-</code></pre>
-</div>
+<p>검색 결과를 dummy table로 alias 하여 직접적인 접근을 우회한 것이다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -170,8 +151,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/04/26/gulp-watch-is-very-slow-to-recognize-file-modifications/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/04/26/gulp-watch-is-very-slow-to-recognize-file-modifications/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/05/30/mysql-table-name-is-specified-twice-both-as-a-target-for-update-and-as-a-separate-source-for-data/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/05/30/mysql-table-name-is-specified-twice-both-as-a-target-for-update-and-as-a-separate-source-for-data/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

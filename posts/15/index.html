@@ -113,40 +113,47 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/10/26/nginx-504-error/">
-								nginx 504 Gateway Time-out 오류
+							<a class="title" href="https://blog.asamaru.net/2016/11/04/decompile-actionscript-from-swf-by-show-my-code/">
+								Flash swf 파일에서 ActionScript 추출하기(Show My Code)
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/10/26/nginx-504-error/">2016.10.26.</span></a>
+								<a href="https://blog.asamaru.net/2016/11/04/decompile-actionscript-from-swf-by-show-my-code/">2016.11.04.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>nginx에서 <em>504 Gateway Time-out</em> 오류가 발생할 경우는 리버스 프록시에서의 응답이 지정 시간보다 늦어질 경우다.</p>
+							<p>예전에는 Flash를 가끔씩 사용했던 적이 있었지만 최근 몇년 동안에는 관련된 처리를 할 일이 없었다(요즘엔 거의 사용을 하지 않으니 개발할 이유도 없었다). 그런데 이번에 작업을 하던 중 직접 Flash를 제작하는 것이 아니라 이미 만들어진 swf 파일의 ActionScript 소스 코드를 확인해야 하는 일이 생겼다. swf Decompiler는 검색하면 많이 나오기 때문에 크게 어려운 일은 아니지만 대부분 데모 버전으로 ActionScript를 확인하는데 불편함이 있어서 찾아보던 중 <a href="http://www.showmycode.com/">ShowMyCode.com</a>이란 사이트를 발견했다. 여기선 swf 파일을 올리면 바로 ActionScript를 확인 할 수 있고 다운 받을 수도 있다.</p>
 
-<p><img src="/img/2016/10/504.png" alt="nginx 504 Gateway Time-out" /></p>
+<p>그런데 이 사이트는 swf decompile 만 제공하는 것이 아니라 아래의 프로그램들도 decompile 가능하다.</p>
 
-<p>접속이 지연되는 경우는 서버의 부하 문제나 WAS의 오류로 인한 것이니 nginx가 아닌 WAS 쪽에서 해결해야하는 것이 맞을 것이다.</p>
+<ul>
+  <li>PHP file encoded with Zend Guard
+    <blockquote>
+      <p>Decode and get source of php files encoded with Zend Guard. This process also called dezending and the program called dezender (de-zender). So, dezend php files and get the source code!</p>
+    </blockquote>
+  </li>
+  <li>Java class
+    <blockquote>
+      <p>Decompile java CLASS files and save source code in text. Reconstruct the original source code from the compiled binary.</p>
+    </blockquote>
+  </li>
+  <li>Adobe flash swf
+    <blockquote>
+      <p>Decompile flash ActionScript from the swf flash file. Use this online flash swf decompiler to get the source code of the swf file.</p>
+    </blockquote>
+  </li>
+  <li>.NET application
+    <blockquote>
+      <p>Decompile .NET application and get it source code. Now you can get close to original source code of C# (c sharp), Visual Basic .NET (VB.NET.), Visual C++ .NET (VC++.NET) and J# (jay-sharp).</p>
+    </blockquote>
+  </li>
+  <li>QR Code Image
+    <blockquote>
+      <p>QR-code Reader. Decode a QR Code and get text! It’s a two-dimensional bar code. The “QR” is derived from “Quick Response”. Most current mobile phones can read this code with their camera. UTF-8 is supported.</p>
+    </blockquote>
+  </li>
+</ul>
 
-<p>간혹 특수한 경우에 WAS 쪽의 처리가 오랜 시간을 필요로 하는 경우 어쩔 수 없이 timeout을 늘려야 하는 경우가 있을 수 있다. 이런 경우라면 <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_connect_timeout">proxy_connect_timeout</a>, <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_send_timeout">proxy_send_timeout</a>, <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_read_timeout">proxy_read_timeout</a> 등을 사용해서 시간을 늘려줄 수 있다(기본은 60초다).</p>
-
-<div class="language-nginx highlighter-rouge"><pre class="highlight"><code><span class="k">server</span> <span class="p">{</span>
-	<span class="kn">...</span>
-
-	<span class="s">location</span> <span class="n">/</span> <span class="p">{</span>
-		<span class="kn">proxy_connect_timeout</span> <span class="mi">300</span><span class="p">;</span>
-		<span class="kn">proxy_send_timeout</span> <span class="mi">300</span><span class="p">;</span>
-		<span class="kn">proxy_read_timeout</span> <span class="mi">300</span><span class="p">;</span>
-		<span class="kn">send_timeout</span> <span class="mi">300</span><span class="p">;</span>
-	<span class="p">}</span>
-<span class="p">}</span>
-</code></pre>
-</div>
-
-<p>사실 이런 경우는 서비스 중에는 발생해서는 안된다. 사용자가 이렇게 오랜 시간을 기다려줄 리가 없기 때문이다. 이런 기능이 필요하다면 Job Queue를 이용하거나 사용자에게 안내 메시지를 보내고 백그라운드에서 계속 실행되도록 하는 것이 맞을 것이다.</p>
-
-<p>php 에서는 이런 경우에 대비해서 <a href="http://php.net/manual/kr/function.fastcgi-finish-request.php">fastcgi_finish_request</a>를 제공한다. 이 함수를 실행하면 사용자에게는 프로세스가 종료된 것처럼 response를 보내고 남은 작업을 계속 실행한다.</p>
-
-<p>다른 방법은 <a href="http://php.net/manual/kr/function.ob-flush.php">ob_flush</a>와 <a href="http://php.net/manual/kr/function.flush.php">flush</a>를 이용해서 response를 지속적으로 보내서 timeout이 발생하지 않도록 하는 것이다.</p>
+<p>대부분 전문적인 decompiler 들이 있겠지만 간단히 확인이 필요할 때는 유용하게 사용할 수 있을 것 같아 남겨둔다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -160,8 +167,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/10/26/nginx-504-error/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/10/26/nginx-504-error/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/11/04/decompile-actionscript-from-swf-by-show-my-code/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/11/04/decompile-actionscript-from-swf-by-show-my-code/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

@@ -113,95 +113,130 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/02/02/installing-centos-7-on-an-apple-mac-mini/">
-								구형 애플 맥 미니 CentOS 7 서버로 재활용하기
+							<a class="title" href="https://blog.asamaru.net/2016/02/10/php-stdin/">
+								PHP CLI 사용자 입력(STDIN) 받기
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/02/02/installing-centos-7-on-an-apple-mac-mini/">2016.02.02.</span></a>
+								<a href="https://blog.asamaru.net/2016/02/10/php-stdin/">2016.02.10.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>회사에서 맥북 프로를 새로 구매하면서 맥 미니(2012년형)가 한대 남게 되었다. 사실은 다른 이유로 2대가 남게 되었는데 한대는 예비로 그냥 두고 한대를 서버로 사용하기로 했다. 그래서 설치 방법을 찾아보다 <a href="http://drewcdecker.me/2014/08/installing-centos-7-on-an-apple-mac-mini/">Installing CentOS 7 on an Apple Mac Mini</a>를 찾았다. 그런데 이 글에서는 <a href="https://www.centos.org/">CentOS 7</a>을 바로 설치할 수 없어 CentOS 6.5를 설치 후 7으로 업데이트하는 방법을 안내하고 있었다. 이 방법은 개인적인 취향상 선택하기 싫었다. 그래서 조금 더 찾다보니 <a href="http://www.myiphoneadventure.com/os-x/create-a-bootable-centos-usb-drive-with-a-mac-os-x">Create a bootable CentOS USB drive with a Mac (OS X) for a PC</a>라는 글이 있었다. 여기서는 맥 설치용 CentOS 7 부트 USB를 만드는 법을 설명하고 있어서 이 글을 참고해서 작업을 시작했다.</p>
+							<p>PHP CLI를 사용해서 Shell Script를 생성하다보면 사용자에게 어떤 데이터를 입력 받아야 상황이 발생할 수 있다. 이런 경우에 사용할 수 있는 몇가지 방법에 대해 설명하고자 한다.</p>
+
+<p>우선 PHP 메뉴얼 중 <a href="http://php.net/manual/kr/features.commandline.io-streams.php">Input/output streams</a>에 있는 예시에 약간의 코드를 더해서 설명하겠다.</p>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="nv">$stdin</span> <span class="o">=</span> <span class="nb">fopen</span><span class="p">(</span><span class="s1">'php://stdin'</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">);</span>
+<span class="nv">$fileContents</span> <span class="o">=</span> <span class="nb">fread</span><span class="p">(</span><span class="nv">$stdin</span><span class="p">,</span> <span class="mi">1024</span><span class="p">);</span>
+<span class="nb">fclose</span><span class="p">(</span><span class="nv">$stdin</span><span class="p">);</span>
+
+<span class="k">echo</span> <span class="nv">$fileContents</span><span class="p">;</span>
+</code></pre>
+</div>
+
+<p>우선 위 방법은 fopen을 사용해서 사용자에게 입력 받는 방법이다. 이 방법은 사용자의 입력이 완료될 때(Enter 입력시)까지 대기하게 하거나 pipe(|)를 이용해 입력이 가능하다. 위 내용을 <code class="highlighter-rouge">fopenTest.php</code>로 저장했다면 아래와 같이 실행해 볼 수 있다. 그리고 1024는 입력의 최대 길이로 그 이상의 입력이 들어오면 무시된다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>php fopenTest.php
+<span class="nb">test</span> <span class="c"># 입력 후 Enter</span>
+<span class="nb">test</span>
+
+<span class="gp">$ </span><span class="nb">echo</span> <span class="s2">"test"</span> | php fopenTest.php
+<span class="nb">test</span>
+</code></pre>
+</div>
+
+<p>이와 동일한 역할로 다음과 같이 사용할 수도 있다.</p>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="k">echo</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">fgets</span><span class="p">(</span><span class="nx">STDIN</span><span class="p">));</span> <span class="c1">// reads one line from STDIN
+</span></code></pre>
+</div>
+
+<p>처음 코드와 동일하게 동작한다. 그리고 특정 형식으로 데이터를 입력받고 싶다면 아래와 같이 사용할 수도 있다.</p>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="nb">fscanf</span><span class="p">(</span><span class="nx">STDIN</span><span class="p">,</span> <span class="s2">"%d</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="nv">$number</span><span class="p">);</span> <span class="c1">// reads number from STDIN
+</span><span class="k">echo</span> <span class="nv">$number</span><span class="p">;</span>
+</code></pre>
+</div>
+
+<p>위 코드는 실행 결과는 약간 다른점이 있으니 아래의 실행 예시를 참고하자.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>php fopenTest.php
+<span class="nb">test</span> <span class="c"># 입력 후 Enter</span>
+<span class="c"># 입력값이 무시되어 아무값도 출력되지 않음</span>
+
+<span class="gp">$ </span>php fopenTest.php
+2test3 <span class="c"># 입력 후 Enter</span>
+2 <span class="c"># 2 이후의 입력값이 무시됨</span>
+
+<span class="gp">$ </span>php fopenTest.php
+123 <span class="c"># 입력 후 Enter</span>
+123 <span class="c"># 유효한 입력으로 123이 출력됨</span>
+
+<span class="gp">$ </span><span class="nb">echo</span> <span class="s2">"123"</span> | php fopenTest.php
+123 <span class="c"># 유효한 입력으로 123이 출력됨</span>
+</code></pre>
+</div>
 
 <hr />
 
-<p>우선 <a href="https://www.centos.org/download/">CentOS 7용 iso 이미지</a>를 내려 받는다. 나는 minimal을 선호하기 때문에 위 글의 설명과 달리 minimal을 다운 받았다.</p>
+<p>PHP에서는 다른 방법으로 <a href="http://php.net/manual/kr/function.readline.php">readline</a>을 사용하는 것이 가능하다. 예를들면 아래와 같이 확인해 볼 수 있다.</p>
 
-<p>해당 이미지가 있는 폴더에 가서 아래와 같이 dmg 파일을 우선 생성한다. 당연히 맥에서 작업해야 한다.</p>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="c1">//get 3 commands from user
+</span><span class="k">for</span> <span class="p">(</span><span class="nv">$i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$line</span> <span class="o">=</span> <span class="nb">readline</span><span class="p">(</span><span class="s2">"Command: "</span><span class="p">);</span>
+        <span class="nb">readline_add_history</span><span class="p">(</span><span class="nv">$line</span><span class="p">);</span>
+<span class="p">}</span>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>hdiutil convert -format UDRW -o target.img CentOS-7-x86_64-Minimal-1511.iso
+<span class="c1">//dump history
+</span><span class="nb">print_r</span><span class="p">(</span><span class="nb">readline_list_history</span><span class="p">());</span>
 
-Master Boot Record<span class="o">(</span>MBR : 0<span class="o">)</span> 읽는 중...
-CentOS 7 x86_64                 <span class="o">(</span>Apple_ISO : 1<span class="o">)</span> 읽는 중...
-<span class="o">(</span>Type EF : 2<span class="o">)</span> 읽는 중...
-.
-CentOS 7 x86_64                 <span class="o">(</span>Apple_ISO : 3<span class="o">)</span> 읽는 중...
-....................................................................................................................................................................
-경과 시간: 661.204ms
-속도: 912.0Mbytes/초
-저장: 0.0%
-created: /Users/yjyou/Downloads/target.img.dmg
+<span class="c1">//dump variables
+</span><span class="nb">print_r</span><span class="p">(</span><span class="nb">readline_info</span><span class="p">());</span>
 </code></pre>
 </div>
 
-<p>부트 이미지를 담을 USB를 연결한 다음 아래와 같이 <code class="highlighter-rouge">diskutil</code>을 사용해서 disk 번호를 확인한다.</p>
+<p>그런데 이 함수는 제약조건이 있다. 메뉴얼에 따르면 <a href="http://php.net/manual/kr/function.readline-list-history.php">readline_list_history</a>는 <code class="highlighter-rouge">libreadline</code>과 함께 컴파일되어야만 사용할 수 있다고 되어 있다. 그래서 위 예시는 제대로 테스트 해보지 못했다.</p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>diskutil list
+<hr />
 
-/dev/disk0 <span class="o">(</span>internal, physical<span class="o">)</span>:
-   <span class="c">#:                       TYPE NAME                    SIZE       IDENTIFIER</span>
-   0:      GUID_partition_scheme                        <span class="k">*</span>500.3 GB   disk0
-   1:                        EFI EFI                     209.7 MB   disk0s1
-   2:          Apple_CoreStorage Macintosh HD            250.5 GB   disk0s2
-   3:                 Apple_Boot Recovery HD             650.0 MB   disk0s3
-   4:                  Apple_HFS DATA                    248.8 GB   disk0s4
-/dev/disk1 <span class="o">(</span>internal, virtual<span class="o">)</span>:
-   <span class="c">#:                       TYPE NAME                    SIZE       IDENTIFIER</span>
-   0:                  Apple_HFS Macintosh HD           +250.1 GB   disk1
-                                 Logical Volume on disk0s2
-                                 55AC6B2F-B3B4-450F-B4DE-E025311E9955
-                                 Unencrypted
-/dev/disk2 <span class="o">(</span>external, physical<span class="o">)</span>:
-   <span class="c">#:                       TYPE NAME                    SIZE       IDENTIFIER</span>
-   0:      GUID_partition_scheme                        <span class="k">*</span>15.8 GB    disk2
-   1:                        EFI EFI                     209.7 MB   disk2s1
-   2:       Microsoft Basic Data USB                     15.6 GB    disk2s2
+<p>그렇다면 사용자에게 한글자의 입력만 받고 싶다면 어떻게하면 될까? 아래의 예시를 보자.</p>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="k">echo</span> <span class="s1">'변경 후에는 복구할 수 없습니다. 변경하시겠습니까? (y/n) '</span><span class="p">;</span>
+<span class="nv">$input</span> <span class="o">=</span> <span class="nb">fgetc</span><span class="p">(</span><span class="nx">STDIN</span><span class="p">);</span>
 </code></pre>
 </div>
 
-<p>나의 경우는 <code class="highlighter-rouge">/dev/disk2</code>에 mount 되어 있었다. <strong>이후의 과정에서는 당연히 자신에게 맞는 disk 번호를 사용해야 한다.</strong></p>
+<p>위 코드를 실행하면 한글자만 입력을 받게 되지만 한글자를 입력하고 Enter를 눌러야 한다. 그럼 그냥 한글자를 입력하면 바로 입력을 완료하고자 한다면 어떻게 할까? 아래에 그 답이 있다.</p>
 
-<p>우선 USB를 unmount 한다.</p>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="k">echo</span> <span class="s1">'변경 후에는 복구할 수 없습니다. 변경하시겠습니까? (y/n) '</span><span class="p">;</span>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$  </span>diskutil unmountDisk /dev/disk2
+<span class="nb">readline_callback_handler_install</span><span class="p">(</span><span class="s1">''</span><span class="p">,</span> <span class="k">function</span> <span class="p">()</span> <span class="p">{</span>
+<span class="p">});</span>
+<span class="k">while</span> <span class="p">(</span><span class="kc">true</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nv">$r</span> <span class="o">=</span> <span class="p">[</span><span class="nx">STDIN</span><span class="p">];</span>
+  <span class="nv">$w</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+  <span class="nv">$e</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+  <span class="nv">$n</span> <span class="o">=</span> <span class="nb">stream_select</span><span class="p">(</span><span class="nv">$r</span><span class="p">,</span> <span class="nv">$w</span><span class="p">,</span> <span class="nv">$e</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nv">$n</span> <span class="o">&amp;&amp;</span> <span class="nb">in_array</span><span class="p">(</span><span class="nx">STDIN</span><span class="p">,</span> <span class="nv">$r</span><span class="p">))</span> <span class="p">{</span>
+    <span class="nv">$c</span> <span class="o">=</span> <span class="nb">stream_get_contents</span><span class="p">(</span><span class="nx">STDIN</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">strcasecmp</span><span class="p">(</span><span class="nv">$c</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">echo</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">작업을 취소함</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span>
+      <span class="k">exit</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">break</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
 
-Unmount of all volumes on disk2 was successful
+<span class="k">echo</span> <span class="s2">"변경 완료</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span>
 </code></pre>
 </div>
 
-<p>이제는 실제로 위에 만든 dmg 이미지를 이용해서 부트 USB를 만든다.</p>
-
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span><span class="nb">time </span>sudo dd <span class="k">if</span><span class="o">=</span>target.img.dmg <span class="nv">of</span><span class="o">=</span>/dev/disk2 <span class="nv">bs</span><span class="o">=</span>1m
-
-602+1 records <span class="k">in
-</span>602+1 records out
-632262656 bytes transferred <span class="k">in </span>155.872514 secs <span class="o">(</span>4056281 bytes/sec<span class="o">)</span>
-
-real	2m36.025s
-user	0m0.006s
-sys	0m2.548s
-</code></pre>
-</div>
-
-<p>이미지를 만드는데 시간이 조금 소요되니 걱정하지 말고 기다리자. 그리고 생성되고 나면 해당 디스크를 인식할 수 없다고 자동적으로 추출된다. 이제는 USB를 빼서 설치할 맥 미니에 연결하고 부팅한다. 당연히 <code class="highlighter-rouge">alt/option</code>를 누르고 부팅해서 부팅 디스크를 선택하는 화면으로 진입해야 한다.</p>
-
-<p>이후 과정을 진행하기 전에 파티션의 변경이 필요하다면 미리 맥 미니 내에서 설정해 두어야 한다. 나의 경우를 보자면 500G의 디스크를 2개의 파티션으로 나누고 복구 파티션까지 3개가 있었다. 처음엔 복구 파티션을 두고 두개의 파티션을 CentOS 설치 과정에서 묶으려고 했는데 복구 파티션이 두개 파티션 사이에 위치해 합칠 수 없었다. 그래서 맥에서 두개의 파티션을 합쳐주고 다시 설치했다. 사실은 이 과정은 복구 파티션을 두려고 했던 것인데 실제 CentOS를 설치하면서 복구 파티션도 날렸다(원하지 않았지만). 이렇게되면 위 과정이 필요없었을 수 있지만 혹시나해서 남겨둔다.</p>
-
-<p>이제부터는 일반적으로 CentOS를 설치하는 것과 동일하게 설치하면 된다. 설치 방법이 궁금하다면 <a href="/2015/10/14/centos-7-minimal-install/">CentOS 7 minimal 설치</a>를  참고해도 된다.</p>
-
-<p>마지막으로 중요한 부분이 있다. 파티션 설치시 <code class="highlighter-rouge">/boot/efi</code>을 별도로 지정해야 한다는 것이다. 일반적인 설치에서는 하지 않던 작업인데 맥 미니의 경우 해당 파티션이 기본적으로 없어서 그런 것인지 지정하지 않으면 파티셔닝이 완료되지 않았다. <code class="highlighter-rouge">/boot/efi</code>의 용량은 최소 100MB를 지정하도록 권장하는 것 같다. 이 부분 또한 자동 파티셔닝이 아닌 사용자 지정 파티션을 사용해서 발생한 문제일지도 모르겠다. 하지만 개인적인 생각으로 “맥 미니에서 다른 CentOS 설치시 잘 안되는 경우는 이것 때문이지 않을까?”해서 경험을 남겨둔다.</p>
-
-<p>이후부터는 정말 CentOS 설치와 동일하다(일단 나의 경우엔).</p>
+<p>나의 경우엔 위 스크립트를 사용해야하는 상황이 가장 많은 것 같다. 위험한 동작을 실행하기전 다시 한번 확인하는 것이 정신 건강에 이롭다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -215,8 +250,8 @@ sys	0m2.548s
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/02/02/installing-centos-7-on-an-apple-mac-mini/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/02/02/installing-centos-7-on-an-apple-mac-mini/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/02/10/php-stdin/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/02/10/php-stdin/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

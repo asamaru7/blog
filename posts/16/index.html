@@ -113,28 +113,40 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/10/19/mac-os-git-korean-file-name-error/">
-								Mac 에서 git 사용시 한글 파일명 문제
+							<a class="title" href="https://blog.asamaru.net/2016/11/01/nokogiri-libxml2-missing-mac-os-x-10-12/">
+								OSX에서 Nokogiri 설치시 &#39;Libxml2 missing.&#39; 오류 해결
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/10/19/mac-os-git-korean-file-name-error/">2016.10.19.</span></a>
+								<a href="https://blog.asamaru.net/2016/11/01/nokogiri-libxml2-missing-mac-os-x-10-12/">2016.11.01.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>맥에서 git 사용시 파일이 한글로되어 있을 경우 해당 파일을 제대로 인식하지 못하는 문제가 있다. 맥에서의 한글 문제야 어제 오늘의 문제도 아니긴 하지만 한글 파일명을 사용해야 할 경우는 상당히 불편하다. 방법을 예전부터 찾고 있었는데 얼마전 우연히 관련 자료를 찾았다. 그래서 간단히 해결 방법만 남긴다.</p>
+							<p>OSX (sierra)에서 jekyll을 설치하던 중 <a href="http://www.nokogiri.org/">Nokogiri</a>가 설치되는 과정에서 아래의 오류가 발생하고 더 이상이 진행되지 않는 문제가 발생했다.</p>
 
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code>git config --global core.precomposeunicode <span class="nb">true
-</span>git config --local core.precomposeunicode <span class="nb">true</span>
+<blockquote>
+  <p>libxml2 is missing.  Please locate mkmf.log to investigate how it is failing.</p>
+</blockquote>
+
+<p>이 문제는 libxml2가 설치되지 않아서 발생하는 문제로 libxml2부터 설치해야 한다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>brew install libxml2
 </code></pre>
 </div>
 
-<blockquote>
-  <p><a href="http://git-scm.com/docs/git-config">Git Documentation</a></p>
+<p>그런데 설치 후에도 동일한 문제가 발생한다면 <a href="http://www.nokogiri.org/">Nokogiri</a>를 직접 설치하면 된다.</p>
 
-  <p><strong>core.precomposeUnicode</strong></p>
+<p><a href="http://stackoverflow.com/questions/26878263/libxml2-missing-mac-os-x-10-10">Libxml2 missing mac os x 10.10</a> 글에 보면 아래와 같은 방법을 제시하고 있으나 정상적으로 동작하지 않았다.</p>
 
-  <p>This option is only used by Mac OS implementation of Git. When core.precomposeUnicode=true, Git reverts the unicode decomposition of filenames done by Mac OS. This is useful when sharing a repository between Mac OS and Linux or Windows. (Git for Windows 1.7.10 or higher is needed, or Git under cygwin 1.7). When false, file names are handled fully transparent by Git, which is backward compatible with older versions of Git.</p>
-</blockquote>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>sudo env <span class="nv">ARCHFLAGS</span><span class="o">=</span><span class="s2">"-arch x86_64"</span> gem install nokogiri:1.6.4.1 -- --use-system-libraries --with-xml<span class="o">=</span>/usr/local/Cellar/libxml2/
+</code></pre>
+</div>
+
+<p>나의 경우는 아래와 같이 실행하면 정상적으로 Nokogiri를 설치할 수 있었다.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>gem install pkg-config -v <span class="s2">"~&gt; 1.1.7"</span>
+<span class="gp">$ </span>sudo gem install -n /usr/local/bin nokogiri -- --use-system-libraries<span class="o">=</span><span class="nb">true</span> --with-xml2-include<span class="o">=</span>/usr/include/libxml2/
+</code></pre>
+</div>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -148,8 +160,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/10/19/mac-os-git-korean-file-name-error/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/10/19/mac-os-git-korean-file-name-error/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/11/01/nokogiri-libxml2-missing-mac-os-x-10-12/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/11/01/nokogiri-libxml2-missing-mac-os-x-10-12/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

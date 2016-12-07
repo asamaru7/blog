@@ -1,5 +1,289 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet type="text/xml" href="https://blog.asamaru.net/feed.xslt.xml"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.2.1">Jekyll</generator><link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" /><link href="https://blog.asamaru.net/" rel="alternate" type="text/html" /><updated>2016-12-07T10:31:01+09:00</updated><id>https://blog.asamaru.net/</id><title type="html">이 세상에 하나는 남기고 가자</title><subtitle>세상에 필요한 소스코드 한줄 남기고 가자.
-</subtitle><author><name>유영재</name></author><entry><title type="html">Windows에서 네트워크 상의 공유 폴더 연결 끊기(로그인 아이디/암호를 저장했을 경우)</title><link href="https://blog.asamaru.net/2016/12/06/windows-shared-network-folder-disconnect/" rel="alternate" type="text/html" title="Windows에서 네트워크 상의 공유 폴더 연결 끊기(로그인 아이디/암호를 저장했을 경우)" /><published>2016-12-06T21:48:00+09:00</published><updated>2016-12-06T21:48:00+09:00</updated><id>https://blog.asamaru.net/2016/12/06/windows-shared-network-folder-disconnect</id><content type="html" xml:base="https://blog.asamaru.net/2016/12/06/windows-shared-network-folder-disconnect/">&lt;p&gt;네트워크 상에 공유된 폴더를 연결하게되면 아이디/암호를 넣게되는 경우가 있는데 이때 암호를 저장 했다면 이후부터는 연결시 항상 그 계정을 사용하게 된다. 흔한 경우는 아니지만 이 계정을 변경하려는 경우 기존에 저장된 계정을 제거해야 하는데 그 방법은 아래와 같은 것들이 있다.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet type="text/xml" href="https://blog.asamaru.net/feed.xslt.xml"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.2.1">Jekyll</generator><link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" /><link href="https://blog.asamaru.net/" rel="alternate" type="text/html" /><updated>2016-12-07T21:28:17+09:00</updated><id>https://blog.asamaru.net/</id><title type="html">이 세상에 하나는 남기고 가자</title><subtitle>세상에 필요한 소스코드 한줄 남기고 가자.
+</subtitle><author><name>유영재</name></author><entry><title type="html">Theme.NoDisplay 테마 사용시 안드로이드 API 23에서 did not call finish() prior to onResume() completing 오류 발생</title><link href="https://blog.asamaru.net/2016/12/07/android-theme-nodisplay-did-not-call-finish-prior-to-onresume-completing/" rel="alternate" type="text/html" title="Theme.NoDisplay 테마 사용시 안드로이드 API 23에서 did not call finish() prior to onResume() completing 오류 발생" /><published>2016-12-07T20:40:04+09:00</published><updated>2016-12-07T20:40:04+09:00</updated><id>https://blog.asamaru.net/2016/12/07/android-theme-nodisplay-did-not-call-finish-prior-to-onresume-completing</id><content type="html" xml:base="https://blog.asamaru.net/2016/12/07/android-theme-nodisplay-did-not-call-finish-prior-to-onresume-completing/">&lt;p&gt;눈에 보이지 않는 Activity를 생성하기 위해 “Theme.NoDisplay” 테마를 사용한 앱에서 오류가 발생했다. 오류 내용을 보면 onResume()이 호출되기 전에 finish()가 호출되지 않았다는 것이다.
+확인해보니 “Theme.NoDisplay” 테마가 사용된 Activity는 윈도우 자체가 생성되지 않기 때문에 onResume()이 호출되기 전에 finish()가 호출되어야 하는 조건이 있다. 예를들면 아래와 같다.&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;NoDisplayActivity&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Activity&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;  
+    &lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;  
+    &lt;span class=&quot;kd&quot;&gt;protected&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;onCreate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Bundle&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;savedInstanceState&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;  
+        &lt;span class=&quot;kd&quot;&gt;super&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;onCreate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;savedInstanceState&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;  
+        &lt;span class=&quot;n&quot;&gt;finish&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;  
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;  
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;  
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;이와 관련된 내용은 &lt;a href=&quot;https://commonsware.com/blog/2015/11/02/psa-android-6p0-theme.nodisplay-regression.html&quot;&gt;PSA: Android 6.0 Theme.NoDisplay Regression&lt;/a&gt;에서 자세히 설명하고 있다. 이 글에 따르면 Android 6.0의 문서화되지 않은 변경으로 인해 targetSdkVersion이 23 이상에서 실행시 오류가 발생할 수 있다고 경고하고 있다.&lt;/p&gt;
+
+&lt;p&gt;이 문제는 “Android M developer preview의 버그다(&lt;a href=&quot;https://web.archive.org/web/20151116170752/https://code.google.com/p/android-developer-preview/issues/detail?id=2353&quot;&gt;Issue 2353:	Activity crash with @android:style/Theme.NoDisplay&lt;/a&gt;)”라는 이야기도 있으나 실제 Android 6에서 오류가 발생하고 있으므로 버그라 하더라도 무시할 수 없다.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;나도 이번 작업에서 이 문제를 겪게 되었다. 나의 경우 targetSdkVersion이 24 였으며 오류가 보고된 기기는 모두 API 23(Android 6.0) 버전이었다.&lt;/p&gt;
+
+&lt;p&gt;이 문제에 대한 근본적인 문제 해결 방법은 onCreate() 또는 onStart() 단계에서 finish()를 호출하는 것이다. 비동기 처리 등의 상황으로 인해 이렇게 할 수 없는 상황이라면 &lt;strong&gt;Theme.NoDisplay 테마를 사용하지 말고 &lt;a href=&quot;/2016/12/07/android-transparent-no-display-activity/&quot;&gt;Android 투명 / 보이지 않는 Activity 만들기(Theme.Translucent / Theme.NoDisplay)&lt;/a&gt;에서 안내한 것과 같이 투명한 Activity를 만들어서 적용하는 방법&lt;/strong&gt; 을 써야 한다.&lt;/p&gt;
+
+&lt;p&gt;위에서 언급한 비동기 처리 외에도 requestPermissions()을 사용하는 것과 같이 startActivityForResult()를 사용하게 되는 상황 등에서도 동일한 문제가 발생할 수 있다.&lt;/p&gt;
+
+&lt;p&gt;다른 해결 방법으로 아래와 같이 onStart() 함수에서 &lt;code class=&quot;highlighter-rouge&quot;&gt;setVisible(true);&lt;/code&gt;를 호출해서 해결했다는 이야기도 있으나 해결되지 않는다는 이야기들이 있어 안전한 방법이라고 할 수 없다.&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;protected&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;onStart&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;super&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;onStart&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;setVisible&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;결론적으로 내가 생각하는 가장 쉽고 안전한 방법은 투명한 Activity를 이용해서 NoDisplay를 대체 구현하는 것이다.&lt;/p&gt;
+
+&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;style&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;NoDisplay&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;parent=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:Theme&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowIsTranslucent&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowBackground&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@android:color/transparent&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowContentOverlay&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@null&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowNoTitle&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowIsFloating&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:backgroundDimEnabled&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;false&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:colorBackgroundCacheHint&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@null&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowAnimationStyle&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@android:style/Animation&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowFullscreen&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;</content><author><name>유영재</name></author><summary type="html">눈에 보이지 않는 Activity를 생성하기 위해 “Theme.NoDisplay” 테마를 사용한 앱에서 오류가 발생했다. 오류 내용을 보면 onResume()이 호출되기 전에 finish()가 호출되지 않았다는 것이다.
+확인해보니 “Theme.NoDisplay” 테마가 사용된 Activity는 윈도우 자체가 생성되지 않기 때문에 onResume()이 호출되기 전에 finish()가 호출되어야 하는 조건이 있다. 예를들면 아래와 같다.
+
+public class NoDisplayActivity extends Activity {  
+    @Override  
+    protected void onCreate(Bundle savedInstanceState) {  
+        super.onCreate(savedInstanceState);  
+        finish();  
+    }  
+}  
+
+
+
+이와 관련된 내용은 PSA: Android 6.0 Theme.NoDisplay Regression에서 자세히 설명하고 있다. 이 글에 따르면 Android 6.0의 문서화되지 않은 변경으로 인해 targetSdkVersion이 23 이상에서 실행시 오류가 발생할 수 있다고 경고하고 있다.
+
+이 문제는 “Android M developer preview의 버그다(Issue 2353:	Activity crash with @android:style/Theme.NoDisplay)”라는 이야기도 있으나 실제 Android 6에서 오류가 발생하고 있으므로 버그라 하더라도 무시할 수 없다.
+
+
+
+나도 이번 작업에서 이 문제를 겪게 되었다. 나의 경우 targetSdkVersion이 24 였으며 오류가 보고된 기기는 모두 API 23(Android 6.0) 버전이었다.
+
+이 문제에 대한 근본적인 문제 해결 방법은 onCreate() 또는 onStart() 단계에서 finish()를 호출하는 것이다. 비동기 처리 등의 상황으로 인해 이렇게 할 수 없는 상황이라면 Theme.NoDisplay 테마를 사용하지 말고 Android 투명 / 보이지 않는 Activity 만들기(Theme.Translucent / Theme.NoDisplay)에서 안내한 것과 같이 투명한 Activity를 만들어서 적용하는 방법 을 써야 한다.
+
+위에서 언급한 비동기 처리 외에도 requestPermissions()을 사용하는 것과 같이 startActivityForResult()를 사용하게 되는 상황 등에서도 동일한 문제가 발생할 수 있다.
+
+다른 해결 방법으로 아래와 같이 onStart() 함수에서 setVisible(true);를 호출해서 해결했다는 이야기도 있으나 해결되지 않는다는 이야기들이 있어 안전한 방법이라고 할 수 없다.
+
+@Override
+protected void onStart() {
+    super.onStart();
+    setVisible(true);
+}
+
+
+
+
+
+결론적으로 내가 생각하는 가장 쉽고 안전한 방법은 투명한 Activity를 이용해서 NoDisplay를 대체 구현하는 것이다.
+
+&amp;lt;style name=&quot;NoDisplay&quot; parent=&quot;android:Theme&quot;&amp;gt;
+  &amp;lt;item name=&quot;android:windowIsTranslucent&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+  &amp;lt;item name=&quot;android:windowBackground&quot;&amp;gt;@android:color/transparent&amp;lt;/item&amp;gt;
+  &amp;lt;item name=&quot;android:windowContentOverlay&quot;&amp;gt;@null&amp;lt;/item&amp;gt;
+  &amp;lt;item name=&quot;android:windowNoTitle&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+
+  &amp;lt;item name=&quot;android:windowIsFloating&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+  &amp;lt;item name=&quot;android:backgroundDimEnabled&quot;&amp;gt;false&amp;lt;/item&amp;gt;
+
+  &amp;lt;item name=&quot;android:colorBackgroundCacheHint&quot;&amp;gt;@null&amp;lt;/item&amp;gt;
+  &amp;lt;item name=&quot;android:windowAnimationStyle&quot;&amp;gt;@android:style/Animation&amp;lt;/item&amp;gt;
+  &amp;lt;item name=&quot;android:windowFullscreen&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+&amp;lt;/style&amp;gt;</summary></entry><entry><title type="html">Android 투명 / 보이지 않는 Activity 만들기(Theme.Translucent / Theme.NoDisplay)</title><link href="https://blog.asamaru.net/2016/12/07/android-transparent-no-display-activity/" rel="alternate" type="text/html" title="Android 투명 / 보이지 않는 Activity 만들기(Theme.Translucent / Theme.NoDisplay)" /><published>2016-12-07T20:09:06+09:00</published><updated>2016-12-07T20:09:06+09:00</updated><id>https://blog.asamaru.net/2016/12/07/android-transparent-no-display-activity</id><content type="html" xml:base="https://blog.asamaru.net/2016/12/07/android-transparent-no-display-activity/">&lt;p&gt;안드로이드에서 투명한 배경을 가진 Activity나 눈에 보이지 않는 Activity를 만드는 방법 중 가장 쉬운 방법은 Activity의 Theme를 사용하는 것이다. 이러한 Activity를 구성하기 위해 안드로이드에서 제공되는 테마 몇가지를 알아보자.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;아래에 나오는 각 테마의 설정 내용은 Android SDK 24 기준임을 참고하기 바란다.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;themetranslucent&quot;&gt;Theme.Translucent&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://kairo96.gitbooks.io/android/content/ch4.11.html&quot;&gt;&lt;/a&gt;
+Theme.Translucent 테마는 안드로이드 3.0 이전부터 존재한 테마로 투명한 배경을 가진 Activity를 만들때 사용할 수 있는 테마다. 일반적으로 구버전의 안드로이드까지 정확히 지원하려면 Theme.Translucent.NoTitleBar를 사용해서 투명한 배경을 가진 Activity를 만들어야 한다.&lt;/p&gt;
+
+&lt;p&gt;이 테마는 아래의 3가지 형태로 나뉜다. 각각의 특성은 이름과 설정 내용을 보면 바로 알 수 있다.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Theme.Translucent&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;style&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Theme.Translucent&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;windowBackground&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@color/transparent&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;colorBackgroundCacheHint&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@null&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;windowIsTranslucent&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Note that we use the base animation style here (that is no
+         animations) because we really have no idea how this kind of
+         activity will be used. --&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;windowAnimationStyle&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@style/Animation&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Theme.Translucent.NoTitleBar&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;style&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Theme.Translucent.NoTitleBar&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;windowNoTitle&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;windowContentOverlay&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@null&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Theme.Translucent.NoTitleBar_Fullscreen&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;style&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Theme.Translucent.NoTitleBar.Fullscreen&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;windowFullscreen&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;기본적으로 제공되는 위 테마를 사용하는 것도 괜찮으나 필요하다면 아래와 같이 필요한 설정을 추가해서 재정의한 테마를 사용할 수 있다.&lt;/p&gt;
+
+&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;style&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;NoDisplay&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;parent=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:Theme&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowIsTranslucent&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowBackground&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@android:color/transparent&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowContentOverlay&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@null&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowNoTitle&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowIsFloating&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:backgroundDimEnabled&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;false&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:colorBackgroundCacheHint&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@null&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowAnimationStyle&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@android:style/Animation&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;android:windowFullscreen&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;themenodisplay&quot;&gt;Theme.NoDisplay&lt;/h3&gt;
+
+&lt;p&gt;Theme.NoDisplay 테마는 Activity를 투명하게 만드는 것이 아니라 아예 보이지 않는 Activity를 만들어 준다.&lt;/p&gt;
+
+&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;style&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Theme.NoDisplay&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;windowBackground&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@null&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;windowContentOverlay&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@null&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;windowIsTranslucent&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;windowAnimationStyle&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;@null&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;windowDisablePreview&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;item&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;windowNoDisplay&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;이 테마를 사용할 때는 유의할 점이 있다. &lt;code class=&quot;highlighter-rouge&quot;&gt;did not call finish() prior to onResume() completing&lt;/code&gt; 오류가 발생할 수 있기 때문이다. Theme.NoDisplay 테마를 사용하는 경우에는 onResume 함수가 호출되기 전에 finish()가 호출되어야 하는데 이를 어길 경우 앱에서 오류가 발생한다.
+이와 관련해서는 &lt;a href=&quot;/2016/12/07/android-theme-nodisplay-did-not-call-finish-prior-to-onresume-completing/&quot;&gt;Theme.NoDisplay 테마 사용시 안드로이드 API 23에서 did not call finish() prior to onResume() completing 오류 발생&lt;/a&gt;에서 조금 더 자세히 다룬다.&lt;/p&gt;
+
+&lt;p&gt;마지막으로 &lt;a href=&quot;http://androidblog.reindustries.com/android-cheats-and-tips-invisible-activity/&quot;&gt;Android cheats and tips: Invisible activity&lt;/a&gt;라는 글도 참고하면 좋을 듯하다. 필요에 따라 &lt;code class=&quot;highlighter-rouge&quot;&gt;android:noHistory&lt;/code&gt;와 &lt;code class=&quot;highlighter-rouge&quot;&gt;android:excludeFromRecents=&quot;true&quot;&lt;/code&gt;를 함께 사용함으로써 history와 최근 사용 항목에 남지 않는 Activity를 생성하는 부분을 안내하고 있다.&lt;/p&gt;</content><author><name>유영재</name></author><summary type="html">안드로이드에서 투명한 배경을 가진 Activity나 눈에 보이지 않는 Activity를 만드는 방법 중 가장 쉬운 방법은 Activity의 Theme를 사용하는 것이다. 이러한 Activity를 구성하기 위해 안드로이드에서 제공되는 테마 몇가지를 알아보자.
+
+
+  아래에 나오는 각 테마의 설정 내용은 Android SDK 24 기준임을 참고하기 바란다.
+
+
+
+
+Theme.Translucent
+
+
+Theme.Translucent 테마는 안드로이드 3.0 이전부터 존재한 테마로 투명한 배경을 가진 Activity를 만들때 사용할 수 있는 테마다. 일반적으로 구버전의 안드로이드까지 정확히 지원하려면 Theme.Translucent.NoTitleBar를 사용해서 투명한 배경을 가진 Activity를 만들어야 한다.
+
+이 테마는 아래의 3가지 형태로 나뉜다. 각각의 특성은 이름과 설정 내용을 보면 바로 알 수 있다.
+
+
+  Theme.Translucent
+
+
+&amp;lt;style name=&quot;Theme.Translucent&quot;&amp;gt;
+    &amp;lt;item name=&quot;windowBackground&quot;&amp;gt;@color/transparent&amp;lt;/item&amp;gt;
+    &amp;lt;item name=&quot;colorBackgroundCacheHint&quot;&amp;gt;@null&amp;lt;/item&amp;gt;
+    &amp;lt;item name=&quot;windowIsTranslucent&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+    &amp;lt;!-- Note that we use the base animation style here (that is no
+         animations) because we really have no idea how this kind of
+         activity will be used. --&amp;gt;
+    &amp;lt;item name=&quot;windowAnimationStyle&quot;&amp;gt;@style/Animation&amp;lt;/item&amp;gt;
+&amp;lt;/style&amp;gt;
+
+
+
+
+  Theme.Translucent.NoTitleBar
+
+
+&amp;lt;style name=&quot;Theme.Translucent.NoTitleBar&quot;&amp;gt;
+    &amp;lt;item name=&quot;windowNoTitle&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+    &amp;lt;item name=&quot;windowContentOverlay&quot;&amp;gt;@null&amp;lt;/item&amp;gt;
+&amp;lt;/style&amp;gt;
+
+
+
+
+  Theme.Translucent.NoTitleBar_Fullscreen
+
+
+&amp;lt;style name=&quot;Theme.Translucent.NoTitleBar.Fullscreen&quot;&amp;gt;
+    &amp;lt;item name=&quot;windowFullscreen&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+&amp;lt;/style&amp;gt;
+
+
+
+기본적으로 제공되는 위 테마를 사용하는 것도 괜찮으나 필요하다면 아래와 같이 필요한 설정을 추가해서 재정의한 테마를 사용할 수 있다.
+
+&amp;lt;style name=&quot;NoDisplay&quot; parent=&quot;android:Theme&quot;&amp;gt;
+  &amp;lt;item name=&quot;android:windowIsTranslucent&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+  &amp;lt;item name=&quot;android:windowBackground&quot;&amp;gt;@android:color/transparent&amp;lt;/item&amp;gt;
+  &amp;lt;item name=&quot;android:windowContentOverlay&quot;&amp;gt;@null&amp;lt;/item&amp;gt;
+  &amp;lt;item name=&quot;android:windowNoTitle&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+
+  &amp;lt;item name=&quot;android:windowIsFloating&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+  &amp;lt;item name=&quot;android:backgroundDimEnabled&quot;&amp;gt;false&amp;lt;/item&amp;gt;
+
+  &amp;lt;item name=&quot;android:colorBackgroundCacheHint&quot;&amp;gt;@null&amp;lt;/item&amp;gt;
+  &amp;lt;item name=&quot;android:windowAnimationStyle&quot;&amp;gt;@android:style/Animation&amp;lt;/item&amp;gt;
+  &amp;lt;item name=&quot;android:windowFullscreen&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+&amp;lt;/style&amp;gt;
+
+
+
+
+
+Theme.NoDisplay
+
+Theme.NoDisplay 테마는 Activity를 투명하게 만드는 것이 아니라 아예 보이지 않는 Activity를 만들어 준다.
+
+&amp;lt;style name=&quot;Theme.NoDisplay&quot;&amp;gt;
+    &amp;lt;item name=&quot;windowBackground&quot;&amp;gt;@null&amp;lt;/item&amp;gt;
+    &amp;lt;item name=&quot;windowContentOverlay&quot;&amp;gt;@null&amp;lt;/item&amp;gt;
+    &amp;lt;item name=&quot;windowIsTranslucent&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+    &amp;lt;item name=&quot;windowAnimationStyle&quot;&amp;gt;@null&amp;lt;/item&amp;gt;
+    &amp;lt;item name=&quot;windowDisablePreview&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+    &amp;lt;item name=&quot;windowNoDisplay&quot;&amp;gt;true&amp;lt;/item&amp;gt;
+&amp;lt;/style&amp;gt;
+
+
+
+이 테마를 사용할 때는 유의할 점이 있다. did not call finish() prior to onResume() completing 오류가 발생할 수 있기 때문이다. Theme.NoDisplay 테마를 사용하는 경우에는 onResume 함수가 호출되기 전에 finish()가 호출되어야 하는데 이를 어길 경우 앱에서 오류가 발생한다.
+이와 관련해서는 Theme.NoDisplay 테마 사용시 안드로이드 API 23에서 did not call finish() prior to onResume() completing 오류 발생에서 조금 더 자세히 다룬다.
+
+마지막으로 Android cheats and tips: Invisible activity라는 글도 참고하면 좋을 듯하다. 필요에 따라 android:noHistory와 android:excludeFromRecents=&quot;true&quot;를 함께 사용함으로써 history와 최근 사용 항목에 남지 않는 Activity를 생성하는 부분을 안내하고 있다.</summary></entry><entry><title type="html">Windows에서 네트워크 상의 공유 폴더 연결 끊기(로그인 아이디/암호를 저장했을 경우)</title><link href="https://blog.asamaru.net/2016/12/06/windows-shared-network-folder-disconnect/" rel="alternate" type="text/html" title="Windows에서 네트워크 상의 공유 폴더 연결 끊기(로그인 아이디/암호를 저장했을 경우)" /><published>2016-12-06T21:48:00+09:00</published><updated>2016-12-06T21:48:00+09:00</updated><id>https://blog.asamaru.net/2016/12/06/windows-shared-network-folder-disconnect</id><content type="html" xml:base="https://blog.asamaru.net/2016/12/06/windows-shared-network-folder-disconnect/">&lt;p&gt;네트워크 상에 공유된 폴더를 연결하게되면 아이디/암호를 넣게되는 경우가 있는데 이때 암호를 저장 했다면 이후부터는 연결시 항상 그 계정을 사용하게 된다. 흔한 경우는 아니지만 이 계정을 변경하려는 경우 기존에 저장된 계정을 제거해야 하는데 그 방법은 아래와 같은 것들이 있다.&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;net use * /d&lt;/code&gt; 를 사용하여 기존의 접속을 끊고 다시 연결한다.&lt;/li&gt;
@@ -660,242 +944,4 @@ find . -empty -type d -delete -print
 
 빈 디렉토리를 찾기만 하려면 -delete를 제외하면 되고 반대로 출력없이 모두 지우려면 -print를 제외하면 된다.
 
-폴더를 지정하려면 당연히 . 대신에 원하는 경로를 넣으면 되고 find의 다양한 옵션을 사용해서 원하는 조건을 추가해서 처리 할 수 있다.</summary></entry><entry><title type="html">PHP에서 NFD(Normalization Form D) / NFC(Normalization Form C) 변환</title><link href="https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc/" rel="alternate" type="text/html" title="PHP에서 NFD(Normalization Form D) / NFC(Normalization Form C) 변환" /><published>2016-11-15T13:57:44+09:00</published><updated>2016-11-15T13:57:44+09:00</updated><id>https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc</id><content type="html" xml:base="https://blog.asamaru.net/2016/11/15/php-nfd-to-nfc/">&lt;p&gt;Mac OSX는 경우 문자열을 &lt;a href=&quot;http://unicode.org/reports/tr15/&quot;&gt;Unicode Normalization Forms&lt;/a&gt; 중 NFD(소리 마디를 첫가끝 코드로 분해)로 처리한다(일반적으로는 NFC(첫가끝 코드를 소리 마디로 결합)를 사용).
-이는 한글(&lt;a href=&quot;http://www.unicode.org/charts/PDF/UAC00.pdf&quot;&gt;U+AC00&lt;/a&gt;) 영역을 사용하는 곳에서는 한글이 모두 풀어진 상태로 보이는 문제가 있다.
-따라서 &lt;a href=&quot;http://www.unicode.org/charts/PDF/U1100.pdf&quot;&gt;U+1100&lt;/a&gt; 영역을 &lt;a href=&quot;http://www.unicode.org/charts/PDF/UAC00.pdf&quot;&gt;U+AC00&lt;/a&gt; 영역으로 변환하는 과정이 필요하다.&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://d2.naver.com/helloworld/76650&quot;&gt;한글 인코딩의 이해 2편: 유니코드와 Java를 이용한 한글 처리&lt;/a&gt;에서는 &lt;a href=&quot;https://ko.wikipedia.org/wiki/%EC%9C%A0%EB%8B%88%EC%BD%94%EB%93%9C_%EC%A0%95%EA%B7%9C%ED%99%94&quot;&gt;유니코드 정규화&lt;/a&gt;(&lt;a href=&quot;https://en.wikipedia.org/wiki/Unicode_equivalence&quot;&gt;Unicode equivalence&lt;/a&gt;)를 아래와 같이 소개하고 있다.&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;한글 소리 마디와 한글자모, 한글 자모 확장 이렇게 두 개의 코드 영역이 있다는 것은 같은 글자를 표현하는 서로 다른 두 개의 방법이 있다는 것을 말한다.
-이것은 한글뿐만 아니라 다른 언어에서도 나타나는 현상이다. 가령 “ñ”을 표현할 때 U+00F1을 사용할 수도 있고, U+006E (라틴 소문자 “n”) 과 U+0303( 결합 틸데 “◌̃”)을 연이어 사용하여 표현할 수도 있다.
-유니코드 정규화(Unicode equivalence)란 이렇게 연속적인 코드를 사용하여 표현한 어떤 글자를 처리하는 방법을 다루는 명세이다. 유니코드 정규화에는 다음과 같은 네 가지 방법이 있다.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;정규화 방법&lt;/th&gt;
-      &lt;th&gt;예&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;NFD (정준 분해) Normalization Form Canonical Decomposition&lt;/td&gt;
-      &lt;td&gt;À (U+00C0) → A (U+0041) + ̀ (U+0300) 위 (U+C704) → ᄋ (U+110B) + ᅱ (U+1171)&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;NFC (정준 분해한 뒤 다시 정준 결합) Normalization Form Canonical Composition&lt;/td&gt;
-      &lt;td&gt;A (U+0041) + ̀ (U+0300) → À (U+00C0) ᄋ (U+110B) + ᅱ (U+1171) → 위 (U+C704)&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;NFKD (호환 분해)  Normalization Form Compatibility Decomposition&lt;/td&gt;
-      &lt;td&gt;ﬁ (U+FB01) → f (U+0066) + i (U+0069)&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;NFKC (호환 분해한 뒤 다시 정준 결합) Normalization Form Compatibility Composition&lt;/td&gt;
-      &lt;td&gt;樂 (U+F914), 樂 (U+F95C), 樂 (U+F9BF) → 樂 (U+6A02)&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;이중 한글 처리와 관련된 것은 NFD(소리 마디를 첫가끝 코드로 분해)와 NFC(첫가끝 코드를 소리 마디로 결합)이다.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;NFD에 관련된 내용은 위 링크들을 확인해보면 충분한 정보를 얻을 수 있을테니 오늘은 PHP에서 NFD를 다루는 부분을 소개한다.
-참고로 아래의 함수를 사용하기 위해서는 &lt;a href=&quot;http://php.net/manual/kr/book.intl.php&quot;&gt;intl&lt;/a&gt; 모듈이 설치되어 있어야 한다.&lt;/p&gt;
-
-&lt;p&gt;우선 간단한 코드부터 보자.&lt;/p&gt;
-
-&lt;div class=&quot;language-php highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?php&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;// setlocale(LC_ALL, 'ko_KR.UTF-8');
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;\Normalizer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;isNormalized&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nv&quot;&gt;$text&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;\Normalizer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;normalize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;사실 위 코드를 보면 더 이상 설명이 필요 없을 정도로 간단하다.
-&lt;a href=&quot;http://php.net/manual/kr/normalizer.isnormalized.php&quot;&gt;\Normalizer::isNormalized&lt;/a&gt; 함수를 사용해서 NFC 형식인지 검사한다.
-위 예시는 두번째 인자인 &lt;code class=&quot;highlighter-rouge&quot;&gt;$from&lt;/code&gt;이 생략된 것이다(기본값 : &lt;code class=&quot;highlighter-rouge&quot;&gt;Normalizer::FORM_C&lt;/code&gt;). 따라서 두번째 인자로 &lt;code class=&quot;highlighter-rouge&quot;&gt;Normalizer::FORM_D&lt;/code&gt;를 넣어주면 NFD를 검사할 수 있다.&lt;/p&gt;
-
-&lt;p&gt;NFC 형식이 아니라면 &lt;a href=&quot;http://php.net/manual/kr/normalizer.normalize.php&quot;&gt;\Normalizer::normalize&lt;/a&gt; 함수를 이용해서 NFC 형식으로 변환한다.
-이 함수 또한 기본적으로 두번째 인자로 &lt;code class=&quot;highlighter-rouge&quot;&gt;Normalizer::FORM_C&lt;/code&gt;를 사용한다.&lt;/p&gt;
-
-&lt;p&gt;마지막으로 주석 처리한 &lt;code class=&quot;highlighter-rouge&quot;&gt;setlocale&lt;/code&gt; 부분은 필요 시에만 추가하면 된다(상황에 따라서는 &lt;code class=&quot;highlighter-rouge&quot;&gt;setlocale&lt;/code&gt;을 추가하면 한글의 일부가 깨지는 상황이 발생했다.).&lt;/p&gt;</content><author><name>유영재</name></author><summary type="html">Mac OSX는 경우 문자열을 Unicode Normalization Forms 중 NFD(소리 마디를 첫가끝 코드로 분해)로 처리한다(일반적으로는 NFC(첫가끝 코드를 소리 마디로 결합)를 사용).
-이는 한글(U+AC00) 영역을 사용하는 곳에서는 한글이 모두 풀어진 상태로 보이는 문제가 있다.
-따라서 U+1100 영역을 U+AC00 영역으로 변환하는 과정이 필요하다.
-
-한글 인코딩의 이해 2편: 유니코드와 Java를 이용한 한글 처리에서는 유니코드 정규화(Unicode equivalence)를 아래와 같이 소개하고 있다.
-
-
-  한글 소리 마디와 한글자모, 한글 자모 확장 이렇게 두 개의 코드 영역이 있다는 것은 같은 글자를 표현하는 서로 다른 두 개의 방법이 있다는 것을 말한다.
-이것은 한글뿐만 아니라 다른 언어에서도 나타나는 현상이다. 가령 “ñ”을 표현할 때 U+00F1을 사용할 수도 있고, U+006E (라틴 소문자 “n”) 과 U+0303( 결합 틸데 “◌̃”)을 연이어 사용하여 표현할 수도 있다.
-유니코드 정규화(Unicode equivalence)란 이렇게 연속적인 코드를 사용하여 표현한 어떤 글자를 처리하는 방법을 다루는 명세이다. 유니코드 정규화에는 다음과 같은 네 가지 방법이 있다.
-
-
-
-  
-    
-      정규화 방법
-      예
-    
-  
-  
-    
-      NFD (정준 분해) Normalization Form Canonical Decomposition
-      À (U+00C0) → A (U+0041) + ̀ (U+0300) 위 (U+C704) → ᄋ (U+110B) + ᅱ (U+1171)
-    
-    
-      NFC (정준 분해한 뒤 다시 정준 결합) Normalization Form Canonical Composition
-      A (U+0041) + ̀ (U+0300) → À (U+00C0) ᄋ (U+110B) + ᅱ (U+1171) → 위 (U+C704)
-    
-    
-      NFKD (호환 분해)  Normalization Form Compatibility Decomposition
-      ﬁ (U+FB01) → f (U+0066) + i (U+0069)
-    
-    
-      NFKC (호환 분해한 뒤 다시 정준 결합) Normalization Form Compatibility Composition
-      樂 (U+F914), 樂 (U+F95C), 樂 (U+F9BF) → 樂 (U+6A02)
-    
-  
-
-
-
-  이중 한글 처리와 관련된 것은 NFD(소리 마디를 첫가끝 코드로 분해)와 NFC(첫가끝 코드를 소리 마디로 결합)이다.
-
-
-NFD에 관련된 내용은 위 링크들을 확인해보면 충분한 정보를 얻을 수 있을테니 오늘은 PHP에서 NFD를 다루는 부분을 소개한다.
-참고로 아래의 함수를 사용하기 위해서는 intl 모듈이 설치되어 있어야 한다.
-
-우선 간단한 코드부터 보자.
-
-&amp;lt;?php
-// setlocale(LC_ALL, 'ko_KR.UTF-8');
-if (!\Normalizer::isNormalized($text)) {
-  $text = \Normalizer::normalize($text);
-}
-
-
-
-사실 위 코드를 보면 더 이상 설명이 필요 없을 정도로 간단하다.
-\Normalizer::isNormalized 함수를 사용해서 NFC 형식인지 검사한다.
-위 예시는 두번째 인자인 $from이 생략된 것이다(기본값 : Normalizer::FORM_C). 따라서 두번째 인자로 Normalizer::FORM_D를 넣어주면 NFD를 검사할 수 있다.
-
-NFC 형식이 아니라면 \Normalizer::normalize 함수를 이용해서 NFC 형식으로 변환한다.
-이 함수 또한 기본적으로 두번째 인자로 Normalizer::FORM_C를 사용한다.
-
-마지막으로 주석 처리한 setlocale 부분은 필요 시에만 추가하면 된다(상황에 따라서는 setlocale을 추가하면 한글의 일부가 깨지는 상황이 발생했다.).</summary></entry><entry><title type="html">PHP 삼항 연산자 : Ternary Operator 와 Null Coalesce Operator</title><link href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/" rel="alternate" type="text/html" title="PHP 삼항 연산자 : Ternary Operator 와 Null Coalesce Operator" /><published>2016-11-07T08:02:12+09:00</published><updated>2016-11-07T08:02:12+09:00</updated><id>https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator</id><content type="html" xml:base="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/">&lt;p&gt;&lt;a href=&quot;http://php.net/&quot;&gt;PHP&lt;/a&gt;에도 &lt;a href=&quot;http://php.net/manual/kr/language.operators.comparison.php#language.operators.comparison.ternary&quot;&gt;삼항 연산자:Ternary operator&lt;/a&gt;
-가 있다. &lt;a href=&quot;http://php.net/manual/kr/language.operators.comparison.php#language.operators.comparison.ternary&quot;&gt;메뉴얼&lt;/a&gt;에는 아래와 같이 설명되어 있다.&lt;/p&gt;
-
-&lt;div class=&quot;language-php highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?php&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;// 사용 예제: 삼항 연산자
-&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$action&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$_POST&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'action'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'default'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$_POST&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'action'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;// 위 예제는 다음의 if/else 구문과 동일합니다
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$_POST&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'action'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;nv&quot;&gt;$action&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'default'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;nv&quot;&gt;$action&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$_POST&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'action'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;(expr1) ? (expr2) : (expr3) 표현은 expr1이 TRUE이면 expr2로 평가되고, expr1이 FALSE이면 expr3로 평가됩니다.
-PHP 5.3부터, 삼항 연산자의 중간 부분을 비울 수 있습니다. 표현식 expr1 ?: expr3은 expr1이 TRUE이면 expr1, 아니면 expr3를 반환합니다.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;PHP 5.3부터 &lt;code class=&quot;highlighter-rouge&quot;&gt;expr2&lt;/code&gt;를 비울 수 있다고 되어 있다. 다시 말해 &lt;code class=&quot;highlighter-rouge&quot;&gt;(expr1) ?: (expr3)&lt;/code&gt;라는 표현을 사용할 수 있다.&lt;/p&gt;
-
-&lt;p&gt;그리고 한가지. 아래와 같이 삼항식을 중첩할 경우는 괄호를 사용해서 묶어줄 것을 권장한다.&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;삼항 연사자를 “쌓는” 일을 피하길 권합니다. 하나의 구문에서 하나를 초과하는 삼항 연산자를 사용할 때, PHP 작동은 명확하지 않습니다:
-Example #3 명확하지 않은 삼항 작동&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;div class=&quot;language-php highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?php&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;// 얼핏 보기에, 'true'를 출력할 것 같습니다
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;?&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'true'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;?&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'t'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'f'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;// 그러나 위의 실제 출력은 't'입니다
-// 이는 삼항 표현이 왼쪽에서 오른쪽으로 평가되기 때문입니다
-&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;// 다음이 위 코드와 동일한 더 명확한 버전입니다
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'true'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'false'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'t'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;// 여기서, 첫 표현이 'true'로 평가되고, 이것이
-// (bool)true로 전환되어 평가된 후, 두번째
-// 삼항 표현의 true쪽을 반환합니다.
-&lt;/span&gt;&lt;span class=&quot;cp&quot;&gt;?&amp;gt;&lt;/span&gt;
-add a note add a note
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;이와 유사하지만 다른 삼항 연산자인 &lt;a href=&quot;https://wiki.php.net/rfc/isset_ternary&quot;&gt;Null 병법 연산자:Null Coalesce Operator&lt;/a&gt;가 PHP 7부터 지원된다. 한글 이름을 딱히 뭐라 부를지가 애매한데 &lt;a href=&quot;https://ko.wikipedia.org/wiki/PHP&quot;&gt;위키피디아&lt;/a&gt;에서 “Null 병법 연산자”라는 이름을 사용하고 있다.&lt;/p&gt;
-
-&lt;div class=&quot;language-php highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;isset($_GET['mykey']) ? $_GET['mykey'] : &quot;&quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;위 두가지 삼항식은 동일한 것 같지만 자세히보면 다르다. 한가지는 &lt;a href=&quot;http://php.net/manual/kr/function.empty.php&quot;&gt;empty&lt;/a&gt;를 다른 한가지는 &lt;a href=&quot;http://php.net/manual/kr/function.isset.php&quot;&gt;isset&lt;/a&gt;을 대체한다.&lt;/p&gt;
-
-&lt;p&gt;그리고 한가지 알아야할 중요한 사항이 있다. &lt;a href=&quot;http://stackoverflow.com/a/34571460/6736772&quot;&gt;PHP ternary operator vs null coalescing operator&lt;/a&gt;에 예시가 나와 있듯이 &lt;code class=&quot;highlighter-rouge&quot;&gt;?:&lt;/code&gt;는 선언되지 않은 변수를 사용할 경우 E_NOTICE가 발생한다. 다시말해 완전히 &lt;a href=&quot;http://php.net/manual/kr/function.empty.php&quot;&gt;empty&lt;/a&gt; 처럼 동작하는 것은 아니다.&lt;/p&gt;</content><author><name>유영재</name></author><summary type="html">PHP에도 삼항 연산자:Ternary operator
-가 있다. 메뉴얼에는 아래와 같이 설명되어 있다.
-
-&amp;lt;?php
-// 사용 예제: 삼항 연산자
-$action = (empty($_POST['action'])) ? 'default' : $_POST['action'];
-
-// 위 예제는 다음의 if/else 구문과 동일합니다
-if (empty($_POST['action'])) {
-    $action = 'default';
-} else {
-    $action = $_POST['action'];
-}
-
-
-
-
-  (expr1) ? (expr2) : (expr3) 표현은 expr1이 TRUE이면 expr2로 평가되고, expr1이 FALSE이면 expr3로 평가됩니다.
-PHP 5.3부터, 삼항 연산자의 중간 부분을 비울 수 있습니다. 표현식 expr1 ?: expr3은 expr1이 TRUE이면 expr1, 아니면 expr3를 반환합니다.
-
-
-PHP 5.3부터 expr2를 비울 수 있다고 되어 있다. 다시 말해 (expr1) ?: (expr3)라는 표현을 사용할 수 있다.
-
-그리고 한가지. 아래와 같이 삼항식을 중첩할 경우는 괄호를 사용해서 묶어줄 것을 권장한다.
-
-
-  삼항 연사자를 “쌓는” 일을 피하길 권합니다. 하나의 구문에서 하나를 초과하는 삼항 연산자를 사용할 때, PHP 작동은 명확하지 않습니다:
-Example #3 명확하지 않은 삼항 작동
-
-
-&amp;lt;?php
-// 얼핏 보기에, 'true'를 출력할 것 같습니다
-echo (true?'true':false?'t':'f');
-
-// 그러나 위의 실제 출력은 't'입니다
-// 이는 삼항 표현이 왼쪽에서 오른쪽으로 평가되기 때문입니다
-
-// 다음이 위 코드와 동일한 더 명확한 버전입니다
-echo ((true ? 'true' : 'false') ? 't' : 'f');
-
-// 여기서, 첫 표현이 'true'로 평가되고, 이것이
-// (bool)true로 전환되어 평가된 후, 두번째
-// 삼항 표현의 true쪽을 반환합니다.
-?&amp;gt;
-add a note add a note
-
-
-
-이와 유사하지만 다른 삼항 연산자인 Null 병법 연산자:Null Coalesce Operator가 PHP 7부터 지원된다. 한글 이름을 딱히 뭐라 부를지가 애매한데 위키피디아에서 “Null 병법 연산자”라는 이름을 사용하고 있다.
-
-isset($_GET['mykey']) ? $_GET['mykey'] : &quot;&quot;
-
-
-
-위 두가지 삼항식은 동일한 것 같지만 자세히보면 다르다. 한가지는 empty를 다른 한가지는 isset을 대체한다.
-
-그리고 한가지 알아야할 중요한 사항이 있다. PHP ternary operator vs null coalescing operator에 예시가 나와 있듯이 ?:는 선언되지 않은 변수를 사용할 경우 E_NOTICE가 발생한다. 다시말해 완전히 empty 처럼 동작하는 것은 아니다.</summary></entry></feed>
+폴더를 지정하려면 당연히 . 대신에 원하는 경로를 넣으면 되고 find의 다양한 옵션을 사용해서 원하는 조건을 추가해서 처리 할 수 있다.</summary></entry></feed>

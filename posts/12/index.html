@@ -113,82 +113,71 @@
 				<article>
 					<div class="module">
 						<header>
-							<a class="title" href="https://blog.asamaru.net/2016/11/04/remove-http-referer/">
-								HTTP referrer(referer) 숨기기
+							<a class="title" href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/">
+								PHP 삼항 연산자 : Ternary Operator 와 Null Coalesce Operator
 							</a>
 							<p class="post-meta">
-								<a href="https://blog.asamaru.net/2016/11/04/remove-http-referer/">2016.11.04.</span></a>
+								<a href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/">2016.11.07.</span></a>
 							</p>
 						</header>
 						<p>
-							<p>브라우저에서 http 요청을 하는 경우 대부분 referrer 정보가 넘어간다.(HTTP 리퍼러를 정의한 RFC에서 ‘referrer’를 ‘referer’라고 잘못 친 것에서 기인하여 HTTP 리퍼러는 ‘HTTP referer’라고 불린다 : <a href="https://ko.wikipedia.org/wiki/%EB%A6%AC%ED%8D%BC%EB%9F%AC">위키백과</a>)</p>
+							<p><a href="http://php.net/">PHP</a>에도 <a href="http://php.net/manual/kr/language.operators.comparison.php#language.operators.comparison.ternary">삼항 연산자:Ternary operator</a>
+가 있다. <a href="http://php.net/manual/kr/language.operators.comparison.php#language.operators.comparison.ternary">메뉴얼</a>에는 아래와 같이 설명되어 있다.</p>
 
-<p>그런데 간혹 이 referrer를 숨기고 싶을 때가 있다. 현 페이지에서 resouces(js, css, image, ajax 등)를 요청할 때나 페이지를 이동할 때 referrer가 전송되는데 여기서는 resouces를 호출할 때 referrer를 숨기는 방법에 대해 설명하려고 한다.</p>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="c1">// 사용 예제: 삼항 연산자
+</span><span class="nv">$action</span> <span class="o">=</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">]))</span> <span class="o">?</span> <span class="s1">'default'</span> <span class="o">:</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">];</span>
 
-<hr />
-
-<ul>
-  <li><em><code class="highlighter-rouge">&lt;meta&gt;</code> Tag를 이용한 referrer 제거</em></li>
-</ul>
-
-<p><a href="http://stackoverflow.com/a/32014225/6736772">Remove http referrer</a>에 보면 아래와 같이 referrer를 제거하는 방법을 소개하고 있다.</p>
-
-<div class="language-html highlighter-rouge"><pre class="highlight"><code><span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">"referrer"</span> <span class="na">content=</span><span class="s">"no-referrer"</span> <span class="nt">/&gt;</span>
+<span class="c1">// 위 예제는 다음의 if/else 구문과 동일합니다
+</span><span class="k">if</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">]))</span> <span class="p">{</span>
+    <span class="nv">$action</span> <span class="o">=</span> <span class="s1">'default'</span><span class="p">;</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nv">$action</span> <span class="o">=</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">'action'</span><span class="p">];</span>
+<span class="p">}</span>
 </code></pre>
 </div>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">meta</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'meta'</span><span class="p">);</span>
-<span class="nx">meta</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="s2">"referrer"</span><span class="p">;</span>
-<span class="nx">meta</span><span class="p">.</span><span class="nx">content</span> <span class="o">=</span> <span class="s2">"no-referrer"</span><span class="p">;</span>
-<span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByTagName</span><span class="p">(</span><span class="s1">'head'</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">meta</span><span class="p">);</span>
+<blockquote>
+  <p>(expr1) ? (expr2) : (expr3) 표현은 expr1이 TRUE이면 expr2로 평가되고, expr1이 FALSE이면 expr3로 평가됩니다.
+PHP 5.3부터, 삼항 연산자의 중간 부분을 비울 수 있습니다. 표현식 expr1 ?: expr3은 expr1이 TRUE이면 expr1, 아니면 expr3를 반환합니다.</p>
+</blockquote>
+
+<p>PHP 5.3부터 <code class="highlighter-rouge">expr2</code>를 비울 수 있다고 되어 있다. 다시 말해 <code class="highlighter-rouge">(expr1) ?: (expr3)</code>라는 표현을 사용할 수 있다.</p>
+
+<p>그리고 한가지. 아래와 같이 삼항식을 중첩할 경우는 괄호를 사용해서 묶어줄 것을 권장한다.</p>
+
+<blockquote>
+  <p>삼항 연사자를 “쌓는” 일을 피하길 권합니다. 하나의 구문에서 하나를 초과하는 삼항 연산자를 사용할 때, PHP 작동은 명확하지 않습니다:
+Example #3 명확하지 않은 삼항 작동</p>
+</blockquote>
+
+<div class="language-php highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="c1">// 얼핏 보기에, 'true'를 출력할 것 같습니다
+</span><span class="k">echo</span> <span class="p">(</span><span class="kc">true</span><span class="o">?</span><span class="s1">'true'</span><span class="o">:</span><span class="kc">false</span><span class="o">?</span><span class="s1">'t'</span><span class="o">:</span><span class="s1">'f'</span><span class="p">);</span>
+
+<span class="c1">// 그러나 위의 실제 출력은 't'입니다
+// 이는 삼항 표현이 왼쪽에서 오른쪽으로 평가되기 때문입니다
+</span>
+<span class="c1">// 다음이 위 코드와 동일한 더 명확한 버전입니다
+</span><span class="k">echo</span> <span class="p">((</span><span class="kc">true</span> <span class="o">?</span> <span class="s1">'true'</span> <span class="o">:</span> <span class="s1">'false'</span><span class="p">)</span> <span class="o">?</span> <span class="s1">'t'</span> <span class="o">:</span> <span class="s1">'f'</span><span class="p">);</span>
+
+<span class="c1">// 여기서, 첫 표현이 'true'로 평가되고, 이것이
+// (bool)true로 전환되어 평가된 후, 두번째
+// 삼항 표현의 true쪽을 반환합니다.
+</span><span class="cp">?&gt;</span>
+add a note add a note
 </code></pre>
 </div>
 
-<p>html, javascript로 처리하는 두가지 방식이 있는데 html의 경우 <code class="highlighter-rouge">&lt;head&gt;</code> 내부에 넣어주면 된다. 그리고 javascript의 경우는 필요한 시점에 실행해주면 된다. 예를들어 특정 ajax 호출시에만 referrer를 숨기고자 하는 경우 등이다.</p>
+<p>이와 유사하지만 다른 삼항 연산자인 <a href="https://wiki.php.net/rfc/isset_ternary">Null 병법 연산자:Null Coalesce Operator</a>가 PHP 7부터 지원된다. 한글 이름을 딱히 뭐라 부를지가 애매한데 <a href="https://ko.wikipedia.org/wiki/PHP">위키피디아</a>에서 “Null 병법 연산자”라는 이름을 사용하고 있다.</p>
 
-<p><code class="highlighter-rouge">no-referrer</code> 외에 사용할 수 있는 값은 <code class="highlighter-rouge">unsafe-url</code>, <code class="highlighter-rouge">origin-when-cross-origin</code> 등이 있는데 자세한 내용은 <a href="https://www.w3.org/TR/referrer-policy/">W3C Referrer Policy</a>를 참고하면 된다. 여기보면 <code class="highlighter-rouge">&lt;a href="http://example.com" referrerpolicy="origin"&gt;</code> 와 같이 개별 링크에 Referrer 정책을 지정하는 방법들도 안내되어 있다.</p>
-
-<hr />
-
-<ul>
-  <li><em><code class="highlighter-rouge">&lt;IFrame&gt;</code> Tag를 이용한 referrer 제거</em></li>
-</ul>
-
-<p>다른 방법으로는 iframe을 이용해서 referrer를 제거할 수 있다. 일단 아래의 코드를 보자.</p>
-
-<div class="language-html highlighter-rouge"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"&gt;</span>
-<span class="nt">&lt;html&gt;</span>
-<span class="nt">&lt;head&gt;</span>
-	<span class="nt">&lt;style </span><span class="na">type=</span><span class="s">"text/css"</span><span class="nt">&gt;</span>
-		<span class="nt">html</span><span class="o">,</span> <span class="nt">body</span> <span class="p">{</span> <span class="nl">width</span><span class="p">:</span><span class="m">100%</span><span class="p">;</span> <span class="nl">height</span><span class="p">:</span><span class="m">100%</span><span class="p">;</span> <span class="nl">margin</span><span class="p">:</span><span class="m">0</span><span class="p">;</span> <span class="nl">padding</span><span class="p">:</span><span class="m">0</span><span class="p">;</span> <span class="p">}</span>
-		<span class="nt">textarea</span> <span class="p">{</span> <span class="nl">display</span><span class="p">:</span><span class="nb">none</span><span class="p">;</span> <span class="p">}</span>
-		<span class="nt">iframe</span> <span class="p">{</span> <span class="nl">width</span><span class="p">:</span><span class="m">100%</span><span class="p">;</span> <span class="nl">height</span><span class="p">:</span><span class="m">100%</span><span class="p">;</span> <span class="p">}</span>
-	<span class="nt">&lt;/style&gt;</span>
-<span class="nt">&lt;/head&gt;</span>
-<span class="nt">&lt;body&gt;</span>
-<span class="nt">&lt;textarea</span> <span class="na">id=</span><span class="s">"html"</span><span class="nt">&gt;</span><span class="c">&lt;!-- 실제 들어갈 HTML --&gt;</span><span class="nt">&lt;/textarea&gt;</span>
-<span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span><span class="nt">&gt;</span>
-	<span class="kd">var</span> <span class="nx">iframe</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'iframe'</span><span class="p">);</span>
-	<span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">iframe</span><span class="p">);</span>
-
-	<span class="kd">var</span> <span class="nx">html</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">'html'</span><span class="p">).</span><span class="nx">value</span><span class="p">;</span>
-
-	<span class="c1">// 가장 간단하지만 crass domain 문제가 있을 수 있다.</span>
-	<span class="c1">// iframe.src = 'data:text/html;charset=utf-8,' + encodeURI(html);</span>
-
-	<span class="c1">// cross domain issue 해결</span>
-	<span class="nx">iframe</span><span class="p">.</span><span class="nx">srcdoc</span> <span class="o">=</span> <span class="nx">html</span><span class="p">;</span>
-
-	<span class="c1">// (iframe.contentDefault || iframe.contentWindow.document).domain = document.domain;</span>
-<span class="nt">&lt;/script&gt;</span>
-<span class="nt">&lt;/body&gt;</span>
-<span class="nt">&lt;/html&gt;</span>
+<div class="language-php highlighter-rouge"><pre class="highlight"><code>isset($_GET['mykey']) ? $_GET['mykey'] : ""
 </code></pre>
 </div>
 
-<p><code class="highlighter-rouge">srcdoc</code>이 생소하다면 <a href="http://stackoverflow.com/questions/19739001/which-is-the-difference-between-srcdoc-and-src-datatext-html-in-an">Which is the difference between srcdoc=“…” and src=“data:text/html,…” in an &lt;iframe&gt;?</a>를 참고하길 바란다.</p>
+<p>위 두가지 삼항식은 동일한 것 같지만 자세히보면 다르다. 한가지는 <a href="http://php.net/manual/kr/function.empty.php">empty</a>를 다른 한가지는 <a href="http://php.net/manual/kr/function.isset.php">isset</a>을 대체한다.</p>
 
-<p>아주 간단한 코드니 굳이 설명하지 않아도 내용은 이해할 수 있으리라 본다. 원리만 간단히 설명하자면 iframe은 하나의 독립 문서이므로 새로운 iframe을 만들고 동적으로 html을 출력하면 넘겨주고 싶어도 넘겨줄 referrer가 없으므로 referrer를 제거하는 것과 같은 효과가 난다. 사실 이 방법은 referrer를 숨기는 것 외에도 여러가지로 활용될 수 있다(활용은 개인의 몫).</p>
+<p>그리고 한가지 알아야할 중요한 사항이 있다. <a href="http://stackoverflow.com/a/34571460/6736772">PHP ternary operator vs null coalescing operator</a>에 예시가 나와 있듯이 <code class="highlighter-rouge">?:</code>는 선언되지 않은 변수를 사용할 경우 E_NOTICE가 발생한다. 다시말해 완전히 <a href="http://php.net/manual/kr/function.empty.php">empty</a> 처럼 동작하는 것은 아니다.</p>
 
 						<!--
 							{ % if post.excerpt.size > 32 % }
@@ -202,8 +191,8 @@
 						<footer>
 							
                       <span class="word-keep pull-right">
-                          <a href="https://blog.asamaru.net/2016/11/04/remove-http-referer/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
-                          <a href="https://blog.asamaru.net/2016/11/04/remove-http-referer/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
+                          <a href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/#post-comment"><span class="glyphicon glyphicon-comment"></span>&nbsp;Comment</a>
+                          <a href="https://blog.asamaru.net/2016/11/07/php-ternary-operator-vs-null-coalescing-operator/#post-share"><span class="glyphicon glyphicon-heart"></span>&nbsp;Share</a>
                       </span>
 						</footer>
 					</div>

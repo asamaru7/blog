@@ -1,491 +1,471 @@
-<!DOCTYPE html>
-<html>
-
+<!doctype html>
+<html lang="ko">
 <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 	<title>Javascript 국제화(I18N) 라이브러리 - i18next</title>
-	<meta charset="utf-8"/>
-	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="Javascript 국제화(I18N) 라이브러리 - i18next,js,이 세상에 하나는 남기고 가자"/>
-	<meta name="description" content="Javascript 국제화(I18N) 라이브러리 - i18next,js,국제화(internationalization : i18n)의 의미국제화는 텀즈의 정의에 따르면 아래와 같다.국제화는 때로 줄여서 그저 “I18N”이라고도 표기하는데, 그 의미는 이 용어의 영어 표기에서 첫 글자인 “I”자와 마지막 글자인 “N”의 사이에 18글자가 들어가 있다는 의..."/>
+	<meta name="keywords" content="android,tip,vagrant,js,osx,php,linux,html,flash,jekyll,git,db,java,thinking,octopress,swift,ios,blog,css,programming">
+	<meta name="description" content="국제화(internationalization : i18n)의 의미 국제화는 텀즈의 정의에 따르면 아래와 같다. 국제화는 때로 줄여서 그저 &quot;I18N&quot;이라고도 표기하는데, 그 의미는 이 용어의 영어 표기에서 첫 글자인 &quot;I&quot;자와 마지막 글자인 &quot;N&quot;의 사이에 18글자가 들어가 있다는 의미이다. 국제화는 제품이나 서비스를 특정지역의 언어나 문화에 맞추는, 즉 현지화라고 불리는 과정을 쉽게 할 수 있도록 계획하거나 이행하는 과정을 말한다. 국제화는 때로 번역 및 현지화 능력부여 작업이라고도 불리는데, 여기에는 다음과 같은 것들이 포함된다">
+	<meta name="referrer" content="always">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="shortcut icon" type="image/x-icon" href="http://a.v.corez.kr/favicon.ico"/>
+	<link rel="canonical" href="http://a.v.corez.kr/2015/09/15/internationalization-i18n-for-javascript-i18next/"/>
 
-	<!-- http://t.co/dKP3o1e -->
+	
 	<meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
 
-	<!-- http://opengraphprotocol.org/ -->
-	<meta name="twitter:card" content="summary_large_image">
+	
+	
 	<meta property="og:type" content="website">
-	<meta property="og:url" content="https://blog.asamaru.net/2015/09/15/internationalization-i18n-for-javascript-i18next/">
+	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="Javascript 국제화(I18N) 라이브러리 - i18next">
+	<meta property="og:description" content="국제화(internationalization : i18n)의 의미 국제화는 텀즈의 정의에 따르면 아래와 같다. 국제화는 때로 줄여서 그저 &quot;I18N&quot;이라고도 표기하는데, 그 의미는 이 용어의 영어 표기에서 첫 글자인 &quot;I&quot;자와 마지막 글자인 &quot;N&quot;의 사이에 18글자가 들어가 있다는 의미이다. 국제화는 제품이나 서비스를 특정지역의 언어나 문화에 맞추는, 즉 현지화라고 불리는 과정을 쉽게 할 수 있도록 계획하거나 이행하는 과정을 말한다. 국제화는 때로 번역 및 현지화 능력부여 작업이라고도 불리는데, 여기에는 다음과 같은 것들이 포함된다">
+	<meta property="og:image" content="http://a.v.corez.kr/res/img/icon/icon.png">
 	
 
-	<link rel="canonical" href="https://blog.asamaru.net/2015/09/15/internationalization-i18n-for-javascript-i18next/"/>
-	<link rel="shortcut icon" type="image/x-icon" media="screen" href="https://blog.asamaru.net/favicon.ico"/>
-	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
-
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-	<link rel="stylesheet" type="text/css" href="https://blog.asamaru.net/static/css/style.css"/>
-	<link rel="stylesheet" type="text/css" href="https://blog.asamaru.net/static/css/highlight.css"/>
-
 	
-	<link rel="stylesheet" type="text/css" href="https://blog.asamaru.net/static/css/post.css"/>
-	
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="@asamaru7">
+	<meta name="twitter:title" content="Javascript 국제화(I18N) 라이브러리 - i18next">
+	<meta name="twitter:description" content="국제화(internationalization : i18n)의 의미 국제화는 텀즈의 정의에 따르면 아래와 같다. 국제화는 때로 줄여서 그저 &quot;I18N&quot;이라고도 표기하는데, 그 의미는 이 용어의 영어 표기에서 첫 글자인 &quot;I&quot;자와 마지막 글자인 &quot;N&quot;의 사이에 18글자가 들어가 있다는 의미이다. 국제화는 제품이나 서비스를 특정지역의 언어나 문화에 맞추는, 즉 현지화라고 불리는 과정을 쉽게 할 수 있도록 계획하거나 이행하는 과정을 말한다. 국제화는 때로 번역 및 현지화 능력부여 작업이라고도 불리는데, 여기에는 다음과 같은 것들이 포함된다">
+	<meta property="twitter:image" content="http://a.v.corez.kr/res/img/icon/icon.png">
 	
 
-	<script>
-		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
+												<link rel="apple-touch-icon" sizes="76x76" href="/res/img/icon/76.png">
+												<link rel="apple-touch-icon" sizes="120x120" href="/res/img/icon/120.png">
+												<link rel="apple-touch-icon" sizes="152x152" href="/res/img/icon/152.png">
+						
+	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="http://a.v.corez.kr/atom.xml"/>
+
+			<link href="/res/css/min/ceab329f67f36789d6e9b06300420a91.css" type="text/css" rel="stylesheet" />
+
+	 <script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "headline": "Javascript 국제화(I18N) 라이브러리 - i18next",
+    "author": {
+        "@type": "Person",
+        "name": "유영재"
+    },
+    "datePublished": "2015-9-15",
+    "articleSection": "js",
+    "url": "http://a.v.corez.kr/2015/09/15/internationalization-i18n-for-javascript-i18next/",
+    "image": "",
+    "publisher": {
+        "@type": "Organization",
+        "name": "유영재"
+    }
+}</script> 
+			<script type="text/javascript">
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 					(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
 				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+			})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-		ga('create', 'UA-65749108-2', 'auto');
-		ga('send', 'pageview');
-
-	</script>
-</head>
-
-
+			ga('create', 'UA-65749108-2', 'auto');
+			ga('send', 'pageview');
+		</script>
+	</head>
 <body>
-<div class="main">
+<header>
+	<div class="dProfile">
+		<a href="http://a.v.corez.kr"><img src="http://a.v.corez.kr/res/img/icon/icon.png" width="50" height="50" alt="profile"></a>
+		<h1><a href="http://a.v.corez.kr">이 세상에 하나는 남기고 가자</a></h1>
+					<p>세상에 필요한 소스코드 한줄 남기고 가자</p>
+			</div>
+</header>
+<section class="dMainBody">
+<nav id="cSide">
+	<div class="dSideBox">
+										
+										<dl class="dTags">
+					<dt>태그</dt>
+											<dd>
+							<a href="http://a.v.corez.kr/category/android/">
+								android<span>(56)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/blog/">
+								blog<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/css/">
+								css<span>(3)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/db/">
+								db<span>(6)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/flash/">
+								flash<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/git/">
+								git<span>(7)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/html/">
+								html<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/ios/">
+								ios<span>(20)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/java/">
+								java<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/jekyll/">
+								jekyll<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/js/">
+								js<span>(11)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/linux/">
+								linux<span>(27)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/octopress/">
+								octopress<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/osx/">
+								osx<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/php/">
+								php<span>(25)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/programming/">
+								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/swift/">
+								swift<span>(6)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/thinking/">
+								thinking<span>(3)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/tip/">
+								tip<span>(15)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="http://a.v.corez.kr/category/vagrant/">
+								vagrant<span>(6)</span>
+							</a>
+						</dd>
+									</dl>
+			
+			
+										<dl class="dArchives">
+					<dt>글 보관함</dt>
+											<dd class="dYear"><a href="http://a.v.corez.kr/2016/">2016 <span>(65)</span></a></dd>
+													<dd>
+								<dl>
+									
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2016/12/">12 <span>(5)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2016/11/">11 <span>(11)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2016/10/">10 <span>(2)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2016/09/">09 <span>(2)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2016/08/">08 <span>(2)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2016/07/">07 <span>(5)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2016/05/">05 <span>(1)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2016/04/">04 <span>(9)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2016/03/">03 <span>(13)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2016/02/">02 <span>(7)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2016/01/">01 <span>(8)</span></a>
+										</dd>
+																	</dl>
+							</dd>
+																	<dd class="dYear"><a href="http://a.v.corez.kr/2015/">2015 <span>(118)</span></a></dd>
+													<dd>
+								<dl>
+									
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2015/12/">12 <span>(16)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2015/11/">11 <span>(16)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2015/10/">10 <span>(41)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2015/09/">09 <span>(37)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2015/08/">08 <span>(8)</span></a>
+										</dd>
+																	</dl>
+							</dd>
+																	<dd class="dYear"><a href="http://a.v.corez.kr/2012/">2012 <span>(7)</span></a></dd>
+													<dd>
+								<dl>
+									
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2012/10/">10 <span>(1)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="http://a.v.corez.kr/2012/09/">09 <span>(6)</span></a>
+										</dd>
+																	</dl>
+							</dd>
+															</dl>
+					
+				
+		
+		<form action="https://www.google.com/search" method="get" class="dFormSearch">
+			<fieldset>
+				<input type="hidden" name="sitesearch" value="http://a.v.corez.kr">
+				<legend>검색하기 폼</legend>
+				<label class="dIcon">검색하기</label>
+				<input type="text" name="q" value="" placeholder="Search"/>
+			</fieldset>
+		</form>
 
-	<nav class="navbar navbar-default" role="navigation">
-	<div class="container">
-		<div class="navbar-header">
-			<button type="button" class="navbar-toggle" title="toggle navbar" data-toggle="collapse" data-target=".navbar-collapse">
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
-			<a class="navbar-brand" href="/">이 세상에 하나는 남기고 가자</a>
-		</div>
-
-		<div class="navbar-collapse collapse">
-			
-			<ul class="nav navbar-nav">
-				<li class="active">
-				<a rel="index" href="/">Blog</a>
-				</li>
-				<li >
-				<a href="/archives/">Archives</a>
-				</li>
-			</ul>
-			<ul class="nav navbar-nav navbar-right">
-				<li>
-					<a class="subscribe-rss" href="https://blog.asamaru.net/atom.xml" title="subscribe via RSS">
-						<span class="visible-xs">RSS</span>
-						<img class="hidden-xs" src="/static/img/rss.png" alt="RSS">
-					</a>
-				</li>
-			</ul>
-			
-			<!-- <form class="navbar-form navbar-right" action="http://www.google.co.kr" id="cse-search-box" target="_blank">
-			  <div class="form-group">
-			    <input type="hidden" name="cx" value="partner-pub-8163803188491150:6044663021" />
-			    <input type="hidden" name="ie" value="UTF-8" />
-			    <input type="text" name="q" class="form-control" />
-			    <input type="submit" name="sa" value="&#xac80;&#xc0c9;" />
-			  </div>
-			</form>
-			<script type="text/javascript" src="http://www.google.co.kr/coop/cse/brand?form=cse-search-box&amp;lang=ko"></script> -->
-			<form class="navbar-form navbar-right" action="https://www.google.com/search" method="GET">
-				<input type="hidden" name="sitesearch" value="https://blog.asamaru.net">
-				<div class="form-group">
-					<input class="form-control" type="text" name="q" placeholder="Search">
-				</div>
-			</form>
-			
-		</div>
+		
+		<ul class="dLinks">
+			<li><a href="http://a.v.corez.kr/archives/" class="dInverse">전체글 보기</a></li>
+			<li class="dPipe"></li>
+			<li><a href="http://a.v.corez.kr/atom.xml" class="dInverse" target="_blank">RSS</a></li>
+		</ul>
 	</div>
 </nav>
 
 
-	<div class="container">
-		<div class="row">
-	<div class="content col-lg-9">
-		<div class="sheet post">
-			<header>
-				<h2>Javascript 국제화(I18N) 라이브러리 - i18next</h2>
-				<p class="post-meta">
-					<!--<span class="glyphicon glyphicon-calendar"></span>--> 2015.09.15.
-					
-					&nbsp;&nbsp;&nbsp;
-					<span>
-						<a href="https://blog.asamaru.net/category/js/"><span class="glyphicon glyphicon-list"></span>&nbsp;js</a>
-					</span>
-					<span>
-                </span>
-				</p>
-			</header>
-			<hr class="boundary"/>
-			<article>
 
-				<!-- Topic of Contents -->
-				<!--
-								<section class="panel panel-default cToc">
-									<div class="panel-heading">
-										<h3 class="panel-title">Topic of Contents</h3>
-									</div>
-									<ul class="list-group">
-										<li class="list-group-item toc">
-										</li>
-									</ul>
-								</section>
-				-->
 
-				<h2 id="internationalization--i18n-">국제화(internationalization : i18n)의 의미</h2>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<main id="cMainPanel" class="clearfix">
+		
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">Javascript 국제화(I18N) 라이브러리 - i18next</h2>
+												<a href="http://a.v.corez.kr/category/js/" rel="tag">js</a>
+								<span></span>
+						<time class="published" datetime="2015-09-15 19:02:43">2015.09.15. 19:02</time>
+		</div>
+		<div class="markdown-body entry-content"><h2>국제화(internationalization : i18n)의 의미</h2>
 <p>국제화는 <a href="http://www.terms.co.kr/internationalization.htm">텀즈</a>의 정의에 따르면 아래와 같다.</p>
-
-<p>국제화는 때로 줄여서 그저 “I18N”이라고도 표기하는데, 그 의미는 이 용어의 영어 표기에서 첫 글자인 “I”자와 마지막 글자인 “N”의 사이에 18글자가 들어가 있다는 의미이다. 국제화는 제품이나 서비스를 특정지역의 언어나 문화에 맞추는, 즉 현지화라고 불리는 과정을 쉽게 할 수 있도록 계획하거나 이행하는 과정을 말한다. 국제화는 때로 번역 및 현지화 능력부여 작업이라고도 불리는데, 여기에는 다음과 같은 것들이 포함된다.</p>
-
+<p>국제화는 때로 줄여서 그저 &quot;I18N&quot;이라고도 표기하는데, 그 의미는 이 용어의 영어 표기에서 첫 글자인 &quot;I&quot;자와 마지막 글자인 &quot;N&quot;의 사이에 18글자가 들어가 있다는 의미이다. 국제화는 제품이나 서비스를 특정지역의 언어나 문화에 맞추는, 즉 현지화라고 불리는 과정을 쉽게 할 수 있도록 계획하거나 이행하는 과정을 말한다. 국제화는 때로 번역 및 현지화 능력부여 작업이라고도 불리는데, 여기에는 다음과 같은 것들이 포함된다.</p>
 <ul>
-  <li>하드웨어 레이블이나, 도움말 페이지, 그리고 온라인 메뉴 등 사용자 인터페이스를 설계할 때, 더 많은 수의 글자가 들어갈 때를 대비하여 여유를 둔다.</li>
-  <li>웹에디터나 저작도구 등과 같은 제품을 개발할 때 국제 문자셋, 즉 유니코드를 지원할 수 있게 한다.</li>
-  <li>인쇄용 그래픽 이미지나, 웹사이트를 만들어서 텍스트 레이블을 번역할 때 비용이 많이 들지 않게 한다.</li>
-  <li>전세계적으로 통용될 수 있는 예시를 사용한다.</li>
-  <li>소프트웨어의 경우에는, 메시지들이 영어와 같은 단일 바이트 문자 코드에서, 한글과 같은 다중 바이트 문자 코드로 변환될 수 있도록 데이터 공간을 확보한다.</li>
+<li>하드웨어 레이블이나, 도움말 페이지, 그리고 온라인 메뉴 등 사용자 인터페이스를 설계할 때, 더 많은 수의 글자가 들어갈 때를 대비하여 여유를 둔다.</li>
+<li>웹에디터나 저작도구 등과 같은 제품을 개발할 때 국제 문자셋, 즉 유니코드를 지원할 수 있게 한다.</li>
+<li>인쇄용 그래픽 이미지나, 웹사이트를 만들어서 텍스트 레이블을 번역할 때 비용이 많이 들지 않게 한다.</li>
+<li>전세계적으로 통용될 수 있는 예시를 사용한다.</li>
+<li>소프트웨어의 경우에는, 메시지들이 영어와 같은 단일 바이트 문자 코드에서, 한글과 같은 다중 바이트 문자 코드로 변환될 수 있도록 데이터 공간을 확보한다.</li>
 </ul>
-
-<p>위키피디아에는 <a href="https://ko.wikipedia.org/wiki/%EA%B5%AD%EC%A0%9C%ED%99%94%EC%99%80_%EC%A7%80%EC%97%AD%ED%99%94">“국제화와 지역화”</a>라는 주제로 설명되어 있기도 하다.</p>
-
-<h2 id="i18next">i18next</h2>
-
+<p>위키피디아에는 <a href="https://ko.wikipedia.org/wiki/%EA%B5%AD%EC%A0%9C%ED%99%94%EC%99%80_%EC%A7%80%EC%97%AD%ED%99%94">&quot;국제화와 지역화&quot;</a>라는 주제로 설명되어 있기도 하다.</p>
+<h2>i18next</h2>
 <ul>
-  <li>공식 사이트 : http://i18next.com/</li>
-  <li>Github : https://github.com/i18next/i18next</li>
-  <li>CDN : http://cdnjs.com/libraries/i18next</li>
-  <li>i18next-node : https://github.com/i18next/i18next-node</li>
+<li>공식 사이트 : <a href="http://i18next.com/">http://i18next.com/</a></li>
+<li>Github : <a href="https://github.com/i18next/i18next">https://github.com/i18next/i18next</a></li>
+<li>CDN : <a href="http://cdnjs.com/libraries/i18next">http://cdnjs.com/libraries/i18next</a></li>
+<li>i18next-node : <a href="https://github.com/i18next/i18next-node">https://github.com/i18next/i18next-node</a></li>
 </ul>
-
 <p>i18next는 위에 설명한 i18n을 자바스크립트 상에서 사용할 수 있도록 제작된 라이브러리다. 아주 다양한 형태로의 사용을 지원하는데 사용해본 결과 메뉴얼이 조금 부실(?)하다. 확인해보면 메뉴얼의 양이 적은 건 아니다. 하지만 워낙 다양하게 지원하다 보니 개별적인 설명이 부족한 감이 든다.</p>
-
 <p>이번에 다국어용 one page 앱을 제작하면서 영어와 한국어를 지원하기 위해 사용하게되었는데 조금 해멨다. 사실 아직도 자유자재로 사용하지는 못하겠다. 하지만 아주 다양한 형태를 지원하므로 필요한 형태를 메뉴얼을 참고하여 사용한다면 유용하게 사용할 수 있을 것으로 생각한다.</p>
-
-<h3 id="section">사용예시</h3>
-
+<h3>사용예시</h3>
 <p>아래는 내가 작업한 일부를 간단하게 요약한 것이다.</p>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">body</span>&gt;</span>
 
-<div class="language-html highlighter-rouge"><pre class="highlight"><code><span class="nt">&lt;html&gt;</span>
-<span class="nt">&lt;body&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"translation"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">a</span> <span class="hljs-attribute">href</span>=<span class="hljs-value">"javascript:void(0);"</span> <span class="hljs-attribute">onclick</span>=<span class="hljs-value">"changeLang('en-US');"</span>&gt;</span>영어<span class="hljs-tag">&lt;/<span class="hljs-title">a</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">a</span> <span class="hljs-attribute">href</span>=<span class="hljs-value">"javascript:void(0);"</span> <span class="hljs-attribute">onclick</span>=<span class="hljs-value">"changeLang('ko-KR');"</span>&gt;</span>한국어<span class="hljs-tag">&lt;/<span class="hljs-title">a</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">ul</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"A:apple"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"A:banana"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"A:orange"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">ul</span>&gt;</span>
 
-<span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"translation"</span><span class="nt">&gt;</span>
-	<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"javascript:void(0);"</span> <span class="na">onclick=</span><span class="s">"changeLang('en-US');"</span><span class="nt">&gt;</span>영어<span class="nt">&lt;/a&gt;</span>
-	<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"javascript:void(0);"</span> <span class="na">onclick=</span><span class="s">"changeLang('ko-KR');"</span><span class="nt">&gt;</span>한국어<span class="nt">&lt;/a&gt;</span>
-	<span class="nt">&lt;ul&gt;</span>
-		<span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">"A:apple"</span><span class="nt">&gt;&lt;/li&gt;</span>
-		<span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">"A:banana"</span><span class="nt">&gt;&lt;/li&gt;</span>
-		<span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">"A:orange"</span><span class="nt">&gt;&lt;/li&gt;</span>
-	<span class="nt">&lt;/ul&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">ul</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"B:car"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"B:airplane"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"B:bicycle"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">ul</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
 
-	<span class="nt">&lt;ul&gt;</span>
-		<span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">"B:car"</span><span class="nt">&gt;&lt;/li&gt;</span>
-		<span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">"B:airplane"</span><span class="nt">&gt;&lt;/li&gt;</span>
-		<span class="nt">&lt;li</span> <span class="na">data-i18n=</span><span class="s">"B:bicycle"</span><span class="nt">&gt;&lt;/li&gt;</span>
-	<span class="nt">&lt;/ul&gt;</span>
-<span class="nt">&lt;/div&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/javascript"</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"https://code.jquery.com/jquery-2.1.4.min.js"</span>&gt;</span><span class=""></span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/javascript"</span>&gt;</span><span class=""></span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/javascript"</span>&gt;</span><span class="javascript">
+    $.i18n.init({
+        <span class="hljs-comment">//lng: 'en-US',</span>
+        lng: <span class="hljs-string">'ko-KR'</span>,
+        debug: <span class="hljs-literal">true</span>,
+        useLocalStorage: <span class="hljs-literal">false</span>,
+        localStorageExpirationTime: <span class="hljs-number">86400000</span>, <span class="hljs-comment">// in ms, default 1 week</span>
+        ns: {
+            namespaces: [<span class="hljs-string">'A'</span>, <span class="hljs-string">'B'</span>],
+            defaultNs: <span class="hljs-string">'A'</span>
+        },
+        <span class="hljs-comment">//resGetPath: 'js/locales/translation.json'</span>
+        resStore: {
+            <span class="hljs-string">"en-US"</span>: {
+                <span class="hljs-string">"A"</span>: {
+                    <span class="hljs-string">"apple"</span>: <span class="hljs-string">"Apple"</span>,
+                    <span class="hljs-string">"banana"</span>: <span class="hljs-string">"Banana"</span>,
+                    <span class="hljs-string">"orange"</span>: <span class="hljs-string">"Orange"</span>
+                },
+                <span class="hljs-string">"B"</span>: {
+                    <span class="hljs-string">"car"</span>: <span class="hljs-string">"Car"</span>,
+                    <span class="hljs-string">"airplane"</span>: <span class="hljs-string">"Airplane"</span>,
+                    <span class="hljs-string">"bicycle"</span>: <span class="hljs-string">"Bicycle"</span>
+                }
+            },
+            <span class="hljs-string">"ko-KR"</span>: {
+                <span class="hljs-string">"A"</span>: {
+                    <span class="hljs-string">"apple"</span>: <span class="hljs-string">"사과"</span>,
+                    <span class="hljs-string">"banana"</span>: <span class="hljs-string">"바나나"</span>,
+                    <span class="hljs-string">"orange"</span>: <span class="hljs-string">"오렌지"</span>
+                },
+                <span class="hljs-string">"B"</span>: {
+                    <span class="hljs-string">"car"</span>: <span class="hljs-string">"자동차"</span>,
+                    <span class="hljs-string">"airplane"</span>: <span class="hljs-string">"비행기"</span>,
+                    <span class="hljs-string">"bicycle"</span>: <span class="hljs-string">"자전거"</span>
+                }
+            }
+        }
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        $(<span class="hljs-string">'.translation'</span>).i18n();
+    });
 
-<span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"https://code.jquery.com/jquery-2.1.4.min.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
-<span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"</span> <span class="na">type=</span><span class="s">"text/javascript"</span><span class="nt">&gt;&lt;/script&gt;</span>
-<span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span><span class="nt">&gt;</span>
-	<span class="nx">$</span><span class="p">.</span><span class="nx">i18n</span><span class="p">.</span><span class="nx">init</span><span class="p">({</span>
-		<span class="c1">//lng: 'en-US',</span>
-		<span class="na">lng</span><span class="p">:</span> <span class="s1">'ko-KR'</span><span class="p">,</span>
-		<span class="na">debug</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-		<span class="na">useLocalStorage</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-		<span class="na">localStorageExpirationTime</span><span class="p">:</span> <span class="mi">86400000</span><span class="p">,</span> <span class="c1">// in ms, default 1 week</span>
-		<span class="na">ns</span><span class="p">:</span> <span class="p">{</span>
-			<span class="na">namespaces</span><span class="p">:</span> <span class="p">[</span><span class="s1">'A'</span><span class="p">,</span> <span class="s1">'B'</span><span class="p">],</span>
-			<span class="na">defaultNs</span><span class="p">:</span> <span class="s1">'A'</span>
-		<span class="p">},</span>
-		<span class="c1">//resGetPath: 'js/locales/translation.json'</span>
-		<span class="na">resStore</span><span class="p">:</span> <span class="p">{</span>
-			<span class="s2">"en-US"</span><span class="p">:</span> <span class="p">{</span>
-				<span class="s2">"A"</span><span class="p">:</span> <span class="p">{</span>
-					<span class="s2">"apple"</span><span class="p">:</span> <span class="s2">"Apple"</span><span class="p">,</span>
-					<span class="s2">"banana"</span><span class="p">:</span> <span class="s2">"Banana"</span><span class="p">,</span>
-					<span class="s2">"orange"</span><span class="p">:</span> <span class="s2">"Orange"</span>
-				<span class="p">},</span>
-				<span class="s2">"B"</span><span class="p">:</span> <span class="p">{</span>
-					<span class="s2">"car"</span><span class="p">:</span> <span class="s2">"Car"</span><span class="p">,</span>
-					<span class="s2">"airplane"</span><span class="p">:</span> <span class="s2">"Airplane"</span><span class="p">,</span>
-					<span class="s2">"bicycle"</span><span class="p">:</span> <span class="s2">"Bicycle"</span>
-				<span class="p">}</span>
-			<span class="p">},</span>
-			<span class="s2">"ko-KR"</span><span class="p">:</span> <span class="p">{</span>
-				<span class="s2">"A"</span><span class="p">:</span> <span class="p">{</span>
-					<span class="s2">"apple"</span><span class="p">:</span> <span class="s2">"사과"</span><span class="p">,</span>
-					<span class="s2">"banana"</span><span class="p">:</span> <span class="s2">"바나나"</span><span class="p">,</span>
-					<span class="s2">"orange"</span><span class="p">:</span> <span class="s2">"오렌지"</span>
-				<span class="p">},</span>
-				<span class="s2">"B"</span><span class="p">:</span> <span class="p">{</span>
-					<span class="s2">"car"</span><span class="p">:</span> <span class="s2">"자동차"</span><span class="p">,</span>
-					<span class="s2">"airplane"</span><span class="p">:</span> <span class="s2">"비행기"</span><span class="p">,</span>
-					<span class="s2">"bicycle"</span><span class="p">:</span> <span class="s2">"자전거"</span>
-				<span class="p">}</span>
-			<span class="p">}</span>
-		<span class="p">}</span>
-	<span class="p">},</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-		<span class="nx">$</span><span class="p">(</span><span class="s1">'.translation'</span><span class="p">).</span><span class="nx">i18n</span><span class="p">();</span>
-	<span class="p">});</span>
-
-	<span class="kd">var</span> <span class="nx">changeLang</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">lang</span><span class="p">)</span> <span class="p">{</span>
-		<span class="nx">$</span><span class="p">.</span><span class="nx">i18n</span><span class="p">.</span><span class="nx">setLng</span><span class="p">(</span><span class="nx">lang</span><span class="p">);</span>
-		<span class="nx">$</span><span class="p">(</span><span class="s1">'.translation'</span><span class="p">).</span><span class="nx">i18n</span><span class="p">();</span>
-	<span class="p">}</span>
-<span class="nt">&lt;/script&gt;</span>
-<span class="nt">&lt;/body&gt;</span>
-<span class="nt">&lt;/html&gt;</span>
-</code></pre>
-</div>
-
+    <span class="hljs-keyword">var</span> changeLang = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">lang</span>) </span>{
+        $.i18n.setLng(lang);
+        $(<span class="hljs-string">'.translation'</span>).i18n();
+    }
+</span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">html</span>&gt;</span></pre>
 <p>위의 예시는 jquery와 함께 사용하는 예시이지만 jquery에 대한 의존성을 가진 것은 아니다. <a href="http://cdnjs.com/libraries/i18next">CDN</a> 목록에서 보여지는 것과 같이 amd, commonjs, 기본 등 여러가지 환경에서 사용 가능하다.</p>
-
 <p>여러번 얘기하게되지만 사용방법이 너무 다양하다. 그래서 위의 예시를 기준으로 몇가지 옵션만 설명하겠다. 보다 다양한 사용법은 제작 사이트의 <a href="http://i18next.com/pages/doc_init.html">메뉴얼</a>과 <a href="http://i18next.com/pages/sample.html">샘플</a>을 참고하자.</p>
-
 <ul>
-  <li><strong>lng</strong> : 기본 언어를 지정한다. 위의 예시처럼 setLng 함수를 통해 언제든 변경할 수 있다.</li>
-  <li><strong>debug</strong> : true로 설정시 내부적인 처리에 관련되 log를 확인할 수 있다.</li>
-  <li><strong>useLocalStorage</strong> : true로 설정시 local storage에 내용을 저장하여 향후 재사용할 수 있도록 한다. 이 예시에서는 resStore를 사용해서 언어 설정을 했기 때문에 의미가 없지만 서버에서 언어 정보를 받아와서 사용하는 경우에는 성능에 이점을 얻을 수 있다.</li>
-  <li><strong>localStorageExpirationTime</strong> : local storage에 저장된 데이터에 유효기간을 설정한다. 단위는 ms이며 기본값은 1주일이다.</li>
-  <li><strong>ns</strong> : 사용할 Namespace를 정의한다. 필수는 아니며 필요시에만 사용하면 된다. Namespace의 구분은 ::로 한다.(예시 : “A::apple”)</li>
-  <li><strong>resStore</strong> : i18n에 사용될 데이터를 설정한다.</li>
-  <li><strong>resGetPath</strong> : i18n에서 사용할 데이터를 서버에서 요청할 경우 경로를 구성하는 방법을 정의한다. <code class="highlighter-rouge">'locales/__lng__/__ns__.json'</code> 이런 형식을 쓸 수 있는데 <code class="highlighter-rouge">__lng__</code>는 언어명으로 <code class="highlighter-rouge">__ns__</code>는 Namespace로 대체된다.</li>
+<li><strong>lng</strong> : 기본 언어를 지정한다. 위의 예시처럼 setLng 함수를 통해 언제든 변경할 수 있다.</li>
+<li><strong>debug</strong> : true로 설정시 내부적인 처리에 관련되 log를 확인할 수 있다.</li>
+<li><strong>useLocalStorage</strong> : true로 설정시 local storage에 내용을 저장하여 향후 재사용할 수 있도록 한다. 이 예시에서는 resStore를 사용해서 언어 설정을 했기 때문에 의미가 없지만 서버에서 언어 정보를 받아와서 사용하는 경우에는 성능에 이점을 얻을 수 있다.</li>
+<li><strong>localStorageExpirationTime</strong> : local storage에 저장된 데이터에 유효기간을 설정한다. 단위는 ms이며 기본값은 1주일이다.</li>
+<li><strong>ns</strong> : 사용할 Namespace를 정의한다. 필수는 아니며 필요시에만 사용하면 된다. Namespace의 구분은 ::로 한다.(예시 : &quot;A::apple&quot;)</li>
+<li><strong>resStore</strong> : i18n에 사용될 데이터를 설정한다.</li>
+<li><strong>resGetPath</strong> : i18n에서 사용할 데이터를 서버에서 요청할 경우 경로를 구성하는 방법을 정의한다. <code>'locales/__lng__/__ns__.json'</code> 이런 형식을 쓸 수 있는데 <code>__lng__</code>는 언어명으로 <code>__ns__</code>는 Namespace로 대체된다.</li>
 </ul>
-
 <p>그 외에도 다양한 옵션이 있을 뿐 아니라 여러가지 상황에 대입해서 사용할 수 있다. 위의 예시는 html에 data attribute를 사용하는 것을 예를 들었지만 js에서 직접적으로 데이터를 받아서 사용할 수도 있고, sprintf 등과 같이 데이터를 데입해서 내용을 생성하는 것도 가능하다.
 게다가 handlebars, angular, JQuery UI에서 template에 적용시킬 수도 있다.</p>
-
-			</article>
-			<hr class="boundary"/>
-			<!-- adsense -->
-			<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-			<!-- 블로그 링크형 광고 -->
-			<ins class="adsbygoogle"
-				 style="display:block"
-				 data-ad-client="ca-pub-8163803188491150"
-				 data-ad-slot="7708419825"
-				 data-ad-format="link"></ins>
-			<script>
-			(adsbygoogle = window.adsbygoogle || []).push({});
-			</script>
-			<!-- adsense -->
-			<hr class="boundary"/>
-		</div>
-
-		<!-- adsense -->
-		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-		<!-- 블로그 하단 -->
-		<ins class="adsbygoogle"
-			 style="display:block; margin-bottom:20px;"
-			 data-ad-client="ca-pub-8163803188491150"
-			 data-ad-slot="7841851420"
-			 data-ad-format="auto"></ins>
-		<script>
-			(adsbygoogle = window.adsbygoogle || []).push({});
-		</script>
-		<!-- adsense -->
-
-		<div class="pad-min"></div>
-		<div id="post-comment" class="sheet post">
+</div>
+	</article>
 			<div id="disqus_thread"></div>
-		</div>
-	</div>
-	<div class="content-navigation col-lg-3">
-		<!-- I made it -->
-		<section class="panel panel-default">
-			<div class="panel-heading">
-				<h3 class="panel-title">I made it</h3>
-			</div>
-			<ul class="list-group">
-				<li class="list-group-item"><a href="http://sprite.asamaru.net/" target="_blank">Sprite CSS/Image</a></li>
-				<li class="list-group-item"><a href="http://loan.asamaru.net/" target="_blank">대출이자계산기</a></li>
-				<li class="list-group-item"><a href="http://bookmarklet.asamaru.net/" target="_blank">북마클릿 생성기</a></li>
-			</ul>
-		</section>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "http://a.v.corez.kr/2015/09/15/internationalization-i18n-for-javascript-i18next/";
 
-		<!-- adsense -->
-		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-		<!-- 블로그 우측 -->
-		<ins class="adsbygoogle"
-			 style="display:block; margin-bottom:20px;"
-			 data-ad-client="ca-pub-8163803188491150"
-			 data-ad-slot="1934918622"
-			 data-ad-format="auto"></ins>
-		<script>
-			(adsbygoogle = window.adsbygoogle || []).push({});
-		</script>
-		<!-- adsense -->
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+	</main>
 
-		<!-- Categories -->
-		
-		
-		<section class="panel panel-default">
-			<div class="panel-heading">
-				<h3 class="panel-title">Categories</h3>
-			</div>
-			<ul class="list-group">
-				
-				<li class="list-group-item"><a href="/category/thinking/">Thinking <span class="badge">3</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/osx/">Osx <span class="badge">8</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/programming/">Programming <span class="badge">1</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/css/">Css <span class="badge">3</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/js/">Js <span class="badge">11</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/android/">Android <span class="badge">56</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/octopress/">Octopress <span class="badge">8</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/ios/">Ios <span class="badge">18</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/php/">Php <span class="badge">25</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/java/">Java <span class="badge">5</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/db/">Db <span class="badge">6</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/html/">Html <span class="badge">2</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/git/">Git <span class="badge">7</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/blog/">Blog <span class="badge">1</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/tip/">Tip <span class="badge">15</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/linux/">Linux <span class="badge">27</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/swift/">Swift <span class="badge">6</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/iOS/">Ios <span class="badge">2</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/vagrant/">Vagrant <span class="badge">6</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/jekyll/">Jekyll <span class="badge">2</span></a></li>
-				
-				<li class="list-group-item"><a href="/category/flash/">Flash <span class="badge">1</span></a></li>
-				
-			</ul>
-		</section>
-		
-		
-
-		<!-- Tags -->
-		
-		
-		
-
-		<!-- Related -->
-		
-
-		
-
-		
-		<section class="panel panel-default dRelatedPosts">
-			<div class="panel-heading">
-				<h3 class="panel-title">Related</h3>
-			</div>
-			<ul class="list-group">
-				
-				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/12/06/how-to-do-insertafter-in-javascript/">자바스크립트 insertAfter() 구현하기</a></li>
-				
-				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/11/04/contenteditable-set-caret-at-the-end-of-the-text-cross-browser/">contenteditable이 설정된 개체의 시작 또는 끝에 커서(Caret) 넣기</a></li>
-				
-				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/11/04/remove-http-referer/">HTTP referrer(referer) 숨기기</a></li>
-				
-				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/04/26/gulp-watch-is-very-slow-to-recognize-file-modifications/">NFS로 연결된 디스크에서 Gulp Watch 사용시 파일 변경 감지가 느릴 때</a></li>
-				
-				<li class="list-group-item"><a href="https://blog.asamaru.net/2016/03/09/phantomjs-2-1-1-render-pdf-zoomfactor-bug/">PhantomJS 2.1.1: render PDF / zoomFactor 버그 해결</a></li>
-				
-			</ul>
-		</section>
-		
-
-		<section class="panel panel-default">
-			<style>
-				#google_translate_country { text-align:center; padding-top:5px; }
-				#google_translate_element > div { text-align:center; padding:5px 0; }
-				#google_translate_element > div > div { display:inline-block; *display:inline; *zoom:1; margin-right:10px; }
-			</style>
-			<div id="google_translate_country">
-				<a href="#googtrans(ko|en)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/English.gif?w=660" alt="English"/></a>
-				<!-- <a href="#googtrans(ko|ko)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Korean.gif?w=660" alt="Korean"/></a> -->
-				<a href="#googtrans(ko|zh-CN)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Chinese.gif?w=660" alt="Chinese"/></a>
-				<a href="#googtrans(ko|ja)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Japanese.gif?w=660" alt="Japanese"/></a>
-				<a href="#googtrans(ko|fr)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/French.gif?w=660" alt="French"/></a>
-				<a href="#googtrans(ko|de)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/German.gif?w=660" alt="German"/></a>
-				<a href="#googtrans(ko|it)" onclick="setTimeout(function() { document.location.reload(); });"><img src="/static/img/lang/Italian.gif?w=660" alt="Italian"/></a>
-			</div>
-			<div id="google_translate_element"></div>
-			<script type="text/javascript">
-				function googleTranslateElementInit() {
-					new google.translate.TranslateElement({pageLanguage: 'ko'}, 'google_translate_element');
-				}
-			</script>
-			<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-		</section>
-	</div>
-</div>
-
-
-		
-		<div id="disqus_thread"></div>
-		<script type="text/javascript">
-			/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-			var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-			// var disqus_developer = 1; // Comment out when the site is live
-			var disqus_identifier = "/2015/09/15/internationalization-i18n-for-javascript-i18next/";
-
-			/* * * DON'T EDIT BELOW THIS LINE * * */
-			(function () {
-				var dsq = document.createElement('script');
-				dsq.type = 'text/javascript';
-				dsq.async = true;
-				dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-				(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-			})();
-		</script>
-		<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-		<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-		
-	</div>
-
-	<div class="page-scrollTop" data-toggle="tooltip" data-placement="top" title="Top">
-		<a href="javascript:void(0);">
-			<div class="arrow"></div>
-			<div class="stick"></div>
-		</a>
-	</div>
-</div>
-
-<footer class="footnote footnote-tiffany">
-	<div class="container">
-		<a class="foot-item" href="mailto:asamaru@asamaru.net" target="_blank"><img src="/static/img/bottom-email.png" alt="Email"></a>
-		<a class="foot-item" href="https://github.com/asamaru7" target="_blank"><img src="/static/img/bottom-github.png" alt="Github"></a>
-		<a class="foot-item" href="https://blog.asamaru.net/atom.xml" target="_blank"><img src="/static/img/bottom-rss.png" alt="RSS"></a>
-		&nbsp;
-		<a href="https://blog.asamaru.net"><span class="word-keep">&copy; 유영재</span></a>
-	</div>
+</section>
+<footer>
+	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
 </footer>
+<script src="/res/js/min/fb698ebd5013e23a0881d1027a8fa287.js" type="text/javascript"></script>
+<button type="button" id="cBtnSlide"></button>
+<script>
+	(function () {
+		function addEvent(element, evnt, funct) {
+			if (element.attachEvent)
+				return element.attachEvent('on' + evnt, funct);
+			else
+				return element.addEventListener(evnt, funct, false);
+		}
 
-
-<div class="scriptHub">
-	<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-	<script type="text/javascript" src="https://blog.asamaru.net/static/js/script.js"></script>
-
-	
-	<script type="text/javascript" src="https://blog.asamaru.net/static/js/post.js"></script>
-	
-	
-</div>
-
-
+		var slideout = new Slideout({
+			'panel': document.getElementById('cMainPanel'),
+			'menu': document.getElementById('cSide'),
+			'padding': 300,
+			'tolerance': 70,
+			'side': 'right'
+		});
+		addEvent(
+			document.getElementById('cBtnSlide'),
+			'click',
+			function () {
+				slideout.toggle();
+			}
+		);
+	})();
+</script>
 
 </body>
 </html>

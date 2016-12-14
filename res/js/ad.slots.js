@@ -19,7 +19,8 @@
 			'type': 'adsense',
 			'client': 'ca-pub-8163803188491150',
 			'slot': '7841851420',
-			'format': 'auto'
+			'format': 'auto',
+			'style': 'clear:both;'
 		},
 		'gad-list-auto': [
 			{	// 블로그 목록 중간

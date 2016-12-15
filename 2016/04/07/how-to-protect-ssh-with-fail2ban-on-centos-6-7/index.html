@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,172 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">SSH 무작위 로그인 시도 막기(With Fail2Ban on CentOS 6/7 + selinux)</h2>
+												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
+								<span></span>
+						<time class="published" datetime="2016-04-07 21:03:32">2016.04.07. 21:03</time>
+		</div>
+		<div class="markdown-body entry-content"><p>linux 서버를 공개망에서 사용하면서 방화벽을 사용하지 않는 경우 ssh 로그인을 지속적으로 시도하는 로그를 볼 수 있다. 대부분 외국 IP 대역에서 지속적으로 ssh 로그인을 시도하는데 무작위 비밀번호를 대입하는 것이다. 당연히 방화벽을 설정하는 것이 당연하나 특수한 목적으로 인해 접속 IP 대역을 제한할 수 없는 경우도 있을 수 있다. 이런 경우에 보안을 조금이나마 강화하기 위해 사용할 수 있는 것이 <a href="http://www.fail2ban.org/">fail2ban</a> 이다.</p>
+<p>우선 실제로 해당 서버에 어떤 IP들이 ssh 로그인을 시도했는지 아래의 명령으로 확인 할 수 있다(이하는 CentOS 7 기준이다).</p>
+<p>아래는 로그인 시도 IP를 확인하는 방법이다.</p>
+<pre class="hljs bash">$ ls /var/<span class="hljs-built_in">log</span>/secure | xargs grep -E <span class="hljs-string">"[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+"</span> -o | sort | uniq</pre>
+<p>공개망에 연결된 서버라면 생각보다 많은 IP가 나와 놀랄수도 있다. IP들 중 자신이 아는 IP를 제외하면 대부분이 위에 언급한 공격일 확률이 높다.</p>
+<p>다른 방법으로 아래와 같이 최근 로그인 실패 기록을 확인하는 것도 가능하다.</p>
+<pre class="hljs bash">$ last <span class="hljs-operator">-f</span> /var/<span class="hljs-built_in">log</span>/btmp | more</pre>
+<p><a href="http://www.thegeekstuff.com/2011/08/linux-var-log-files/">20 Linux Log Files that are Located under /var/log Directory</a>에 보면 <code>/var/log/btmp</code>에 대한 설명을 확인 할 수 있다.</p>
+<p>상황을 확인 했으니 이제 본격적으로 <a href="http://www.fail2ban.org/">fail2ban</a>을 사용해 보자.</p>
+<hr />
+<h3>fail2ban 설치</h3>
+<p>fail2ban은 지정된 시간 내에 지정된 횟수 이상으로 ssh 로그인을 실패하면 해당 IP에서의 접근을 지정된 시간만큼 차단하는 역할을 한다.</p>
+<p>아래의 설치 과정은 CentOS 7을 기준으로 한다. 이는 iptables 대신 firewalld가 사용되며 systemd를 사용하는 것을 기준으로 한다는 뜻이다. CentOS 6이라면 아래의 참고자료를 살펴보기 바란다.</p>
+<pre class="hljs bash"><span class="hljs-comment"># epel-release 추가</span>
+$ rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-<span class="hljs-number">7</span>.noarch.rpm
+
+<span class="hljs-comment"># fail2ban 설치</span>
+$ yum install -y fail2ban
+
+<span class="hljs-comment"># fail2ban 기본 설정</span>
+$ hostname=`/bin/hostname`
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"[DEFAULT]"</span> &gt; /etc/fail2ban/jail.local
+<span class="hljs-comment"># 1시간 동안 접근 제한</span>
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"bantime = 3600"</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="hljs-comment"># 결과 수신 메일 지정</span>
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"destemail = ~~~@~~~.com"</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="hljs-comment"># 결과 발신 메일 지정</span>
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"sender = root@<span class="hljs-variable">$hostname</span>"</span> &gt;&gt; /etc/fail2ban/jail.local
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">""</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="hljs-comment"># ssh 접근 검사 활성화</span>
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"[sshd]"</span> &gt;&gt; /etc/fail2ban/jail.local
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"enabled = true"</span> &gt;&gt; /etc/fail2ban/jail.local
+<span class="hljs-comment"># nginx-http-auth 접근 검사 활성화 : 필요시에만 사용</span>
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">""</span> &gt;&gt; /etc/fail2ban/jail.local
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"[nginx-http-auth]"</span> &gt;&gt; /etc/fail2ban/jail.local
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"enabled = true"</span> &gt;&gt; /etc/fail2ban/jail.local</pre>
+<p><strong>fail2ban 서비스 활성</strong></p>
+<pre class="hljs bash">$ systemctl <span class="hljs-built_in">enable</span> fail2ban.service</pre>
+<p><strong>fail2ban 서비스 시작</strong></p>
+<pre class="hljs bash">$ systemctl start fail2ban.service</pre>
+<h3>selinux 사용시 fail2ban 관련 설정</h3>
+<p>이하는 selinux 사용시에만 적용하면 된다.</p>
+<pre class="hljs bash">$ checkmodule -M -m -o fail2ban-syslog.mod fail2ban-syslog.te
+$ semodule_package -o fail2ban-syslog.pp -m fail2ban-syslog.mod
+$ semodule -r fail2ban-syslog
+$ semodule -i fail2ban-syslog.pp
+$ rm <span class="hljs-operator">-f</span> fail2ban-syslog.mod
+$ rm <span class="hljs-operator">-f</span> fail2ban-syslog.pp
+$ semodule <span class="hljs-operator">-l</span>|grep fail2ban-syslog
+
+$ checkmodule -M -m -o logrotate-fail2ban.mod logrotate-fail2ban.te
+$ semodule_package -o logrotate-fail2ban.pp -m logrotate-fail2ban.mod
+$ semodule -r logrotate-fail2ban
+$ semodule -i logrotate-fail2ban.pp
+$ rm <span class="hljs-operator">-f</span> logrotate-fail2ban.mod
+$ rm <span class="hljs-operator">-f</span> logrotate-fail2ban.pp
+$ semodule <span class="hljs-operator">-l</span>|grep logrotate-fail2ban</pre>
+<p>아래의 2개의 파일은 위 스크립트 실행에 필요한 파일이므로 해당 파일명으로 저장해서 사용하면 된다.</p>
+<p><strong>fail2ban-syslog.te</strong></p>
+<pre><code>module fail2ban-syslog 1.0;
+
+require {
+type syslogd_var_run_t;
+type fail2ban_t;
+class dir read;
+class file read;
+class file open;
+class file getattr;
+}
+
+#============= fail2ban_t ==============
+allow fail2ban_t syslogd_var_run_t:dir read;
+allow fail2ban_t syslogd_var_run_t:file read;
+allow fail2ban_t syslogd_var_run_t:file open;
+allow fail2ban_t syslogd_var_run_t:file getattr;</code></pre>
+<p><strong>logrotate-fail2ban.te</strong></p>
+<pre><code>module logrotate-fail2ban 1.7;
+
+require {
+type fail2ban_client_exec_t;
+type logrotate_t;
+type init_var_lib_t;
+class file { open read execute getattr write create execute_no_trans setattr unlink ioctl rename};
+}
+
+#============= logrotate_t ==============
+allow logrotate_t fail2ban_client_exec_t:file execute_no_trans;
+allow logrotate_t fail2ban_client_exec_t:file { open read execute ioctl };
+allow logrotate_t init_var_lib_t:file { open read getattr write create unlink setattr rename };</code></pre>
+<hr />
+<p>설치가 다 되었다면 아래의 명령 실행시 다음과 비슷한 결과를 볼 수 있다.</p>
+<pre class="hljs bash">$ firewall-cmd --direct --get-all-rules
+
+ipv4 filter INPUT <span class="hljs-number">0</span> -p tcp -m multiport --dports ssh -m <span class="hljs-built_in">set</span> --match-set fail2ban-sshd src -j REJECT --reject-with icmp-port-unreachable</pre>
+<p>그리고 아래의 명령으로 적용 상황을 확인할 수 있다.</p>
+<pre class="hljs bash"><span class="hljs-comment"># fail2ban 상태 확인</span>
+$ fail2ban-client status sshd
+
+Status <span class="hljs-keyword">for</span> the jail: sshd
+|- Filter
+|  |- Currently failed: <span class="hljs-number">1</span>
+|  |- Total failed: <span class="hljs-number">153</span>
+|  `- File list:    /var/<span class="hljs-built_in">log</span>/secure
+`- Actions
+   |- Currently banned: <span class="hljs-number">0</span>
+   |- Total banned: <span class="hljs-number">2</span>
+   `- Banned IP list:
+
+<span class="hljs-comment"># ipset에 설정(차단)된 내용 확인</span>
+$ ipset --list
+
+Name: fail2ban-sshd
+Type: <span class="hljs-built_in">hash</span>:ip
+Revision: <span class="hljs-number">1</span>
+Header: family inet hashsize <span class="hljs-number">1024</span> maxelem <span class="hljs-number">65536</span> timeout <span class="hljs-number">3600</span>
+Size <span class="hljs-keyword">in</span> memory: <span class="hljs-number">16656</span>
+References: <span class="hljs-number">1</span>
+Members:
+
+<span class="hljs-comment"># fail2ban 로그 확인</span>
+$ cat /var/<span class="hljs-built_in">log</span>/fail2ban.log
+
+<span class="hljs-comment"># 차단 IP 목록</span>
+$ awk <span class="hljs-string">'($(NF-1) = /Ban/){print $NF}'</span> /var/<span class="hljs-built_in">log</span>/fail2ban.log | sort | uniq -c | sort -n</pre>
+<hr />
+<h3>참고자료</h3>
+<ul>
+<li><a href="http://www.fail2ban.org/wiki/index.php/Commands">fail2ban-client commands</a></li>
+<li><a href="https://krash.be/node/27">selinux module for fail2ban on Centos/RHEL 7</a></li>
+<li><a href="https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-centos-7">How To Protect SSH With Fail2Ban on CentOS 7</a></li>
+<li><a href="https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-centos-6">How To Protect SSH with fail2ban on CentOS 6</a></li>
+<li><a href="http://www.servermom.org/install-fail2ban-centos/1809/">HOW TO INSTALL FAIL2BAN ON CENTOS</a></li>
+<li><a href="https://fedoraproject.org/wiki/Fail2ban_with_FirewallD">Fail2ban with FirewallD</a></li>
+<li><a href="http://www.the-art-of-web.com/system/fail2ban-log/">System: Monitoring the fail2ban log</a></li>
+</ul>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/04/07/how-to-protect-ssh-with-fail2ban-on-centos-6-7/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,171 +473,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">SSH 무작위 로그인 시도 막기(With Fail2Ban on CentOS 6/7 + selinux)</h2>
-												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
-								<span></span>
-						<time class="published" datetime="2016-04-07 21:03:32">2016.04.07. 21:03</time>
-		</div>
-		<div class="markdown-body entry-content"><p>linux 서버를 공개망에서 사용하면서 방화벽을 사용하지 않는 경우 ssh 로그인을 지속적으로 시도하는 로그를 볼 수 있다. 대부분 외국 IP 대역에서 지속적으로 ssh 로그인을 시도하는데 무작위 비밀번호를 대입하는 것이다. 당연히 방화벽을 설정하는 것이 당연하나 특수한 목적으로 인해 접속 IP 대역을 제한할 수 없는 경우도 있을 수 있다. 이런 경우에 보안을 조금이나마 강화하기 위해 사용할 수 있는 것이 <a href="http://www.fail2ban.org/">fail2ban</a> 이다.</p>
-<p>우선 실제로 해당 서버에 어떤 IP들이 ssh 로그인을 시도했는지 아래의 명령으로 확인 할 수 있다(이하는 CentOS 7 기준이다).</p>
-<p>아래는 로그인 시도 IP를 확인하는 방법이다.</p>
-<pre class="hljs bash">$ ls /var/<span class="hljs-built_in">log</span>/secure | xargs grep -E <span class="hljs-string">"[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+"</span> -o | sort | uniq</pre>
-<p>공개망에 연결된 서버라면 생각보다 많은 IP가 나와 놀랄수도 있다. IP들 중 자신이 아는 IP를 제외하면 대부분이 위에 언급한 공격일 확률이 높다.</p>
-<p>다른 방법으로 아래와 같이 최근 로그인 실패 기록을 확인하는 것도 가능하다.</p>
-<pre class="hljs bash">$ last <span class="hljs-operator">-f</span> /var/<span class="hljs-built_in">log</span>/btmp | more</pre>
-<p><a href="http://www.thegeekstuff.com/2011/08/linux-var-log-files/">20 Linux Log Files that are Located under /var/log Directory</a>에 보면 <code>/var/log/btmp</code>에 대한 설명을 확인 할 수 있다.</p>
-<p>상황을 확인 했으니 이제 본격적으로 <a href="http://www.fail2ban.org/">fail2ban</a>을 사용해 보자.</p>
-<hr />
-<h3>fail2ban 설치</h3>
-<p>fail2ban은 지정된 시간 내에 지정된 횟수 이상으로 ssh 로그인을 실패하면 해당 IP에서의 접근을 지정된 시간만큼 차단하는 역할을 한다.</p>
-<p>아래의 설치 과정은 CentOS 7을 기준으로 한다. 이는 iptables 대신 firewalld가 사용되며 systemd를 사용하는 것을 기준으로 한다는 뜻이다. CentOS 6이라면 아래의 참고자료를 살펴보기 바란다.</p>
-<pre class="hljs bash"><span class="hljs-comment"># epel-release 추가</span>
-$ rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-<span class="hljs-number">7</span>.noarch.rpm
-
-<span class="hljs-comment"># fail2ban 설치</span>
-$ yum install -y fail2ban
-
-<span class="hljs-comment"># fail2ban 기본 설정</span>
-$ hostname=`/bin/hostname`
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"[DEFAULT]"</span> &gt; /etc/fail2ban/jail.local
-<span class="hljs-comment"># 1시간 동안 접근 제한</span>
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"bantime = 3600"</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="hljs-comment"># 결과 수신 메일 지정</span>
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"destemail = ~~~@~~~.com"</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="hljs-comment"># 결과 발신 메일 지정</span>
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"sender = root@<span class="hljs-variable">$hostname</span>"</span> &gt;&gt; /etc/fail2ban/jail.local
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">""</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="hljs-comment"># ssh 접근 검사 활성화</span>
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"[sshd]"</span> &gt;&gt; /etc/fail2ban/jail.local
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"enabled = true"</span> &gt;&gt; /etc/fail2ban/jail.local
-<span class="hljs-comment"># nginx-http-auth 접근 검사 활성화 : 필요시에만 사용</span>
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">""</span> &gt;&gt; /etc/fail2ban/jail.local
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"[nginx-http-auth]"</span> &gt;&gt; /etc/fail2ban/jail.local
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"enabled = true"</span> &gt;&gt; /etc/fail2ban/jail.local</pre>
-<p><strong>fail2ban 서비스 활성</strong></p>
-<pre class="hljs bash">$ systemctl <span class="hljs-built_in">enable</span> fail2ban.service</pre>
-<p><strong>fail2ban 서비스 시작</strong></p>
-<pre class="hljs bash">$ systemctl start fail2ban.service</pre>
-<h3>selinux 사용시 fail2ban 관련 설정</h3>
-<p>이하는 selinux 사용시에만 적용하면 된다.</p>
-<pre class="hljs bash">$ checkmodule -M -m -o fail2ban-syslog.mod fail2ban-syslog.te
-$ semodule_package -o fail2ban-syslog.pp -m fail2ban-syslog.mod
-$ semodule -r fail2ban-syslog
-$ semodule -i fail2ban-syslog.pp
-$ rm <span class="hljs-operator">-f</span> fail2ban-syslog.mod
-$ rm <span class="hljs-operator">-f</span> fail2ban-syslog.pp
-$ semodule <span class="hljs-operator">-l</span>|grep fail2ban-syslog
-
-$ checkmodule -M -m -o logrotate-fail2ban.mod logrotate-fail2ban.te
-$ semodule_package -o logrotate-fail2ban.pp -m logrotate-fail2ban.mod
-$ semodule -r logrotate-fail2ban
-$ semodule -i logrotate-fail2ban.pp
-$ rm <span class="hljs-operator">-f</span> logrotate-fail2ban.mod
-$ rm <span class="hljs-operator">-f</span> logrotate-fail2ban.pp
-$ semodule <span class="hljs-operator">-l</span>|grep logrotate-fail2ban</pre>
-<p>아래의 2개의 파일은 위 스크립트 실행에 필요한 파일이므로 해당 파일명으로 저장해서 사용하면 된다.</p>
-<p><strong>fail2ban-syslog.te</strong></p>
-<pre><code>module fail2ban-syslog 1.0;
-
-require {
-type syslogd_var_run_t;
-type fail2ban_t;
-class dir read;
-class file read;
-class file open;
-class file getattr;
-}
-
-#============= fail2ban_t ==============
-allow fail2ban_t syslogd_var_run_t:dir read;
-allow fail2ban_t syslogd_var_run_t:file read;
-allow fail2ban_t syslogd_var_run_t:file open;
-allow fail2ban_t syslogd_var_run_t:file getattr;</code></pre>
-<p><strong>logrotate-fail2ban.te</strong></p>
-<pre><code>module logrotate-fail2ban 1.7;
-
-require {
-type fail2ban_client_exec_t;
-type logrotate_t;
-type init_var_lib_t;
-class file { open read execute getattr write create execute_no_trans setattr unlink ioctl rename};
-}
-
-#============= logrotate_t ==============
-allow logrotate_t fail2ban_client_exec_t:file execute_no_trans;
-allow logrotate_t fail2ban_client_exec_t:file { open read execute ioctl };
-allow logrotate_t init_var_lib_t:file { open read getattr write create unlink setattr rename };</code></pre>
-<hr />
-<p>설치가 다 되었다면 아래의 명령 실행시 다음과 비슷한 결과를 볼 수 있다.</p>
-<pre class="hljs bash">$ firewall-cmd --direct --get-all-rules
-
-ipv4 filter INPUT <span class="hljs-number">0</span> -p tcp -m multiport --dports ssh -m <span class="hljs-built_in">set</span> --match-set fail2ban-sshd src -j REJECT --reject-with icmp-port-unreachable</pre>
-<p>그리고 아래의 명령으로 적용 상황을 확인할 수 있다.</p>
-<pre class="hljs bash"><span class="hljs-comment"># fail2ban 상태 확인</span>
-$ fail2ban-client status sshd
-
-Status <span class="hljs-keyword">for</span> the jail: sshd
-|- Filter
-|  |- Currently failed: <span class="hljs-number">1</span>
-|  |- Total failed: <span class="hljs-number">153</span>
-|  `- File list:    /var/<span class="hljs-built_in">log</span>/secure
-`- Actions
-   |- Currently banned: <span class="hljs-number">0</span>
-   |- Total banned: <span class="hljs-number">2</span>
-   `- Banned IP list:
-
-<span class="hljs-comment"># ipset에 설정(차단)된 내용 확인</span>
-$ ipset --list
-
-Name: fail2ban-sshd
-Type: <span class="hljs-built_in">hash</span>:ip
-Revision: <span class="hljs-number">1</span>
-Header: family inet hashsize <span class="hljs-number">1024</span> maxelem <span class="hljs-number">65536</span> timeout <span class="hljs-number">3600</span>
-Size <span class="hljs-keyword">in</span> memory: <span class="hljs-number">16656</span>
-References: <span class="hljs-number">1</span>
-Members:
-
-<span class="hljs-comment"># fail2ban 로그 확인</span>
-$ cat /var/<span class="hljs-built_in">log</span>/fail2ban.log
-
-<span class="hljs-comment"># 차단 IP 목록</span>
-$ awk <span class="hljs-string">'($(NF-1) = /Ban/){print $NF}'</span> /var/<span class="hljs-built_in">log</span>/fail2ban.log | sort | uniq -c | sort -n</pre>
-<hr />
-<h3>참고자료</h3>
-<ul>
-<li><a href="http://www.fail2ban.org/wiki/index.php/Commands">fail2ban-client commands</a></li>
-<li><a href="https://krash.be/node/27">selinux module for fail2ban on Centos/RHEL 7</a></li>
-<li><a href="https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-centos-7">How To Protect SSH With Fail2Ban on CentOS 7</a></li>
-<li><a href="https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-centos-6">How To Protect SSH with fail2ban on CentOS 6</a></li>
-<li><a href="http://www.servermom.org/install-fail2ban-centos/1809/">HOW TO INSTALL FAIL2BAN ON CENTOS</a></li>
-<li><a href="https://fedoraproject.org/wiki/Fail2ban_with_FirewallD">Fail2ban with FirewallD</a></li>
-<li><a href="http://www.the-art-of-web.com/system/fail2ban-log/">System: Monitoring the fail2ban log</a></li>
-</ul>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/04/07/how-to-protect-ssh-with-fail2ban-on-centos-6-7/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

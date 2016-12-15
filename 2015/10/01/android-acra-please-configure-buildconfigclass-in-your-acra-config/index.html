@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,78 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">ACRA : Please configure &#039;buildConfigClass&#039; in your ACRA config 오류</h2>
+												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
+								<span></span>
+						<time class="published" datetime="2015-10-01 19:48:09">2015.10.01. 19:48</time>
+		</div>
+		<div class="markdown-body entry-content"><p><a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a> 포스트에서 언급했던 것처럼 개발 중인 앱에서 Crash Report를 위해 <a href="https://github.com/ACRA/acra">ACRA</a>를 사용중이다. 아직 4.7.0으로 정식 버전업이 되지는 않았지만 4.7.0 RC1 버전이 maven에 올려져 있어서 적용해 보았다.
+사실은 미리 적용할 예정은 없었으나 <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>와 관련하여 Gradle을 2.4로 버전업 하면서 release 빌드 시에 다른 오류(setLatestEventInfo 함수가 제거됨)가 나타나서 어쩔 수 없이 버전업을 해야했다.</p>
+<p>그런데 버전업을하고 나서 Crash 테스트를 하는 도중 또 다른 오류를 만났다. 기존에도 오류가 나고 있었는지 버전업 후의 문제인지는 확실치는 않다. 안드로이드 작업은 끝없는 오류 해결의 연속인 듯하다. 오류는 아래와 같다.</p>
+<pre class="hljs java">E/ACRA: Not adding buildConfig to log. Class Not found : net.yourdomain.BuildConfig. Please configure <span class="hljs-string">'buildConfigClass'</span> in your ACRA config</pre>
+<p>우선 ACRA를 초기화하는 코드를 살펴보자. 당연하지만 실제 적용코드가 아닌 부분적으로 정리된 코드다.</p>
+<pre class="hljs java">ACRAConfiguration config = ACRA.getNewDefaultConfig(<span class="hljs-keyword">this</span>);
+config.setFormUri(<span class="hljs-string">"http://dev.yourdomain.net/AppCrash"</span>);
+ACRA.init(<span class="hljs-keyword">this</span>, config); <span class="hljs-comment">// The following line triggers the initialization of ACRA</span></pre>
+<p>@ReportsCrashes 어노테이션을 사용하지 않고 동적으로 초기화시켜주는 코드다. 실제로 Crash를 발생시키면 위에서 보여준 오류가 난다. 사실 이 문제는 원인을 확인한 결과 Proguard가 적용되었을 때만 오류가 발생한다. 아래의 ACRA 소스 코드의 일부를 보자.</p>
+<p><strong><a href="https://github.com/ACRA/acra/blob/master/src/main/java/org/acra/collector/CrashReportDataFactory.java">CrashReportDataFactory.java</a></strong></p>
+<pre class="hljs java"><span class="hljs-keyword">private</span> Class&lt;?&gt; getBuildConfigClass() <span class="hljs-keyword">throws</span> ClassNotFoundException {
+    <span class="hljs-keyword">final</span> Class configuredBuildConfig = ACRA.getConfig().buildConfigClass();
+    <span class="hljs-keyword">if</span> ((configuredBuildConfig != <span class="hljs-keyword">null</span>) &amp;&amp; !configuredBuildConfig.equals(Object.class)) {
+        <span class="hljs-comment">// If set via annotations or programatically then it will have a real value,</span>
+        <span class="hljs-comment">// otherwise it will be Object.class (annotation default) or null (explicit programmatic).</span>
+        <span class="hljs-keyword">return</span> configuredBuildConfig;
+    }
+
+    <span class="hljs-keyword">final</span> String className = context.getClass().getPackage().getName() + <span class="hljs-string">".BuildConfig"</span>;
+    <span class="hljs-keyword">try</span> {
+        <span class="hljs-keyword">return</span> Class.forName(className);
+    } <span class="hljs-keyword">catch</span> (ClassNotFoundException e) {
+        ACRA.log.e(LOG_TAG, <span class="hljs-string">"Not adding buildConfig to log. Class Not found : "</span> + className + <span class="hljs-string">". Please configure 'buildConfigClass' in your ACRA config"</span>);
+        <span class="hljs-keyword">throw</span> e;
+    }
+}</pre>
+<p><code>final String className = context.getClass().getPackage().getName() + ".BuildConfig";</code> 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
+해결을 위한 아래의 코드를 보자.</p>
+<pre class="hljs java">ACRAConfiguration config = ACRA.getNewDefaultConfig(<span class="hljs-keyword">this</span>);
+config.setBuildConfigClass(BuildConfig.class);
+config.setFormUri(<span class="hljs-string">"http://dev.yourdomain.net/AppCrash"</span>);
+ACRA.init(<span class="hljs-keyword">this</span>, config); <span class="hljs-comment">// The following line triggers the initialization of ACRA</span></pre>
+<p><code>config.setBuildConfigClass(BuildConfig.class);</code> 이 부분을 추가했다. ACRA 코드에서 보듯이 setBuildConfigClass로 직접 BuildConfig를 넘겨주면 패키지명으로 찾지 않는다. 따라서 Proguard가 적용되어도 문제가 없다.</p>
+<hr />
+<p>이 오류는 이것으로 해결이 가능하다. 하지만 나는 지금 다른 문제로 다시 고군분투 중이다.
+오류 발생시 HTTP/POST를 통해 오류 관련 정보를 전송하도록 사용중이었다. 그런데 앞서 이야기 한것과 같이 이번에 버전업이 되면서 HTTP 접속 관련 부분이 변경되었다. 여기에 문제가 있다.</p>
+<pre class="hljs java">...
+urlConnection.setChunkedStreamingMode(<span class="hljs-number">0</span>);
+...</pre>
+<p>위 부분은 ACRA에서 HTTP 전송시 사용하는 HttpRequest.java 의 일부분이다. <code>setChunkedStreamingMode</code>에 대해서는 여기서 설명하기엔 너무 길고 간단히 요약하자면 chunked 상태로 데이터가 전송된다.
+그런데 이 상태로 전송되면 현재 내가 사용하고 있는 서버에서 POST 값이 모두 비어 있다. request의 body가 수신되지 못하는 것이다. 이 부분은 나의 환경인 php-fpm가 proxy로 연결되어 있는 것과 관련이 있는 것으로 보인다. 이 부분에 대해서는 여러가지로 시도해 보았으나 해결이 되지 않았고 일단은 몇개의 클래스를 재정의해서 문제를 막아 놓았다. 그리고 관련해서는 ACRA에 Issue로 등록해 두었다. 개선이 될런지는 미지수인데 안된다면 앞으로 사용상에 걸림돌이 될 것 같다. 이 부분에 관련된 해결책이 나온다면 다시 포스팅을 하도록 하겠다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,77 +379,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">ACRA : Please configure &#039;buildConfigClass&#039; in your ACRA config 오류</h2>
-												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
-								<span></span>
-						<time class="published" datetime="2015-10-01 19:48:09">2015.10.01. 19:48</time>
-		</div>
-		<div class="markdown-body entry-content"><p><a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a> 포스트에서 언급했던 것처럼 개발 중인 앱에서 Crash Report를 위해 <a href="https://github.com/ACRA/acra">ACRA</a>를 사용중이다. 아직 4.7.0으로 정식 버전업이 되지는 않았지만 4.7.0 RC1 버전이 maven에 올려져 있어서 적용해 보았다.
-사실은 미리 적용할 예정은 없었으나 <a href="/2015/09/29/android-gradle-builds-speed-up/">Android Gradle 빌드 속도 높이기</a>와 관련하여 Gradle을 2.4로 버전업 하면서 release 빌드 시에 다른 오류(setLatestEventInfo 함수가 제거됨)가 나타나서 어쩔 수 없이 버전업을 해야했다.</p>
-<p>그런데 버전업을하고 나서 Crash 테스트를 하는 도중 또 다른 오류를 만났다. 기존에도 오류가 나고 있었는지 버전업 후의 문제인지는 확실치는 않다. 안드로이드 작업은 끝없는 오류 해결의 연속인 듯하다. 오류는 아래와 같다.</p>
-<pre class="hljs java">E/ACRA: Not adding buildConfig to log. Class Not found : net.yourdomain.BuildConfig. Please configure <span class="hljs-string">'buildConfigClass'</span> in your ACRA config</pre>
-<p>우선 ACRA를 초기화하는 코드를 살펴보자. 당연하지만 실제 적용코드가 아닌 부분적으로 정리된 코드다.</p>
-<pre class="hljs java">ACRAConfiguration config = ACRA.getNewDefaultConfig(<span class="hljs-keyword">this</span>);
-config.setFormUri(<span class="hljs-string">"http://dev.yourdomain.net/AppCrash"</span>);
-ACRA.init(<span class="hljs-keyword">this</span>, config); <span class="hljs-comment">// The following line triggers the initialization of ACRA</span></pre>
-<p>@ReportsCrashes 어노테이션을 사용하지 않고 동적으로 초기화시켜주는 코드다. 실제로 Crash를 발생시키면 위에서 보여준 오류가 난다. 사실 이 문제는 원인을 확인한 결과 Proguard가 적용되었을 때만 오류가 발생한다. 아래의 ACRA 소스 코드의 일부를 보자.</p>
-<p><strong><a href="https://github.com/ACRA/acra/blob/master/src/main/java/org/acra/collector/CrashReportDataFactory.java">CrashReportDataFactory.java</a></strong></p>
-<pre class="hljs java"><span class="hljs-keyword">private</span> Class&lt;?&gt; getBuildConfigClass() <span class="hljs-keyword">throws</span> ClassNotFoundException {
-    <span class="hljs-keyword">final</span> Class configuredBuildConfig = ACRA.getConfig().buildConfigClass();
-    <span class="hljs-keyword">if</span> ((configuredBuildConfig != <span class="hljs-keyword">null</span>) &amp;&amp; !configuredBuildConfig.equals(Object.class)) {
-        <span class="hljs-comment">// If set via annotations or programatically then it will have a real value,</span>
-        <span class="hljs-comment">// otherwise it will be Object.class (annotation default) or null (explicit programmatic).</span>
-        <span class="hljs-keyword">return</span> configuredBuildConfig;
-    }
-
-    <span class="hljs-keyword">final</span> String className = context.getClass().getPackage().getName() + <span class="hljs-string">".BuildConfig"</span>;
-    <span class="hljs-keyword">try</span> {
-        <span class="hljs-keyword">return</span> Class.forName(className);
-    } <span class="hljs-keyword">catch</span> (ClassNotFoundException e) {
-        ACRA.log.e(LOG_TAG, <span class="hljs-string">"Not adding buildConfig to log. Class Not found : "</span> + className + <span class="hljs-string">". Please configure 'buildConfigClass' in your ACRA config"</span>);
-        <span class="hljs-keyword">throw</span> e;
-    }
-}</pre>
-<p><code>final String className = context.getClass().getPackage().getName() + ".BuildConfig";</code> 이 부분을 보면 패키지명에 BuildConfig를 더해 Class를 찾고 있다. 이 부분이 문제다. Proguard에서 BuildConfig를 난독화해버려서 리플렉션으로 찾을 수 없는 것이다.
-해결을 위한 아래의 코드를 보자.</p>
-<pre class="hljs java">ACRAConfiguration config = ACRA.getNewDefaultConfig(<span class="hljs-keyword">this</span>);
-config.setBuildConfigClass(BuildConfig.class);
-config.setFormUri(<span class="hljs-string">"http://dev.yourdomain.net/AppCrash"</span>);
-ACRA.init(<span class="hljs-keyword">this</span>, config); <span class="hljs-comment">// The following line triggers the initialization of ACRA</span></pre>
-<p><code>config.setBuildConfigClass(BuildConfig.class);</code> 이 부분을 추가했다. ACRA 코드에서 보듯이 setBuildConfigClass로 직접 BuildConfig를 넘겨주면 패키지명으로 찾지 않는다. 따라서 Proguard가 적용되어도 문제가 없다.</p>
-<hr />
-<p>이 오류는 이것으로 해결이 가능하다. 하지만 나는 지금 다른 문제로 다시 고군분투 중이다.
-오류 발생시 HTTP/POST를 통해 오류 관련 정보를 전송하도록 사용중이었다. 그런데 앞서 이야기 한것과 같이 이번에 버전업이 되면서 HTTP 접속 관련 부분이 변경되었다. 여기에 문제가 있다.</p>
-<pre class="hljs java">...
-urlConnection.setChunkedStreamingMode(<span class="hljs-number">0</span>);
-...</pre>
-<p>위 부분은 ACRA에서 HTTP 전송시 사용하는 HttpRequest.java 의 일부분이다. <code>setChunkedStreamingMode</code>에 대해서는 여기서 설명하기엔 너무 길고 간단히 요약하자면 chunked 상태로 데이터가 전송된다.
-그런데 이 상태로 전송되면 현재 내가 사용하고 있는 서버에서 POST 값이 모두 비어 있다. request의 body가 수신되지 못하는 것이다. 이 부분은 나의 환경인 php-fpm가 proxy로 연결되어 있는 것과 관련이 있는 것으로 보인다. 이 부분에 대해서는 여러가지로 시도해 보았으나 해결이 되지 않았고 일단은 몇개의 클래스를 재정의해서 문제를 막아 놓았다. 그리고 관련해서는 ACRA에 Issue로 등록해 두었다. 개선이 될런지는 미지수인데 안된다면 앞으로 사용상에 걸림돌이 될 것 같다. 이 부분에 관련된 해결책이 나온다면 다시 포스팅을 하도록 하겠다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/10/01/android-acra-please-configure-buildconfigclass-in-your-acra-config/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

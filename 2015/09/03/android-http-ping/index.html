@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,61 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">안드로이드에서 android.os.NetworkOnMainThreadException을 발생시키지 않고 HTTP Ping 보내기</h2>
+												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
+								<span></span>
+						<time class="published" datetime="2015-09-03 18:48:08">2015.09.03. 18:48</time>
+		</div>
+		<div class="markdown-body entry-content"><p>오늘은 작업을 하던 중간에 서버로 ping을 보내야 하는 작업이 생겼다. 정확하게는 서버에 간단한 값을 전송해서 로그로 쌓기 위한 작업이다.
+우선 안드로이드는 main thread에서 network 작업을 할 수 없도록 되어있다. 억지로 하려고하면 android.os.NetworkOnMainThreadException이 발생한다.</p>
+<p>간단히 생각해서 handler를 사용하는 방법도 있으나 메인 handler를 사용하면 마찬가지다.
+그래서 가장 간단한 방법은 AsyncTask를 사용하는 것이다.</p>
+<p>아래는 url을 인자로 받아 http로 접속한 후 response가 200이 나왔는지를 반환한다.</p>
+<pre class="hljs java"><span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">HttpPingAsyncTask</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AsyncTask</span>&lt;<span class="hljs-title">String</span>, <span class="hljs-title">Void</span>, <span class="hljs-title">Boolean</span>&gt; </span>{
+    <span class="hljs-annotation">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">protected</span> Boolean <span class="hljs-title">doInBackground</span><span class="hljs-params">(String... urls)</span> </span>{
+        <span class="hljs-keyword">try</span> {
+            <span class="hljs-comment">// HttpURLConnection.setFollowRedirects(false);</span>
+            HttpURLConnection con = (HttpURLConnection) <span class="hljs-keyword">new</span> URL(urls[<span class="hljs-number">0</span>]).openConnection();
+            con.setInstanceFollowRedirects(<span class="hljs-keyword">false</span>);
+            con.setRequestMethod(<span class="hljs-string">"HEAD"</span>);
+            <span class="hljs-keyword">return</span> (con.getResponseCode() == HttpURLConnection.HTTP_OK);
+        } <span class="hljs-keyword">catch</span> (Exception e) {
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">false</span>;
+        }
+    }
+}</pre>
+<p>사용법은 다음과 같다.</p>
+<pre class="hljs java">(<span class="hljs-keyword">new</span> HttpPingAsyncTask()).execute(url);</pre>
+<p>이는 가장 간단한 형태로 구현된 코드로 할 수 있는 일이 url을 호출하고 응답을 확인하는 것 밖에 없다. 하지만 조금만 응용하면 여러가지로 활용할 수 있다.
+url에 GET 인자로 전달하고자 하는 값을 넘기고 서버에서는 해당 값을 로그로 남기거나 필요한 처리를 한다. 그리고 정상처리가 되었다면 200을 반환하고 실패하면 500을 반환함으로써 처리 결과를 알 수 있다. 이러한 형태를 이용하면 간단한 구현으로 여러가지 일을 할 수 있다.</p>
+<p>또한 위의 코드에 필요한 기능을 조금씩 덧붙이면 보다 다양한 일을 할 수 있는 코드를 만들수도 있을 것이다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/09/03/android-http-ping/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,60 +362,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">안드로이드에서 android.os.NetworkOnMainThreadException을 발생시키지 않고 HTTP Ping 보내기</h2>
-												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
-								<span></span>
-						<time class="published" datetime="2015-09-03 18:48:08">2015.09.03. 18:48</time>
-		</div>
-		<div class="markdown-body entry-content"><p>오늘은 작업을 하던 중간에 서버로 ping을 보내야 하는 작업이 생겼다. 정확하게는 서버에 간단한 값을 전송해서 로그로 쌓기 위한 작업이다.
-우선 안드로이드는 main thread에서 network 작업을 할 수 없도록 되어있다. 억지로 하려고하면 android.os.NetworkOnMainThreadException이 발생한다.</p>
-<p>간단히 생각해서 handler를 사용하는 방법도 있으나 메인 handler를 사용하면 마찬가지다.
-그래서 가장 간단한 방법은 AsyncTask를 사용하는 것이다.</p>
-<p>아래는 url을 인자로 받아 http로 접속한 후 response가 200이 나왔는지를 반환한다.</p>
-<pre class="hljs java"><span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">HttpPingAsyncTask</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AsyncTask</span>&lt;<span class="hljs-title">String</span>, <span class="hljs-title">Void</span>, <span class="hljs-title">Boolean</span>&gt; </span>{
-    <span class="hljs-annotation">@Override</span>
-    <span class="hljs-function"><span class="hljs-keyword">protected</span> Boolean <span class="hljs-title">doInBackground</span><span class="hljs-params">(String... urls)</span> </span>{
-        <span class="hljs-keyword">try</span> {
-            <span class="hljs-comment">// HttpURLConnection.setFollowRedirects(false);</span>
-            HttpURLConnection con = (HttpURLConnection) <span class="hljs-keyword">new</span> URL(urls[<span class="hljs-number">0</span>]).openConnection();
-            con.setInstanceFollowRedirects(<span class="hljs-keyword">false</span>);
-            con.setRequestMethod(<span class="hljs-string">"HEAD"</span>);
-            <span class="hljs-keyword">return</span> (con.getResponseCode() == HttpURLConnection.HTTP_OK);
-        } <span class="hljs-keyword">catch</span> (Exception e) {
-            <span class="hljs-keyword">return</span> <span class="hljs-keyword">false</span>;
-        }
-    }
-}</pre>
-<p>사용법은 다음과 같다.</p>
-<pre class="hljs java">(<span class="hljs-keyword">new</span> HttpPingAsyncTask()).execute(url);</pre>
-<p>이는 가장 간단한 형태로 구현된 코드로 할 수 있는 일이 url을 호출하고 응답을 확인하는 것 밖에 없다. 하지만 조금만 응용하면 여러가지로 활용할 수 있다.
-url에 GET 인자로 전달하고자 하는 값을 넘기고 서버에서는 해당 값을 로그로 남기거나 필요한 처리를 한다. 그리고 정상처리가 되었다면 200을 반환하고 실패하면 500을 반환함으로써 처리 결과를 알 수 있다. 이러한 형태를 이용하면 간단한 구현으로 여러가지 일을 할 수 있다.</p>
-<p>또한 위의 코드에 필요한 기능을 조금씩 덧붙이면 보다 다양한 일을 할 수 있는 코드를 만들수도 있을 것이다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/09/03/android-http-ping/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,95 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">안드로이드 : TextView 터치시 가로 스크롤이 되지 않는 문제 수정(ViewPager 등에서)</h2>
+												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
+								<span></span>
+						<time class="published" datetime="2016-07-12 11:34:06">2016.07.12. 11:34</time>
+		</div>
+		<div class="markdown-body entry-content"><p>오늘도 역시 안드로이드는 실망시키지 않는다. 오늘의 문제는 이렇다.</p>
+<blockquote>
+<p>가로 스크롤되는 ViewPager의 Item View에 TextView가 포함되도록 구성되어 있을 경우 TextView 위에서 터치를 하면 가로 스크롤이 동작하지 않는 문제가 발생한다. 조금 더 정확히 이야기하자면 <code>singleLine</code> 속성이 true로 설정된 TextView들이 가로 스크롤을 정상 동작하지 않도록 만든다.</p>
+</blockquote>
+<p>처음엔 click 이벤트로 인한 문제로 생각했다. 실제로 아래에 깔린 View의 click 이벤트를 제거하니 스크롤이 정상적으로 동작했다. 그런데 다른 UI에서 동일한 형태로 사용중이나 그곳에서는 해당 문제가 발생하지 않기에 다른 원인이 있을 것이라는 판단으로 조금 더 찾아봤다.</p>
+<p>결국 원인을 찾고보니 <code>android:scrollHorizontally</code> 속성이 true로 설정될 경우 해당 문제가 발생했다. TextView의 scroll 처리 영역과 ViewPager의 scroll 처리가 충돌하는 것이다. 그런데 나는 이 속성을 true로 주지 않았기 때문에 이상하다고 생각하고 <code>TextView.java</code> 파일의 내부를 보다가 아래의 코드를 찾았다.</p>
+<p><strong>TextView.java</strong></p>
+<pre class="hljs java"><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">applySingleLine</span><span class="hljs-params">(<span class="hljs-keyword">boolean</span> singleLine, <span class="hljs-keyword">boolean</span> applyTransformation,
+        <span class="hljs-keyword">boolean</span> changeMaxLines)</span> </span>{
+    mSingleLine = singleLine;
+    <span class="hljs-keyword">if</span> (singleLine) {
+        setLines(<span class="hljs-number">1</span>);
+        setHorizontallyScrolling(<span class="hljs-keyword">true</span>);
+        <span class="hljs-keyword">if</span> (applyTransformation) {
+            setTransformationMethod(SingleLineTransformationMethod.getInstance());
+        }
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">if</span> (changeMaxLines) {
+            setMaxLines(Integer.MAX_VALUE);
+        }
+        setHorizontallyScrolling(<span class="hljs-keyword">false</span>);
+        <span class="hljs-keyword">if</span> (applyTransformation) {
+            setTransformationMethod(<span class="hljs-keyword">null</span>);
+        }
+    }
+}</pre>
+<p>그렇다. <code>singleLine</code> 속성을 사용하면 자동적으로 <code>setHorizontallyScrolling(true);</code>가 적용되는 것이다. 여담이지만 <code>android:scrollHorizontally</code> 설정 상태를 확인하기 위해 <code>TextView.java</code>에 있는 아래의 함수를 호출해 봤더니 해당 함수를 못찾는다. 최신 SDK에 들어간 것도 아니고 public 인데도 불구하고... 역시 이상한 안드로이드.</p>
+<pre class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">getHorizontallyScrolling</span><span class="hljs-params">()</span> </span>{
+    <span class="hljs-keyword">return</span> mHorizontallyScrolling;
+}</pre>
+<p>어쨌든 이를 해결하기 위해 아래와 같이 style을 정의해서 TextView에 적용해 봤다.</p>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"TextViewBaseStyle"</span>&gt;</span><span class="css">
+  &lt;!<span class="hljs-tag">--</span> 가로 스크롤 문제를 발생시키는 속성 <span class="hljs-tag">--</span>&gt;
+  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:singleLine"</span>&gt;<span class="hljs-tag">true</span>&lt;/<span class="hljs-tag">item</span>&gt;
+  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:ellipsize"</span>&gt;<span class="hljs-tag">end</span>&lt;/<span class="hljs-tag">item</span>&gt;
+  &lt;!<span class="hljs-tag">--</span> 가로 스크롤 문제를 개선하기 위한 시도 <span class="hljs-tag">--</span>&gt;
+  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:scrollHorizontally"</span>&gt;<span class="hljs-tag">false</span>&lt;/<span class="hljs-tag">item</span>&gt;
+  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:clickable"</span>&gt;<span class="hljs-tag">false</span>&lt;/<span class="hljs-tag">item</span>&gt;
+  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:focusable"</span>&gt;<span class="hljs-tag">false</span>&lt;/<span class="hljs-tag">item</span>&gt;
+  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:focusableInTouchMode"</span>&gt;<span class="hljs-tag">false</span>&lt;/<span class="hljs-tag">item</span>&gt;
+</span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
+<p>결론은 안된다. <code>android:scrollHorizontally</code> 값이 위에 보여준 코드에 의해 무시되는 결과를 가져오는 것이다.</p>
+<p>따라서 해결 방법은 아래의 방법 밖에 없다.</p>
+<pre class="hljs java">textView.setHorizontallyScrolling(<span class="hljs-keyword">false</span>);</pre>
+<p>그렇다. 프로그램에서 직접 <code>android:scrollHorizontally</code>를 false로 설정하는 것 외에는 다른 방법이 없다. <code>TextView.java</code> 내부에서 직접 true를 지정하고 있으므로 해당 코드를 오버라이딩 할 것이 아니라면 이 방법 밖에는 없다. 생성자 내부에서 처리 순서가 아래와 같기 때문에 <code>singleLine</code> 속성을 사용한다면 다른 방법이 없는 것이다. 도대체 TextView 개발자는 무슨 생각으로 코드를 짠 것인가?</p>
+<pre class="hljs java">...
+<span class="hljs-keyword">case</span> com.android.internal.R.styleable.TextView_scrollHorizontally:
+    <span class="hljs-keyword">if</span> (a.getBoolean(attr, <span class="hljs-keyword">false</span>)) {
+        setHorizontallyScrolling(<span class="hljs-keyword">true</span>);
+    }
+    <span class="hljs-keyword">break</span>;
+...
+applySingleLine(singleLine, singleLine, singleLine);
+...          </pre>
+<hr />
+<p><strong>추가</strong></p>
+<p>조금 더 알아보니 <code>singleLine</code> 속성 자체가 API 3에서 deprecated 되었다가 다시 풀린 것으로 보인다. 대신 <code>maxLines</code> 속성을 권장하는 것으로 보인다. 하지만 <code>singleLine</code> 자체도 <code>marquee</code> 등의 기능 사용을 위해 필요한 곳이 있다. <a href="http://stackoverflow.com/a/31871217">android singleLine vs maxLines</a></p>
+<p>결론은 위의 방법을 사용하거나 <code>singleLine</code> 속성 대신 <code>maxLines</code> 속성에 1을 주는 방법으로 <code>ellipsize</code>를 처리하는 방법이 있다. 사실 이 부분의 경우 하위 버전의 안드로이드에서 정상 동작하지 않는 문제가 있었던 것으로 보이나 현재 시점에서 테스트 해봤을 때는 정상 동작했다. <code>singleLine</code> 속성은 내부적으로 추가적인 처리를 하는 것으로 보이니 성능면에서도 <code>maxLines</code>를 사용하는 것을 권장한다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/07/12/android-textview-with-a-single-line-in-viewpager-scroll-doesnt-work/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,94 +396,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">안드로이드 : TextView 터치시 가로 스크롤이 되지 않는 문제 수정(ViewPager 등에서)</h2>
-												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
-								<span></span>
-						<time class="published" datetime="2016-07-12 11:34:06">2016.07.12. 11:34</time>
-		</div>
-		<div class="markdown-body entry-content"><p>오늘도 역시 안드로이드는 실망시키지 않는다. 오늘의 문제는 이렇다.</p>
-<blockquote>
-<p>가로 스크롤되는 ViewPager의 Item View에 TextView가 포함되도록 구성되어 있을 경우 TextView 위에서 터치를 하면 가로 스크롤이 동작하지 않는 문제가 발생한다. 조금 더 정확히 이야기하자면 <code>singleLine</code> 속성이 true로 설정된 TextView들이 가로 스크롤을 정상 동작하지 않도록 만든다.</p>
-</blockquote>
-<p>처음엔 click 이벤트로 인한 문제로 생각했다. 실제로 아래에 깔린 View의 click 이벤트를 제거하니 스크롤이 정상적으로 동작했다. 그런데 다른 UI에서 동일한 형태로 사용중이나 그곳에서는 해당 문제가 발생하지 않기에 다른 원인이 있을 것이라는 판단으로 조금 더 찾아봤다.</p>
-<p>결국 원인을 찾고보니 <code>android:scrollHorizontally</code> 속성이 true로 설정될 경우 해당 문제가 발생했다. TextView의 scroll 처리 영역과 ViewPager의 scroll 처리가 충돌하는 것이다. 그런데 나는 이 속성을 true로 주지 않았기 때문에 이상하다고 생각하고 <code>TextView.java</code> 파일의 내부를 보다가 아래의 코드를 찾았다.</p>
-<p><strong>TextView.java</strong></p>
-<pre class="hljs java"><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">applySingleLine</span><span class="hljs-params">(<span class="hljs-keyword">boolean</span> singleLine, <span class="hljs-keyword">boolean</span> applyTransformation,
-        <span class="hljs-keyword">boolean</span> changeMaxLines)</span> </span>{
-    mSingleLine = singleLine;
-    <span class="hljs-keyword">if</span> (singleLine) {
-        setLines(<span class="hljs-number">1</span>);
-        setHorizontallyScrolling(<span class="hljs-keyword">true</span>);
-        <span class="hljs-keyword">if</span> (applyTransformation) {
-            setTransformationMethod(SingleLineTransformationMethod.getInstance());
-        }
-    } <span class="hljs-keyword">else</span> {
-        <span class="hljs-keyword">if</span> (changeMaxLines) {
-            setMaxLines(Integer.MAX_VALUE);
-        }
-        setHorizontallyScrolling(<span class="hljs-keyword">false</span>);
-        <span class="hljs-keyword">if</span> (applyTransformation) {
-            setTransformationMethod(<span class="hljs-keyword">null</span>);
-        }
-    }
-}</pre>
-<p>그렇다. <code>singleLine</code> 속성을 사용하면 자동적으로 <code>setHorizontallyScrolling(true);</code>가 적용되는 것이다. 여담이지만 <code>android:scrollHorizontally</code> 설정 상태를 확인하기 위해 <code>TextView.java</code>에 있는 아래의 함수를 호출해 봤더니 해당 함수를 못찾는다. 최신 SDK에 들어간 것도 아니고 public 인데도 불구하고... 역시 이상한 안드로이드.</p>
-<pre class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">getHorizontallyScrolling</span><span class="hljs-params">()</span> </span>{
-    <span class="hljs-keyword">return</span> mHorizontallyScrolling;
-}</pre>
-<p>어쨌든 이를 해결하기 위해 아래와 같이 style을 정의해서 TextView에 적용해 봤다.</p>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"TextViewBaseStyle"</span>&gt;</span><span class="css">
-  &lt;!<span class="hljs-tag">--</span> 가로 스크롤 문제를 발생시키는 속성 <span class="hljs-tag">--</span>&gt;
-  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:singleLine"</span>&gt;<span class="hljs-tag">true</span>&lt;/<span class="hljs-tag">item</span>&gt;
-  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:ellipsize"</span>&gt;<span class="hljs-tag">end</span>&lt;/<span class="hljs-tag">item</span>&gt;
-  &lt;!<span class="hljs-tag">--</span> 가로 스크롤 문제를 개선하기 위한 시도 <span class="hljs-tag">--</span>&gt;
-  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:scrollHorizontally"</span>&gt;<span class="hljs-tag">false</span>&lt;/<span class="hljs-tag">item</span>&gt;
-  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:clickable"</span>&gt;<span class="hljs-tag">false</span>&lt;/<span class="hljs-tag">item</span>&gt;
-  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:focusable"</span>&gt;<span class="hljs-tag">false</span>&lt;/<span class="hljs-tag">item</span>&gt;
-  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:focusableInTouchMode"</span>&gt;<span class="hljs-tag">false</span>&lt;/<span class="hljs-tag">item</span>&gt;
-</span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
-<p>결론은 안된다. <code>android:scrollHorizontally</code> 값이 위에 보여준 코드에 의해 무시되는 결과를 가져오는 것이다.</p>
-<p>따라서 해결 방법은 아래의 방법 밖에 없다.</p>
-<pre class="hljs java">textView.setHorizontallyScrolling(<span class="hljs-keyword">false</span>);</pre>
-<p>그렇다. 프로그램에서 직접 <code>android:scrollHorizontally</code>를 false로 설정하는 것 외에는 다른 방법이 없다. <code>TextView.java</code> 내부에서 직접 true를 지정하고 있으므로 해당 코드를 오버라이딩 할 것이 아니라면 이 방법 밖에는 없다. 생성자 내부에서 처리 순서가 아래와 같기 때문에 <code>singleLine</code> 속성을 사용한다면 다른 방법이 없는 것이다. 도대체 TextView 개발자는 무슨 생각으로 코드를 짠 것인가?</p>
-<pre class="hljs java">...
-<span class="hljs-keyword">case</span> com.android.internal.R.styleable.TextView_scrollHorizontally:
-    <span class="hljs-keyword">if</span> (a.getBoolean(attr, <span class="hljs-keyword">false</span>)) {
-        setHorizontallyScrolling(<span class="hljs-keyword">true</span>);
-    }
-    <span class="hljs-keyword">break</span>;
-...
-applySingleLine(singleLine, singleLine, singleLine);
-...          </pre>
-<hr />
-<p><strong>추가</strong></p>
-<p>조금 더 알아보니 <code>singleLine</code> 속성 자체가 API 3에서 deprecated 되었다가 다시 풀린 것으로 보인다. 대신 <code>maxLines</code> 속성을 권장하는 것으로 보인다. 하지만 <code>singleLine</code> 자체도 <code>marquee</code> 등의 기능 사용을 위해 필요한 곳이 있다. <a href="http://stackoverflow.com/a/31871217">android singleLine vs maxLines</a></p>
-<p>결론은 위의 방법을 사용하거나 <code>singleLine</code> 속성 대신 <code>maxLines</code> 속성에 1을 주는 방법으로 <code>ellipsize</code>를 처리하는 방법이 있다. 사실 이 부분의 경우 하위 버전의 안드로이드에서 정상 동작하지 않는 문제가 있었던 것으로 보이나 현재 시점에서 테스트 해봤을 때는 정상 동작했다. <code>singleLine</code> 속성은 내부적으로 추가적인 처리를 하는 것으로 보이니 성능면에서도 <code>maxLines</code>를 사용하는 것을 권장한다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/07/12/android-textview-with-a-single-line-in-viewpager-scroll-doesnt-work/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

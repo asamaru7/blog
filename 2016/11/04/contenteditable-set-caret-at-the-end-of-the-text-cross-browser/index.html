@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,68 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">contenteditable이 설정된 개체의 시작 또는 끝에 커서(Caret) 넣기</h2>
+												<a href="https://blog.asamaru.net/category/js/" rel="tag">js</a>
+								<span></span>
+						<time class="published" datetime="2016-11-04 12:21:39">2016.11.04. 12:21</time>
+		</div>
+		<div class="markdown-body entry-content"><p>이번에 <a href="https://github.com/yabwe/medium-editor">MediumEditor</a>를 사용하면서 추가 기능을 개발하던 중 편집 개체에 내용을 추가하는 처리가 필요했다. 커서가 편집 개체 내부에 있다면 <a href="https://github.com/yabwe/medium-editor/blob/master/API.md#pastehtmlhtml-options">pasteHTML()</a> 함수를 간단하게 처리가 된다. 그런데 커서가 편집 개체 밖에 있을 경우엔 넣을 수 없다. 그래서 프로그램에서 커서를 넣어줘야 하는데 fucus를 이용하면 맨 앞으로 들어가서 원하는 결과를 얻을 수 없었다. 그레서 방법을 찾던 중 <a href="http://stackoverflow.com/a/4238971/6736772">contenteditable, set caret at the end of the text (cross-browser)</a>라는 글에서 방법을 찾았다.</p>
+<p><code>contenteditable="true"</code>가 설정된 개체의 시작 또는 끝에 커서(Caret) 넣는 방법은 아래와 같다.</p>
+<pre class="hljs javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createCaretPlacer</span>(<span class="hljs-params">atStart</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">el</span>) </span>{
+        el.focus();
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> <span class="hljs-built_in">window</span>.getSelection != <span class="hljs-string">"undefined"</span>
+                &amp;&amp; <span class="hljs-keyword">typeof</span> <span class="hljs-built_in">document</span>.createRange != <span class="hljs-string">"undefined"</span>) {
+            <span class="hljs-keyword">var</span> range = <span class="hljs-built_in">document</span>.createRange();
+            range.selectNodeContents(el);
+            range.collapse(atStart);
+            <span class="hljs-keyword">var</span> sel = <span class="hljs-built_in">window</span>.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> <span class="hljs-built_in">document</span>.body.createTextRange != <span class="hljs-string">"undefined"</span>) {
+            <span class="hljs-keyword">var</span> textRange = <span class="hljs-built_in">document</span>.body.createTextRange();
+            textRange.moveToElementText(el);
+            textRange.collapse(atStart);
+            textRange.select();
+        }
+    };
+}
+
+<span class="hljs-keyword">var</span> placeCaretAtStart = createCaretPlacer(<span class="hljs-literal">true</span>);
+<span class="hljs-keyword">var</span> placeCaretAtEnd = createCaretPlacer(<span class="hljs-literal">false</span>);</pre>
+<p>이를 활용해 <a href="https://github.com/yabwe/medium-editor">MediumEditor</a>에 적용하는 코드는 아래와 같다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">if</span> (editor.exportSelection() == <span class="hljs-literal">null</span>) {
+    <span class="hljs-keyword">var</span> placeCaretAtEnd = createCaretPlacer(<span class="hljs-literal">false</span>);
+    placeCaretAtEnd(<span class="hljs-built_in">document</span>.getElementById(id));
+}
+editor.pasteHTML(html);</pre>
+<p><a href="https://github.com/yabwe/medium-editor/blob/master/API.md#exportselection">exportSelection</a>를 사용해서 커서가 편집 개체 안에 있는지를 검사해서 커서가 없다면 맨 마지막에 필요한 html 코드를 추가한다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/11/04/contenteditable-set-caret-at-the-end-of-the-text-cross-browser/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,67 +369,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">contenteditable이 설정된 개체의 시작 또는 끝에 커서(Caret) 넣기</h2>
-												<a href="https://blog.asamaru.net/category/js/" rel="tag">js</a>
-								<span></span>
-						<time class="published" datetime="2016-11-04 12:21:39">2016.11.04. 12:21</time>
-		</div>
-		<div class="markdown-body entry-content"><p>이번에 <a href="https://github.com/yabwe/medium-editor">MediumEditor</a>를 사용하면서 추가 기능을 개발하던 중 편집 개체에 내용을 추가하는 처리가 필요했다. 커서가 편집 개체 내부에 있다면 <a href="https://github.com/yabwe/medium-editor/blob/master/API.md#pastehtmlhtml-options">pasteHTML()</a> 함수를 간단하게 처리가 된다. 그런데 커서가 편집 개체 밖에 있을 경우엔 넣을 수 없다. 그래서 프로그램에서 커서를 넣어줘야 하는데 fucus를 이용하면 맨 앞으로 들어가서 원하는 결과를 얻을 수 없었다. 그레서 방법을 찾던 중 <a href="http://stackoverflow.com/a/4238971/6736772">contenteditable, set caret at the end of the text (cross-browser)</a>라는 글에서 방법을 찾았다.</p>
-<p><code>contenteditable="true"</code>가 설정된 개체의 시작 또는 끝에 커서(Caret) 넣는 방법은 아래와 같다.</p>
-<pre class="hljs javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createCaretPlacer</span>(<span class="hljs-params">atStart</span>) </span>{
-    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">el</span>) </span>{
-        el.focus();
-        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> <span class="hljs-built_in">window</span>.getSelection != <span class="hljs-string">"undefined"</span>
-                &amp;&amp; <span class="hljs-keyword">typeof</span> <span class="hljs-built_in">document</span>.createRange != <span class="hljs-string">"undefined"</span>) {
-            <span class="hljs-keyword">var</span> range = <span class="hljs-built_in">document</span>.createRange();
-            range.selectNodeContents(el);
-            range.collapse(atStart);
-            <span class="hljs-keyword">var</span> sel = <span class="hljs-built_in">window</span>.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
-        } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> <span class="hljs-built_in">document</span>.body.createTextRange != <span class="hljs-string">"undefined"</span>) {
-            <span class="hljs-keyword">var</span> textRange = <span class="hljs-built_in">document</span>.body.createTextRange();
-            textRange.moveToElementText(el);
-            textRange.collapse(atStart);
-            textRange.select();
-        }
-    };
-}
-
-<span class="hljs-keyword">var</span> placeCaretAtStart = createCaretPlacer(<span class="hljs-literal">true</span>);
-<span class="hljs-keyword">var</span> placeCaretAtEnd = createCaretPlacer(<span class="hljs-literal">false</span>);</pre>
-<p>이를 활용해 <a href="https://github.com/yabwe/medium-editor">MediumEditor</a>에 적용하는 코드는 아래와 같다.</p>
-<pre class="hljs javascript"><span class="hljs-keyword">if</span> (editor.exportSelection() == <span class="hljs-literal">null</span>) {
-    <span class="hljs-keyword">var</span> placeCaretAtEnd = createCaretPlacer(<span class="hljs-literal">false</span>);
-    placeCaretAtEnd(<span class="hljs-built_in">document</span>.getElementById(id));
-}
-editor.pasteHTML(html);</pre>
-<p><a href="https://github.com/yabwe/medium-editor/blob/master/API.md#exportselection">exportSelection</a>를 사용해서 커서가 편집 개체 안에 있는지를 검사해서 커서가 없다면 맨 마지막에 필요한 html 코드를 추가한다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/11/04/contenteditable-set-caret-at-the-end-of-the-text-cross-browser/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

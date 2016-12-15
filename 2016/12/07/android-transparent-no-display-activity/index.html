@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,99 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">Android 투명 / 보이지 않는 Activity 만들기(Theme.Translucent / Theme.NoDisplay)</h2>
+												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
+								<span></span>
+						<time class="published" datetime="2016-12-07 20:09:06">2016.12.07. 20:09</time>
+		</div>
+		<div class="markdown-body entry-content"><p>안드로이드에서 투명한 배경을 가진 Activity나 눈에 보이지 않는 Activity를 만드는 방법 중 가장 쉬운 방법은 Activity의 Theme를 사용하는 것이다. 이러한 Activity를 구성하기 위해 안드로이드에서 제공되는 테마 몇가지를 알아보자.</p>
+<blockquote>
+<p>아래에 나오는 각 테마의 설정 내용은 Android SDK 24 기준임을 참고하기 바란다.</p>
+</blockquote>
+<hr />
+<h3>Theme.Translucent</h3>
+<p><a href="https://kairo96.gitbooks.io/android/content/ch4.11.html"></a>
+Theme.Translucent 테마는 안드로이드 3.0 이전부터 존재한 테마로 투명한 배경을 가진 Activity를 만들때 사용할 수 있는 테마다. 일반적으로 구버전의 안드로이드까지 정확히 지원하려면 Theme.Translucent.NoTitleBar를 사용해서 투명한 배경을 가진 Activity를 만들어야 한다.</p>
+<p>이 테마는 아래의 3가지 형태로 나뉜다. 각각의 특성은 이름과 설정 내용을 보면 바로 알 수 있다.</p>
+<ul>
+<li>Theme.Translucent</li>
+</ul>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"Theme.Translucent"</span>&gt;</span><span class="css">
+    &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">windowBackground</span>"&gt;<span class="hljs-at_rule">@<span class="hljs-keyword">color/transparent&lt;/item&gt;</span>
+    &lt;item name=<span class="hljs-string">"colorBackgroundCacheHint"</span>&gt;@null&lt;/item&gt;
+    &lt;item name=<span class="hljs-string">"windowIsTranslucent"</span>&gt;true&lt;/item&gt;
+    &lt;!-- Note that we use the base animation style here (that is no
+         animations) because we really have no idea how this kind of
+         activity will be used. --&gt;
+    &lt;item name=<span class="hljs-string">"windowAnimationStyle"</span>&gt;@style/Animation&lt;/item&gt;
+</span></span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
+<ul>
+<li>Theme.Translucent.NoTitleBar</li>
+</ul>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"Theme.Translucent.NoTitleBar"</span>&gt;</span><span class="css">
+    &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">windowNoTitle</span>"&gt;<span class="hljs-tag">true</span>&lt;/<span class="hljs-tag">item</span>&gt;
+    &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">windowContentOverlay</span>"&gt;<span class="hljs-at_rule">@<span class="hljs-keyword">null&lt;/item&gt;</span>
+</span></span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
+<ul>
+<li>Theme.Translucent.NoTitleBar_Fullscreen</li>
+</ul>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"Theme.Translucent.NoTitleBar.Fullscreen"</span>&gt;</span><span class="css">
+    &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">windowFullscreen</span>"&gt;<span class="hljs-tag">true</span>&lt;/<span class="hljs-tag">item</span>&gt;
+</span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
+<p>기본적으로 제공되는 위 테마를 사용하는 것도 괜찮으나 필요하다면 아래와 같이 필요한 설정을 추가해서 재정의한 테마를 사용할 수 있다.</p>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"NoDisplay"</span> <span class="hljs-attribute">parent</span>=<span class="hljs-value">"android:Theme"</span>&gt;</span><span class="css">
+  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:windowIsTranslucent"</span>&gt;<span class="hljs-tag">true</span>&lt;/<span class="hljs-tag">item</span>&gt;
+  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:windowBackground"</span>&gt;<span class="hljs-at_rule">@<span class="hljs-keyword">android:color/transparent&lt;/item&gt;</span>
+  &lt;item name=<span class="hljs-string">"android:windowContentOverlay"</span>&gt;@null&lt;/item&gt;
+  &lt;item name=<span class="hljs-string">"android:windowNoTitle"</span>&gt;true&lt;/item&gt;
+
+  &lt;item name=<span class="hljs-string">"android:windowIsFloating"</span>&gt;true&lt;/item&gt;
+  &lt;item name=<span class="hljs-string">"android:backgroundDimEnabled"</span>&gt;false&lt;/item&gt;
+
+  &lt;item name=<span class="hljs-string">"android:colorBackgroundCacheHint"</span>&gt;@null&lt;/item&gt;
+  &lt;item name=<span class="hljs-string">"android:windowAnimationStyle"</span>&gt;@android:style/Animation&lt;/item&gt;
+  &lt;item name=<span class="hljs-string">"android:windowFullscreen"</span>&gt;true&lt;/item&gt;
+</span></span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
+<hr />
+<h3>Theme.NoDisplay</h3>
+<p>Theme.NoDisplay 테마는 Activity를 투명하게 만드는 것이 아니라 아예 보이지 않는 Activity를 만들어 준다.</p>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"Theme.NoDisplay"</span>&gt;</span><span class="css">
+    &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">windowBackground</span>"&gt;<span class="hljs-at_rule">@<span class="hljs-keyword">null&lt;/item&gt;</span>
+    &lt;item name=<span class="hljs-string">"windowContentOverlay"</span>&gt;@null&lt;/item&gt;
+    &lt;item name=<span class="hljs-string">"windowIsTranslucent"</span>&gt;true&lt;/item&gt;
+    &lt;item name=<span class="hljs-string">"windowAnimationStyle"</span>&gt;@null&lt;/item&gt;
+    &lt;item name=<span class="hljs-string">"windowDisablePreview"</span>&gt;true&lt;/item&gt;
+    &lt;item name=<span class="hljs-string">"windowNoDisplay"</span>&gt;true&lt;/item&gt;
+</span></span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
+<p>이 테마를 사용할 때는 유의할 점이 있다. <code>did not call finish() prior to onResume() completing</code> 오류가 발생할 수 있기 때문이다. Theme.NoDisplay 테마를 사용하는 경우에는 onResume 함수가 호출되기 전에 finish()가 호출되어야 하는데 이를 어길 경우 앱에서 오류가 발생한다.
+이와 관련해서는 <a href="/2016/12/07/android-theme-nodisplay-did-not-call-finish-prior-to-onresume-completing/">Theme.NoDisplay 테마 사용시 안드로이드 API 23에서 did not call finish() prior to onResume() completing 오류 발생</a>에서 조금 더 자세히 다룬다.</p>
+<p>마지막으로 <a href="http://androidblog.reindustries.com/android-cheats-and-tips-invisible-activity/">Android cheats and tips: Invisible activity</a>라는 글도 참고하면 좋을 듯하다. 필요에 따라 <code>android:noHistory</code>와 <code>android:excludeFromRecents="true"</code>를 함께 사용함으로써 history와 최근 사용 항목에 남지 않는 Activity를 생성하는 부분을 안내하고 있다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/12/07/android-transparent-no-display-activity/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,98 +400,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">Android 투명 / 보이지 않는 Activity 만들기(Theme.Translucent / Theme.NoDisplay)</h2>
-												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
-								<span></span>
-						<time class="published" datetime="2016-12-07 20:09:06">2016.12.07. 20:09</time>
-		</div>
-		<div class="markdown-body entry-content"><p>안드로이드에서 투명한 배경을 가진 Activity나 눈에 보이지 않는 Activity를 만드는 방법 중 가장 쉬운 방법은 Activity의 Theme를 사용하는 것이다. 이러한 Activity를 구성하기 위해 안드로이드에서 제공되는 테마 몇가지를 알아보자.</p>
-<blockquote>
-<p>아래에 나오는 각 테마의 설정 내용은 Android SDK 24 기준임을 참고하기 바란다.</p>
-</blockquote>
-<hr />
-<h3>Theme.Translucent</h3>
-<p><a href="https://kairo96.gitbooks.io/android/content/ch4.11.html"></a>
-Theme.Translucent 테마는 안드로이드 3.0 이전부터 존재한 테마로 투명한 배경을 가진 Activity를 만들때 사용할 수 있는 테마다. 일반적으로 구버전의 안드로이드까지 정확히 지원하려면 Theme.Translucent.NoTitleBar를 사용해서 투명한 배경을 가진 Activity를 만들어야 한다.</p>
-<p>이 테마는 아래의 3가지 형태로 나뉜다. 각각의 특성은 이름과 설정 내용을 보면 바로 알 수 있다.</p>
-<ul>
-<li>Theme.Translucent</li>
-</ul>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"Theme.Translucent"</span>&gt;</span><span class="css">
-    &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">windowBackground</span>"&gt;<span class="hljs-at_rule">@<span class="hljs-keyword">color/transparent&lt;/item&gt;</span>
-    &lt;item name=<span class="hljs-string">"colorBackgroundCacheHint"</span>&gt;@null&lt;/item&gt;
-    &lt;item name=<span class="hljs-string">"windowIsTranslucent"</span>&gt;true&lt;/item&gt;
-    &lt;!-- Note that we use the base animation style here (that is no
-         animations) because we really have no idea how this kind of
-         activity will be used. --&gt;
-    &lt;item name=<span class="hljs-string">"windowAnimationStyle"</span>&gt;@style/Animation&lt;/item&gt;
-</span></span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
-<ul>
-<li>Theme.Translucent.NoTitleBar</li>
-</ul>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"Theme.Translucent.NoTitleBar"</span>&gt;</span><span class="css">
-    &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">windowNoTitle</span>"&gt;<span class="hljs-tag">true</span>&lt;/<span class="hljs-tag">item</span>&gt;
-    &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">windowContentOverlay</span>"&gt;<span class="hljs-at_rule">@<span class="hljs-keyword">null&lt;/item&gt;</span>
-</span></span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
-<ul>
-<li>Theme.Translucent.NoTitleBar_Fullscreen</li>
-</ul>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"Theme.Translucent.NoTitleBar.Fullscreen"</span>&gt;</span><span class="css">
-    &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">windowFullscreen</span>"&gt;<span class="hljs-tag">true</span>&lt;/<span class="hljs-tag">item</span>&gt;
-</span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
-<p>기본적으로 제공되는 위 테마를 사용하는 것도 괜찮으나 필요하다면 아래와 같이 필요한 설정을 추가해서 재정의한 테마를 사용할 수 있다.</p>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"NoDisplay"</span> <span class="hljs-attribute">parent</span>=<span class="hljs-value">"android:Theme"</span>&gt;</span><span class="css">
-  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:windowIsTranslucent"</span>&gt;<span class="hljs-tag">true</span>&lt;/<span class="hljs-tag">item</span>&gt;
-  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:windowBackground"</span>&gt;<span class="hljs-at_rule">@<span class="hljs-keyword">android:color/transparent&lt;/item&gt;</span>
-  &lt;item name=<span class="hljs-string">"android:windowContentOverlay"</span>&gt;@null&lt;/item&gt;
-  &lt;item name=<span class="hljs-string">"android:windowNoTitle"</span>&gt;true&lt;/item&gt;
-
-  &lt;item name=<span class="hljs-string">"android:windowIsFloating"</span>&gt;true&lt;/item&gt;
-  &lt;item name=<span class="hljs-string">"android:backgroundDimEnabled"</span>&gt;false&lt;/item&gt;
-
-  &lt;item name=<span class="hljs-string">"android:colorBackgroundCacheHint"</span>&gt;@null&lt;/item&gt;
-  &lt;item name=<span class="hljs-string">"android:windowAnimationStyle"</span>&gt;@android:style/Animation&lt;/item&gt;
-  &lt;item name=<span class="hljs-string">"android:windowFullscreen"</span>&gt;true&lt;/item&gt;
-</span></span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
-<hr />
-<h3>Theme.NoDisplay</h3>
-<p>Theme.NoDisplay 테마는 Activity를 투명하게 만드는 것이 아니라 아예 보이지 않는 Activity를 만들어 준다.</p>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"Theme.NoDisplay"</span>&gt;</span><span class="css">
-    &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">windowBackground</span>"&gt;<span class="hljs-at_rule">@<span class="hljs-keyword">null&lt;/item&gt;</span>
-    &lt;item name=<span class="hljs-string">"windowContentOverlay"</span>&gt;@null&lt;/item&gt;
-    &lt;item name=<span class="hljs-string">"windowIsTranslucent"</span>&gt;true&lt;/item&gt;
-    &lt;item name=<span class="hljs-string">"windowAnimationStyle"</span>&gt;@null&lt;/item&gt;
-    &lt;item name=<span class="hljs-string">"windowDisablePreview"</span>&gt;true&lt;/item&gt;
-    &lt;item name=<span class="hljs-string">"windowNoDisplay"</span>&gt;true&lt;/item&gt;
-</span></span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
-<p>이 테마를 사용할 때는 유의할 점이 있다. <code>did not call finish() prior to onResume() completing</code> 오류가 발생할 수 있기 때문이다. Theme.NoDisplay 테마를 사용하는 경우에는 onResume 함수가 호출되기 전에 finish()가 호출되어야 하는데 이를 어길 경우 앱에서 오류가 발생한다.
-이와 관련해서는 <a href="/2016/12/07/android-theme-nodisplay-did-not-call-finish-prior-to-onresume-completing/">Theme.NoDisplay 테마 사용시 안드로이드 API 23에서 did not call finish() prior to onResume() completing 오류 발생</a>에서 조금 더 자세히 다룬다.</p>
-<p>마지막으로 <a href="http://androidblog.reindustries.com/android-cheats-and-tips-invisible-activity/">Android cheats and tips: Invisible activity</a>라는 글도 참고하면 좋을 듯하다. 필요에 따라 <code>android:noHistory</code>와 <code>android:excludeFromRecents="true"</code>를 함께 사용함으로써 history와 최근 사용 항목에 남지 않는 Activity를 생성하는 부분을 안내하고 있다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/12/07/android-transparent-no-display-activity/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

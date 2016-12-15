@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,111 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">안드로이드 세로 중앙정렬 Span(VerticalCenterSpan)</h2>
+												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
+								<span></span>
+						<time class="published" datetime="2015-10-16 13:37:07">2015.10.16. 13:37</time>
+		</div>
+		<div class="markdown-body entry-content"><p>SpannableString을 사용하던 중에 사이즈가 다른 두 단어를 세로로 중앙 정렬해야 할 일이 생겼다. 그런데 찾아보니 그런 Span은 없고 비슷한 기능이 있는 것들도 BASELINE 또는 BOTTOM으로만 정렬이 가능했다. 그래서 간단하게 Span 클래스를 하나 만들었다. 단, 주의할 것은 multi line은 지원하지 않는다는 것이다(내가 당장 필요하지 않아서 기능을 구현하지 않았다).</p>
+<p><strong>VerticalCenterSpan.java</strong></p>
+<pre class="hljs java"><span class="hljs-keyword">import</span> android.graphics.Canvas;
+<span class="hljs-keyword">import</span> android.graphics.Paint;
+<span class="hljs-keyword">import</span> android.text.style.ReplacementSpan;
+
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">VerticalCenterSpan</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ReplacementSpan</span> </span>{
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">VerticalCenterSpan</span><span class="hljs-params">()</span> </span>{
+    }
+
+    <span class="hljs-annotation">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">draw</span><span class="hljs-params">(Canvas canvas, CharSequence text, <span class="hljs-keyword">int</span> start, <span class="hljs-keyword">int</span> end, <span class="hljs-keyword">float</span> x, <span class="hljs-keyword">int</span> top, <span class="hljs-keyword">int</span> y, <span class="hljs-keyword">int</span> bottom, Paint paint)</span> </span>{
+        <span class="hljs-keyword">int</span> yPos = (<span class="hljs-keyword">int</span>) ((canvas.getHeight() / <span class="hljs-number">2</span>) - ((paint.descent() + paint.ascent()) / <span class="hljs-number">2</span>));
+        canvas.drawText(text, start, end, x, yPos, paint);
+    }
+
+    <span class="hljs-annotation">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">int</span> <span class="hljs-title">getSize</span><span class="hljs-params">(Paint paint, CharSequence text, <span class="hljs-keyword">int</span> start, <span class="hljs-keyword">int</span> end, Paint.FontMetricsInt fm)</span> </span>{
+        <span class="hljs-keyword">return</span> Math.round(paint.measureText(text, start, end));
+    }
+}
+</pre>
+<p>그런데 사용시에 유의할 점이 있다. 다른 Span과 함께 적용시에 일부는 적용되지 않을 수 있다는 것이다. 예를 들어 아래의 예를 보자(아래 소스는 이해를 위해 부분만 넣어둔 것이다).</p>
+<pre class="hljs java">styledText.setSpan(<span class="hljs-keyword">new</span> AbsoluteSizeSpan(<span class="hljs-number">12</span>, <span class="hljs-keyword">true</span>), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+styledText.setSpan(<span class="hljs-keyword">new</span> ForegroundColorSpan(ContextCompat.getColor(<span class="hljs-keyword">this</span>, R.color.newColor)), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+styledText.setSpan(<span class="hljs-keyword">new</span> VerticalCenterSpan(), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);</pre>
+<p>위 소스는 글자 크기와 색상을 바꾼 후 세로 중앙정렬을 하기 위한 코드다. 그런데 실행해보면 색상이 적용되지 않는다. 이 것과 관련해서는 정확한 이유를 확인해보지는 못했지만 <a href="http://stackoverflow.com/a/28329166">ForegroundColorSpan is not applied to ReplacementSpan</a>를 보면 버그라고 추정하는 것 같다. 어쨌든 색상도 함께 바꾸어야 할 경우를 위해 조금 변경한 소스는 아래와 같다.</p>
+<p><strong>ColorVerticalCenterSpan.java</strong></p>
+<pre class="hljs java"><span class="hljs-keyword">import</span> android.graphics.Canvas;
+<span class="hljs-keyword">import</span> android.graphics.Paint;
+<span class="hljs-keyword">import</span> android.graphics.RectF;
+<span class="hljs-keyword">import</span> android.text.style.ReplacementSpan;
+
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ColorVerticalCenterSpan</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ReplacementSpan</span> </span>{
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> backgroundColor = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> foregroundColor = <span class="hljs-number">0</span>;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">ColorVerticalCenterSpan</span><span class="hljs-params">(<span class="hljs-keyword">int</span> foregroundColor)</span> </span>{
+        <span class="hljs-keyword">this</span>.foregroundColor = foregroundColor;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">ColorVerticalCenterSpan</span><span class="hljs-params">(<span class="hljs-keyword">int</span> foregroundColor, <span class="hljs-keyword">int</span> backgroundColor)</span> </span>{
+        <span class="hljs-keyword">this</span>.backgroundColor = backgroundColor;
+        <span class="hljs-keyword">this</span>.foregroundColor = foregroundColor;
+    }
+
+    <span class="hljs-annotation">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">draw</span><span class="hljs-params">(Canvas canvas, CharSequence text, <span class="hljs-keyword">int</span> start, <span class="hljs-keyword">int</span> end, <span class="hljs-keyword">float</span> x, <span class="hljs-keyword">int</span> top, <span class="hljs-keyword">int</span> y, <span class="hljs-keyword">int</span> bottom, Paint paint)</span> </span>{
+        <span class="hljs-comment">// Background</span>
+        <span class="hljs-keyword">if</span> (backgroundColor != <span class="hljs-number">0</span>) {
+            paint.setColor(backgroundColor);
+            canvas.drawRect(<span class="hljs-keyword">new</span> RectF(x, top, x + paint.measureText(text, start, end), bottom), paint);
+        }
+
+        <span class="hljs-comment">// Text</span>
+        <span class="hljs-keyword">if</span> (foregroundColor != <span class="hljs-number">0</span>) {
+            paint.setColor(foregroundColor);
+        }
+        <span class="hljs-keyword">int</span> yPos = (<span class="hljs-keyword">int</span>) ((canvas.getHeight() / <span class="hljs-number">2</span>) - ((paint.descent() + paint.ascent()) / <span class="hljs-number">2</span>));
+        canvas.drawText(text, start, end, x, yPos, paint);
+    }
+
+    <span class="hljs-annotation">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">int</span> <span class="hljs-title">getSize</span><span class="hljs-params">(Paint paint, CharSequence text, <span class="hljs-keyword">int</span> start, <span class="hljs-keyword">int</span> end, Paint.FontMetricsInt fm)</span> </span>{
+        <span class="hljs-keyword">return</span> Math.round(paint.measureText(text, start, end));
+    }
+}</pre>
+<p>이 코드를 이용해서 아래와 같이 사용하면 원하는 결과를 얻을 수 있다.</p>
+<pre class="hljs java">styledText.setSpan(<span class="hljs-keyword">new</span> AbsoluteSizeSpan(<span class="hljs-number">12</span>, <span class="hljs-keyword">true</span>), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+styledText.setSpan(<span class="hljs-keyword">new</span> ColorVerticalCenterSpan(ContextCompat.getColor(<span class="hljs-keyword">this</span>, R.color.newColor)), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);</pre>
+<p>아니면 위에 링크한 StackOverflow의 답변처럼 FontColorSpan 클래스를 추가해서 사용하는 방법도 가능하다. 예를들면 아래처럼.</p>
+<pre class="hljs java">styledText.setSpan(<span class="hljs-keyword">new</span> AbsoluteSizeSpan(<span class="hljs-number">12</span>, <span class="hljs-keyword">true</span>), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+styledText.setSpan(<span class="hljs-keyword">new</span> FontColorSpan(ContextCompat.getColor(<span class="hljs-keyword">this</span>, R.color.newColor)), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+styledText.setSpan(<span class="hljs-keyword">new</span> VerticalCenterSpan(), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);</pre>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/10/16/android-verticalcenterspan/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,110 +412,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">안드로이드 세로 중앙정렬 Span(VerticalCenterSpan)</h2>
-												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
-								<span></span>
-						<time class="published" datetime="2015-10-16 13:37:07">2015.10.16. 13:37</time>
-		</div>
-		<div class="markdown-body entry-content"><p>SpannableString을 사용하던 중에 사이즈가 다른 두 단어를 세로로 중앙 정렬해야 할 일이 생겼다. 그런데 찾아보니 그런 Span은 없고 비슷한 기능이 있는 것들도 BASELINE 또는 BOTTOM으로만 정렬이 가능했다. 그래서 간단하게 Span 클래스를 하나 만들었다. 단, 주의할 것은 multi line은 지원하지 않는다는 것이다(내가 당장 필요하지 않아서 기능을 구현하지 않았다).</p>
-<p><strong>VerticalCenterSpan.java</strong></p>
-<pre class="hljs java"><span class="hljs-keyword">import</span> android.graphics.Canvas;
-<span class="hljs-keyword">import</span> android.graphics.Paint;
-<span class="hljs-keyword">import</span> android.text.style.ReplacementSpan;
-
-<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">VerticalCenterSpan</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ReplacementSpan</span> </span>{
-    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">VerticalCenterSpan</span><span class="hljs-params">()</span> </span>{
-    }
-
-    <span class="hljs-annotation">@Override</span>
-    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">draw</span><span class="hljs-params">(Canvas canvas, CharSequence text, <span class="hljs-keyword">int</span> start, <span class="hljs-keyword">int</span> end, <span class="hljs-keyword">float</span> x, <span class="hljs-keyword">int</span> top, <span class="hljs-keyword">int</span> y, <span class="hljs-keyword">int</span> bottom, Paint paint)</span> </span>{
-        <span class="hljs-keyword">int</span> yPos = (<span class="hljs-keyword">int</span>) ((canvas.getHeight() / <span class="hljs-number">2</span>) - ((paint.descent() + paint.ascent()) / <span class="hljs-number">2</span>));
-        canvas.drawText(text, start, end, x, yPos, paint);
-    }
-
-    <span class="hljs-annotation">@Override</span>
-    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">int</span> <span class="hljs-title">getSize</span><span class="hljs-params">(Paint paint, CharSequence text, <span class="hljs-keyword">int</span> start, <span class="hljs-keyword">int</span> end, Paint.FontMetricsInt fm)</span> </span>{
-        <span class="hljs-keyword">return</span> Math.round(paint.measureText(text, start, end));
-    }
-}
-</pre>
-<p>그런데 사용시에 유의할 점이 있다. 다른 Span과 함께 적용시에 일부는 적용되지 않을 수 있다는 것이다. 예를 들어 아래의 예를 보자(아래 소스는 이해를 위해 부분만 넣어둔 것이다).</p>
-<pre class="hljs java">styledText.setSpan(<span class="hljs-keyword">new</span> AbsoluteSizeSpan(<span class="hljs-number">12</span>, <span class="hljs-keyword">true</span>), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-styledText.setSpan(<span class="hljs-keyword">new</span> ForegroundColorSpan(ContextCompat.getColor(<span class="hljs-keyword">this</span>, R.color.newColor)), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-styledText.setSpan(<span class="hljs-keyword">new</span> VerticalCenterSpan(), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);</pre>
-<p>위 소스는 글자 크기와 색상을 바꾼 후 세로 중앙정렬을 하기 위한 코드다. 그런데 실행해보면 색상이 적용되지 않는다. 이 것과 관련해서는 정확한 이유를 확인해보지는 못했지만 <a href="http://stackoverflow.com/a/28329166">ForegroundColorSpan is not applied to ReplacementSpan</a>를 보면 버그라고 추정하는 것 같다. 어쨌든 색상도 함께 바꾸어야 할 경우를 위해 조금 변경한 소스는 아래와 같다.</p>
-<p><strong>ColorVerticalCenterSpan.java</strong></p>
-<pre class="hljs java"><span class="hljs-keyword">import</span> android.graphics.Canvas;
-<span class="hljs-keyword">import</span> android.graphics.Paint;
-<span class="hljs-keyword">import</span> android.graphics.RectF;
-<span class="hljs-keyword">import</span> android.text.style.ReplacementSpan;
-
-<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ColorVerticalCenterSpan</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ReplacementSpan</span> </span>{
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> backgroundColor = <span class="hljs-number">0</span>;
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> foregroundColor = <span class="hljs-number">0</span>;
-
-    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">ColorVerticalCenterSpan</span><span class="hljs-params">(<span class="hljs-keyword">int</span> foregroundColor)</span> </span>{
-        <span class="hljs-keyword">this</span>.foregroundColor = foregroundColor;
-    }
-
-    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">ColorVerticalCenterSpan</span><span class="hljs-params">(<span class="hljs-keyword">int</span> foregroundColor, <span class="hljs-keyword">int</span> backgroundColor)</span> </span>{
-        <span class="hljs-keyword">this</span>.backgroundColor = backgroundColor;
-        <span class="hljs-keyword">this</span>.foregroundColor = foregroundColor;
-    }
-
-    <span class="hljs-annotation">@Override</span>
-    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">draw</span><span class="hljs-params">(Canvas canvas, CharSequence text, <span class="hljs-keyword">int</span> start, <span class="hljs-keyword">int</span> end, <span class="hljs-keyword">float</span> x, <span class="hljs-keyword">int</span> top, <span class="hljs-keyword">int</span> y, <span class="hljs-keyword">int</span> bottom, Paint paint)</span> </span>{
-        <span class="hljs-comment">// Background</span>
-        <span class="hljs-keyword">if</span> (backgroundColor != <span class="hljs-number">0</span>) {
-            paint.setColor(backgroundColor);
-            canvas.drawRect(<span class="hljs-keyword">new</span> RectF(x, top, x + paint.measureText(text, start, end), bottom), paint);
-        }
-
-        <span class="hljs-comment">// Text</span>
-        <span class="hljs-keyword">if</span> (foregroundColor != <span class="hljs-number">0</span>) {
-            paint.setColor(foregroundColor);
-        }
-        <span class="hljs-keyword">int</span> yPos = (<span class="hljs-keyword">int</span>) ((canvas.getHeight() / <span class="hljs-number">2</span>) - ((paint.descent() + paint.ascent()) / <span class="hljs-number">2</span>));
-        canvas.drawText(text, start, end, x, yPos, paint);
-    }
-
-    <span class="hljs-annotation">@Override</span>
-    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">int</span> <span class="hljs-title">getSize</span><span class="hljs-params">(Paint paint, CharSequence text, <span class="hljs-keyword">int</span> start, <span class="hljs-keyword">int</span> end, Paint.FontMetricsInt fm)</span> </span>{
-        <span class="hljs-keyword">return</span> Math.round(paint.measureText(text, start, end));
-    }
-}</pre>
-<p>이 코드를 이용해서 아래와 같이 사용하면 원하는 결과를 얻을 수 있다.</p>
-<pre class="hljs java">styledText.setSpan(<span class="hljs-keyword">new</span> AbsoluteSizeSpan(<span class="hljs-number">12</span>, <span class="hljs-keyword">true</span>), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-styledText.setSpan(<span class="hljs-keyword">new</span> ColorVerticalCenterSpan(ContextCompat.getColor(<span class="hljs-keyword">this</span>, R.color.newColor)), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);</pre>
-<p>아니면 위에 링크한 StackOverflow의 답변처럼 FontColorSpan 클래스를 추가해서 사용하는 방법도 가능하다. 예를들면 아래처럼.</p>
-<pre class="hljs java">styledText.setSpan(<span class="hljs-keyword">new</span> AbsoluteSizeSpan(<span class="hljs-number">12</span>, <span class="hljs-keyword">true</span>), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-styledText.setSpan(<span class="hljs-keyword">new</span> FontColorSpan(ContextCompat.getColor(<span class="hljs-keyword">this</span>, R.color.newColor)), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-styledText.setSpan(<span class="hljs-keyword">new</span> VerticalCenterSpan(), <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);</pre>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/10/16/android-verticalcenterspan/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

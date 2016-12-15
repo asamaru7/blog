@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,142 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">Javascript 국제화(I18N) 라이브러리 - i18next</h2>
+												<a href="https://blog.asamaru.net/category/js/" rel="tag">js</a>
+								<span></span>
+						<time class="published" datetime="2015-09-15 19:02:43">2015.09.15. 19:02</time>
+		</div>
+		<div class="markdown-body entry-content"><h2>국제화(internationalization : i18n)의 의미</h2>
+<p>국제화는 <a href="http://www.terms.co.kr/internationalization.htm">텀즈</a>의 정의에 따르면 아래와 같다.</p>
+<p>국제화는 때로 줄여서 그저 &quot;I18N&quot;이라고도 표기하는데, 그 의미는 이 용어의 영어 표기에서 첫 글자인 &quot;I&quot;자와 마지막 글자인 &quot;N&quot;의 사이에 18글자가 들어가 있다는 의미이다. 국제화는 제품이나 서비스를 특정지역의 언어나 문화에 맞추는, 즉 현지화라고 불리는 과정을 쉽게 할 수 있도록 계획하거나 이행하는 과정을 말한다. 국제화는 때로 번역 및 현지화 능력부여 작업이라고도 불리는데, 여기에는 다음과 같은 것들이 포함된다.</p>
+<ul>
+<li>하드웨어 레이블이나, 도움말 페이지, 그리고 온라인 메뉴 등 사용자 인터페이스를 설계할 때, 더 많은 수의 글자가 들어갈 때를 대비하여 여유를 둔다.</li>
+<li>웹에디터나 저작도구 등과 같은 제품을 개발할 때 국제 문자셋, 즉 유니코드를 지원할 수 있게 한다.</li>
+<li>인쇄용 그래픽 이미지나, 웹사이트를 만들어서 텍스트 레이블을 번역할 때 비용이 많이 들지 않게 한다.</li>
+<li>전세계적으로 통용될 수 있는 예시를 사용한다.</li>
+<li>소프트웨어의 경우에는, 메시지들이 영어와 같은 단일 바이트 문자 코드에서, 한글과 같은 다중 바이트 문자 코드로 변환될 수 있도록 데이터 공간을 확보한다.</li>
+</ul>
+<p>위키피디아에는 <a href="https://ko.wikipedia.org/wiki/%EA%B5%AD%EC%A0%9C%ED%99%94%EC%99%80_%EC%A7%80%EC%97%AD%ED%99%94">&quot;국제화와 지역화&quot;</a>라는 주제로 설명되어 있기도 하다.</p>
+<h2>i18next</h2>
+<ul>
+<li>공식 사이트 : <a href="http://i18next.com/">http://i18next.com/</a></li>
+<li>Github : <a href="https://github.com/i18next/i18next">https://github.com/i18next/i18next</a></li>
+<li>CDN : <a href="http://cdnjs.com/libraries/i18next">http://cdnjs.com/libraries/i18next</a></li>
+<li>i18next-node : <a href="https://github.com/i18next/i18next-node">https://github.com/i18next/i18next-node</a></li>
+</ul>
+<p>i18next는 위에 설명한 i18n을 자바스크립트 상에서 사용할 수 있도록 제작된 라이브러리다. 아주 다양한 형태로의 사용을 지원하는데 사용해본 결과 메뉴얼이 조금 부실(?)하다. 확인해보면 메뉴얼의 양이 적은 건 아니다. 하지만 워낙 다양하게 지원하다 보니 개별적인 설명이 부족한 감이 든다.</p>
+<p>이번에 다국어용 one page 앱을 제작하면서 영어와 한국어를 지원하기 위해 사용하게되었는데 조금 해멨다. 사실 아직도 자유자재로 사용하지는 못하겠다. 하지만 아주 다양한 형태를 지원하므로 필요한 형태를 메뉴얼을 참고하여 사용한다면 유용하게 사용할 수 있을 것으로 생각한다.</p>
+<h3>사용예시</h3>
+<p>아래는 내가 작업한 일부를 간단하게 요약한 것이다.</p>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">body</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"translation"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">a</span> <span class="hljs-attribute">href</span>=<span class="hljs-value">"javascript:void(0);"</span> <span class="hljs-attribute">onclick</span>=<span class="hljs-value">"changeLang('en-US');"</span>&gt;</span>영어<span class="hljs-tag">&lt;/<span class="hljs-title">a</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">a</span> <span class="hljs-attribute">href</span>=<span class="hljs-value">"javascript:void(0);"</span> <span class="hljs-attribute">onclick</span>=<span class="hljs-value">"changeLang('ko-KR');"</span>&gt;</span>한국어<span class="hljs-tag">&lt;/<span class="hljs-title">a</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">ul</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"A:apple"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"A:banana"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"A:orange"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">ul</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-title">ul</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"B:car"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"B:airplane"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"B:bicycle"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">ul</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/javascript"</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"https://code.jquery.com/jquery-2.1.4.min.js"</span>&gt;</span><span class=""></span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/javascript"</span>&gt;</span><span class=""></span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/javascript"</span>&gt;</span><span class="javascript">
+    $.i18n.init({
+        <span class="hljs-comment">//lng: 'en-US',</span>
+        lng: <span class="hljs-string">'ko-KR'</span>,
+        debug: <span class="hljs-literal">true</span>,
+        useLocalStorage: <span class="hljs-literal">false</span>,
+        localStorageExpirationTime: <span class="hljs-number">86400000</span>, <span class="hljs-comment">// in ms, default 1 week</span>
+        ns: {
+            namespaces: [<span class="hljs-string">'A'</span>, <span class="hljs-string">'B'</span>],
+            defaultNs: <span class="hljs-string">'A'</span>
+        },
+        <span class="hljs-comment">//resGetPath: 'js/locales/translation.json'</span>
+        resStore: {
+            <span class="hljs-string">"en-US"</span>: {
+                <span class="hljs-string">"A"</span>: {
+                    <span class="hljs-string">"apple"</span>: <span class="hljs-string">"Apple"</span>,
+                    <span class="hljs-string">"banana"</span>: <span class="hljs-string">"Banana"</span>,
+                    <span class="hljs-string">"orange"</span>: <span class="hljs-string">"Orange"</span>
+                },
+                <span class="hljs-string">"B"</span>: {
+                    <span class="hljs-string">"car"</span>: <span class="hljs-string">"Car"</span>,
+                    <span class="hljs-string">"airplane"</span>: <span class="hljs-string">"Airplane"</span>,
+                    <span class="hljs-string">"bicycle"</span>: <span class="hljs-string">"Bicycle"</span>
+                }
+            },
+            <span class="hljs-string">"ko-KR"</span>: {
+                <span class="hljs-string">"A"</span>: {
+                    <span class="hljs-string">"apple"</span>: <span class="hljs-string">"사과"</span>,
+                    <span class="hljs-string">"banana"</span>: <span class="hljs-string">"바나나"</span>,
+                    <span class="hljs-string">"orange"</span>: <span class="hljs-string">"오렌지"</span>
+                },
+                <span class="hljs-string">"B"</span>: {
+                    <span class="hljs-string">"car"</span>: <span class="hljs-string">"자동차"</span>,
+                    <span class="hljs-string">"airplane"</span>: <span class="hljs-string">"비행기"</span>,
+                    <span class="hljs-string">"bicycle"</span>: <span class="hljs-string">"자전거"</span>
+                }
+            }
+        }
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        $(<span class="hljs-string">'.translation'</span>).i18n();
+    });
+
+    <span class="hljs-keyword">var</span> changeLang = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">lang</span>) </span>{
+        $.i18n.setLng(lang);
+        $(<span class="hljs-string">'.translation'</span>).i18n();
+    }
+</span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">html</span>&gt;</span></pre>
+<p>위의 예시는 jquery와 함께 사용하는 예시이지만 jquery에 대한 의존성을 가진 것은 아니다. <a href="http://cdnjs.com/libraries/i18next">CDN</a> 목록에서 보여지는 것과 같이 amd, commonjs, 기본 등 여러가지 환경에서 사용 가능하다.</p>
+<p>여러번 얘기하게되지만 사용방법이 너무 다양하다. 그래서 위의 예시를 기준으로 몇가지 옵션만 설명하겠다. 보다 다양한 사용법은 제작 사이트의 <a href="http://i18next.com/pages/doc_init.html">메뉴얼</a>과 <a href="http://i18next.com/pages/sample.html">샘플</a>을 참고하자.</p>
+<ul>
+<li><strong>lng</strong> : 기본 언어를 지정한다. 위의 예시처럼 setLng 함수를 통해 언제든 변경할 수 있다.</li>
+<li><strong>debug</strong> : true로 설정시 내부적인 처리에 관련되 log를 확인할 수 있다.</li>
+<li><strong>useLocalStorage</strong> : true로 설정시 local storage에 내용을 저장하여 향후 재사용할 수 있도록 한다. 이 예시에서는 resStore를 사용해서 언어 설정을 했기 때문에 의미가 없지만 서버에서 언어 정보를 받아와서 사용하는 경우에는 성능에 이점을 얻을 수 있다.</li>
+<li><strong>localStorageExpirationTime</strong> : local storage에 저장된 데이터에 유효기간을 설정한다. 단위는 ms이며 기본값은 1주일이다.</li>
+<li><strong>ns</strong> : 사용할 Namespace를 정의한다. 필수는 아니며 필요시에만 사용하면 된다. Namespace의 구분은 ::로 한다.(예시 : &quot;A::apple&quot;)</li>
+<li><strong>resStore</strong> : i18n에 사용될 데이터를 설정한다.</li>
+<li><strong>resGetPath</strong> : i18n에서 사용할 데이터를 서버에서 요청할 경우 경로를 구성하는 방법을 정의한다. <code>'locales/__lng__/__ns__.json'</code> 이런 형식을 쓸 수 있는데 <code>__lng__</code>는 언어명으로 <code>__ns__</code>는 Namespace로 대체된다.</li>
+</ul>
+<p>그 외에도 다양한 옵션이 있을 뿐 아니라 여러가지 상황에 대입해서 사용할 수 있다. 위의 예시는 html에 data attribute를 사용하는 것을 예를 들었지만 js에서 직접적으로 데이터를 받아서 사용할 수도 있고, sprintf 등과 같이 데이터를 데입해서 내용을 생성하는 것도 가능하다.
+게다가 handlebars, angular, JQuery UI에서 template에 적용시킬 수도 있다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/09/15/internationalization-i18n-for-javascript-i18next/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,141 +443,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">Javascript 국제화(I18N) 라이브러리 - i18next</h2>
-												<a href="https://blog.asamaru.net/category/js/" rel="tag">js</a>
-								<span></span>
-						<time class="published" datetime="2015-09-15 19:02:43">2015.09.15. 19:02</time>
-		</div>
-		<div class="markdown-body entry-content"><h2>국제화(internationalization : i18n)의 의미</h2>
-<p>국제화는 <a href="http://www.terms.co.kr/internationalization.htm">텀즈</a>의 정의에 따르면 아래와 같다.</p>
-<p>국제화는 때로 줄여서 그저 &quot;I18N&quot;이라고도 표기하는데, 그 의미는 이 용어의 영어 표기에서 첫 글자인 &quot;I&quot;자와 마지막 글자인 &quot;N&quot;의 사이에 18글자가 들어가 있다는 의미이다. 국제화는 제품이나 서비스를 특정지역의 언어나 문화에 맞추는, 즉 현지화라고 불리는 과정을 쉽게 할 수 있도록 계획하거나 이행하는 과정을 말한다. 국제화는 때로 번역 및 현지화 능력부여 작업이라고도 불리는데, 여기에는 다음과 같은 것들이 포함된다.</p>
-<ul>
-<li>하드웨어 레이블이나, 도움말 페이지, 그리고 온라인 메뉴 등 사용자 인터페이스를 설계할 때, 더 많은 수의 글자가 들어갈 때를 대비하여 여유를 둔다.</li>
-<li>웹에디터나 저작도구 등과 같은 제품을 개발할 때 국제 문자셋, 즉 유니코드를 지원할 수 있게 한다.</li>
-<li>인쇄용 그래픽 이미지나, 웹사이트를 만들어서 텍스트 레이블을 번역할 때 비용이 많이 들지 않게 한다.</li>
-<li>전세계적으로 통용될 수 있는 예시를 사용한다.</li>
-<li>소프트웨어의 경우에는, 메시지들이 영어와 같은 단일 바이트 문자 코드에서, 한글과 같은 다중 바이트 문자 코드로 변환될 수 있도록 데이터 공간을 확보한다.</li>
-</ul>
-<p>위키피디아에는 <a href="https://ko.wikipedia.org/wiki/%EA%B5%AD%EC%A0%9C%ED%99%94%EC%99%80_%EC%A7%80%EC%97%AD%ED%99%94">&quot;국제화와 지역화&quot;</a>라는 주제로 설명되어 있기도 하다.</p>
-<h2>i18next</h2>
-<ul>
-<li>공식 사이트 : <a href="http://i18next.com/">http://i18next.com/</a></li>
-<li>Github : <a href="https://github.com/i18next/i18next">https://github.com/i18next/i18next</a></li>
-<li>CDN : <a href="http://cdnjs.com/libraries/i18next">http://cdnjs.com/libraries/i18next</a></li>
-<li>i18next-node : <a href="https://github.com/i18next/i18next-node">https://github.com/i18next/i18next-node</a></li>
-</ul>
-<p>i18next는 위에 설명한 i18n을 자바스크립트 상에서 사용할 수 있도록 제작된 라이브러리다. 아주 다양한 형태로의 사용을 지원하는데 사용해본 결과 메뉴얼이 조금 부실(?)하다. 확인해보면 메뉴얼의 양이 적은 건 아니다. 하지만 워낙 다양하게 지원하다 보니 개별적인 설명이 부족한 감이 든다.</p>
-<p>이번에 다국어용 one page 앱을 제작하면서 영어와 한국어를 지원하기 위해 사용하게되었는데 조금 해멨다. 사실 아직도 자유자재로 사용하지는 못하겠다. 하지만 아주 다양한 형태를 지원하므로 필요한 형태를 메뉴얼을 참고하여 사용한다면 유용하게 사용할 수 있을 것으로 생각한다.</p>
-<h3>사용예시</h3>
-<p>아래는 내가 작업한 일부를 간단하게 요약한 것이다.</p>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">html</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-title">body</span>&gt;</span>
-
-<span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"translation"</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">a</span> <span class="hljs-attribute">href</span>=<span class="hljs-value">"javascript:void(0);"</span> <span class="hljs-attribute">onclick</span>=<span class="hljs-value">"changeLang('en-US');"</span>&gt;</span>영어<span class="hljs-tag">&lt;/<span class="hljs-title">a</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">a</span> <span class="hljs-attribute">href</span>=<span class="hljs-value">"javascript:void(0);"</span> <span class="hljs-attribute">onclick</span>=<span class="hljs-value">"changeLang('ko-KR');"</span>&gt;</span>한국어<span class="hljs-tag">&lt;/<span class="hljs-title">a</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">ul</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"A:apple"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"A:banana"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"A:orange"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
-    <span class="hljs-tag">&lt;/<span class="hljs-title">ul</span>&gt;</span>
-
-    <span class="hljs-tag">&lt;<span class="hljs-title">ul</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"B:car"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"B:airplane"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">li</span> <span class="hljs-attribute">data-i18n</span>=<span class="hljs-value">"B:bicycle"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">li</span>&gt;</span>
-    <span class="hljs-tag">&lt;/<span class="hljs-title">ul</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
-
-<span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/javascript"</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"https://code.jquery.com/jquery-2.1.4.min.js"</span>&gt;</span><span class=""></span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"https://cdnjs.cloudflare.com/ajax/libs/i18next/1.9.0/i18next.min.js"</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/javascript"</span>&gt;</span><span class=""></span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/javascript"</span>&gt;</span><span class="javascript">
-    $.i18n.init({
-        <span class="hljs-comment">//lng: 'en-US',</span>
-        lng: <span class="hljs-string">'ko-KR'</span>,
-        debug: <span class="hljs-literal">true</span>,
-        useLocalStorage: <span class="hljs-literal">false</span>,
-        localStorageExpirationTime: <span class="hljs-number">86400000</span>, <span class="hljs-comment">// in ms, default 1 week</span>
-        ns: {
-            namespaces: [<span class="hljs-string">'A'</span>, <span class="hljs-string">'B'</span>],
-            defaultNs: <span class="hljs-string">'A'</span>
-        },
-        <span class="hljs-comment">//resGetPath: 'js/locales/translation.json'</span>
-        resStore: {
-            <span class="hljs-string">"en-US"</span>: {
-                <span class="hljs-string">"A"</span>: {
-                    <span class="hljs-string">"apple"</span>: <span class="hljs-string">"Apple"</span>,
-                    <span class="hljs-string">"banana"</span>: <span class="hljs-string">"Banana"</span>,
-                    <span class="hljs-string">"orange"</span>: <span class="hljs-string">"Orange"</span>
-                },
-                <span class="hljs-string">"B"</span>: {
-                    <span class="hljs-string">"car"</span>: <span class="hljs-string">"Car"</span>,
-                    <span class="hljs-string">"airplane"</span>: <span class="hljs-string">"Airplane"</span>,
-                    <span class="hljs-string">"bicycle"</span>: <span class="hljs-string">"Bicycle"</span>
-                }
-            },
-            <span class="hljs-string">"ko-KR"</span>: {
-                <span class="hljs-string">"A"</span>: {
-                    <span class="hljs-string">"apple"</span>: <span class="hljs-string">"사과"</span>,
-                    <span class="hljs-string">"banana"</span>: <span class="hljs-string">"바나나"</span>,
-                    <span class="hljs-string">"orange"</span>: <span class="hljs-string">"오렌지"</span>
-                },
-                <span class="hljs-string">"B"</span>: {
-                    <span class="hljs-string">"car"</span>: <span class="hljs-string">"자동차"</span>,
-                    <span class="hljs-string">"airplane"</span>: <span class="hljs-string">"비행기"</span>,
-                    <span class="hljs-string">"bicycle"</span>: <span class="hljs-string">"자전거"</span>
-                }
-            }
-        }
-    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        $(<span class="hljs-string">'.translation'</span>).i18n();
-    });
-
-    <span class="hljs-keyword">var</span> changeLang = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">lang</span>) </span>{
-        $.i18n.setLng(lang);
-        $(<span class="hljs-string">'.translation'</span>).i18n();
-    }
-</span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">body</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">html</span>&gt;</span></pre>
-<p>위의 예시는 jquery와 함께 사용하는 예시이지만 jquery에 대한 의존성을 가진 것은 아니다. <a href="http://cdnjs.com/libraries/i18next">CDN</a> 목록에서 보여지는 것과 같이 amd, commonjs, 기본 등 여러가지 환경에서 사용 가능하다.</p>
-<p>여러번 얘기하게되지만 사용방법이 너무 다양하다. 그래서 위의 예시를 기준으로 몇가지 옵션만 설명하겠다. 보다 다양한 사용법은 제작 사이트의 <a href="http://i18next.com/pages/doc_init.html">메뉴얼</a>과 <a href="http://i18next.com/pages/sample.html">샘플</a>을 참고하자.</p>
-<ul>
-<li><strong>lng</strong> : 기본 언어를 지정한다. 위의 예시처럼 setLng 함수를 통해 언제든 변경할 수 있다.</li>
-<li><strong>debug</strong> : true로 설정시 내부적인 처리에 관련되 log를 확인할 수 있다.</li>
-<li><strong>useLocalStorage</strong> : true로 설정시 local storage에 내용을 저장하여 향후 재사용할 수 있도록 한다. 이 예시에서는 resStore를 사용해서 언어 설정을 했기 때문에 의미가 없지만 서버에서 언어 정보를 받아와서 사용하는 경우에는 성능에 이점을 얻을 수 있다.</li>
-<li><strong>localStorageExpirationTime</strong> : local storage에 저장된 데이터에 유효기간을 설정한다. 단위는 ms이며 기본값은 1주일이다.</li>
-<li><strong>ns</strong> : 사용할 Namespace를 정의한다. 필수는 아니며 필요시에만 사용하면 된다. Namespace의 구분은 ::로 한다.(예시 : &quot;A::apple&quot;)</li>
-<li><strong>resStore</strong> : i18n에 사용될 데이터를 설정한다.</li>
-<li><strong>resGetPath</strong> : i18n에서 사용할 데이터를 서버에서 요청할 경우 경로를 구성하는 방법을 정의한다. <code>'locales/__lng__/__ns__.json'</code> 이런 형식을 쓸 수 있는데 <code>__lng__</code>는 언어명으로 <code>__ns__</code>는 Namespace로 대체된다.</li>
-</ul>
-<p>그 외에도 다양한 옵션이 있을 뿐 아니라 여러가지 상황에 대입해서 사용할 수 있다. 위의 예시는 html에 data attribute를 사용하는 것을 예를 들었지만 js에서 직접적으로 데이터를 받아서 사용할 수도 있고, sprintf 등과 같이 데이터를 데입해서 내용을 생성하는 것도 가능하다.
-게다가 handlebars, angular, JQuery UI에서 template에 적용시킬 수도 있다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/09/15/internationalization-i18n-for-javascript-i18next/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,141 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">PHP에서 Byte-escaped(\xFF)된 문자열 decode하기</h2>
+												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
+								<span></span>
+						<time class="published" datetime="2015-09-02 21:49:21">2015.09.02. 21:49</time>
+		</div>
+		<div class="markdown-body entry-content"><p>어제 회사 직원 한명이 협력사에서 데이터 전달을 위해 생성해서 알려준 URL에서 데이터를 받지 못해 고생을 하고 있었다. 협력사는 PC용 어플리케이션을 만드는 회사(Delphi 사용)로 웹에 대해서 잘 모른다.</p>
+<p>처리하고자 하는 일은 다음과 같았다. PC용 어플리케이션에서 버튼을 누르면 해당 어플리케이션에서 가지고 있던 데이터를 특정 URL로 호출(전달)해주는 것이었다.</p>
+<p>처음엔 데이터를 &quot;뭐뭐 주세요&quot; 했더니 그냥 넘겨주는 바람에 특수문자가 들어가 내용이 정상적으로 전달되지 않았다. 당연히 POST 방식으로 값을 전달해주면 문제가 없겠지만 그렇게는 더 어렵다고하니... 그냥 GET으로 달라고 했다. 그 바람에 이런 일들이 벌어진 것이다.</p>
+<p>그리하여 우여곡절 끝에 문자열을 인코딩해서 보내달라는 요청을하고 받은 결과가 다시 문제가 되었다. 분명 인코딩은 되어 있는데 일반적으로 웹에서 쓰는 인코딩이 아니었다.</p>
+<blockquote>
+<p>\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</p>
+</blockquote>
+<p>뭐 이런식이다. 어딘가 낯익은 모양이면서도 흔히 보지못한 형태였다.</p>
+<p>검색을 해보니 javascript escape sequences라고 부르는 사람도 있고 Byte-escaped string이라고 하기도 하고.. 어쨌든 byte 단위로 변환된 문자열이다.</p>
+<p>이 문장을 decode 하려면 다음의 코드를 참조하면 된다. (인터넷에서 다른 소스를 참조해서 조금 개선했다.)</p>
+<pre class="hljs php"><span class="hljs-variable">$string</span> = <span class="hljs-string">"\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9"</span>;
+<span class="hljs-keyword">echo</span> preg_replace_callback(
+    <span class="hljs-string">'/\\\x([0-9a-f]{2})/i'</span>,
+    <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(<span class="hljs-variable">$matches</span>)</span> </span>{
+        <span class="hljs-keyword">return</span> chr(hexdec(<span class="hljs-variable">$matches</span>[<span class="hljs-number">1</span>]));
+    },
+    <span class="hljs-variable">$string</span>
+);</pre>
+<p>어땠든 이렇게 decode를 했는데도 글자가 깨졌다. 이런... 문자열이 UTF-8이 아니라 EUC-KR이다.
+그래서 조금더 추가. 여기서 UHC는 euc-kr과 거의 유사하다. 조금 더 확장되었다고 알고있는데 오래전 기억이라 확실치 않다.</p>
+<pre class="hljs php"><span class="hljs-variable">$string</span> = <span class="hljs-string">"\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9"</span>;
+<span class="hljs-keyword">echo</span> iconv(<span class="hljs-string">"UHC"</span>, <span class="hljs-string">"UTF-8"</span>, preg_replace_callback(
+    <span class="hljs-string">'/\\\x([0-9a-f]{2})/i'</span>,
+    <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(<span class="hljs-variable">$matches</span>)</span> </span>{
+        <span class="hljs-keyword">return</span> chr(hexdec(<span class="hljs-variable">$matches</span>[<span class="hljs-number">1</span>]));
+    },
+    <span class="hljs-variable">$string</span>
+));</pre>
+<p>이렇게 해피앤딩이 되면 좋겠지만 현실을 그렇지 않다. 문제는 이 인코딩이 특수문자는 인코딩하지 않는다는 것.(비 ascii 코드만 인코딩)
+따라서 웹에서 데이터로 URL에 사용해서는 안되는 &amp;, # 등이 그대로 남아있어 데이터가 잘려서 넘어오는 문제는 해결되지 않는다. 가장 좋은 해결책은 urlencode를 해서 넘겨 벋는 것이지만 협력사를 내맘대로 할 수는 없고...</p>
+<p>자체적인 해결을 위한 해결법(꼼수)은 다음과 같다.
+특히 #이 가장 큰 문제를 일으키므로 초출된 URL에서 데이터를 즉시 처리하지 않고 javascript로 현재 브라우저의 URL을 받아 다른 처리 페이지로 직접 넘겨서 파싱한다. 이렇게하면 일이 많이 번거로워지지만 협력사의 변경없이 여기서 모두 해결된다.
+다만.. urlencode만 제대로 해줘도 되는걸 이런 꼼수를 써가며 억지로 해야하는가? 하는...</p>
+<p>이왕 이 일로 글을 적는 김에 몇가지 함수도 덤으로...
+php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등을 사용하면되나 javascript에서 인코딩된 문자열을 그대로 전달받는 경우 등에 사용할 수 있다. 쉽게 말해서 javascript 문자열 인코딩 함수 php 대응 함수다.</p>
+<pre class="hljs php"><span class="hljs-comment">/**
+ * <span class="hljs-doctag">@desc</span> javascript의 encodeURIComponent함수와 같은기능으로 문자열을 변환한다.
+ * <span class="hljs-doctag">@param</span> mixed $str 처리할 배열변수나 단일변수
+ * <span class="hljs-doctag">@param</span> String $fromEncofing 입력 인코딩
+ * <span class="hljs-doctag">@return</span> mixed 변환된 변수 그대로 반환
+ * <span class="hljs-doctag">@exam</span> $arr = String::encodeURI($arr);
+ *       String::encodeURI($arr);
+ */</span>
+<span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">encodeURI</span><span class="hljs-params">(&amp;<span class="hljs-variable">$str</span>, <span class="hljs-variable">$fromEncofing</span> = null)</span>
+</span>{
+    <span class="hljs-keyword">if</span> (is_array(<span class="hljs-variable">$str</span>)) {
+        String::arrayProc(<span class="hljs-variable">$str</span>, <span class="hljs-string">'String::encodeURI'</span>);
+        <span class="hljs-keyword">return</span> <span class="hljs-variable">$str</span>;
+    }
+
+    <span class="hljs-keyword">if</span> (!is_null(<span class="hljs-variable">$fromEncofing</span>)) {
+        <span class="hljs-variable">$trans</span> = iconv(<span class="hljs-variable">$fromEncofing</span>, <span class="hljs-string">"UTF-8"</span>, <span class="hljs-variable">$str</span>); <span class="hljs-comment">// UHC 확장 완성형 한글</span>
+    }
+    <span class="hljs-variable">$trans</span> = rawurlencode(<span class="hljs-variable">$trans</span>);
+
+    <span class="hljs-variable">$str</span> = <span class="hljs-variable">$trans</span>;
+    <span class="hljs-keyword">return</span> <span class="hljs-variable">$str</span>;
+}
+
+<span class="hljs-comment">/**
+ * <span class="hljs-doctag">@desc</span> javascript의 decodeURIComponent함수와 같은기능으로 문자열을 변환한다.
+ * <span class="hljs-doctag">@param</span> mixed $str 처리할 배열변수나 단일변수
+ * <span class="hljs-doctag">@param</span> String $toEncofing 반환 인코딩
+ * <span class="hljs-doctag">@return</span> mixed 변환된 변수 그대로 반환
+ * <span class="hljs-doctag">@exam</span> $arr = String::decodeURI($arr);
+ *       String::decodeURI($arr); //리턴받지 않아도 입력변수에 저장되어 나옴.
+ */</span>
+<span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">decodeURI</span><span class="hljs-params">(&amp;<span class="hljs-variable">$str</span>, <span class="hljs-variable">$toEncofing</span> = null)</span>
+</span>{
+    <span class="hljs-keyword">if</span> (is_array(<span class="hljs-variable">$str</span>)) {
+        String::arrayProc(<span class="hljs-variable">$str</span>, <span class="hljs-string">'String::decodeURI'</span>);
+        <span class="hljs-keyword">return</span> <span class="hljs-variable">$str</span>;
+    }
+
+    <span class="hljs-comment">//  euc-kr의 경우 확장완성형 한글에 대한 처리가 불가능함(예 : ㅂ ㅞ ㄺ)</span>
+    <span class="hljs-comment">//  return iconv("UTF-8", "EUC-KR", rawurldecode($text));</span>
+    <span class="hljs-variable">$str</span> = rawurldecode(<span class="hljs-variable">$str</span>);
+    <span class="hljs-keyword">if</span> (!is_null(<span class="hljs-variable">$toEncofing</span>)) {
+        <span class="hljs-variable">$str</span> = iconv(<span class="hljs-string">"UTF-8"</span>, <span class="hljs-variable">$toEncofing</span>, <span class="hljs-variable">$str</span>);
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-variable">$str</span>;
+}
+
+<span class="hljs-comment">/**
+ * <span class="hljs-doctag">@desc</span> javascript의 escape함수로 인코딩된 문자를 디코딩한다.(encodeURIComponent추천)
+ * <span class="hljs-doctag">@param</span> String $str 처리할 배열변수나 단일변수
+ * <span class="hljs-doctag">@param</span> String $toEncofing 반환 인코딩
+ * <span class="hljs-doctag">@return</span> mixed 변환된 변수 그대로 반환
+ * <span class="hljs-doctag">@exam</span> $decStr = String::unescape($str);
+ */</span>
+<span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">unescape</span><span class="hljs-params">(<span class="hljs-variable">$text</span>, <span class="hljs-variable">$toEncofing</span> = <span class="hljs-string">'UTF-8'</span>)</span>
+</span>{
+    <span class="hljs-comment">//return urldecode(preg_replace_callback('/%u([[:alnum:]]{4})/', array('self', 'tostring'), $text));</span>
+    <span class="hljs-keyword">return</span> urldecode(
+        preg_replace_callback(
+            <span class="hljs-string">'/%u([[:alnum:]]{4})/'</span>,
+            create_function(
+                <span class="hljs-string">'$text'</span>,
+                <span class="hljs-string">"echo '123'; return iconv('UTF-16LE', '"</span> . <span class="hljs-variable">$toEncofing</span> . <span class="hljs-string">"', chr(hexdec(substr(\$text[1], 2, 2))).chr(hexdec(substr(\$text[1], 0, 2))));"</span>
+            ),
+            <span class="hljs-variable">$text</span>
+        )
+    );
+}</pre>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/09/02/decoding-byte-escaped-strings-in-php/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,140 +442,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">PHP에서 Byte-escaped(\xFF)된 문자열 decode하기</h2>
-												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
-								<span></span>
-						<time class="published" datetime="2015-09-02 21:49:21">2015.09.02. 21:49</time>
-		</div>
-		<div class="markdown-body entry-content"><p>어제 회사 직원 한명이 협력사에서 데이터 전달을 위해 생성해서 알려준 URL에서 데이터를 받지 못해 고생을 하고 있었다. 협력사는 PC용 어플리케이션을 만드는 회사(Delphi 사용)로 웹에 대해서 잘 모른다.</p>
-<p>처리하고자 하는 일은 다음과 같았다. PC용 어플리케이션에서 버튼을 누르면 해당 어플리케이션에서 가지고 있던 데이터를 특정 URL로 호출(전달)해주는 것이었다.</p>
-<p>처음엔 데이터를 &quot;뭐뭐 주세요&quot; 했더니 그냥 넘겨주는 바람에 특수문자가 들어가 내용이 정상적으로 전달되지 않았다. 당연히 POST 방식으로 값을 전달해주면 문제가 없겠지만 그렇게는 더 어렵다고하니... 그냥 GET으로 달라고 했다. 그 바람에 이런 일들이 벌어진 것이다.</p>
-<p>그리하여 우여곡절 끝에 문자열을 인코딩해서 보내달라는 요청을하고 받은 결과가 다시 문제가 되었다. 분명 인코딩은 되어 있는데 일반적으로 웹에서 쓰는 인코딩이 아니었다.</p>
-<blockquote>
-<p>\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9</p>
-</blockquote>
-<p>뭐 이런식이다. 어딘가 낯익은 모양이면서도 흔히 보지못한 형태였다.</p>
-<p>검색을 해보니 javascript escape sequences라고 부르는 사람도 있고 Byte-escaped string이라고 하기도 하고.. 어쨌든 byte 단위로 변환된 문자열이다.</p>
-<p>이 문장을 decode 하려면 다음의 코드를 참조하면 된다. (인터넷에서 다른 소스를 참조해서 조금 개선했다.)</p>
-<pre class="hljs php"><span class="hljs-variable">$string</span> = <span class="hljs-string">"\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9"</span>;
-<span class="hljs-keyword">echo</span> preg_replace_callback(
-    <span class="hljs-string">'/\\\x([0-9a-f]{2})/i'</span>,
-    <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(<span class="hljs-variable">$matches</span>)</span> </span>{
-        <span class="hljs-keyword">return</span> chr(hexdec(<span class="hljs-variable">$matches</span>[<span class="hljs-number">1</span>]));
-    },
-    <span class="hljs-variable">$string</span>
-);</pre>
-<p>어땠든 이렇게 decode를 했는데도 글자가 깨졌다. 이런... 문자열이 UTF-8이 아니라 EUC-KR이다.
-그래서 조금더 추가. 여기서 UHC는 euc-kr과 거의 유사하다. 조금 더 확장되었다고 알고있는데 오래전 기억이라 확실치 않다.</p>
-<pre class="hljs php"><span class="hljs-variable">$string</span> = <span class="hljs-string">"\xb4\xd9\xbf\xf8\xc5\xd7\xc5\xa9"</span>;
-<span class="hljs-keyword">echo</span> iconv(<span class="hljs-string">"UHC"</span>, <span class="hljs-string">"UTF-8"</span>, preg_replace_callback(
-    <span class="hljs-string">'/\\\x([0-9a-f]{2})/i'</span>,
-    <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(<span class="hljs-variable">$matches</span>)</span> </span>{
-        <span class="hljs-keyword">return</span> chr(hexdec(<span class="hljs-variable">$matches</span>[<span class="hljs-number">1</span>]));
-    },
-    <span class="hljs-variable">$string</span>
-));</pre>
-<p>이렇게 해피앤딩이 되면 좋겠지만 현실을 그렇지 않다. 문제는 이 인코딩이 특수문자는 인코딩하지 않는다는 것.(비 ascii 코드만 인코딩)
-따라서 웹에서 데이터로 URL에 사용해서는 안되는 &amp;, # 등이 그대로 남아있어 데이터가 잘려서 넘어오는 문제는 해결되지 않는다. 가장 좋은 해결책은 urlencode를 해서 넘겨 벋는 것이지만 협력사를 내맘대로 할 수는 없고...</p>
-<p>자체적인 해결을 위한 해결법(꼼수)은 다음과 같다.
-특히 #이 가장 큰 문제를 일으키므로 초출된 URL에서 데이터를 즉시 처리하지 않고 javascript로 현재 브라우저의 URL을 받아 다른 처리 페이지로 직접 넘겨서 파싱한다. 이렇게하면 일이 많이 번거로워지지만 협력사의 변경없이 여기서 모두 해결된다.
-다만.. urlencode만 제대로 해줘도 되는걸 이런 꼼수를 써가며 억지로 해야하는가? 하는...</p>
-<p>이왕 이 일로 글을 적는 김에 몇가지 함수도 덤으로...
-php에서 url 인코딩에 사용하는 함수다. 당연히 urlencode 함수등을 사용하면되나 javascript에서 인코딩된 문자열을 그대로 전달받는 경우 등에 사용할 수 있다. 쉽게 말해서 javascript 문자열 인코딩 함수 php 대응 함수다.</p>
-<pre class="hljs php"><span class="hljs-comment">/**
- * <span class="hljs-doctag">@desc</span> javascript의 encodeURIComponent함수와 같은기능으로 문자열을 변환한다.
- * <span class="hljs-doctag">@param</span> mixed $str 처리할 배열변수나 단일변수
- * <span class="hljs-doctag">@param</span> String $fromEncofing 입력 인코딩
- * <span class="hljs-doctag">@return</span> mixed 변환된 변수 그대로 반환
- * <span class="hljs-doctag">@exam</span> $arr = String::encodeURI($arr);
- *       String::encodeURI($arr);
- */</span>
-<span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">encodeURI</span><span class="hljs-params">(&amp;<span class="hljs-variable">$str</span>, <span class="hljs-variable">$fromEncofing</span> = null)</span>
-</span>{
-    <span class="hljs-keyword">if</span> (is_array(<span class="hljs-variable">$str</span>)) {
-        String::arrayProc(<span class="hljs-variable">$str</span>, <span class="hljs-string">'String::encodeURI'</span>);
-        <span class="hljs-keyword">return</span> <span class="hljs-variable">$str</span>;
-    }
-
-    <span class="hljs-keyword">if</span> (!is_null(<span class="hljs-variable">$fromEncofing</span>)) {
-        <span class="hljs-variable">$trans</span> = iconv(<span class="hljs-variable">$fromEncofing</span>, <span class="hljs-string">"UTF-8"</span>, <span class="hljs-variable">$str</span>); <span class="hljs-comment">// UHC 확장 완성형 한글</span>
-    }
-    <span class="hljs-variable">$trans</span> = rawurlencode(<span class="hljs-variable">$trans</span>);
-
-    <span class="hljs-variable">$str</span> = <span class="hljs-variable">$trans</span>;
-    <span class="hljs-keyword">return</span> <span class="hljs-variable">$str</span>;
-}
-
-<span class="hljs-comment">/**
- * <span class="hljs-doctag">@desc</span> javascript의 decodeURIComponent함수와 같은기능으로 문자열을 변환한다.
- * <span class="hljs-doctag">@param</span> mixed $str 처리할 배열변수나 단일변수
- * <span class="hljs-doctag">@param</span> String $toEncofing 반환 인코딩
- * <span class="hljs-doctag">@return</span> mixed 변환된 변수 그대로 반환
- * <span class="hljs-doctag">@exam</span> $arr = String::decodeURI($arr);
- *       String::decodeURI($arr); //리턴받지 않아도 입력변수에 저장되어 나옴.
- */</span>
-<span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">decodeURI</span><span class="hljs-params">(&amp;<span class="hljs-variable">$str</span>, <span class="hljs-variable">$toEncofing</span> = null)</span>
-</span>{
-    <span class="hljs-keyword">if</span> (is_array(<span class="hljs-variable">$str</span>)) {
-        String::arrayProc(<span class="hljs-variable">$str</span>, <span class="hljs-string">'String::decodeURI'</span>);
-        <span class="hljs-keyword">return</span> <span class="hljs-variable">$str</span>;
-    }
-
-    <span class="hljs-comment">//  euc-kr의 경우 확장완성형 한글에 대한 처리가 불가능함(예 : ㅂ ㅞ ㄺ)</span>
-    <span class="hljs-comment">//  return iconv("UTF-8", "EUC-KR", rawurldecode($text));</span>
-    <span class="hljs-variable">$str</span> = rawurldecode(<span class="hljs-variable">$str</span>);
-    <span class="hljs-keyword">if</span> (!is_null(<span class="hljs-variable">$toEncofing</span>)) {
-        <span class="hljs-variable">$str</span> = iconv(<span class="hljs-string">"UTF-8"</span>, <span class="hljs-variable">$toEncofing</span>, <span class="hljs-variable">$str</span>);
-    }
-    <span class="hljs-keyword">return</span> <span class="hljs-variable">$str</span>;
-}
-
-<span class="hljs-comment">/**
- * <span class="hljs-doctag">@desc</span> javascript의 escape함수로 인코딩된 문자를 디코딩한다.(encodeURIComponent추천)
- * <span class="hljs-doctag">@param</span> String $str 처리할 배열변수나 단일변수
- * <span class="hljs-doctag">@param</span> String $toEncofing 반환 인코딩
- * <span class="hljs-doctag">@return</span> mixed 변환된 변수 그대로 반환
- * <span class="hljs-doctag">@exam</span> $decStr = String::unescape($str);
- */</span>
-<span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">unescape</span><span class="hljs-params">(<span class="hljs-variable">$text</span>, <span class="hljs-variable">$toEncofing</span> = <span class="hljs-string">'UTF-8'</span>)</span>
-</span>{
-    <span class="hljs-comment">//return urldecode(preg_replace_callback('/%u([[:alnum:]]{4})/', array('self', 'tostring'), $text));</span>
-    <span class="hljs-keyword">return</span> urldecode(
-        preg_replace_callback(
-            <span class="hljs-string">'/%u([[:alnum:]]{4})/'</span>,
-            create_function(
-                <span class="hljs-string">'$text'</span>,
-                <span class="hljs-string">"echo '123'; return iconv('UTF-16LE', '"</span> . <span class="hljs-variable">$toEncofing</span> . <span class="hljs-string">"', chr(hexdec(substr(\$text[1], 2, 2))).chr(hexdec(substr(\$text[1], 0, 2))));"</span>
-            ),
-            <span class="hljs-variable">$text</span>
-        )
-    );
-}</pre>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/09/02/decoding-byte-escaped-strings-in-php/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

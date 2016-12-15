@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,61 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">Yum Delta RPM 사용하기</h2>
+												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
+								<span></span>
+						<time class="published" datetime="2015-12-16 08:47:36">2015.12.16. 08:47</time>
+		</div>
+		<div class="markdown-body entry-content"><p>최근부터 CentOS 7을 사용하면서 yum으로 update를 하면서 아래와 같은 오류가 자주 발생했다. 하지만 항상 나오는 것은 아니다.</p>
+<pre class="hljs bash">Error: Delta RPMs disabled because /usr/bin/applydeltarpm not installed.</pre>
+<p>이 메시지가 나오지만 실제로는 동작에는 이상이 없다. 하지만 계속 메시지가 나오니 보기도 싫고 다른 문제가 생길 수도 있을 것으로 생각되어 좀 찾아봤다.</p>
+<p>일단 <strong><a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a> 이라고 하는 것은 RPM 패키지 버전별로 변경사항만 가지고 있는 것을 뜻한다.</strong> 다시 말해 update 시에 전체 RPM을 다운 받아서 설치하지 않고 변경사항만 다운 받아서 update를 하게 해준다는 것이다.</p>
+<p>처리 과정을 보자면 yum에서 DRPM(Delta RPM)을 다운 받아 이전 패키지에 변경 사항을 병합하여 새로운 RPM을 빌드한 후 설치가 이루어 진다고 한다. 따라서 다운 받는 시간은 줄어들지만 병합하는 시간이 추가로 소요된다. 하지만 네트워크 비용이 더 크기 때문에 사용하는 것이 더 유리하다.</p>
+<p><a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>은 Fedora 11부터 적용되었다고 하며 RPM을 사용하는 다른 Linux에서도 사용중이라고 한다. 그런데 CentOS의 minimal 설치시에는 포함되지 않기 때문에 위 오류가 난다고 한다. 그리고 update 대상이 DRPM을 지원할 경우만 위 오류가 표시되는 것으로 보인다.</p>
+<p>이 오류를 제거하고 <a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>을 사용하는 방법은 간단하다. deltarpm 패키지를 설치하면 된다.</p>
+<p>우선 오류에 나와있는 프로그램의 경로(<code>/usr/bin/applydeltarpm</code>)를 이용해서 패키지명을 찾는다. 사실 이 과정은 굳이 할 필요가 없다(이미 패키지명을 알고 있으니).</p>
+<pre class="hljs bash">$ yum provides /usr/bin/applydeltarpm
+
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: ftp.daumkakao.com
+ * epel: ftp.cuhk.edu.hk
+ * extras: ftp.daumkakao.com
+ * updates: ftp.daumkakao.com
+ * webtatic: sp.repo.webtatic.com
+deltarpm-<span class="hljs-number">3.6</span>-<span class="hljs-number">3</span>.el7.x86_64 : Create deltas between rpms
+Repo        : base
+Matched from:
+Filename    : /usr/bin/applydeltarpm</pre>
+<p>패키지명을 알았으니 이제 설치만 하면 된다.</p>
+<pre class="hljs bash">$ yum install deltarpm</pre>
+<p>끝이다. 이제부터 <a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>이 지원되는 패키지는 DRPM을 이용해서 다운받는 시간이 줄어들 것이다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/12/16/delta-rpm/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,60 +362,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">Yum Delta RPM 사용하기</h2>
-												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
-								<span></span>
-						<time class="published" datetime="2015-12-16 08:47:36">2015.12.16. 08:47</time>
-		</div>
-		<div class="markdown-body entry-content"><p>최근부터 CentOS 7을 사용하면서 yum으로 update를 하면서 아래와 같은 오류가 자주 발생했다. 하지만 항상 나오는 것은 아니다.</p>
-<pre class="hljs bash">Error: Delta RPMs disabled because /usr/bin/applydeltarpm not installed.</pre>
-<p>이 메시지가 나오지만 실제로는 동작에는 이상이 없다. 하지만 계속 메시지가 나오니 보기도 싫고 다른 문제가 생길 수도 있을 것으로 생각되어 좀 찾아봤다.</p>
-<p>일단 <strong><a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a> 이라고 하는 것은 RPM 패키지 버전별로 변경사항만 가지고 있는 것을 뜻한다.</strong> 다시 말해 update 시에 전체 RPM을 다운 받아서 설치하지 않고 변경사항만 다운 받아서 update를 하게 해준다는 것이다.</p>
-<p>처리 과정을 보자면 yum에서 DRPM(Delta RPM)을 다운 받아 이전 패키지에 변경 사항을 병합하여 새로운 RPM을 빌드한 후 설치가 이루어 진다고 한다. 따라서 다운 받는 시간은 줄어들지만 병합하는 시간이 추가로 소요된다. 하지만 네트워크 비용이 더 크기 때문에 사용하는 것이 더 유리하다.</p>
-<p><a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>은 Fedora 11부터 적용되었다고 하며 RPM을 사용하는 다른 Linux에서도 사용중이라고 한다. 그런데 CentOS의 minimal 설치시에는 포함되지 않기 때문에 위 오류가 난다고 한다. 그리고 update 대상이 DRPM을 지원할 경우만 위 오류가 표시되는 것으로 보인다.</p>
-<p>이 오류를 제거하고 <a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>을 사용하는 방법은 간단하다. deltarpm 패키지를 설치하면 된다.</p>
-<p>우선 오류에 나와있는 프로그램의 경로(<code>/usr/bin/applydeltarpm</code>)를 이용해서 패키지명을 찾는다. 사실 이 과정은 굳이 할 필요가 없다(이미 패키지명을 알고 있으니).</p>
-<pre class="hljs bash">$ yum provides /usr/bin/applydeltarpm
-
-Loaded plugins: fastestmirror
-Loading mirror speeds from cached hostfile
- * base: ftp.daumkakao.com
- * epel: ftp.cuhk.edu.hk
- * extras: ftp.daumkakao.com
- * updates: ftp.daumkakao.com
- * webtatic: sp.repo.webtatic.com
-deltarpm-<span class="hljs-number">3.6</span>-<span class="hljs-number">3</span>.el7.x86_64 : Create deltas between rpms
-Repo        : base
-Matched from:
-Filename    : /usr/bin/applydeltarpm</pre>
-<p>패키지명을 알았으니 이제 설치만 하면 된다.</p>
-<pre class="hljs bash">$ yum install deltarpm</pre>
-<p>끝이다. 이제부터 <a href="https://fedoraproject.org/wiki/Tools/yum/YumDeltaRPM">Delta RPM</a>이 지원되는 패키지는 DRPM을 이용해서 다운받는 시간이 줄어들 것이다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/12/16/delta-rpm/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

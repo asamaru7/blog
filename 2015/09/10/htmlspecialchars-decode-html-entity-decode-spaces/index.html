@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,86 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">htmlspecialchars_decode와 html_entity_decode의 문자열 처리의 다른 점</h2>
+												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
+								<span></span>
+						<time class="published" datetime="2015-09-10 14:27:01">2015.09.10. 14:27</time>
+		</div>
+		<div class="markdown-body entry-content"><p>php에서 html 구문을 그대로 출력하기 위해 <a href="http://php.net/manual/kr/function.htmlspecialchars.php">htmlspecialchars</a>를 사용한다. 반대로 출력된 문장(Special HTML entities)을 되돌리기 위해서는 일반적으로 <a href="http://php.net/manual/kr/function.htmlspecialchars-decode.php">htmlspecialchars_decode</a>를 많이 사용한다. 그런데 이 함수를 사용하는데 문제가 있다.
+htmlspecialchars_decode는 <code>&amp;nbsp;</code>를 공백으로 다시 되돌려 주지 않는다.</p>
+<p>다시 htmlspecialchars로 돌아가서 메뉴얼을 보면 아래와 같이 변환된다고 설명되어 있다.</p>
+<ul>
+<li>'&amp;'(앰퍼샌드)는 '<code>&amp;amp;</code>'가 됩니다</li>
+<li>'&quot;'(겹따옴표)는 ENT_NOQUOTES를 설정하지 않았을 때 '<code>&amp;quot;</code>'가 됩니다.</li>
+<li>'''(홑따옴표)는 ENT_QUOTES가 설정되었을 때만 '<code>&amp;#039;</code>'가 됩니다.</li>
+<li>'&lt;'(미만)은 '<code>&amp;lt;</code>'가 됩니다.</li>
+<li>'&gt;'(이상)은 '<code>&amp;gt;</code>'가 됩니다.</li>
+</ul>
+<p>보다시피 엄밀히 말하자면 htmlspecialchars는 공백을 변환시키지 않는다. 따라서 대응되는 함수인 htmlspecialchars_decode는 <code>&amp;nbsp;</code> 공백 문자열을 되돌리지도 않는다.</p>
+<p>그럼 <code>&amp;nbsp;</code>와 같은 것은 어떻게 처리를 해야할까?
+<a href="http://php.net/manual/en/function.html-entity-decode.php">html_entity_decode</a>를 사용하면 된다. 이 함수는 <a href="http://php.net/manual/kr/function.htmlentities.php">htmlentities</a>와 대응되는 함수이다.</p>
+<p>그럼 htmlentities 함수는 무엇인가? 메뉴얼에 따르면 다음과 같다.</p>
+<blockquote>
+<p>htmlentities()는 HTML 문자 엔티티에 존재하는 모든 문자를 엔티티로 변환하는 점을 제외하면, htmlspecialchars()와 완전히 동일합니다.</p>
+</blockquote>
+<p>중요한 부분은 모든 문자를 변환한다는 점이다. 이 부분이 htmlspecialchars와의 차이라고 한다.</p>
+<p>정리하자면</p>
+<blockquote>
+<p>htmlspecialchars와 htmlentities는 유사하나 htmlentities가 더 많은 문자를 변환한다.
+htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode가 더 많은 문자를 되돌린다.</p>
+</blockquote>
+<p>따라서 결론은 <code>&amp;nbsp;</code>와 같은 문자열까지 모두 decode 하려면 html_entity_decode를 사용하면 된다.</p>
+<h2>주의</h2>
+<p>자.. 이렇게 해피앤딩이 되면 좋겠지만 몇가지 주의 사항이 있다. html_entity_decode 메뉴얼을 보면 다음과 같은 설명이 있다.</p>
+<blockquote>
+<p>You might wonder why trim(html_entity_decode('&nbsp;')); doesn't reduce the string to an empty string, that's because the '&nbsp;' entity is not ASCII code 32 (which is stripped by trim()) but ASCII code 160 (0xa0) in the default ISO 8859-1 encoding.</p>
+</blockquote>
+<p>그렇다. html_entity_decode를 사용해서 <code>&amp;nbsp;</code>를 변환하면 공백이 일반적인 공백과는 다른 공백이다. 이게 왜 문제가 되느냐? 아래의 예시를 보자.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$str</span> = trim(html_entity_decode(<span class="hljs-string">"&amp;nbsp;X&amp;nbsp;"</span>));
+<span class="hljs-keyword">echo</span> (strcmp(<span class="hljs-variable">$str</span>, <span class="hljs-string">'X'</span>) == <span class="hljs-number">0</span>) ? <span class="hljs-string">'ok'</span> : <span class="hljs-string">'oops'</span>;</pre>
+<p>쉽게 생각하면 'ok'가 나올것 같지만 위에 설명했던 것과 같이 'oops'가 나온다. 그럼 어떻게 해결을 해야할까?</p>
+<p>메뉴얼에서 ASCII code 160 (0xa0)로 변경된다고 하니 이것을 참고해서 조금 고쳐보자.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$str</span> = trim(str_replace(<span class="hljs-string">"\xa0"</span>, <span class="hljs-string">""</span>, html_entity_decode(<span class="hljs-string">"&amp;nbsp;X&amp;nbsp;"</span>)));
+<span class="hljs-keyword">echo</span> (strcmp(<span class="hljs-variable">$str</span>, <span class="hljs-string">'X'</span>) == <span class="hljs-number">0</span>) ? <span class="hljs-string">'ok'</span> : <span class="hljs-string">'oops'</span>;</pre>
+<p>이제 해결이 되었을까? 아니다. 결과는 oops이다.(사실 default_charset에 따라 ok가 나올 수도 있다.) 이유는 위에 메뉴얼에 있다.
+'default ISO 8859-1' 인코딩일 때 0xa0로 변환된다고 되어 있다. 사실 나의 환경은 'UTF-8'이다. 대부분 그럴 것이라고 생각한다. 일단 맞는지 확인해 보자. 아래와 같이 default_charset을 ISO-8859-1에 맞추고 실행해보자.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$str</span> = trim(str_replace(<span class="hljs-string">"\xa0"</span>, <span class="hljs-string">""</span>, html_entity_decode(iconv(<span class="hljs-string">'UTF-8'</span>, <span class="hljs-string">'ISO-8859-1'</span>, <span class="hljs-string">"&amp;nbsp;X&amp;nbsp;"</span>))));
+<span class="hljs-keyword">echo</span> (strcmp(<span class="hljs-variable">$str</span>, <span class="hljs-string">'X'</span>) == <span class="hljs-number">0</span>) ? <span class="hljs-string">'ok'</span> : <span class="hljs-string">'oops'</span>;</pre>
+<p>결과는 메뉴얼대로 'ok' 이다. 그럼 'UTF-8'에서는 어떻게 하나? 아래의 코드를 보자.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$str</span> = trim(str_replace(<span class="hljs-string">"\xc2\xa0"</span>, <span class="hljs-string">""</span>, html_entity_decode(<span class="hljs-string">"&amp;nbsp;X&amp;nbsp;"</span>)));
+<span class="hljs-keyword">echo</span> (strcmp(<span class="hljs-variable">$str</span>, <span class="hljs-string">'X'</span>) == <span class="hljs-number">0</span>) ? <span class="hljs-string">'ok'</span> : <span class="hljs-string">'oops'</span>;</pre>
+<p>드디어 'ok'가 나온다. 중요한 차이는 &quot;\xc2\xa0&quot; 이다. UTF-8에서는 &quot;\xc2\xa0&quot;는 <a href="http://www.utf8-chartable.de/unicode-utf8-table.pl?start=128&amp;number=128&amp;utf8=string-literal&amp;unicodeinhtml=hex">UTF-8 encoding table and Unicode characters</a>에서 확인해보면 UTF-8에서의 &quot;NO-BREAK SPACE&quot;라고 되어 있다.</p>
+<p>참 별것 아닌것 같은 함수가 잘모르고 사용하다보면 예상치 못한 문제들을 일으킨다. 사실 <code>&amp;nbsp;</code>만 처리하면 된다면 더 간단하게 <code>str_replace('&amp;nbsp;', ' ', $str)</code>로 해결해도 된다. 하지만 프로그램에선 항상 어떤 값이 들어올지 모르는 것이니 보다 명확하게 처리하는 것이 낫지 않을까?</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,85 +387,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">htmlspecialchars_decode와 html_entity_decode의 문자열 처리의 다른 점</h2>
-												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
-								<span></span>
-						<time class="published" datetime="2015-09-10 14:27:01">2015.09.10. 14:27</time>
-		</div>
-		<div class="markdown-body entry-content"><p>php에서 html 구문을 그대로 출력하기 위해 <a href="http://php.net/manual/kr/function.htmlspecialchars.php">htmlspecialchars</a>를 사용한다. 반대로 출력된 문장(Special HTML entities)을 되돌리기 위해서는 일반적으로 <a href="http://php.net/manual/kr/function.htmlspecialchars-decode.php">htmlspecialchars_decode</a>를 많이 사용한다. 그런데 이 함수를 사용하는데 문제가 있다.
-htmlspecialchars_decode는 <code>&amp;nbsp;</code>를 공백으로 다시 되돌려 주지 않는다.</p>
-<p>다시 htmlspecialchars로 돌아가서 메뉴얼을 보면 아래와 같이 변환된다고 설명되어 있다.</p>
-<ul>
-<li>'&amp;'(앰퍼샌드)는 '<code>&amp;amp;</code>'가 됩니다</li>
-<li>'&quot;'(겹따옴표)는 ENT_NOQUOTES를 설정하지 않았을 때 '<code>&amp;quot;</code>'가 됩니다.</li>
-<li>'''(홑따옴표)는 ENT_QUOTES가 설정되었을 때만 '<code>&amp;#039;</code>'가 됩니다.</li>
-<li>'&lt;'(미만)은 '<code>&amp;lt;</code>'가 됩니다.</li>
-<li>'&gt;'(이상)은 '<code>&amp;gt;</code>'가 됩니다.</li>
-</ul>
-<p>보다시피 엄밀히 말하자면 htmlspecialchars는 공백을 변환시키지 않는다. 따라서 대응되는 함수인 htmlspecialchars_decode는 <code>&amp;nbsp;</code> 공백 문자열을 되돌리지도 않는다.</p>
-<p>그럼 <code>&amp;nbsp;</code>와 같은 것은 어떻게 처리를 해야할까?
-<a href="http://php.net/manual/en/function.html-entity-decode.php">html_entity_decode</a>를 사용하면 된다. 이 함수는 <a href="http://php.net/manual/kr/function.htmlentities.php">htmlentities</a>와 대응되는 함수이다.</p>
-<p>그럼 htmlentities 함수는 무엇인가? 메뉴얼에 따르면 다음과 같다.</p>
-<blockquote>
-<p>htmlentities()는 HTML 문자 엔티티에 존재하는 모든 문자를 엔티티로 변환하는 점을 제외하면, htmlspecialchars()와 완전히 동일합니다.</p>
-</blockquote>
-<p>중요한 부분은 모든 문자를 변환한다는 점이다. 이 부분이 htmlspecialchars와의 차이라고 한다.</p>
-<p>정리하자면</p>
-<blockquote>
-<p>htmlspecialchars와 htmlentities는 유사하나 htmlentities가 더 많은 문자를 변환한다.
-htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode가 더 많은 문자를 되돌린다.</p>
-</blockquote>
-<p>따라서 결론은 <code>&amp;nbsp;</code>와 같은 문자열까지 모두 decode 하려면 html_entity_decode를 사용하면 된다.</p>
-<h2>주의</h2>
-<p>자.. 이렇게 해피앤딩이 되면 좋겠지만 몇가지 주의 사항이 있다. html_entity_decode 메뉴얼을 보면 다음과 같은 설명이 있다.</p>
-<blockquote>
-<p>You might wonder why trim(html_entity_decode('&nbsp;')); doesn't reduce the string to an empty string, that's because the '&nbsp;' entity is not ASCII code 32 (which is stripped by trim()) but ASCII code 160 (0xa0) in the default ISO 8859-1 encoding.</p>
-</blockquote>
-<p>그렇다. html_entity_decode를 사용해서 <code>&amp;nbsp;</code>를 변환하면 공백이 일반적인 공백과는 다른 공백이다. 이게 왜 문제가 되느냐? 아래의 예시를 보자.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = trim(html_entity_decode(<span class="hljs-string">"&amp;nbsp;X&amp;nbsp;"</span>));
-<span class="hljs-keyword">echo</span> (strcmp(<span class="hljs-variable">$str</span>, <span class="hljs-string">'X'</span>) == <span class="hljs-number">0</span>) ? <span class="hljs-string">'ok'</span> : <span class="hljs-string">'oops'</span>;</pre>
-<p>쉽게 생각하면 'ok'가 나올것 같지만 위에 설명했던 것과 같이 'oops'가 나온다. 그럼 어떻게 해결을 해야할까?</p>
-<p>메뉴얼에서 ASCII code 160 (0xa0)로 변경된다고 하니 이것을 참고해서 조금 고쳐보자.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = trim(str_replace(<span class="hljs-string">"\xa0"</span>, <span class="hljs-string">""</span>, html_entity_decode(<span class="hljs-string">"&amp;nbsp;X&amp;nbsp;"</span>)));
-<span class="hljs-keyword">echo</span> (strcmp(<span class="hljs-variable">$str</span>, <span class="hljs-string">'X'</span>) == <span class="hljs-number">0</span>) ? <span class="hljs-string">'ok'</span> : <span class="hljs-string">'oops'</span>;</pre>
-<p>이제 해결이 되었을까? 아니다. 결과는 oops이다.(사실 default_charset에 따라 ok가 나올 수도 있다.) 이유는 위에 메뉴얼에 있다.
-'default ISO 8859-1' 인코딩일 때 0xa0로 변환된다고 되어 있다. 사실 나의 환경은 'UTF-8'이다. 대부분 그럴 것이라고 생각한다. 일단 맞는지 확인해 보자. 아래와 같이 default_charset을 ISO-8859-1에 맞추고 실행해보자.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = trim(str_replace(<span class="hljs-string">"\xa0"</span>, <span class="hljs-string">""</span>, html_entity_decode(iconv(<span class="hljs-string">'UTF-8'</span>, <span class="hljs-string">'ISO-8859-1'</span>, <span class="hljs-string">"&amp;nbsp;X&amp;nbsp;"</span>))));
-<span class="hljs-keyword">echo</span> (strcmp(<span class="hljs-variable">$str</span>, <span class="hljs-string">'X'</span>) == <span class="hljs-number">0</span>) ? <span class="hljs-string">'ok'</span> : <span class="hljs-string">'oops'</span>;</pre>
-<p>결과는 메뉴얼대로 'ok' 이다. 그럼 'UTF-8'에서는 어떻게 하나? 아래의 코드를 보자.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = trim(str_replace(<span class="hljs-string">"\xc2\xa0"</span>, <span class="hljs-string">""</span>, html_entity_decode(<span class="hljs-string">"&amp;nbsp;X&amp;nbsp;"</span>)));
-<span class="hljs-keyword">echo</span> (strcmp(<span class="hljs-variable">$str</span>, <span class="hljs-string">'X'</span>) == <span class="hljs-number">0</span>) ? <span class="hljs-string">'ok'</span> : <span class="hljs-string">'oops'</span>;</pre>
-<p>드디어 'ok'가 나온다. 중요한 차이는 &quot;\xc2\xa0&quot; 이다. UTF-8에서는 &quot;\xc2\xa0&quot;는 <a href="http://www.utf8-chartable.de/unicode-utf8-table.pl?start=128&amp;number=128&amp;utf8=string-literal&amp;unicodeinhtml=hex">UTF-8 encoding table and Unicode characters</a>에서 확인해보면 UTF-8에서의 &quot;NO-BREAK SPACE&quot;라고 되어 있다.</p>
-<p>참 별것 아닌것 같은 함수가 잘모르고 사용하다보면 예상치 못한 문제들을 일으킨다. 사실 <code>&amp;nbsp;</code>만 처리하면 된다면 더 간단하게 <code>str_replace('&amp;nbsp;', ' ', $str)</code>로 해결해도 된다. 하지만 프로그램에선 항상 어떤 값이 들어올지 모르는 것이니 보다 명확하게 처리하는 것이 낫지 않을까?</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

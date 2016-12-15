@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,117 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">PHP CLI 사용자 입력(STDIN) 받기</h2>
+												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
+								<span></span>
+						<time class="published" datetime="2016-02-10 11:50:19">2016.02.10. 11:50</time>
+		</div>
+		<div class="markdown-body entry-content"><p>PHP CLI를 사용해서 Shell Script를 생성하다보면 사용자에게 어떤 데이터를 입력 받아야 상황이 발생할 수 있다. 이런 경우에 사용할 수 있는 몇가지 방법에 대해 설명하고자 한다.</p>
+<p>우선 PHP 메뉴얼 중 <a href="http://php.net/manual/kr/features.commandline.io-streams.php">Input/output streams</a>에 있는 예시에 약간의 코드를 더해서 설명하겠다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$stdin</span> = fopen(<span class="hljs-string">'php://stdin'</span>, <span class="hljs-string">'r'</span>);
+<span class="hljs-variable">$fileContents</span> = fread(<span class="hljs-variable">$stdin</span>, <span class="hljs-number">1024</span>);
+fclose(<span class="hljs-variable">$stdin</span>);
+
+<span class="hljs-keyword">echo</span> <span class="hljs-variable">$fileContents</span>;</pre>
+<p>우선 위 방법은 fopen을 사용해서 사용자에게 입력 받는 방법이다. 이 방법은 사용자의 입력이 완료될 때(Enter 입력시)까지 대기하게 하거나 pipe(|)를 이용해 입력이 가능하다. 위 내용을 <code>fopenTest.php</code>로 저장했다면 아래와 같이 실행해 볼 수 있다. 그리고 1024는 입력의 최대 길이로 그 이상의 입력이 들어오면 무시된다.</p>
+<pre class="hljs bash">$ php fopenTest.php
+<span class="hljs-built_in">test</span> <span class="hljs-comment"># 입력 후 Enter</span>
+<span class="hljs-built_in">test</span>
+
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"test"</span> | php fopenTest.php
+<span class="hljs-built_in">test</span></pre>
+<p>이와 동일한 역할로 다음과 같이 사용할 수도 있다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-keyword">echo</span> trim(fgets(STDIN)); <span class="hljs-comment">// reads one line from STDIN</span></pre>
+<p>처음 코드와 동일하게 동작한다. 그리고 특정 형식으로 데이터를 입력받고 싶다면 아래와 같이 사용할 수도 있다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+fscanf(STDIN, <span class="hljs-string">"%d\n"</span>, <span class="hljs-variable">$number</span>); <span class="hljs-comment">// reads number from STDIN</span>
+<span class="hljs-keyword">echo</span> <span class="hljs-variable">$number</span>;</pre>
+<p>위 코드는 실행 결과는 약간 다른점이 있으니 아래의 실행 예시를 참고하자.</p>
+<pre class="hljs bash">$ php fopenTest.php
+<span class="hljs-built_in">test</span> <span class="hljs-comment"># 입력 후 Enter</span>
+<span class="hljs-comment"># 입력값이 무시되어 아무값도 출력되지 않음</span>
+
+$ php fopenTest.php
+<span class="hljs-number">2</span><span class="hljs-built_in">test</span>3 <span class="hljs-comment"># 입력 후 Enter</span>
+<span class="hljs-number">2</span> <span class="hljs-comment"># 2 이후의 입력값이 무시됨</span>
+
+$ php fopenTest.php
+<span class="hljs-number">123</span> <span class="hljs-comment"># 입력 후 Enter</span>
+<span class="hljs-number">123</span> <span class="hljs-comment"># 유효한 입력으로 123이 출력됨</span>
+
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"123"</span> | php fopenTest.php
+<span class="hljs-number">123</span> <span class="hljs-comment"># 유효한 입력으로 123이 출력됨</span></pre>
+<hr />
+<p>PHP에서는 다른 방법으로 <a href="http://php.net/manual/kr/function.readline.php">readline</a>을 사용하는 것이 가능하다. 예를들면 아래와 같이 확인해 볼 수 있다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-comment">//get 3 commands from user</span>
+<span class="hljs-keyword">for</span> (<span class="hljs-variable">$i</span>=<span class="hljs-number">0</span>; <span class="hljs-variable">$i</span> &lt; <span class="hljs-number">3</span>; <span class="hljs-variable">$i</span>++) {
+        <span class="hljs-variable">$line</span> = readline(<span class="hljs-string">"Command: "</span>);
+        readline_add_history(<span class="hljs-variable">$line</span>);
+}
+
+<span class="hljs-comment">//dump history</span>
+print_r(readline_list_history());
+
+<span class="hljs-comment">//dump variables</span>
+print_r(readline_info());</pre>
+<p>그런데 이 함수는 제약조건이 있다. 메뉴얼에 따르면 <a href="http://php.net/manual/kr/function.readline-list-history.php">readline_list_history</a>는 <code>libreadline</code>과 함께 컴파일되어야만 사용할 수 있다고 되어 있다. 그래서 위 예시는 제대로 테스트 해보지 못했다.</p>
+<hr />
+<p>그렇다면 사용자에게 한글자의 입력만 받고 싶다면 어떻게하면 될까? 아래의 예시를 보자.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-keyword">echo</span> <span class="hljs-string">'변경 후에는 복구할 수 없습니다. 변경하시겠습니까? (y/n) '</span>;
+<span class="hljs-variable">$input</span> = fgetc(STDIN);</pre>
+<p>위 코드를 실행하면 한글자만 입력을 받게 되지만 한글자를 입력하고 Enter를 눌러야 한다. 그럼 그냥 한글자를 입력하면 바로 입력을 완료하고자 한다면 어떻게 할까? 아래에 그 답이 있다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-keyword">echo</span> <span class="hljs-string">'변경 후에는 복구할 수 없습니다. 변경하시겠습니까? (y/n) '</span>;
+
+readline_callback_handler_install(<span class="hljs-string">''</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+});
+<span class="hljs-keyword">while</span> (<span class="hljs-keyword">true</span>) {
+  <span class="hljs-variable">$r</span> = [STDIN];
+  <span class="hljs-variable">$w</span> = <span class="hljs-keyword">null</span>;
+  <span class="hljs-variable">$e</span> = <span class="hljs-keyword">null</span>;
+  <span class="hljs-variable">$n</span> = stream_select(<span class="hljs-variable">$r</span>, <span class="hljs-variable">$w</span>, <span class="hljs-variable">$e</span>, <span class="hljs-number">0</span>);
+  <span class="hljs-keyword">if</span> (<span class="hljs-variable">$n</span> &amp;&amp; in_array(STDIN, <span class="hljs-variable">$r</span>)) {
+    <span class="hljs-variable">$c</span> = stream_get_contents(STDIN, <span class="hljs-number">1</span>);
+    <span class="hljs-keyword">if</span> (strcasecmp(<span class="hljs-variable">$c</span>, <span class="hljs-string">'y'</span>) != <span class="hljs-number">0</span>) {
+      <span class="hljs-keyword">echo</span> <span class="hljs-string">"\n작업을 취소함\n"</span>;
+      <span class="hljs-keyword">exit</span>;
+    }
+    <span class="hljs-keyword">break</span>;
+  }
+}
+
+<span class="hljs-keyword">echo</span> <span class="hljs-string">"변경 완료\n"</span>;</pre>
+<p>나의 경우엔 위 스크립트를 사용해야하는 상황이 가장 많은 것 같다. 위험한 동작을 실행하기전 다시 한번 확인하는 것이 정신 건강에 이롭다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/02/10/php-stdin/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,116 +418,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">PHP CLI 사용자 입력(STDIN) 받기</h2>
-												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
-								<span></span>
-						<time class="published" datetime="2016-02-10 11:50:19">2016.02.10. 11:50</time>
-		</div>
-		<div class="markdown-body entry-content"><p>PHP CLI를 사용해서 Shell Script를 생성하다보면 사용자에게 어떤 데이터를 입력 받아야 상황이 발생할 수 있다. 이런 경우에 사용할 수 있는 몇가지 방법에 대해 설명하고자 한다.</p>
-<p>우선 PHP 메뉴얼 중 <a href="http://php.net/manual/kr/features.commandline.io-streams.php">Input/output streams</a>에 있는 예시에 약간의 코드를 더해서 설명하겠다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$stdin</span> = fopen(<span class="hljs-string">'php://stdin'</span>, <span class="hljs-string">'r'</span>);
-<span class="hljs-variable">$fileContents</span> = fread(<span class="hljs-variable">$stdin</span>, <span class="hljs-number">1024</span>);
-fclose(<span class="hljs-variable">$stdin</span>);
-
-<span class="hljs-keyword">echo</span> <span class="hljs-variable">$fileContents</span>;</pre>
-<p>우선 위 방법은 fopen을 사용해서 사용자에게 입력 받는 방법이다. 이 방법은 사용자의 입력이 완료될 때(Enter 입력시)까지 대기하게 하거나 pipe(|)를 이용해 입력이 가능하다. 위 내용을 <code>fopenTest.php</code>로 저장했다면 아래와 같이 실행해 볼 수 있다. 그리고 1024는 입력의 최대 길이로 그 이상의 입력이 들어오면 무시된다.</p>
-<pre class="hljs bash">$ php fopenTest.php
-<span class="hljs-built_in">test</span> <span class="hljs-comment"># 입력 후 Enter</span>
-<span class="hljs-built_in">test</span>
-
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"test"</span> | php fopenTest.php
-<span class="hljs-built_in">test</span></pre>
-<p>이와 동일한 역할로 다음과 같이 사용할 수도 있다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-keyword">echo</span> trim(fgets(STDIN)); <span class="hljs-comment">// reads one line from STDIN</span></pre>
-<p>처음 코드와 동일하게 동작한다. 그리고 특정 형식으로 데이터를 입력받고 싶다면 아래와 같이 사용할 수도 있다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-fscanf(STDIN, <span class="hljs-string">"%d\n"</span>, <span class="hljs-variable">$number</span>); <span class="hljs-comment">// reads number from STDIN</span>
-<span class="hljs-keyword">echo</span> <span class="hljs-variable">$number</span>;</pre>
-<p>위 코드는 실행 결과는 약간 다른점이 있으니 아래의 실행 예시를 참고하자.</p>
-<pre class="hljs bash">$ php fopenTest.php
-<span class="hljs-built_in">test</span> <span class="hljs-comment"># 입력 후 Enter</span>
-<span class="hljs-comment"># 입력값이 무시되어 아무값도 출력되지 않음</span>
-
-$ php fopenTest.php
-<span class="hljs-number">2</span><span class="hljs-built_in">test</span>3 <span class="hljs-comment"># 입력 후 Enter</span>
-<span class="hljs-number">2</span> <span class="hljs-comment"># 2 이후의 입력값이 무시됨</span>
-
-$ php fopenTest.php
-<span class="hljs-number">123</span> <span class="hljs-comment"># 입력 후 Enter</span>
-<span class="hljs-number">123</span> <span class="hljs-comment"># 유효한 입력으로 123이 출력됨</span>
-
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"123"</span> | php fopenTest.php
-<span class="hljs-number">123</span> <span class="hljs-comment"># 유효한 입력으로 123이 출력됨</span></pre>
-<hr />
-<p>PHP에서는 다른 방법으로 <a href="http://php.net/manual/kr/function.readline.php">readline</a>을 사용하는 것이 가능하다. 예를들면 아래와 같이 확인해 볼 수 있다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-comment">//get 3 commands from user</span>
-<span class="hljs-keyword">for</span> (<span class="hljs-variable">$i</span>=<span class="hljs-number">0</span>; <span class="hljs-variable">$i</span> &lt; <span class="hljs-number">3</span>; <span class="hljs-variable">$i</span>++) {
-        <span class="hljs-variable">$line</span> = readline(<span class="hljs-string">"Command: "</span>);
-        readline_add_history(<span class="hljs-variable">$line</span>);
-}
-
-<span class="hljs-comment">//dump history</span>
-print_r(readline_list_history());
-
-<span class="hljs-comment">//dump variables</span>
-print_r(readline_info());</pre>
-<p>그런데 이 함수는 제약조건이 있다. 메뉴얼에 따르면 <a href="http://php.net/manual/kr/function.readline-list-history.php">readline_list_history</a>는 <code>libreadline</code>과 함께 컴파일되어야만 사용할 수 있다고 되어 있다. 그래서 위 예시는 제대로 테스트 해보지 못했다.</p>
-<hr />
-<p>그렇다면 사용자에게 한글자의 입력만 받고 싶다면 어떻게하면 될까? 아래의 예시를 보자.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-keyword">echo</span> <span class="hljs-string">'변경 후에는 복구할 수 없습니다. 변경하시겠습니까? (y/n) '</span>;
-<span class="hljs-variable">$input</span> = fgetc(STDIN);</pre>
-<p>위 코드를 실행하면 한글자만 입력을 받게 되지만 한글자를 입력하고 Enter를 눌러야 한다. 그럼 그냥 한글자를 입력하면 바로 입력을 완료하고자 한다면 어떻게 할까? 아래에 그 답이 있다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-keyword">echo</span> <span class="hljs-string">'변경 후에는 복구할 수 없습니다. 변경하시겠습니까? (y/n) '</span>;
-
-readline_callback_handler_install(<span class="hljs-string">''</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
-});
-<span class="hljs-keyword">while</span> (<span class="hljs-keyword">true</span>) {
-  <span class="hljs-variable">$r</span> = [STDIN];
-  <span class="hljs-variable">$w</span> = <span class="hljs-keyword">null</span>;
-  <span class="hljs-variable">$e</span> = <span class="hljs-keyword">null</span>;
-  <span class="hljs-variable">$n</span> = stream_select(<span class="hljs-variable">$r</span>, <span class="hljs-variable">$w</span>, <span class="hljs-variable">$e</span>, <span class="hljs-number">0</span>);
-  <span class="hljs-keyword">if</span> (<span class="hljs-variable">$n</span> &amp;&amp; in_array(STDIN, <span class="hljs-variable">$r</span>)) {
-    <span class="hljs-variable">$c</span> = stream_get_contents(STDIN, <span class="hljs-number">1</span>);
-    <span class="hljs-keyword">if</span> (strcasecmp(<span class="hljs-variable">$c</span>, <span class="hljs-string">'y'</span>) != <span class="hljs-number">0</span>) {
-      <span class="hljs-keyword">echo</span> <span class="hljs-string">"\n작업을 취소함\n"</span>;
-      <span class="hljs-keyword">exit</span>;
-    }
-    <span class="hljs-keyword">break</span>;
-  }
-}
-
-<span class="hljs-keyword">echo</span> <span class="hljs-string">"변경 완료\n"</span>;</pre>
-<p>나의 경우엔 위 스크립트를 사용해야하는 상황이 가장 많은 것 같다. 위험한 동작을 실행하기전 다시 한번 확인하는 것이 정신 건강에 이롭다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/02/10/php-stdin/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

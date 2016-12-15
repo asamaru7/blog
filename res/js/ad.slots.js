@@ -126,7 +126,7 @@
 		if (!!d) {
 			ad = document.createElement('div');
 			ad.className += " gad-box";
-			ad.style.cssText = 'margin-top:30px;';
+			ad.style.cssText = 'padding-top:30px; clear:both;';
 			ad.setAttribute("data-ad-slot-id", "gad-bottom");
 			d.appendChild(ad);
 		}

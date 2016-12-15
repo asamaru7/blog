@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,199 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">발송 메일을 스팸으로 분류되지 않도록 개선하는 법</h2>
+												<a href="https://blog.asamaru.net/category/tip/" rel="tag">tip</a>
+								<span></span>
+						<time class="published" datetime="2015-12-16 17:02:42">2015.12.16. 17:02</time>
+		</div>
+		<div class="markdown-body entry-content"><p>개인이 정상적인 메일 서비스를 통해 발송한 메일은 수신 측에서 스팸으로 분류될 확률이 적다. 하지만 서버에서 공지/안내 등의 이유로 다량의 메일을 지속적으로 발송할 경우 스팸으로 분류될 확률이 높다. 이 글에서 설명하고자 하는 것은 서버에서 다량의 메일 발송시 스팸으로 분류될 확률을 낮추기 위해 처리해야 할 몇가지를 소개하고자 한다.</p>
+<p><strong>스팸 필터는 아래에 설명하는 조건 외에도 메일의 내용, 수신한 사용자의 반응(스팸으로 체크) 등의 다양한 조건을 사용해서 스팸을 분류하므로 이 내용을 모두 적용한다고 스팸으로 무조건 분류되지 않는 것은 아니다.</strong> 하지만 아래의 조건들을 만족함으로써 정상적인 메일을 발송함에도 불구하고 스팸 서버로 분류되는 것을 어느 정도 예방하기 위한 활동이라고 생각하면 된다. 그리고 아래의 내용은 스팸 서버로 분류되는 상황을 겪으면서 조금씩 추가했던 내용들을 정리한 것이지만 잘못된 부분이 있을 수 있으니 참고용으로 둘러보기를 권장한다. 스팸 필터 정책은 수시로 변경되기도 하고 서비스별로 모두 다른 정책을 사용하므로 아래의 내용이 진리는 아니라는 것이다(사실 그런 것이 있다면 스패머들이 판치는 세상이 될 것이다).</p>
+<p>그럼 하나씩 알아보자.</p>
+<h3>Reverse DNS 설정</h3>
+<p>Reverse DNS란 DNS의 반대 개념으로서 IP로 Domain Name을 조회하는 것을 말한다. Reverse DNS를 통해 도메인이 조회 가능한 IP를 가지는 서버는 실제 운영되는 서비스 서버일 확률이 높으므로 스팸 서버가 아닐 확률이 높은 것으로 보는 것이다. 특히 구글과 같은 메일 서버들은 Reverse DNS가 등록되지 않은 서버에서 발송한 메일은 스팸 점수를 높게 책정하거나 수신을 거부하는 경우도 있다. 따라서 <strong>이메일을 발송하는 서버는 필히 Reverse DNS를 설정하는 것을 권장한다.</strong></p>
+<p>등록이 되어 있는지를 확인하는 방법은 아래와 같다. 여기서 A.B.C.D는 해당 서버 IP다.</p>
+<pre class="hljs bash">$ nslookup -type=ptr A.B.C.D
+Server:     <span class="hljs-number">168.126</span>.<span class="hljs-number">63.1</span>
+Address:    <span class="hljs-number">168.126</span>.<span class="hljs-number">63.1</span><span class="hljs-comment">#53</span>
+
+Non-authoritative answer:
+D.C.B.A.in-addr.arpa    name = mail.domain.com.
+
+Authoritative answers can be found from:
+C.B.A.in-addr.arpa  nameserver = rev2.kornet.net.
+C.B.A.in-addr.arpa  nameserver = rev1.kornet.net.
+rev1.kornet.net internet address = <span class="hljs-number">211.216</span>.<span class="hljs-number">50.170</span>
+rev2.kornet.net internet address = <span class="hljs-number">211.216</span>.<span class="hljs-number">50.180</span></pre>
+<p>Reverse DNS가 정상적으로 설정되어 있다면 위와 같이 조회 결과를 볼 수 있다.</p>
+<p>등록이 되어 있지 않다면 어떻게 해야 할까? 대부분의 경우(전체 네트워크를 소유하지 않은 경우) 망사업자 측에 요청하여 설정해야 한다.</p>
+<p>KT 회선을 기준으로 아래의 방법으로 등록 신청이 가능했다. 하지만 얼마전 확인해 보니 사이트가 변경되어 아래의 방법을 사용할 수 없었다. 대부분의 경우 IDC 등에 문의해서 처리하면 된다.</p>
+<blockquote>
+<p>등록 방법 : [아래]<br />
+① <a href="http://dns.kornet.net">http://dns.kornet.net</a> 사이트 접속<br />
+② 도메인 등록 요청/문의 클릭<br />
+③ 새글작성 클릭<br />
+④ 게시물 유형 -&gt; 리버스 등록, 소속 -&gt; idc 체크, 나머지 정보 기입후 등록<br />
+rDNS 관련 연락처 : 02-3674-5820  </p>
+</blockquote>
+<h3>SPF(Sender Policy Framework) 레코드 등록</h3>
+<p><a href="https://support.google.com/a/answer/33786?hl=ko">구글 관리자 도움말 - SPF 레코드 정보</a>에 SPF에 대해 다음과 같이 설명하고 있다.</p>
+<blockquote>
+<p>SPF 레코드는 도메인을 대표하여 이메일을 보낼 수 있는 메일 서버를 식별하는 DNS(Domain Name Service) 레코드의 한 유형입니다.</p>
+<p>SPF 레코드의 목적은 스팸 발송자가 도메인의 위조된 '보낸사람' 주소를 사용하여 메일을 보내지 못하도록 하는 것입니다. 수신자는 SPF 레코드를 참조하여 자신의 도메인에서 보낸 것처럼 위장한 메일이 인증된 메일 서버에서 전송된 것인지를 판별할 수 있습니다.</p>
+<p>예를 들어 example.com 도메인에서 Gmail을 사용한다고 가정해 보겠습니다. Google Apps 메일 서버를 도메인에 대한 인증된 메일 서버로 식별하는 SPF 레코드를 만듭니다. 수신자의 메일 서버가 user\@example.com에서 보낸 메일을 수신하는 경우, example.com에 대한 SPF 레코드를 확인하여 유효한 메일인지 여부를 판별할 수 있습니다. 메일이 SPF 레코드에 나열된 Google Apps 메일 서버가 아닌 다른 서버에서 전송된 경우 수신자의 메일 서버에서 이를 스팸으로 간주하여 수신 거부할 수도 있습니다.</p>
+<p>도메인에 SPF 레코드가 없는 경우에는 수신자 도메인에서 메일이 인증된 메일 서버에서 전송된 것인지를 확인할 수 없으므로 사용자의 메일이 수신 거부될 수도 있습니다.</p>
+</blockquote>
+<p>위 설명을 보면 알 수 있듯이 SPF 레코드 등록의 경우도 메일 발송을 위해서는 필수적으로 해야할 것 중 하나다. 그리고 뒤에 설명할 White Domain 등록을 위해서도 필히 등록이 되어 있어야 한다.</p>
+<p>SPF 레코드 등록 방법은 잘 설명된 문서들이 많으므로 굳이 여기서 다시 설명하지는 않는다. 다만 간단히 예시만 하나 남긴다.</p>
+<p><strong>DNS zone 설정에 추가</strong></p>
+<pre><code>@   IN TXT      "v=spf1 ip4:A.B.C.1 ip4:A.B.C.2 ip4:A.B.C.3 ~all"</code></pre>
+<p>간단히 설명하자면 다음의 IP(A.B.C.1, A.B.C.2, A.B.C.3)가 설정된 서버에서 해당 도메인을 사용해 메일을 발송할 수 있다는 의미다.</p>
+<h3>화이트 도메인(White Domain) 등록</h3>
+<p><a href="https://www.kisarbl.or.kr/">KISA RBL</a>에서 통합 White Domain 등록제를 운영하고 있다.
+통합 White Domain 등록제에 대해서는 위 사이트에서 아래와 같이 안내하고 있다.</p>
+<blockquote>
+<p>정상적으로 발송하는 대량 이메일이 RBL이력으로 간주되어 차단되는 것을 방지하기 위하여, 사전에 등록된 개인이나 사업자에 한하여 국내 주요 포탈사이트로의 이메일 전송을 보장해주는 제도입니다. ( 무료 )</p>
+<ul>
+<li>단, White Domain으로 등록되었다 하더라도 이후 모니터링을 통해 RBL이력발송 사실이 확인되면, 즉각 차단 조치되며 White 리스트에서도 삭제될 수 있습니다.</li>
+</ul>
+<p>기존에 개별 포탈에서 'IP 등록제', 'IP 실명제'등의 이름으로 운영해오던 것을 2006년 9월 1일부로 KISARBL이 등록접수/관리/운영을 통합한 것이므로, KISARBL에 White Domain으로 등록하게 되면 , 여러번 별도로 등록할 필요없이 참여하고 있는 포탈사이트에 동시에 등록됩니다 .</p>
+<ul>
+<li>단 , 개인의 경우에는 일부 포탈사이트에서 자사의 정책상 등록을 허용하지 않습니다.</li>
+</ul>
+</blockquote>
+<p>위 설명을 보면 알 수 있듯이 White Domain은 국내 포털 사이트로 메일을 발송하는 경우에 적용될 수 있는 것으로 범위가 제한되지만 대부분의 수신자가 국내 포털 사이트의 이메일을 사용하고 있는 것을 감안하면 이 또한 필수적으로 등록하는 것이 좋다. 등록 방법은 위 사이트에서 안내하고 있으므로 별도로 설명하지는 않는다. 하지만 등록 과정이 그리 복잡하지 않으므로 큰 어려움은 없을 것으로 생각된다.</p>
+<hr />
+<p><strong>상기 안내한 사항들은 필수적으로 처리하는 것이 좋은 것들이고 이후의 사항들은 가급적 처리하는 것이 좋은 것이다.</strong> 하지만 스팸으로 분류되지 않기 위해서는 최대한 할 수 있는 모든 방법을 동원하는 것이 좋다. 그렇게 해도 스팸으로 빠진다. 따라서 확률을 낮추는데 집중해야 한다.
+정확하게 이야기 하자면 요즘엔 메일 내용을 더 중요하게 다루는 경우가 많아 내용 작성에도 공을 들여야 한다. 여기서 내용이란 의미를 갖는 문장 뿐아니라 html 마크업과 같은 메일 전문을 뜻한다. 하지만 이 부분은 이 글에서 이야기 하고자하는 것이 아니므로 이 이상의 언급은 피하려 한다.</p>
+<hr />
+<h3><a href="http://www.dkim.org/">DKIM(DomainKeys Identified Mail)</a> 인증</h3>
+<p><a href="https://support.google.com/a/answer/174124">Google Apps 관리자 도움말 - DKIM으로 이메일 인증</a>에서는 다음과 같이 DKIM을 소개하고 있다.</p>
+<blockquote>
+<p>DKIM 표준을 사용하여 발신 메일 헤더에 디지털 서명을 추가하면 스푸핑을 방지하는 데 도움이 됩니다. 이렇게 하려면 비공개 도메인 키를 사용하여 도메인의 발신 메일 헤더를 암호화하고 키의 공개 버전을 도메인의 DNS 레코드에 추가해야 합니다. 그러면 수신 서버가 공개 키를 검색하여 수신 헤더의 암호를 해독하고 메일이 실제로 사용자의 도메인에서 전송되었으며 전송 과정에서 변경되지 않았는지 여부를 확인할 수 있습니다.</p>
+</blockquote>
+<p>위 설명을 보면 알 수 있듯이 스푸핑 방지에 도움을 준다. 따라서 수신된 메일이 스푸핑되지 않았음을 보증하므로 스팸으로 분류될 확률을 낮추는데 도움이 된다(기술적 의미에서는 스팸과 아무런 연관성이 없으나 스팸 필터에서 DKIM이 적용된 메일의 스팸 지수를 낮추는 정책을 사용하는 곳들이 많다).</p>
+<p>DKIM에서 사용할 서명 키는 <code>openssl</code>등을 이용해서 직접 생성하는 것도 가능하지만 잘 만들어진 온라인 도구들이 있다. 그중에서 <a href="http://dkimcore.org/">DKIM Core Tools</a>를 간략히 소개하고자 한다. 직접 생성하는 방법을 사용해도 되나 여기서는 다루지 않는다(RSA 키를 생성하는 것이므로 쉽게 정보를 얻을 수 있다). 단, 직접 생성했을 경우라면 DNS에 등록할 레코드를 만드는 것이 조금 복잡할 수 있으니 DNS 레코드 생성을 도와주는 <a href="http://www.dnswatch.info/dkim/create-dns-record">DNS Watch - DKIM DNS Wizard</a>를 활용하자.</p>
+<p><a href="http://dkimcore.org/tools/">http://dkimcore.org/tools/</a> 로 접속해보면 상단에 도메인을 넣는 란이 있다. 여기에 원하는 도메인을 입력하고 <code>Generate</code> 버튼을 누르면 private/public key를 만들어 보여주며 DNS에 설정할 DKIM 레코드도 생성하여 바로 보여준다(친절하게도 Bind9, Tinydns, Raw 포멧으로 제공한다). 여기서 제공하는 DKIM 레코드를 DNS에 추가하면 된다.</p>
+<p>그런데 DKIM의 경우는 앞서 설명했던 것들과 다르게 설정만하면 완료되는 것이 아니다. DKIM 레코드에는 공개키를 제공하는 것이므로 메일 발송시 비공개 도메인 키를 사용하여 도메인의 발신 메일 헤더를 암호화하는 과정이 필요하다. 이 부분에 대해서는 오픈소스로 제작된 라이브러리들이 다수 있으니 쉽게 찾을 수 있다. 아니면 직접 구현해도 된다. 다만 RSA를 다루어야 하므로 약간의 지식이 필요하다.</p>
+<h3>DMARC(Domain-based Message Authentication, Reporting and Conformance) 정책 게시</h3>
+<p><a href="https://dmarc.org/">dmarc.org</a>에서는 DMARC에 대해 다음과 같이 설명하고 있다.</p>
+<blockquote>
+<p>DMARC, which stands for “Domain-based Message Authentication, Reporting &amp; Conformance”, is an email authentication protocol. It builds on the widely deployed SPF and DKIM protocols, adding a reporting function that allows senders and receivers to improve and monitor protection of the domain from fraudulent email.</p>
+</blockquote>
+<p>위 내용을 번역한 것은 아니지만 DMARC를 조금 더 이해하기 쉽게 설명하자면 다음과 같다.</p>
+<p>DMARC는 이메일 인증 프로토콜로써 도메인 기반 메시지 인증, 보고, 준수를 의미한다. DMARC는 SPF, DKIM 두 가지 방법에 의존하여 서명 무결성을 확인한다. 메일이 SPF, DKIM 검사에 실패하면 DMARC 정책이 실행된다. 어떤 방법을 사용하든 두 가지 검사에 모두 실패하지 않는 한 메일은 DMARC를 통과한 것으로 간주된다. 그렇다면 DMARC를 통과하지 못하면 어떻게 되는가? 이때 어떻게 대응할 것인지에 대해서 정의하는 것이 DMARC 정책 게시라고 볼 수 있다.</p>
+<p><a href="https://support.google.com/a/answer/2466563?hl=ko&amp;ref_topic=2759254">Google Apps 관리자 도움말 - DMARC 레코드 추가</a>에서 설명하고 있는 DMARC TXT 레코드에 대한 설명은 아래와 같다.</p>
+<table>
+<thead>
+<tr>
+<th>태그 이름</th>
+<th>필수항목</th>
+<th>목적</th>
+<th>샘플</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v</td>
+<td>필수</td>
+<td>프로토콜 버전</td>
+<td>v=DMARC1</td>
+</tr>
+<tr>
+<td>p</td>
+<td>필수</td>
+<td>도메인에 대한 정책</td>
+<td>p=quarantine</td>
+</tr>
+<tr>
+<td>pct</td>
+<td>선택사항</td>
+<td>필터링이 적용되는 메일의 비율(%)</td>
+<td>pct=20</td>
+</tr>
+<tr>
+<td>rua</td>
+<td>선택사항</td>
+<td>집계 보고서의 보고 URI</td>
+<td>rua=mailto:aggrep@example.com</td>
+</tr>
+<tr>
+<td>sp</td>
+<td>선택사항 도메인의 하위 도메인에 대한 정책</td>
+<td>sp=reject</td>
+</tr>
+<tr>
+<td>aspf</td>
+<td>선택사항</td>
+<td>SPF의 정렬 모드</td>
+<td>aspf=r</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>v(버전) 및 p(정책) 태그만 필수항목입니다. 가능한 정책 설정, 즉 메일 처리에는 다음 3가지가 있습니다.</p>
+<p>none - 아무 조치도 취하지 않습니다. 문제가 발생한 메일을 일일 보고서에 기록만 합니다.
+quarantine - 문제가 있는 메일을 스팸으로 표시합니다.
+reject - SMTP 계층에서 메일을 취소합니다.
+정렬 모드란 발신자 레코드를 SPF 및 DKIM 서명과 비교하는 정밀도를 의미하는데, 느슨함 또는 엄격함의 두 가지 값을 가질 수 있으며, 느슨함은 'r', 엄격함은 's'로 표시됩니다. 간단히 말해, 느슨함 모드에서는 주어진 도메인의 하위 도메인처럼 부분 일치를 허용하며, 엄격함 모드에서는 완전히 일치해야 합니다.</p>
+<p>일일 보고서를 받으려면 선택항목인 rua 태그와 함께 이메일 주소를 포함해야 합니다.</p>
+<p>다음은 DMARC TXT 레코드(_dmarc.your_domain.com IN TXT)의 예입니다. 적절히 수정하여 사용할 수 있습니다. 'your_domain.com' 및 'postmaster@your_domain.com'은 실제 도메인 이름과 이메일 주소로 변경해야 합니다.</p>
+<p>다음 TXT 레코드 예에서는 'your domain.com'에서 전송된 것으로 표시되는 메일이 DMARC 검사에 실패하는 경우, 아무런 조치도 취하지 않습니다. 대신 해당하는 모든 메일은 'postmaster@your_domain.com'에 전송되는 일일 집계 보고서에 표시됩니다.</p>
+<p>&quot;v=DMARC1; p=none; rua=mailto:postmaster@your_domain.com&quot;
+다음 TXT 레코드 예에서는 'your domain.com'에서 전송된 것으로 표시되는 메일이 DMARC 검사에 실패하는 경우, 이런 메일의 5%에 대해 차단 조치(스팸으로 표시)를 취합니다. 그런 다음 일일 집계 보고서를 'postmaster@your_domain.com'으로 보냅니다.</p>
+<p>&quot;v=DMARC1; p=quarantine; pct=5; rua=mailto:postmaster@your_domain.com&quot;
+마지막 예에서는 'your_domain.com'에서 전송된 것으로 표시되는 메일이 DMARC 검사에 실패하는 경우, 이런 메일을 항상 거부합니다. 그런 다음 일일 집계 보고서를 'postmaster@your_domain.com' 및 'dmarc@your_domain.com'으로 보냅니다.</p>
+<p>&quot;v=DMARC1; p=reject; rua=mailto:postmaster@your_domain.com, mailto:dmarc@your_domain.com&quot;</p>
+</blockquote>
+<p>설명을 보면 알 수 있듯이 이것 또한 메일이 스팸으로 분류되는 것과는 크게 상관이 없다. 하지만 여러 스팸 필터에서 DMARC가 설정된 도메인의 메일을 스팸 지수를 낮게 책정하는 정책을 사용하는 경우가 있어 소개한 것이다. 그도 그럴 것이 메일 품질(스팸, 스푸핑 등)에 대한 관리를 하고자하는 의지를 보이는 것이므로 정상적인 발송자라고 생각할 수 있는 것이다.</p>
+<p>그리고 한가지. DMARC는 모든 메일 수신처에 적용되는 것이 아니다. <a href="https://dmarc.org/">dmarc.org</a> 표준을 준수하는 곳에서만 정책을 확인하고 대응한다.</p>
+<p>DMARC를 어떻게 활용할 것인가에 대해서는 <a href="http://www.boannews.com/media/view.asp?idx=45489">이메일 보안을 위한 DMARC의 점진적인 사용법</a>을 참고하자.</p>
+<hr />
+<p>마지막으로 위 설명들을 처리하는데 도움을 줄 수 있는 몇가지 온라인 도구들을 소개하고자 한다.</p>
+<h3>온라인 도구</h3>
+<p>레코드 / 키 생성 / 유효성 검사 등을 도와준다.</p>
+<ul>
+<li><a href="http://www.protodave.com/tools/dkim-key-checker/">DKIM Key Checker</a></li>
+<li>
+<p><a href="http://dkimcore.org/tools/keycheck.html">DKIMCore - Key checker</a></p>
+</li>
+<li>
+<p><a href="http://www.brandonchecketts.com/emailtest.php">DKIM, SPF, SpamAssassin Email Validator</a> - DKIM 수신 유효성 검사</p>
+</li>
+<li><a href="http://www.microsoft.com/mscorp/safety/content/technologies/senderid/wizard/">Sender ID Framework SPF Record Wizard</a></li>
+</ul>
+<h3>스팸 검사기</h3>
+<p>자신의 메일에 대한 스팸 지수 등을 확인 할 수 있다.</p>
+<ul>
+<li><a href="http://isnotspam.com/">ISNotSPAM</a></li>
+<li><a href="http://www.mail-tester.com/">Test the Spammyness of your Emails</a></li>
+</ul>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/12/16/how-can-i-prevent-mail-from-being-classified-as-spam/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,198 +500,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">발송 메일을 스팸으로 분류되지 않도록 개선하는 법</h2>
-												<a href="https://blog.asamaru.net/category/tip/" rel="tag">tip</a>
-								<span></span>
-						<time class="published" datetime="2015-12-16 17:02:42">2015.12.16. 17:02</time>
-		</div>
-		<div class="markdown-body entry-content"><p>개인이 정상적인 메일 서비스를 통해 발송한 메일은 수신 측에서 스팸으로 분류될 확률이 적다. 하지만 서버에서 공지/안내 등의 이유로 다량의 메일을 지속적으로 발송할 경우 스팸으로 분류될 확률이 높다. 이 글에서 설명하고자 하는 것은 서버에서 다량의 메일 발송시 스팸으로 분류될 확률을 낮추기 위해 처리해야 할 몇가지를 소개하고자 한다.</p>
-<p><strong>스팸 필터는 아래에 설명하는 조건 외에도 메일의 내용, 수신한 사용자의 반응(스팸으로 체크) 등의 다양한 조건을 사용해서 스팸을 분류하므로 이 내용을 모두 적용한다고 스팸으로 무조건 분류되지 않는 것은 아니다.</strong> 하지만 아래의 조건들을 만족함으로써 정상적인 메일을 발송함에도 불구하고 스팸 서버로 분류되는 것을 어느 정도 예방하기 위한 활동이라고 생각하면 된다. 그리고 아래의 내용은 스팸 서버로 분류되는 상황을 겪으면서 조금씩 추가했던 내용들을 정리한 것이지만 잘못된 부분이 있을 수 있으니 참고용으로 둘러보기를 권장한다. 스팸 필터 정책은 수시로 변경되기도 하고 서비스별로 모두 다른 정책을 사용하므로 아래의 내용이 진리는 아니라는 것이다(사실 그런 것이 있다면 스패머들이 판치는 세상이 될 것이다).</p>
-<p>그럼 하나씩 알아보자.</p>
-<h3>Reverse DNS 설정</h3>
-<p>Reverse DNS란 DNS의 반대 개념으로서 IP로 Domain Name을 조회하는 것을 말한다. Reverse DNS를 통해 도메인이 조회 가능한 IP를 가지는 서버는 실제 운영되는 서비스 서버일 확률이 높으므로 스팸 서버가 아닐 확률이 높은 것으로 보는 것이다. 특히 구글과 같은 메일 서버들은 Reverse DNS가 등록되지 않은 서버에서 발송한 메일은 스팸 점수를 높게 책정하거나 수신을 거부하는 경우도 있다. 따라서 <strong>이메일을 발송하는 서버는 필히 Reverse DNS를 설정하는 것을 권장한다.</strong></p>
-<p>등록이 되어 있는지를 확인하는 방법은 아래와 같다. 여기서 A.B.C.D는 해당 서버 IP다.</p>
-<pre class="hljs bash">$ nslookup -type=ptr A.B.C.D
-Server:     <span class="hljs-number">168.126</span>.<span class="hljs-number">63.1</span>
-Address:    <span class="hljs-number">168.126</span>.<span class="hljs-number">63.1</span><span class="hljs-comment">#53</span>
-
-Non-authoritative answer:
-D.C.B.A.in-addr.arpa    name = mail.domain.com.
-
-Authoritative answers can be found from:
-C.B.A.in-addr.arpa  nameserver = rev2.kornet.net.
-C.B.A.in-addr.arpa  nameserver = rev1.kornet.net.
-rev1.kornet.net internet address = <span class="hljs-number">211.216</span>.<span class="hljs-number">50.170</span>
-rev2.kornet.net internet address = <span class="hljs-number">211.216</span>.<span class="hljs-number">50.180</span></pre>
-<p>Reverse DNS가 정상적으로 설정되어 있다면 위와 같이 조회 결과를 볼 수 있다.</p>
-<p>등록이 되어 있지 않다면 어떻게 해야 할까? 대부분의 경우(전체 네트워크를 소유하지 않은 경우) 망사업자 측에 요청하여 설정해야 한다.</p>
-<p>KT 회선을 기준으로 아래의 방법으로 등록 신청이 가능했다. 하지만 얼마전 확인해 보니 사이트가 변경되어 아래의 방법을 사용할 수 없었다. 대부분의 경우 IDC 등에 문의해서 처리하면 된다.</p>
-<blockquote>
-<p>등록 방법 : [아래]<br />
-① <a href="http://dns.kornet.net">http://dns.kornet.net</a> 사이트 접속<br />
-② 도메인 등록 요청/문의 클릭<br />
-③ 새글작성 클릭<br />
-④ 게시물 유형 -&gt; 리버스 등록, 소속 -&gt; idc 체크, 나머지 정보 기입후 등록<br />
-rDNS 관련 연락처 : 02-3674-5820  </p>
-</blockquote>
-<h3>SPF(Sender Policy Framework) 레코드 등록</h3>
-<p><a href="https://support.google.com/a/answer/33786?hl=ko">구글 관리자 도움말 - SPF 레코드 정보</a>에 SPF에 대해 다음과 같이 설명하고 있다.</p>
-<blockquote>
-<p>SPF 레코드는 도메인을 대표하여 이메일을 보낼 수 있는 메일 서버를 식별하는 DNS(Domain Name Service) 레코드의 한 유형입니다.</p>
-<p>SPF 레코드의 목적은 스팸 발송자가 도메인의 위조된 '보낸사람' 주소를 사용하여 메일을 보내지 못하도록 하는 것입니다. 수신자는 SPF 레코드를 참조하여 자신의 도메인에서 보낸 것처럼 위장한 메일이 인증된 메일 서버에서 전송된 것인지를 판별할 수 있습니다.</p>
-<p>예를 들어 example.com 도메인에서 Gmail을 사용한다고 가정해 보겠습니다. Google Apps 메일 서버를 도메인에 대한 인증된 메일 서버로 식별하는 SPF 레코드를 만듭니다. 수신자의 메일 서버가 user\@example.com에서 보낸 메일을 수신하는 경우, example.com에 대한 SPF 레코드를 확인하여 유효한 메일인지 여부를 판별할 수 있습니다. 메일이 SPF 레코드에 나열된 Google Apps 메일 서버가 아닌 다른 서버에서 전송된 경우 수신자의 메일 서버에서 이를 스팸으로 간주하여 수신 거부할 수도 있습니다.</p>
-<p>도메인에 SPF 레코드가 없는 경우에는 수신자 도메인에서 메일이 인증된 메일 서버에서 전송된 것인지를 확인할 수 없으므로 사용자의 메일이 수신 거부될 수도 있습니다.</p>
-</blockquote>
-<p>위 설명을 보면 알 수 있듯이 SPF 레코드 등록의 경우도 메일 발송을 위해서는 필수적으로 해야할 것 중 하나다. 그리고 뒤에 설명할 White Domain 등록을 위해서도 필히 등록이 되어 있어야 한다.</p>
-<p>SPF 레코드 등록 방법은 잘 설명된 문서들이 많으므로 굳이 여기서 다시 설명하지는 않는다. 다만 간단히 예시만 하나 남긴다.</p>
-<p><strong>DNS zone 설정에 추가</strong></p>
-<pre><code>@   IN TXT      "v=spf1 ip4:A.B.C.1 ip4:A.B.C.2 ip4:A.B.C.3 ~all"</code></pre>
-<p>간단히 설명하자면 다음의 IP(A.B.C.1, A.B.C.2, A.B.C.3)가 설정된 서버에서 해당 도메인을 사용해 메일을 발송할 수 있다는 의미다.</p>
-<h3>화이트 도메인(White Domain) 등록</h3>
-<p><a href="https://www.kisarbl.or.kr/">KISA RBL</a>에서 통합 White Domain 등록제를 운영하고 있다.
-통합 White Domain 등록제에 대해서는 위 사이트에서 아래와 같이 안내하고 있다.</p>
-<blockquote>
-<p>정상적으로 발송하는 대량 이메일이 RBL이력으로 간주되어 차단되는 것을 방지하기 위하여, 사전에 등록된 개인이나 사업자에 한하여 국내 주요 포탈사이트로의 이메일 전송을 보장해주는 제도입니다. ( 무료 )</p>
-<ul>
-<li>단, White Domain으로 등록되었다 하더라도 이후 모니터링을 통해 RBL이력발송 사실이 확인되면, 즉각 차단 조치되며 White 리스트에서도 삭제될 수 있습니다.</li>
-</ul>
-<p>기존에 개별 포탈에서 'IP 등록제', 'IP 실명제'등의 이름으로 운영해오던 것을 2006년 9월 1일부로 KISARBL이 등록접수/관리/운영을 통합한 것이므로, KISARBL에 White Domain으로 등록하게 되면 , 여러번 별도로 등록할 필요없이 참여하고 있는 포탈사이트에 동시에 등록됩니다 .</p>
-<ul>
-<li>단 , 개인의 경우에는 일부 포탈사이트에서 자사의 정책상 등록을 허용하지 않습니다.</li>
-</ul>
-</blockquote>
-<p>위 설명을 보면 알 수 있듯이 White Domain은 국내 포털 사이트로 메일을 발송하는 경우에 적용될 수 있는 것으로 범위가 제한되지만 대부분의 수신자가 국내 포털 사이트의 이메일을 사용하고 있는 것을 감안하면 이 또한 필수적으로 등록하는 것이 좋다. 등록 방법은 위 사이트에서 안내하고 있으므로 별도로 설명하지는 않는다. 하지만 등록 과정이 그리 복잡하지 않으므로 큰 어려움은 없을 것으로 생각된다.</p>
-<hr />
-<p><strong>상기 안내한 사항들은 필수적으로 처리하는 것이 좋은 것들이고 이후의 사항들은 가급적 처리하는 것이 좋은 것이다.</strong> 하지만 스팸으로 분류되지 않기 위해서는 최대한 할 수 있는 모든 방법을 동원하는 것이 좋다. 그렇게 해도 스팸으로 빠진다. 따라서 확률을 낮추는데 집중해야 한다.
-정확하게 이야기 하자면 요즘엔 메일 내용을 더 중요하게 다루는 경우가 많아 내용 작성에도 공을 들여야 한다. 여기서 내용이란 의미를 갖는 문장 뿐아니라 html 마크업과 같은 메일 전문을 뜻한다. 하지만 이 부분은 이 글에서 이야기 하고자하는 것이 아니므로 이 이상의 언급은 피하려 한다.</p>
-<hr />
-<h3><a href="http://www.dkim.org/">DKIM(DomainKeys Identified Mail)</a> 인증</h3>
-<p><a href="https://support.google.com/a/answer/174124">Google Apps 관리자 도움말 - DKIM으로 이메일 인증</a>에서는 다음과 같이 DKIM을 소개하고 있다.</p>
-<blockquote>
-<p>DKIM 표준을 사용하여 발신 메일 헤더에 디지털 서명을 추가하면 스푸핑을 방지하는 데 도움이 됩니다. 이렇게 하려면 비공개 도메인 키를 사용하여 도메인의 발신 메일 헤더를 암호화하고 키의 공개 버전을 도메인의 DNS 레코드에 추가해야 합니다. 그러면 수신 서버가 공개 키를 검색하여 수신 헤더의 암호를 해독하고 메일이 실제로 사용자의 도메인에서 전송되었으며 전송 과정에서 변경되지 않았는지 여부를 확인할 수 있습니다.</p>
-</blockquote>
-<p>위 설명을 보면 알 수 있듯이 스푸핑 방지에 도움을 준다. 따라서 수신된 메일이 스푸핑되지 않았음을 보증하므로 스팸으로 분류될 확률을 낮추는데 도움이 된다(기술적 의미에서는 스팸과 아무런 연관성이 없으나 스팸 필터에서 DKIM이 적용된 메일의 스팸 지수를 낮추는 정책을 사용하는 곳들이 많다).</p>
-<p>DKIM에서 사용할 서명 키는 <code>openssl</code>등을 이용해서 직접 생성하는 것도 가능하지만 잘 만들어진 온라인 도구들이 있다. 그중에서 <a href="http://dkimcore.org/">DKIM Core Tools</a>를 간략히 소개하고자 한다. 직접 생성하는 방법을 사용해도 되나 여기서는 다루지 않는다(RSA 키를 생성하는 것이므로 쉽게 정보를 얻을 수 있다). 단, 직접 생성했을 경우라면 DNS에 등록할 레코드를 만드는 것이 조금 복잡할 수 있으니 DNS 레코드 생성을 도와주는 <a href="http://www.dnswatch.info/dkim/create-dns-record">DNS Watch - DKIM DNS Wizard</a>를 활용하자.</p>
-<p><a href="http://dkimcore.org/tools/">http://dkimcore.org/tools/</a> 로 접속해보면 상단에 도메인을 넣는 란이 있다. 여기에 원하는 도메인을 입력하고 <code>Generate</code> 버튼을 누르면 private/public key를 만들어 보여주며 DNS에 설정할 DKIM 레코드도 생성하여 바로 보여준다(친절하게도 Bind9, Tinydns, Raw 포멧으로 제공한다). 여기서 제공하는 DKIM 레코드를 DNS에 추가하면 된다.</p>
-<p>그런데 DKIM의 경우는 앞서 설명했던 것들과 다르게 설정만하면 완료되는 것이 아니다. DKIM 레코드에는 공개키를 제공하는 것이므로 메일 발송시 비공개 도메인 키를 사용하여 도메인의 발신 메일 헤더를 암호화하는 과정이 필요하다. 이 부분에 대해서는 오픈소스로 제작된 라이브러리들이 다수 있으니 쉽게 찾을 수 있다. 아니면 직접 구현해도 된다. 다만 RSA를 다루어야 하므로 약간의 지식이 필요하다.</p>
-<h3>DMARC(Domain-based Message Authentication, Reporting and Conformance) 정책 게시</h3>
-<p><a href="https://dmarc.org/">dmarc.org</a>에서는 DMARC에 대해 다음과 같이 설명하고 있다.</p>
-<blockquote>
-<p>DMARC, which stands for “Domain-based Message Authentication, Reporting &amp; Conformance”, is an email authentication protocol. It builds on the widely deployed SPF and DKIM protocols, adding a reporting function that allows senders and receivers to improve and monitor protection of the domain from fraudulent email.</p>
-</blockquote>
-<p>위 내용을 번역한 것은 아니지만 DMARC를 조금 더 이해하기 쉽게 설명하자면 다음과 같다.</p>
-<p>DMARC는 이메일 인증 프로토콜로써 도메인 기반 메시지 인증, 보고, 준수를 의미한다. DMARC는 SPF, DKIM 두 가지 방법에 의존하여 서명 무결성을 확인한다. 메일이 SPF, DKIM 검사에 실패하면 DMARC 정책이 실행된다. 어떤 방법을 사용하든 두 가지 검사에 모두 실패하지 않는 한 메일은 DMARC를 통과한 것으로 간주된다. 그렇다면 DMARC를 통과하지 못하면 어떻게 되는가? 이때 어떻게 대응할 것인지에 대해서 정의하는 것이 DMARC 정책 게시라고 볼 수 있다.</p>
-<p><a href="https://support.google.com/a/answer/2466563?hl=ko&amp;ref_topic=2759254">Google Apps 관리자 도움말 - DMARC 레코드 추가</a>에서 설명하고 있는 DMARC TXT 레코드에 대한 설명은 아래와 같다.</p>
-<table>
-<thead>
-<tr>
-<th>태그 이름</th>
-<th>필수항목</th>
-<th>목적</th>
-<th>샘플</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>v</td>
-<td>필수</td>
-<td>프로토콜 버전</td>
-<td>v=DMARC1</td>
-</tr>
-<tr>
-<td>p</td>
-<td>필수</td>
-<td>도메인에 대한 정책</td>
-<td>p=quarantine</td>
-</tr>
-<tr>
-<td>pct</td>
-<td>선택사항</td>
-<td>필터링이 적용되는 메일의 비율(%)</td>
-<td>pct=20</td>
-</tr>
-<tr>
-<td>rua</td>
-<td>선택사항</td>
-<td>집계 보고서의 보고 URI</td>
-<td>rua=mailto:aggrep@example.com</td>
-</tr>
-<tr>
-<td>sp</td>
-<td>선택사항 도메인의 하위 도메인에 대한 정책</td>
-<td>sp=reject</td>
-</tr>
-<tr>
-<td>aspf</td>
-<td>선택사항</td>
-<td>SPF의 정렬 모드</td>
-<td>aspf=r</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p>v(버전) 및 p(정책) 태그만 필수항목입니다. 가능한 정책 설정, 즉 메일 처리에는 다음 3가지가 있습니다.</p>
-<p>none - 아무 조치도 취하지 않습니다. 문제가 발생한 메일을 일일 보고서에 기록만 합니다.
-quarantine - 문제가 있는 메일을 스팸으로 표시합니다.
-reject - SMTP 계층에서 메일을 취소합니다.
-정렬 모드란 발신자 레코드를 SPF 및 DKIM 서명과 비교하는 정밀도를 의미하는데, 느슨함 또는 엄격함의 두 가지 값을 가질 수 있으며, 느슨함은 'r', 엄격함은 's'로 표시됩니다. 간단히 말해, 느슨함 모드에서는 주어진 도메인의 하위 도메인처럼 부분 일치를 허용하며, 엄격함 모드에서는 완전히 일치해야 합니다.</p>
-<p>일일 보고서를 받으려면 선택항목인 rua 태그와 함께 이메일 주소를 포함해야 합니다.</p>
-<p>다음은 DMARC TXT 레코드(_dmarc.your_domain.com IN TXT)의 예입니다. 적절히 수정하여 사용할 수 있습니다. 'your_domain.com' 및 'postmaster@your_domain.com'은 실제 도메인 이름과 이메일 주소로 변경해야 합니다.</p>
-<p>다음 TXT 레코드 예에서는 'your domain.com'에서 전송된 것으로 표시되는 메일이 DMARC 검사에 실패하는 경우, 아무런 조치도 취하지 않습니다. 대신 해당하는 모든 메일은 'postmaster@your_domain.com'에 전송되는 일일 집계 보고서에 표시됩니다.</p>
-<p>&quot;v=DMARC1; p=none; rua=mailto:postmaster@your_domain.com&quot;
-다음 TXT 레코드 예에서는 'your domain.com'에서 전송된 것으로 표시되는 메일이 DMARC 검사에 실패하는 경우, 이런 메일의 5%에 대해 차단 조치(스팸으로 표시)를 취합니다. 그런 다음 일일 집계 보고서를 'postmaster@your_domain.com'으로 보냅니다.</p>
-<p>&quot;v=DMARC1; p=quarantine; pct=5; rua=mailto:postmaster@your_domain.com&quot;
-마지막 예에서는 'your_domain.com'에서 전송된 것으로 표시되는 메일이 DMARC 검사에 실패하는 경우, 이런 메일을 항상 거부합니다. 그런 다음 일일 집계 보고서를 'postmaster@your_domain.com' 및 'dmarc@your_domain.com'으로 보냅니다.</p>
-<p>&quot;v=DMARC1; p=reject; rua=mailto:postmaster@your_domain.com, mailto:dmarc@your_domain.com&quot;</p>
-</blockquote>
-<p>설명을 보면 알 수 있듯이 이것 또한 메일이 스팸으로 분류되는 것과는 크게 상관이 없다. 하지만 여러 스팸 필터에서 DMARC가 설정된 도메인의 메일을 스팸 지수를 낮게 책정하는 정책을 사용하는 경우가 있어 소개한 것이다. 그도 그럴 것이 메일 품질(스팸, 스푸핑 등)에 대한 관리를 하고자하는 의지를 보이는 것이므로 정상적인 발송자라고 생각할 수 있는 것이다.</p>
-<p>그리고 한가지. DMARC는 모든 메일 수신처에 적용되는 것이 아니다. <a href="https://dmarc.org/">dmarc.org</a> 표준을 준수하는 곳에서만 정책을 확인하고 대응한다.</p>
-<p>DMARC를 어떻게 활용할 것인가에 대해서는 <a href="http://www.boannews.com/media/view.asp?idx=45489">이메일 보안을 위한 DMARC의 점진적인 사용법</a>을 참고하자.</p>
-<hr />
-<p>마지막으로 위 설명들을 처리하는데 도움을 줄 수 있는 몇가지 온라인 도구들을 소개하고자 한다.</p>
-<h3>온라인 도구</h3>
-<p>레코드 / 키 생성 / 유효성 검사 등을 도와준다.</p>
-<ul>
-<li><a href="http://www.protodave.com/tools/dkim-key-checker/">DKIM Key Checker</a></li>
-<li>
-<p><a href="http://dkimcore.org/tools/keycheck.html">DKIMCore - Key checker</a></p>
-</li>
-<li>
-<p><a href="http://www.brandonchecketts.com/emailtest.php">DKIM, SPF, SpamAssassin Email Validator</a> - DKIM 수신 유효성 검사</p>
-</li>
-<li><a href="http://www.microsoft.com/mscorp/safety/content/technologies/senderid/wizard/">Sender ID Framework SPF Record Wizard</a></li>
-</ul>
-<h3>스팸 검사기</h3>
-<p>자신의 메일에 대한 스팸 지수 등을 확인 할 수 있다.</p>
-<ul>
-<li><a href="http://isnotspam.com/">ISNotSPAM</a></li>
-<li><a href="http://www.mail-tester.com/">Test the Spammyness of your Emails</a></li>
-</ul>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/12/16/how-can-i-prevent-mail-from-being-classified-as-spam/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,56 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류</h2>
+												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
+								<span></span>
+						<time class="published" datetime="2015-10-12 12:07:06">2015.10.12. 12:07</time>
+		</div>
+		<div class="markdown-body entry-content"><p>안드로이드 작업중 <code>java.lang.IllegalStateException: Recursive entry to executePendingTransactions</code> 오류를 만났다. 오류가 발생한 상황은 다음과 같다.</p>
+<p>작업중 Fragment에서 하위에 또 다른 Fragment를 추가할 일이 생겼다. 이 작업 중에 하위에 추가되는 Fragment에서 <code>executePendingTransactions()</code> 함수를 호출하니 위 오류가 발생했다. 이해를 위해 처리 과정 중 문제가 발생한 부분만 적는다.</p>
+<pre class="hljs java">FragmentManager ft = getActivity().getSupportFragmentManager();
+ft.beginTransaction()
+        .add(R.id.fragmentContainer, (Fragment) fragment)
+        .commit();
+ft.executePendingTransactions();</pre>
+<p>FragmentManager를 얻기 위해 현재 Fragment의 Activity를 가져와 <code>getSupportFragmentManager()</code>를 사용했다. 이 부분이 문제가 생기는 이유다. 이런 경우는 아래와 같이 처리할 수 있다.</p>
+<pre class="hljs java">FragmentManager ft = getChildFragmentManager();
+ft.beginTransaction()
+        .add(R.id.fragmentContainer, (Fragment) fragment)
+        .commit();
+ft.executePendingTransactions();</pre>
+<p><code>getChildFragmentManager()</code>를 사용해서 FragmentManager를 얻어서 처리하면 위 오류는 발생하지 않는다.</p>
+<p>이와 관련된 설명은 <a href="http://developer.android.com/intl/ru/about/versions/android-4.2.html#NestedFragments">Nested Fragments</a>를 보면 된다. 4.2에 변경된 내용으로 나와 있지만 support library를 사용한다면 하위 호환이 가능한 상황이라 문제되지 않는다.</p>
+<p>추가적으로 <a href="http://developer.android.com/intl/ko/reference/android/app/FragmentManager.html#executePendingTransactions%28%29">public abstract boolean executePendingTransactions()</a>에 대해서 궁금하다면 <a href="http://developer.android.com/intl/ko/guide/components/fragments.html#Transactions">프래그먼트 트랜잭션 수행</a>)를 참고하면 된다.</p>
+<blockquote>
+<p>commit()을 호출해도 그 즉시 트랜잭션을 수행하지는 않습니다. 그보다는, 액티비티의 UI 스레드(&quot;주요&quot; 스레드)를 스레드가 할 수 있는 한 빨리 이 트랜잭션을 수행하도록 일정을 예약하는 것에 가깝습니다. 하지만 필요한 경우 UI 스레드로부터 executePendingTransactions()를 호출하면 commit()이 제출한 트랜잭션을 즉시 실행할 수 있습니다. 트랜잭션이 다른 스레드의 작업에 대한 종속성이 아니라면 굳이 이렇게 해야만 하는 것은 아닙니다.</p>
+</blockquote>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,55 +357,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">java.lang.IllegalStateException: Recursive entry to executePendingTransactions 오류</h2>
-												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
-								<span></span>
-						<time class="published" datetime="2015-10-12 12:07:06">2015.10.12. 12:07</time>
-		</div>
-		<div class="markdown-body entry-content"><p>안드로이드 작업중 <code>java.lang.IllegalStateException: Recursive entry to executePendingTransactions</code> 오류를 만났다. 오류가 발생한 상황은 다음과 같다.</p>
-<p>작업중 Fragment에서 하위에 또 다른 Fragment를 추가할 일이 생겼다. 이 작업 중에 하위에 추가되는 Fragment에서 <code>executePendingTransactions()</code> 함수를 호출하니 위 오류가 발생했다. 이해를 위해 처리 과정 중 문제가 발생한 부분만 적는다.</p>
-<pre class="hljs java">FragmentManager ft = getActivity().getSupportFragmentManager();
-ft.beginTransaction()
-        .add(R.id.fragmentContainer, (Fragment) fragment)
-        .commit();
-ft.executePendingTransactions();</pre>
-<p>FragmentManager를 얻기 위해 현재 Fragment의 Activity를 가져와 <code>getSupportFragmentManager()</code>를 사용했다. 이 부분이 문제가 생기는 이유다. 이런 경우는 아래와 같이 처리할 수 있다.</p>
-<pre class="hljs java">FragmentManager ft = getChildFragmentManager();
-ft.beginTransaction()
-        .add(R.id.fragmentContainer, (Fragment) fragment)
-        .commit();
-ft.executePendingTransactions();</pre>
-<p><code>getChildFragmentManager()</code>를 사용해서 FragmentManager를 얻어서 처리하면 위 오류는 발생하지 않는다.</p>
-<p>이와 관련된 설명은 <a href="http://developer.android.com/intl/ru/about/versions/android-4.2.html#NestedFragments">Nested Fragments</a>를 보면 된다. 4.2에 변경된 내용으로 나와 있지만 support library를 사용한다면 하위 호환이 가능한 상황이라 문제되지 않는다.</p>
-<p>추가적으로 <a href="http://developer.android.com/intl/ko/reference/android/app/FragmentManager.html#executePendingTransactions%28%29">public abstract boolean executePendingTransactions()</a>에 대해서 궁금하다면 <a href="http://developer.android.com/intl/ko/guide/components/fragments.html#Transactions">프래그먼트 트랜잭션 수행</a>)를 참고하면 된다.</p>
-<blockquote>
-<p>commit()을 호출해도 그 즉시 트랜잭션을 수행하지는 않습니다. 그보다는, 액티비티의 UI 스레드(&quot;주요&quot; 스레드)를 스레드가 할 수 있는 한 빨리 이 트랜잭션을 수행하도록 일정을 예약하는 것에 가깝습니다. 하지만 필요한 경우 UI 스레드로부터 executePendingTransactions()를 호출하면 commit()이 제출한 트랜잭션을 즉시 실행할 수 있습니다. 트랜잭션이 다른 스레드의 작업에 대한 종속성이 아니라면 굳이 이렇게 해야만 하는 것은 아닙니다.</p>
-</blockquote>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/10/12/java-dot-lang-dot-illegalstateexception-recursive-entry-to-executependingtransactions/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

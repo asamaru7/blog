@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,54 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">nginx 504 Gateway Time-out 오류</h2>
+												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
+								<span></span>
+						<time class="published" datetime="2016-10-26 20:54:05">2016.10.26. 20:54</time>
+		</div>
+		<div class="markdown-body entry-content"><p>nginx에서 <em>504 Gateway Time-out</em> 오류가 발생할 경우는 리버스 프록시에서의 응답이 지정 시간보다 늦어질 경우다.</p>
+<p><img src="/res/img/post/2016/10/504.png" alt="nginx 504 Gateway Time-out" width="1254" height="186" /></p>
+<p>접속이 지연되는 경우는 서버의 부하 문제나 WAS의 오류로 인한 것이니 nginx가 아닌 WAS 쪽에서 해결해야하는 것이 맞을 것이다.</p>
+<p>간혹 특수한 경우에 WAS 쪽의 처리가 오랜 시간을 필요로 하는 경우 어쩔 수 없이 timeout을 늘려야 하는 경우가 있을 수 있다. 이런 경우라면 <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_connect_timeout">proxy_connect_timeout</a>, <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_send_timeout">proxy_send_timeout</a>, <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_read_timeout">proxy_read_timeout</a> 등을 사용해서 시간을 늘려줄 수 있다(기본은 60초다).</p>
+<pre class="hljs nginx"><span class="hljs-title">server</span> {
+    ...
+
+    <span class="hljs-title">location</span> / {
+        <span class="hljs-title">proxy_connect_timeout</span> <span class="hljs-number">300</span>;
+        <span class="hljs-title">proxy_send_timeout</span> <span class="hljs-number">300</span>;
+        <span class="hljs-title">proxy_read_timeout</span> <span class="hljs-number">300</span>;
+        <span class="hljs-title">send_timeout</span> <span class="hljs-number">300</span>;
+    }
+}</pre>
+<p>사실 이런 경우는 서비스 중에는 발생해서는 안된다. 사용자가 이렇게 오랜 시간을 기다려줄 리가 없기 때문이다. 이런 기능이 필요하다면 Job Queue를 이용하거나 사용자에게 안내 메시지를 보내고 백그라운드에서 계속 실행되도록 하는 것이 맞을 것이다.</p>
+<p>php 에서는 이런 경우에 대비해서 <a href="http://php.net/manual/kr/function.fastcgi-finish-request.php">fastcgi_finish_request</a>를 제공한다. 이 함수를 실행하면 사용자에게는 프로세스가 종료된 것처럼 response를 보내고 남은 작업을 계속 실행한다.</p>
+<p>다른 방법은 <a href="http://php.net/manual/kr/function.ob-flush.php">ob_flush</a>와 <a href="http://php.net/manual/kr/function.flush.php">flush</a>를 이용해서 response를 지속적으로 보내서 timeout이 발생하지 않도록 하는 것이다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/10/26/nginx-504-error/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,53 +355,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">nginx 504 Gateway Time-out 오류</h2>
-												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
-								<span></span>
-						<time class="published" datetime="2016-10-26 20:54:05">2016.10.26. 20:54</time>
-		</div>
-		<div class="markdown-body entry-content"><p>nginx에서 <em>504 Gateway Time-out</em> 오류가 발생할 경우는 리버스 프록시에서의 응답이 지정 시간보다 늦어질 경우다.</p>
-<p><img src="/res/img/post/2016/10/504.png" alt="nginx 504 Gateway Time-out" width="1254" height="186" /></p>
-<p>접속이 지연되는 경우는 서버의 부하 문제나 WAS의 오류로 인한 것이니 nginx가 아닌 WAS 쪽에서 해결해야하는 것이 맞을 것이다.</p>
-<p>간혹 특수한 경우에 WAS 쪽의 처리가 오랜 시간을 필요로 하는 경우 어쩔 수 없이 timeout을 늘려야 하는 경우가 있을 수 있다. 이런 경우라면 <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_connect_timeout">proxy_connect_timeout</a>, <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_send_timeout">proxy_send_timeout</a>, <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_read_timeout">proxy_read_timeout</a> 등을 사용해서 시간을 늘려줄 수 있다(기본은 60초다).</p>
-<pre class="hljs nginx"><span class="hljs-title">server</span> {
-    ...
-
-    <span class="hljs-title">location</span> / {
-        <span class="hljs-title">proxy_connect_timeout</span> <span class="hljs-number">300</span>;
-        <span class="hljs-title">proxy_send_timeout</span> <span class="hljs-number">300</span>;
-        <span class="hljs-title">proxy_read_timeout</span> <span class="hljs-number">300</span>;
-        <span class="hljs-title">send_timeout</span> <span class="hljs-number">300</span>;
-    }
-}</pre>
-<p>사실 이런 경우는 서비스 중에는 발생해서는 안된다. 사용자가 이렇게 오랜 시간을 기다려줄 리가 없기 때문이다. 이런 기능이 필요하다면 Job Queue를 이용하거나 사용자에게 안내 메시지를 보내고 백그라운드에서 계속 실행되도록 하는 것이 맞을 것이다.</p>
-<p>php 에서는 이런 경우에 대비해서 <a href="http://php.net/manual/kr/function.fastcgi-finish-request.php">fastcgi_finish_request</a>를 제공한다. 이 함수를 실행하면 사용자에게는 프로세스가 종료된 것처럼 response를 보내고 남은 작업을 계속 실행한다.</p>
-<p>다른 방법은 <a href="http://php.net/manual/kr/function.ob-flush.php">ob_flush</a>와 <a href="http://php.net/manual/kr/function.flush.php">flush</a>를 이용해서 response를 지속적으로 보내서 timeout이 발생하지 않도록 하는 것이다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/10/26/nginx-504-error/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

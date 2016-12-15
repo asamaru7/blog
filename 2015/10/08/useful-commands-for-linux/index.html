@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,122 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">리눅스 명령어 모음(Centos 6)</h2>
+												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
+								<span></span>
+						<time class="published" datetime="2015-10-08 11:44:32">2015.10.08. 11:44</time>
+		</div>
+		<div class="markdown-body entry-content"><p>아래의 내용은 개인적으로 간혹 사용이 필요한 내용을 기록해 두기 위한 것으로 잘못된 정보일 수 있으니 참고만 하기 바란다.</p>
+<h3>시스템 로그 삭제</h3>
+<pre class="hljs bash">/etc/init.d/rsyslog restart</pre>
+<h3>sl 인증서 + apache 시작시 비밀번호 입력 제거</h3>
+<pre class="hljs bash">openssl rsa -in key.pem -out key.nopw.pem</pre>
+<h3>ssh 접속자 강제 로그아웃</h3>
+<pre class="hljs bash"><span class="hljs-comment"># 602 : userid</span>
+pkill -KILL -u <span class="hljs-number">602</span></pre>
+<h3>bash script에서 실행경로 구하기</h3>
+<pre class="hljs bash"><span class="hljs-built_in">cd</span> <span class="hljs-variable">${0%/*}</span> <span class="hljs-number">2</span>&gt;/dev/null
+<span class="hljs-built_in">echo</span> <span class="hljs-variable">$PWD</span>/<span class="hljs-variable">${0##*/}</span></pre>
+<h3>서버 네트워크 상태 확인</h3>
+<pre class="hljs bash">netstat -an|grep <span class="hljs-string">":80"</span>|awk <span class="hljs-string">'/tcp/ {print $6}'</span>|sort -nr| uniq -c</pre>
+<h3>아파치 동시접속자 수 확인</h3>
+<pre class="hljs bash">netstat -anp | grep :<span class="hljs-number">80</span> | grep ESTAB | wc <span class="hljs-operator">-l</span></pre>
+<h3>권한 파일 찾기 / 바꾸기</h3>
+<pre class="hljs bash"><span class="hljs-comment"># root 권한 파일 찾기</span>
+find . -uid <span class="hljs-number">0</span>
+
+<span class="hljs-comment"># chown 특정 사용자만 변경</span>
+chown web.usergroup * -R --from=root.root
+chown --from=<span class="hljs-number">511</span> -R web account/</pre>
+<h3>포트 강제로 죽이기</h3>
+<pre class="hljs bash">sudo fuser -k -n tcp <span class="hljs-number">444</span></pre>
+<h3>실행 결과 숨기기(stdout, stderr)</h3>
+<pre class="hljs bash">명력어 &gt; /dev/null <span class="hljs-number">2</span>&gt;&amp;<span class="hljs-number">1</span></pre>
+<h3>검색된 파일만 vi 열기</h3>
+<pre class="hljs bash">vi -p $(find .|grep ModuleLink|grep -v <span class="hljs-string">'.svn'</span>|grep -v CZFramework)</pre>
+<h3>내용 일괄변환</h3>
+<pre class="hljs bash">find . -type f -name *.php -exec perl -pi <span class="hljs-operator">-e</span> <span class="hljs-string">'s|\\CZ\\CZFramework|\\CZF|g'</span> {} \;</pre>
+<h3>ssh 비밀번호 없이 접속</h3>
+<h4>local</h4>
+<pre class="hljs bash">ssh-keygen -t rsa
+<span class="hljs-comment"># scp /root/.ssh/id_rsa.pub root@[ip]:/root/.ssh/authorized_keys</span>
+ssh-copy-id -i ~/.ssh/id_rsa.pub admin@[ip]</pre>
+<h4>대상 서버(호스트)의 퍼미션</h4>
+<pre class="hljs bash"><span class="hljs-number">750</span> /home/admin/
+<span class="hljs-number">700</span> /home/admin/.ssh/
+<span class="hljs-number">600</span> /home/admin/.ssh/authorized_keys</pre>
+<h3>배드블럭 검사</h3>
+<pre class="hljs bash">badblocks -v /dev/sda1</pre>
+<h3>프로세스 실행경로 확인</h3>
+<pre class="hljs bash"><span class="hljs-comment"># 프로세스 정보</span>
+ps ef
+ps aux
+
+<span class="hljs-comment"># 프로세스 트리보기</span>
+pstree -aph
+
+<span class="hljs-comment">#프로세스 상세보기</span>
+lsof -P</pre>
+<h3>아파치 :  모든 페이지 요청시 동일페이지 노출</h3>
+<pre class="hljs apache"><span class="hljs-keyword"><span class="hljs-common">RewriteEngine</span></span> <span class="hljs-literal">On</span>
+<span class="hljs-keyword"><span class="hljs-common">RewriteRule</span></span> ^(.*)$ /target/index.html</pre>
+<h2>Mysql 사용자 관리</h2>
+<h4>패턴</h4>
+<pre class="hljs sql"><span class="hljs-operator"><span class="hljs-keyword">grant</span> all <span class="hljs-keyword">privileges</span> <span class="hljs-keyword">on</span> 디비명.테이블명 <span class="hljs-keyword">to</span> 사용자@<span class="hljs-string">'접속지 주소'</span> <span class="hljs-keyword">identified</span> <span class="hljs-keyword">by</span> <span class="hljs-string">'암호'</span> (<span class="hljs-keyword">with</span> <span class="hljs-keyword">grant</span> <span class="hljs-keyword">option</span>);</span></pre>
+<h4>권한 생성</h4>
+<pre class="hljs sql"># 원격지에서 root로 접속하는 경우
+<span class="hljs-operator"><span class="hljs-keyword">grant</span> all <span class="hljs-keyword">privileges</span> <span class="hljs-keyword">on</span> *.* <span class="hljs-keyword">to</span> root <span class="hljs-keyword">identified</span> <span class="hljs-keyword">by</span> <span class="hljs-string">'암호'</span> <span class="hljs-keyword">with</span> <span class="hljs-keyword">grant</span> <span class="hljs-keyword">option</span>;</span>
+
+# '사용자'가 '암호'으로 모든 컴퓨터에서 모든 디비와 테이블에 접속하도록 허용
+<span class="hljs-operator"><span class="hljs-keyword">grant</span> all <span class="hljs-keyword">privileges</span> <span class="hljs-keyword">on</span> *.* <span class="hljs-keyword">to</span> 사용자 <span class="hljs-keyword">identified</span> <span class="hljs-keyword">by</span> <span class="hljs-string">'암호'</span>;</span>
+
+# '사용자'가 '암호'으로 localhost 에서 db1 디비의 table1에 접속하도록 허용
+<span class="hljs-operator"><span class="hljs-keyword">grant</span> all <span class="hljs-keyword">privileges</span> <span class="hljs-keyword">on</span> root.db1 <span class="hljs-keyword">to</span> 사용자@<span class="hljs-string">'localhost'</span> <span class="hljs-keyword">identified</span> <span class="hljs-keyword">by</span> <span class="hljs-string">'암호'</span>;</span>
+
+# '사용자'가 '암호'으로 111.222.333.444 에서 db1 디비의 모든 테이블에 접속하도록 허용
+<span class="hljs-operator"><span class="hljs-keyword">grant</span> all <span class="hljs-keyword">privileges</span> <span class="hljs-keyword">on</span> root.* <span class="hljs-keyword">to</span> 사용자@<span class="hljs-string">'111.222.333.444'</span> <span class="hljs-keyword">identified</span> <span class="hljs-keyword">by</span> <span class="hljs-string">'암호'</span>;</span>
+
+# '사용자'가 '암호'으로 111.222.333.0/24 에서 모든 디비와 테이블에 접속하도록 허용
+<span class="hljs-operator"><span class="hljs-keyword">grant</span> all <span class="hljs-keyword">privileges</span> <span class="hljs-keyword">on</span> *.* <span class="hljs-keyword">to</span> 사용자 @<span class="hljs-string">'111.222.333.%'</span> <span class="hljs-keyword">identified</span> <span class="hljs-keyword">by</span> <span class="hljs-string">'암호'</span>;</span></pre>
+<h4>권한 제거</h4>
+<pre class="hljs sql"><span class="hljs-operator"><span class="hljs-keyword">revoke</span> all <span class="hljs-keyword">on</span> 디비명.테이블명 <span class="hljs-keyword">from</span> 사용자;</span></pre>
+<h4>권한 적용</h4>
+<pre class="hljs sql"># 모든 명령 후에 항상 아래 명령을 실행해야 실제로 적용된다.
+<span class="hljs-operator"><span class="hljs-keyword">flush</span> <span class="hljs-keyword">privileges</span>;</span></pre>
+<h4>Connection 상태 확인하기</h4>
+<pre class="hljs sql"><span class="hljs-operator"><span class="hljs-keyword">SHOW</span> <span class="hljs-keyword">FULL</span> <span class="hljs-keyword">PROCESSLIST</span>;</span></pre>
+<h4>Connection 수 확인하기</h4>
+<pre class="hljs sql"><span class="hljs-operator"><span class="hljs-keyword">SHOW</span> <span class="hljs-keyword">STATUS</span> <span class="hljs-keyword">LIKE</span> <span class="hljs-string">'Threads_connected'</span>;</span></pre>
+<h4>동작중인 Connection 수 확인하기</h4>
+<pre class="hljs sql"><span class="hljs-operator"><span class="hljs-keyword">SHOW</span> <span class="hljs-keyword">STATUS</span> <span class="hljs-keyword">LIKE</span> <span class="hljs-string">'Threads_running'</span>;</span></pre>
+<h4>Connection 상태 확인하기</h4>
+<pre class="hljs sql"><span class="hljs-operator"><span class="hljs-keyword">SHOW</span> <span class="hljs-keyword">FULL</span> <span class="hljs-keyword">PROCESSLIST</span>;</span></pre>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/10/08/useful-commands-for-linux/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,121 +423,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">리눅스 명령어 모음(Centos 6)</h2>
-												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
-								<span></span>
-						<time class="published" datetime="2015-10-08 11:44:32">2015.10.08. 11:44</time>
-		</div>
-		<div class="markdown-body entry-content"><p>아래의 내용은 개인적으로 간혹 사용이 필요한 내용을 기록해 두기 위한 것으로 잘못된 정보일 수 있으니 참고만 하기 바란다.</p>
-<h3>시스템 로그 삭제</h3>
-<pre class="hljs bash">/etc/init.d/rsyslog restart</pre>
-<h3>sl 인증서 + apache 시작시 비밀번호 입력 제거</h3>
-<pre class="hljs bash">openssl rsa -in key.pem -out key.nopw.pem</pre>
-<h3>ssh 접속자 강제 로그아웃</h3>
-<pre class="hljs bash"><span class="hljs-comment"># 602 : userid</span>
-pkill -KILL -u <span class="hljs-number">602</span></pre>
-<h3>bash script에서 실행경로 구하기</h3>
-<pre class="hljs bash"><span class="hljs-built_in">cd</span> <span class="hljs-variable">${0%/*}</span> <span class="hljs-number">2</span>&gt;/dev/null
-<span class="hljs-built_in">echo</span> <span class="hljs-variable">$PWD</span>/<span class="hljs-variable">${0##*/}</span></pre>
-<h3>서버 네트워크 상태 확인</h3>
-<pre class="hljs bash">netstat -an|grep <span class="hljs-string">":80"</span>|awk <span class="hljs-string">'/tcp/ {print $6}'</span>|sort -nr| uniq -c</pre>
-<h3>아파치 동시접속자 수 확인</h3>
-<pre class="hljs bash">netstat -anp | grep :<span class="hljs-number">80</span> | grep ESTAB | wc <span class="hljs-operator">-l</span></pre>
-<h3>권한 파일 찾기 / 바꾸기</h3>
-<pre class="hljs bash"><span class="hljs-comment"># root 권한 파일 찾기</span>
-find . -uid <span class="hljs-number">0</span>
-
-<span class="hljs-comment"># chown 특정 사용자만 변경</span>
-chown web.usergroup * -R --from=root.root
-chown --from=<span class="hljs-number">511</span> -R web account/</pre>
-<h3>포트 강제로 죽이기</h3>
-<pre class="hljs bash">sudo fuser -k -n tcp <span class="hljs-number">444</span></pre>
-<h3>실행 결과 숨기기(stdout, stderr)</h3>
-<pre class="hljs bash">명력어 &gt; /dev/null <span class="hljs-number">2</span>&gt;&amp;<span class="hljs-number">1</span></pre>
-<h3>검색된 파일만 vi 열기</h3>
-<pre class="hljs bash">vi -p $(find .|grep ModuleLink|grep -v <span class="hljs-string">'.svn'</span>|grep -v CZFramework)</pre>
-<h3>내용 일괄변환</h3>
-<pre class="hljs bash">find . -type f -name *.php -exec perl -pi <span class="hljs-operator">-e</span> <span class="hljs-string">'s|\\CZ\\CZFramework|\\CZF|g'</span> {} \;</pre>
-<h3>ssh 비밀번호 없이 접속</h3>
-<h4>local</h4>
-<pre class="hljs bash">ssh-keygen -t rsa
-<span class="hljs-comment"># scp /root/.ssh/id_rsa.pub root@[ip]:/root/.ssh/authorized_keys</span>
-ssh-copy-id -i ~/.ssh/id_rsa.pub admin@[ip]</pre>
-<h4>대상 서버(호스트)의 퍼미션</h4>
-<pre class="hljs bash"><span class="hljs-number">750</span> /home/admin/
-<span class="hljs-number">700</span> /home/admin/.ssh/
-<span class="hljs-number">600</span> /home/admin/.ssh/authorized_keys</pre>
-<h3>배드블럭 검사</h3>
-<pre class="hljs bash">badblocks -v /dev/sda1</pre>
-<h3>프로세스 실행경로 확인</h3>
-<pre class="hljs bash"><span class="hljs-comment"># 프로세스 정보</span>
-ps ef
-ps aux
-
-<span class="hljs-comment"># 프로세스 트리보기</span>
-pstree -aph
-
-<span class="hljs-comment">#프로세스 상세보기</span>
-lsof -P</pre>
-<h3>아파치 :  모든 페이지 요청시 동일페이지 노출</h3>
-<pre class="hljs apache"><span class="hljs-keyword"><span class="hljs-common">RewriteEngine</span></span> <span class="hljs-literal">On</span>
-<span class="hljs-keyword"><span class="hljs-common">RewriteRule</span></span> ^(.*)$ /target/index.html</pre>
-<h2>Mysql 사용자 관리</h2>
-<h4>패턴</h4>
-<pre class="hljs sql"><span class="hljs-operator"><span class="hljs-keyword">grant</span> all <span class="hljs-keyword">privileges</span> <span class="hljs-keyword">on</span> 디비명.테이블명 <span class="hljs-keyword">to</span> 사용자@<span class="hljs-string">'접속지 주소'</span> <span class="hljs-keyword">identified</span> <span class="hljs-keyword">by</span> <span class="hljs-string">'암호'</span> (<span class="hljs-keyword">with</span> <span class="hljs-keyword">grant</span> <span class="hljs-keyword">option</span>);</span></pre>
-<h4>권한 생성</h4>
-<pre class="hljs sql"># 원격지에서 root로 접속하는 경우
-<span class="hljs-operator"><span class="hljs-keyword">grant</span> all <span class="hljs-keyword">privileges</span> <span class="hljs-keyword">on</span> *.* <span class="hljs-keyword">to</span> root <span class="hljs-keyword">identified</span> <span class="hljs-keyword">by</span> <span class="hljs-string">'암호'</span> <span class="hljs-keyword">with</span> <span class="hljs-keyword">grant</span> <span class="hljs-keyword">option</span>;</span>
-
-# '사용자'가 '암호'으로 모든 컴퓨터에서 모든 디비와 테이블에 접속하도록 허용
-<span class="hljs-operator"><span class="hljs-keyword">grant</span> all <span class="hljs-keyword">privileges</span> <span class="hljs-keyword">on</span> *.* <span class="hljs-keyword">to</span> 사용자 <span class="hljs-keyword">identified</span> <span class="hljs-keyword">by</span> <span class="hljs-string">'암호'</span>;</span>
-
-# '사용자'가 '암호'으로 localhost 에서 db1 디비의 table1에 접속하도록 허용
-<span class="hljs-operator"><span class="hljs-keyword">grant</span> all <span class="hljs-keyword">privileges</span> <span class="hljs-keyword">on</span> root.db1 <span class="hljs-keyword">to</span> 사용자@<span class="hljs-string">'localhost'</span> <span class="hljs-keyword">identified</span> <span class="hljs-keyword">by</span> <span class="hljs-string">'암호'</span>;</span>
-
-# '사용자'가 '암호'으로 111.222.333.444 에서 db1 디비의 모든 테이블에 접속하도록 허용
-<span class="hljs-operator"><span class="hljs-keyword">grant</span> all <span class="hljs-keyword">privileges</span> <span class="hljs-keyword">on</span> root.* <span class="hljs-keyword">to</span> 사용자@<span class="hljs-string">'111.222.333.444'</span> <span class="hljs-keyword">identified</span> <span class="hljs-keyword">by</span> <span class="hljs-string">'암호'</span>;</span>
-
-# '사용자'가 '암호'으로 111.222.333.0/24 에서 모든 디비와 테이블에 접속하도록 허용
-<span class="hljs-operator"><span class="hljs-keyword">grant</span> all <span class="hljs-keyword">privileges</span> <span class="hljs-keyword">on</span> *.* <span class="hljs-keyword">to</span> 사용자 @<span class="hljs-string">'111.222.333.%'</span> <span class="hljs-keyword">identified</span> <span class="hljs-keyword">by</span> <span class="hljs-string">'암호'</span>;</span></pre>
-<h4>권한 제거</h4>
-<pre class="hljs sql"><span class="hljs-operator"><span class="hljs-keyword">revoke</span> all <span class="hljs-keyword">on</span> 디비명.테이블명 <span class="hljs-keyword">from</span> 사용자;</span></pre>
-<h4>권한 적용</h4>
-<pre class="hljs sql"># 모든 명령 후에 항상 아래 명령을 실행해야 실제로 적용된다.
-<span class="hljs-operator"><span class="hljs-keyword">flush</span> <span class="hljs-keyword">privileges</span>;</span></pre>
-<h4>Connection 상태 확인하기</h4>
-<pre class="hljs sql"><span class="hljs-operator"><span class="hljs-keyword">SHOW</span> <span class="hljs-keyword">FULL</span> <span class="hljs-keyword">PROCESSLIST</span>;</span></pre>
-<h4>Connection 수 확인하기</h4>
-<pre class="hljs sql"><span class="hljs-operator"><span class="hljs-keyword">SHOW</span> <span class="hljs-keyword">STATUS</span> <span class="hljs-keyword">LIKE</span> <span class="hljs-string">'Threads_connected'</span>;</span></pre>
-<h4>동작중인 Connection 수 확인하기</h4>
-<pre class="hljs sql"><span class="hljs-operator"><span class="hljs-keyword">SHOW</span> <span class="hljs-keyword">STATUS</span> <span class="hljs-keyword">LIKE</span> <span class="hljs-string">'Threads_running'</span>;</span></pre>
-<h4>Connection 상태 확인하기</h4>
-<pre class="hljs sql"><span class="hljs-operator"><span class="hljs-keyword">SHOW</span> <span class="hljs-keyword">FULL</span> <span class="hljs-keyword">PROCESSLIST</span>;</span></pre>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/10/08/useful-commands-for-linux/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

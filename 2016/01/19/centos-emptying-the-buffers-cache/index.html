@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,65 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">linux buffer/cache 비우기</h2>
+												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
+								<span></span>
+						<time class="published" datetime="2016-01-19 12:45:22">2016.01.19. 12:45</time>
+		</div>
+		<div class="markdown-body entry-content"><p>예전에 <a href="/2015/10/02/linux-how-to-clear-memory-swap/">리눅스에서 swap 메모리 초기화</a>에서 swap 메모리를 비우는 방법을 남겼다. 이번엔 swap이 아닌 &quot;buff/cache&quot;를 비우는 방법을 남기고자 한다.</p>
+<p>linux에서 <code>top</code> 또는 <code>free</code> 명령으로 메모리 상황을 보면 &quot;buff/cache&quot; 항목이 있다. 이 부분은 실제로 직접 사용하고 있는 메모리가 아니라 말그대로 버퍼와 캐시에 사용된 메모리를 뜻한다. 그렇다면 &quot;굳이 왜 이것을 비우려고 하는가?&quot;하는 의문이 생길 수 있다.</p>
+<p>일반적으로 캐시는 느린 장치의 데이터를 빠른 장치에 임시 보관해두고 사용함으로써 성능을 높이는 것이 목적이다. 따라서 캐시는 당연히 사용하는게 좋다. 하지만 hit(적중률)가 낮은 경우엔 캐시를 사용하는 것이 부정적인 영향을 미칠 수 있다. 빠른 장치는 당연히 공간이 한정되어 있기 때문에 모든 정보를 캐시할 수 없으므로 캐시를 관리해야 한다. 이 과정에서 발생하는 비용이 캐시를 사용하는 것보다 크다면 캐시는 사용하지 않는 것이 좋다는 것이다. 캐시에 관한 자세한 내용은 여기서 다루고자하는 것이 아니니 이정도만 설명하고 넘어가자.</p>
+<p>실질적으로 이것이 어디에 필요한지에 대해 알아보자.</p>
+<p>linux에서는 기본적으로 디스크 상의 파일을 읽을 경우 해당 파일을 닫아도 free 메모리로 모두가 즉시 반환되지 않는다. 이유는 이 파일의 정보를 다음 사용에 대비해 cache하기 때문이다. 보다 자세한 내용을 확인하고 싶다면 <a href="https://wiki.kldp.org/Translations/html/The_Linux_Kernel-KLDP/tlk3.html">메모리 관리 (Memory Management)</a>를 참고하자. 이런 파일의 cache와 관련하여 os / mysql 등 여러 분야의 성능 튜닝 내용 등을 쉽게 찾을 수 있다.</p>
+<p>대량의 파일이 관리되는 서버의 파일 cache hit가 낮은데 비해 buffer / cache 메모리 사용량이 높을 경우 해당 cache 기능을 끄거나 주기적으로 비움으로써 성능을 개선할 수 있다.</p>
+<p>우선 아래와 같이 선택적으로 cache를 비울 수 있다. <code>sync</code> 명령을 사용하는 이유는 해당 cache 기능을 비우기 전에 사용중인 데이터를 sync하기 위한 것이다.</p>
+<p>pagecache 비우기</p>
+<pre class="hljs bash">sync
+<span class="hljs-built_in">echo</span> <span class="hljs-number">1</span> &gt; /proc/sys/vm/drop_caches
+<span class="hljs-comment"># 또는</span>
+sync
+sysctl -w vm.drop_caches=<span class="hljs-number">1</span></pre>
+<p>dentries, inodes 비우기</p>
+<pre class="hljs bash">sync
+<span class="hljs-built_in">echo</span> <span class="hljs-number">2</span> &gt; /proc/sys/vm/drop_caches
+<span class="hljs-comment"># 또는</span>
+sync
+sysctl -w vm.drop_caches=<span class="hljs-number">2</span></pre>
+<p>pagecache, dentries, inodes 모두 비우기</p>
+<pre class="hljs bash">sync
+<span class="hljs-built_in">echo</span> <span class="hljs-number">3</span> &gt; /proc/sys/vm/drop_caches
+<span class="hljs-comment"># 또는</span>
+sync
+sysctl -w vm.drop_caches=<span class="hljs-number">3</span></pre>
+<p>위에서 1,2,3으로 지정한 값들은 영구적 설정이 아니라 설정되는 그 시점에만 적용된다. 바꿔서 이야기 하자면 <code>/proc/sys/vm/drop_caches</code>는 파일이 아니라 명령어인 셈이다. 실제로 아래와 같이 기본값인 0으로 되돌리려고하면 오류가 난다.</p>
+<pre class="hljs bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-number">0</span> &gt; /proc/sys/vm/drop_caches
+-bash: <span class="hljs-built_in">echo</span>: write error: 부적절한 인수</pre>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/01/19/centos-emptying-the-buffers-cache/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,64 +366,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">linux buffer/cache 비우기</h2>
-												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
-								<span></span>
-						<time class="published" datetime="2016-01-19 12:45:22">2016.01.19. 12:45</time>
-		</div>
-		<div class="markdown-body entry-content"><p>예전에 <a href="/2015/10/02/linux-how-to-clear-memory-swap/">리눅스에서 swap 메모리 초기화</a>에서 swap 메모리를 비우는 방법을 남겼다. 이번엔 swap이 아닌 &quot;buff/cache&quot;를 비우는 방법을 남기고자 한다.</p>
-<p>linux에서 <code>top</code> 또는 <code>free</code> 명령으로 메모리 상황을 보면 &quot;buff/cache&quot; 항목이 있다. 이 부분은 실제로 직접 사용하고 있는 메모리가 아니라 말그대로 버퍼와 캐시에 사용된 메모리를 뜻한다. 그렇다면 &quot;굳이 왜 이것을 비우려고 하는가?&quot;하는 의문이 생길 수 있다.</p>
-<p>일반적으로 캐시는 느린 장치의 데이터를 빠른 장치에 임시 보관해두고 사용함으로써 성능을 높이는 것이 목적이다. 따라서 캐시는 당연히 사용하는게 좋다. 하지만 hit(적중률)가 낮은 경우엔 캐시를 사용하는 것이 부정적인 영향을 미칠 수 있다. 빠른 장치는 당연히 공간이 한정되어 있기 때문에 모든 정보를 캐시할 수 없으므로 캐시를 관리해야 한다. 이 과정에서 발생하는 비용이 캐시를 사용하는 것보다 크다면 캐시는 사용하지 않는 것이 좋다는 것이다. 캐시에 관한 자세한 내용은 여기서 다루고자하는 것이 아니니 이정도만 설명하고 넘어가자.</p>
-<p>실질적으로 이것이 어디에 필요한지에 대해 알아보자.</p>
-<p>linux에서는 기본적으로 디스크 상의 파일을 읽을 경우 해당 파일을 닫아도 free 메모리로 모두가 즉시 반환되지 않는다. 이유는 이 파일의 정보를 다음 사용에 대비해 cache하기 때문이다. 보다 자세한 내용을 확인하고 싶다면 <a href="https://wiki.kldp.org/Translations/html/The_Linux_Kernel-KLDP/tlk3.html">메모리 관리 (Memory Management)</a>를 참고하자. 이런 파일의 cache와 관련하여 os / mysql 등 여러 분야의 성능 튜닝 내용 등을 쉽게 찾을 수 있다.</p>
-<p>대량의 파일이 관리되는 서버의 파일 cache hit가 낮은데 비해 buffer / cache 메모리 사용량이 높을 경우 해당 cache 기능을 끄거나 주기적으로 비움으로써 성능을 개선할 수 있다.</p>
-<p>우선 아래와 같이 선택적으로 cache를 비울 수 있다. <code>sync</code> 명령을 사용하는 이유는 해당 cache 기능을 비우기 전에 사용중인 데이터를 sync하기 위한 것이다.</p>
-<p>pagecache 비우기</p>
-<pre class="hljs bash">sync
-<span class="hljs-built_in">echo</span> <span class="hljs-number">1</span> &gt; /proc/sys/vm/drop_caches
-<span class="hljs-comment"># 또는</span>
-sync
-sysctl -w vm.drop_caches=<span class="hljs-number">1</span></pre>
-<p>dentries, inodes 비우기</p>
-<pre class="hljs bash">sync
-<span class="hljs-built_in">echo</span> <span class="hljs-number">2</span> &gt; /proc/sys/vm/drop_caches
-<span class="hljs-comment"># 또는</span>
-sync
-sysctl -w vm.drop_caches=<span class="hljs-number">2</span></pre>
-<p>pagecache, dentries, inodes 모두 비우기</p>
-<pre class="hljs bash">sync
-<span class="hljs-built_in">echo</span> <span class="hljs-number">3</span> &gt; /proc/sys/vm/drop_caches
-<span class="hljs-comment"># 또는</span>
-sync
-sysctl -w vm.drop_caches=<span class="hljs-number">3</span></pre>
-<p>위에서 1,2,3으로 지정한 값들은 영구적 설정이 아니라 설정되는 그 시점에만 적용된다. 바꿔서 이야기 하자면 <code>/proc/sys/vm/drop_caches</code>는 파일이 아니라 명령어인 셈이다. 실제로 아래와 같이 기본값인 0으로 되돌리려고하면 오류가 난다.</p>
-<pre class="hljs bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-number">0</span> &gt; /proc/sys/vm/drop_caches
--bash: <span class="hljs-built_in">echo</span>: write error: 부적절한 인수</pre>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/01/19/centos-emptying-the-buffers-cache/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

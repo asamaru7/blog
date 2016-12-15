@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,54 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">chmod로 권한 변경시 디렉토리(또는 파일)만 적용하기</h2>
+												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
+								<span></span>
+						<time class="published" datetime="2016-04-14 19:00:43">2016.04.14. 19:00</time>
+		</div>
+		<div class="markdown-body entry-content"><p>chmod로 디렉토리 또는 파일의 권한을 변경할 때 하위에 포함된 파일들까지 일괄 적용을 하기 위해 <code>-R</code> 옵션을 사용할 수 있다. 그런데 이 경우는 하위의 모든 디렉토리와 파일에 적용된다. 아래는 하위의 디렉토리만 또는 파일만 적용하도록 하는 방법을 안내한다.</p>
+<pre class="hljs bash"><span class="hljs-comment"># 하위 디렉토리만 포함</span>
+find /path/to/base/dir -type d -exec chmod <span class="hljs-number">755</span> {} +
+chmod <span class="hljs-number">755</span> $(find /path/to/base/dir -type d)
+find /path/to/base/dir -type d -print0 | xargs -<span class="hljs-number">0</span> chmod <span class="hljs-number">755</span>
+
+<span class="hljs-comment"># 하위 파일만 포함</span>
+find /path/to/base/dir -type f -exec chmod <span class="hljs-number">644</span> {} +
+chmod <span class="hljs-number">644</span> $(find /path/to/base/dir -type f)
+find /path/to/base/dir -type f -print0 | xargs -<span class="hljs-number">0</span> chmod <span class="hljs-number">644</span></pre>
+<p>출처 : <a href="http://superuser.com/a/91938">How to chmod all directories except files (recursively)?</a></p>
+<p>여러가지 방법이 있으니 상황에 따라 골라서 사용하면 된다.</p>
+<hr />
+<p>위 주제와 관련있는 내용은 아니지만 덤으로 chown 사용시 기존에 지정된 사용자에 따라 적용 여부를 결정할 수 있는 명령도 아래에 안내한다.</p>
+<pre class="hljs bash"><span class="hljs-comment"># chown 특정 사용자만 변경</span>
+chown --from=root.root web.usergroup * -R
+chown --from=<span class="hljs-number">511</span> -R web *</pre>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/04/14/how-to-chmod-all-directories-or-files/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,53 +355,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">chmod로 권한 변경시 디렉토리(또는 파일)만 적용하기</h2>
-												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
-								<span></span>
-						<time class="published" datetime="2016-04-14 19:00:43">2016.04.14. 19:00</time>
-		</div>
-		<div class="markdown-body entry-content"><p>chmod로 디렉토리 또는 파일의 권한을 변경할 때 하위에 포함된 파일들까지 일괄 적용을 하기 위해 <code>-R</code> 옵션을 사용할 수 있다. 그런데 이 경우는 하위의 모든 디렉토리와 파일에 적용된다. 아래는 하위의 디렉토리만 또는 파일만 적용하도록 하는 방법을 안내한다.</p>
-<pre class="hljs bash"><span class="hljs-comment"># 하위 디렉토리만 포함</span>
-find /path/to/base/dir -type d -exec chmod <span class="hljs-number">755</span> {} +
-chmod <span class="hljs-number">755</span> $(find /path/to/base/dir -type d)
-find /path/to/base/dir -type d -print0 | xargs -<span class="hljs-number">0</span> chmod <span class="hljs-number">755</span>
-
-<span class="hljs-comment"># 하위 파일만 포함</span>
-find /path/to/base/dir -type f -exec chmod <span class="hljs-number">644</span> {} +
-chmod <span class="hljs-number">644</span> $(find /path/to/base/dir -type f)
-find /path/to/base/dir -type f -print0 | xargs -<span class="hljs-number">0</span> chmod <span class="hljs-number">644</span></pre>
-<p>출처 : <a href="http://superuser.com/a/91938">How to chmod all directories except files (recursively)?</a></p>
-<p>여러가지 방법이 있으니 상황에 따라 골라서 사용하면 된다.</p>
-<hr />
-<p>위 주제와 관련있는 내용은 아니지만 덤으로 chown 사용시 기존에 지정된 사용자에 따라 적용 여부를 결정할 수 있는 명령도 아래에 안내한다.</p>
-<pre class="hljs bash"><span class="hljs-comment"># chown 특정 사용자만 변경</span>
-chown --from=root.root web.usergroup * -R
-chown --from=<span class="hljs-number">511</span> -R web *</pre>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/04/14/how-to-chmod-all-directories-or-files/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

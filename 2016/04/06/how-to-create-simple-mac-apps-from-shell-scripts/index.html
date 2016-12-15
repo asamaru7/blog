@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,66 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">OSX : shell script 실행하는 app 파일 만들기</h2>
+												<a href="https://blog.asamaru.net/category/osx/" rel="tag">osx</a>
+								<span></span>
+						<time class="published" datetime="2016-04-06 19:51:12">2016.04.06. 19:51</time>
+		</div>
+		<div class="markdown-body entry-content"><p>OSX를 사용하다 보면 자주 사용하는 shell script를 app으로 생성해 두고 싶을 때가 많다. 예를들어 나의 경우는 기본 chrome에는 개인 계정을 연결해서 사용하고 chrome의 data 저장 경로를 별도로 지정해서 회사 계정을 연결해서 사용한다. 아래는 주제에서는 벗어나지만 chrome의 data 저장 경로를 별도로 지정해서 실행하는 방법이다.</p>
+<pre class="hljs bash">/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --user-data-dir=/chrome/subva/ &gt; /dev/null <span class="hljs-number">2</span>&gt;&amp;<span class="hljs-number">1</span> &amp;</pre>
+<p>위 스크립트를 파일로 저장해두고 필요할 경우만 shell에서 실행해서 사용하는데 매번 터미널을 여는 것이 귀찮다. 그래서 기존에는 <code>Automator</code>를 사용해서 app 파일을 만들어 사용했다(<a href="http://stackoverflow.com/a/281455">Executing Shell Scripts from the OS X Dock?</a> 참고). 그런데 이 app을 만드는 것이 복잡하지는 않아도(사실 무척 간단하다) 귀찮은지라 더 간단한 방법이 없는지 찾아봤다.</p>
+<p><a href="https://mathiasbynens.be/notes/shell-script-mac-apps">How to create simple Mac apps from shell scripts</a>라는 글에 보면 아래의 스크립트를 소개하고 있다.</p>
+<pre class="hljs bash"><span class="hljs-shebang">#!/usr/bin/env bash
+</span>
+APPNAME=<span class="hljs-variable">${2:-$(basename "$1" ".sh")}</span>
+DIR=<span class="hljs-string">"<span class="hljs-variable">$APPNAME</span>.app/Contents/MacOS"</span>
+
+<span class="hljs-keyword">if</span> [ <span class="hljs-operator">-a</span> <span class="hljs-string">"<span class="hljs-variable">$APPNAME</span>.app"</span> ]; <span class="hljs-keyword">then</span>
+  <span class="hljs-built_in">echo</span> <span class="hljs-string">"<span class="hljs-variable">$PWD</span>/<span class="hljs-variable">$APPNAME</span>.app already exists :("</span>
+  <span class="hljs-built_in">exit</span> <span class="hljs-number">1</span>
+<span class="hljs-keyword">fi</span>
+
+mkdir -p <span class="hljs-string">"<span class="hljs-variable">$DIR</span>"</span>
+cp <span class="hljs-string">"<span class="hljs-variable">$1</span>"</span> <span class="hljs-string">"<span class="hljs-variable">$DIR</span>/<span class="hljs-variable">$APPNAME</span>"</span>
+chmod +x <span class="hljs-string">"<span class="hljs-variable">$DIR</span>/<span class="hljs-variable">$APPNAME</span>"</span>
+
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"<span class="hljs-variable">$PWD</span>/<span class="hljs-variable">$APPNAME</span>.app"</span></pre>
+<p>위 스크립트를 사용해서 shell 스크립트를 간단하게 app으로 변환(생성) 할 수 있다. 그런데 이 글이 오래되었다는 것이 함정이다. 몇 버전부터 인지는 모르지만 엘 케피탄에서 생성된 app을 실행하면 아래와 같은 오류가 나면서 실행이 되지 않는다.</p>
+<blockquote>
+<p>PowerPC 응용 프로그램이 더 이상 지원되지 않기 때문에 ‘~~~.app’ 응용 프로그램을 열 수 없습니다.</p>
+</blockquote>
+<p>위 스크립트를 개선하고 변형한 여러 소스들(<a href="https://github.com/alexbarton/appify">alexbarton/appify</a> 등)을 github 등에서 찾을 수 있으나 대부분 동일한 오류를 낸다.</p>
+<p>또 다른 방법은 <a href="http://www.sveinbjorn.org/platypus">Platypus</a>를 사용하는 것이다.</p>
+<p><img src="/res/img/post/2016/04/2016-04-06-how-to-create-simple-mac-apps-from-shell-scripts-1.png" alt="Platypus" width="1330" height="1116" /></p>
+<p>Platypus의 경우는 아주 다양한 활용이 가능하다. 여러가지 스크립트를 지원하며 앱 아이콘도 바로 지정 가능하다. 자세한 내용은 <a href="http://www.sveinbjorn.org/platypus">Platypus 공식 사이트</a>를 참고하자.</p>
+<p>그런데 Platypus의 경우는 지정한 스크립트가 종료되어도 앱은 종료되지 않아서 내가 원하는 결과를 얻지 못했다.</p>
+<p>그래서 결론적으로 내가 선택한 방법은 기존처럼 <code>Automator</code>를 사용하는 것이다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/04/06/how-to-create-simple-mac-apps-from-shell-scripts/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,65 +367,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">OSX : shell script 실행하는 app 파일 만들기</h2>
-												<a href="https://blog.asamaru.net/category/osx/" rel="tag">osx</a>
-								<span></span>
-						<time class="published" datetime="2016-04-06 19:51:12">2016.04.06. 19:51</time>
-		</div>
-		<div class="markdown-body entry-content"><p>OSX를 사용하다 보면 자주 사용하는 shell script를 app으로 생성해 두고 싶을 때가 많다. 예를들어 나의 경우는 기본 chrome에는 개인 계정을 연결해서 사용하고 chrome의 data 저장 경로를 별도로 지정해서 회사 계정을 연결해서 사용한다. 아래는 주제에서는 벗어나지만 chrome의 data 저장 경로를 별도로 지정해서 실행하는 방법이다.</p>
-<pre class="hljs bash">/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --user-data-dir=/chrome/subva/ &gt; /dev/null <span class="hljs-number">2</span>&gt;&amp;<span class="hljs-number">1</span> &amp;</pre>
-<p>위 스크립트를 파일로 저장해두고 필요할 경우만 shell에서 실행해서 사용하는데 매번 터미널을 여는 것이 귀찮다. 그래서 기존에는 <code>Automator</code>를 사용해서 app 파일을 만들어 사용했다(<a href="http://stackoverflow.com/a/281455">Executing Shell Scripts from the OS X Dock?</a> 참고). 그런데 이 app을 만드는 것이 복잡하지는 않아도(사실 무척 간단하다) 귀찮은지라 더 간단한 방법이 없는지 찾아봤다.</p>
-<p><a href="https://mathiasbynens.be/notes/shell-script-mac-apps">How to create simple Mac apps from shell scripts</a>라는 글에 보면 아래의 스크립트를 소개하고 있다.</p>
-<pre class="hljs bash"><span class="hljs-shebang">#!/usr/bin/env bash
-</span>
-APPNAME=<span class="hljs-variable">${2:-$(basename "$1" ".sh")}</span>
-DIR=<span class="hljs-string">"<span class="hljs-variable">$APPNAME</span>.app/Contents/MacOS"</span>
-
-<span class="hljs-keyword">if</span> [ <span class="hljs-operator">-a</span> <span class="hljs-string">"<span class="hljs-variable">$APPNAME</span>.app"</span> ]; <span class="hljs-keyword">then</span>
-  <span class="hljs-built_in">echo</span> <span class="hljs-string">"<span class="hljs-variable">$PWD</span>/<span class="hljs-variable">$APPNAME</span>.app already exists :("</span>
-  <span class="hljs-built_in">exit</span> <span class="hljs-number">1</span>
-<span class="hljs-keyword">fi</span>
-
-mkdir -p <span class="hljs-string">"<span class="hljs-variable">$DIR</span>"</span>
-cp <span class="hljs-string">"<span class="hljs-variable">$1</span>"</span> <span class="hljs-string">"<span class="hljs-variable">$DIR</span>/<span class="hljs-variable">$APPNAME</span>"</span>
-chmod +x <span class="hljs-string">"<span class="hljs-variable">$DIR</span>/<span class="hljs-variable">$APPNAME</span>"</span>
-
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"<span class="hljs-variable">$PWD</span>/<span class="hljs-variable">$APPNAME</span>.app"</span></pre>
-<p>위 스크립트를 사용해서 shell 스크립트를 간단하게 app으로 변환(생성) 할 수 있다. 그런데 이 글이 오래되었다는 것이 함정이다. 몇 버전부터 인지는 모르지만 엘 케피탄에서 생성된 app을 실행하면 아래와 같은 오류가 나면서 실행이 되지 않는다.</p>
-<blockquote>
-<p>PowerPC 응용 프로그램이 더 이상 지원되지 않기 때문에 ‘~~~.app’ 응용 프로그램을 열 수 없습니다.</p>
-</blockquote>
-<p>위 스크립트를 개선하고 변형한 여러 소스들(<a href="https://github.com/alexbarton/appify">alexbarton/appify</a> 등)을 github 등에서 찾을 수 있으나 대부분 동일한 오류를 낸다.</p>
-<p>또 다른 방법은 <a href="http://www.sveinbjorn.org/platypus">Platypus</a>를 사용하는 것이다.</p>
-<p><img src="/res/img/post/2016/04/2016-04-06-how-to-create-simple-mac-apps-from-shell-scripts-1.png" alt="Platypus" width="1330" height="1116" /></p>
-<p>Platypus의 경우는 아주 다양한 활용이 가능하다. 여러가지 스크립트를 지원하며 앱 아이콘도 바로 지정 가능하다. 자세한 내용은 <a href="http://www.sveinbjorn.org/platypus">Platypus 공식 사이트</a>를 참고하자.</p>
-<p>그런데 Platypus의 경우는 지정한 스크립트가 종료되어도 앱은 종료되지 않아서 내가 원하는 결과를 얻지 못했다.</p>
-<p>그래서 결론적으로 내가 선택한 방법은 기존처럼 <code>Automator</code>를 사용하는 것이다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/04/06/how-to-create-simple-mac-apps-from-shell-scripts/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

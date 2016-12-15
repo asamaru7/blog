@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,90 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류 해결</h2>
+												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
+								<span></span>
+						<time class="published" datetime="2015-10-13 16:53:54">2015.10.13. 16:53</time>
+		</div>
+		<div class="markdown-body entry-content"><p>안드로이드 Fragment 작업 중에 <code>java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</code> 오류가 발생했다. 상황은 이렇다. Fragment를 가진 Activity에서 새로운 Activity를 띄우고 해당 Activity에서 <code>setResult</code>를 통해 값을 반환했다. 새로운 Activity를 열었던 Activity에서는 <code>protected void onActivityResult(int requestCode, int resultCode, Intent intent)</code>를 통해 값을 전달 받아 새로운 Fragment를 불렀다. 그런데 위 오류가 난다. 아래는 작성했던 코드의 일부를 예시를 위해 수정한 것이다(실행가능한 코드가 아니다).</p>
+<pre class="hljs java"><span class="hljs-annotation">@Override</span>
+<span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onActivityResult</span><span class="hljs-params">(<span class="hljs-keyword">int</span> requestCode, <span class="hljs-keyword">int</span> resultCode, Intent intent)</span> </span>{
+    <span class="hljs-keyword">if</span> (resultCode == RESULT_OK) {
+        FragmentManager ft = getChildFragmentManager();
+        ft.beginTransaction()
+                .replace(R.id.fragmentContainer, (Fragment) fragment)
+                .commit();
+    }
+    <span class="hljs-keyword">super</span>.onActivityResult(requestCode, resultCode, intent);
+}</pre>
+<p>관련된 정보를 찾아보니 아래와 같은 문서들이 보였다.</p>
+<ul>
+<li><a href="http://binsolb.tistory.com/entry/javalangIllegalStateException-Can-not-perform-this-action-after-onSaveInstanceState">java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</a></li>
+<li><a href="http://www.kmshack.kr/2013/08/fragment-%ED%8C%8C%ED%97%A4%EC%B9%98%EA%B8%B0-3-fragmentmanager-fragmenttransaction%EC%97%90-%EB%8C%80%ED%95%B4%EC%84%9C/">Fragment 파헤치기 – 3. FragmentManager, FragmentTransaction에 대해서</a></li>
+</ul>
+<p><strong>간단히 요약하자면 <code>commit()</code> 대신 <code>commitAllowingStateLoss()</code>을 사용하면 된다.</strong> 원인에 대해서는 위의 글들을 참고하면 상세히 설명되어 있다. 그래서 고쳐진 코드는 다음과 같다.</p>
+<pre class="hljs java"><span class="hljs-annotation">@Override</span>
+<span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onActivityResult</span><span class="hljs-params">(<span class="hljs-keyword">int</span> requestCode, <span class="hljs-keyword">int</span> resultCode, Intent intent)</span> </span>{
+    <span class="hljs-keyword">if</span> (resultCode == RESULT_OK) {
+        FragmentManager ft = getChildFragmentManager();
+        ft.beginTransaction()
+                .replace(R.id.fragmentContainer, (Fragment) fragment)
+                .commitAllowingStateLoss();
+    }
+    <span class="hljs-keyword">super</span>.onActivityResult(requestCode, resultCode, intent);
+}</pre>
+<p>안드로이드는 이런 문제들에 대해서 알아서 좀 대응할 수 없는건가? 아쉽다.
+그런데 함수 이름에도 나와 있는 것 처럼 <code>commitAllowingStateLoss()</code>를 사용하면 상태값을 잃을 수 있다.</p>
+<p><a href="http://developer.android.com/intl/ko/reference/android/app/FragmentTransaction.html#commitAllowingStateLoss%28%29">FragmentTransaction 메뉴얼</a>에 아래와 같이 나와있다.</p>
+<blockquote>
+<p>public abstract int commitAllowingStateLoss ()</p>
+<p>Like commit() but allows the commit to be executed after an activity's state is saved. This is dangerous because the commit can be lost if the activity needs to later be restored from its state, so this should only be used for cases where it is okay for the UI state to change unexpectedly on the user.</p>
+</blockquote>
+<p><code>commitAllowingStateLoss()</code>를 사용하지 않고 해결하는 방법은 없을까? 생각해보면 실행되는 시점의 문제이므로 시점을 조금 지연하는 방법을 쓸 수도 있다.</p>
+<pre class="hljs java"><span class="hljs-annotation">@Override</span>
+<span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onActivityResult</span><span class="hljs-params">(<span class="hljs-keyword">int</span> requestCode, <span class="hljs-keyword">int</span> resultCode, Intent intent)</span> </span>{
+    <span class="hljs-keyword">if</span> (resultCode == RESULT_OK) {
+        Handler handler_ = <span class="hljs-keyword">new</span> Handler(Looper.getMainLooper());
+        handler_.postDelayed(<span class="hljs-keyword">new</span> Runnable() {
+            <span class="hljs-annotation">@Override</span>
+            <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">run</span><span class="hljs-params">()</span> </span>{
+                FragmentManager ft = getChildFragmentManager();
+                ft.beginTransaction()
+                        .replace(R.id.fragmentContainer, (Fragment) fragment)
+                        .commitAllowingStateLoss();
+            }
+        }, <span class="hljs-number">0</span>);
+    }
+    <span class="hljs-keyword">super</span>.onActivityResult(requestCode, resultCode, intent);
+}</pre>
+<p>위 코드를 보면 Handler의 <code>postDelayed()</code> 함수를 사용해서 처리시점을 지연시켰다(사실 시간은 0이므로 작업을 잠시 뒤로 미룬것이다). 이렇게 해도 위 오류는 발생하지 않는다.</p>
+<p>어떤 방법이 맞는지에 대해서는 아직은 정확히 모르겠다(이렇게하면 상태를 잃어버리는 것과 무관해 지는지 명확하지 않다는 뜻이다). 선택은 자유다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,89 +391,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류 해결</h2>
-												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
-								<span></span>
-						<time class="published" datetime="2015-10-13 16:53:54">2015.10.13. 16:53</time>
-		</div>
-		<div class="markdown-body entry-content"><p>안드로이드 Fragment 작업 중에 <code>java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</code> 오류가 발생했다. 상황은 이렇다. Fragment를 가진 Activity에서 새로운 Activity를 띄우고 해당 Activity에서 <code>setResult</code>를 통해 값을 반환했다. 새로운 Activity를 열었던 Activity에서는 <code>protected void onActivityResult(int requestCode, int resultCode, Intent intent)</code>를 통해 값을 전달 받아 새로운 Fragment를 불렀다. 그런데 위 오류가 난다. 아래는 작성했던 코드의 일부를 예시를 위해 수정한 것이다(실행가능한 코드가 아니다).</p>
-<pre class="hljs java"><span class="hljs-annotation">@Override</span>
-<span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onActivityResult</span><span class="hljs-params">(<span class="hljs-keyword">int</span> requestCode, <span class="hljs-keyword">int</span> resultCode, Intent intent)</span> </span>{
-    <span class="hljs-keyword">if</span> (resultCode == RESULT_OK) {
-        FragmentManager ft = getChildFragmentManager();
-        ft.beginTransaction()
-                .replace(R.id.fragmentContainer, (Fragment) fragment)
-                .commit();
-    }
-    <span class="hljs-keyword">super</span>.onActivityResult(requestCode, resultCode, intent);
-}</pre>
-<p>관련된 정보를 찾아보니 아래와 같은 문서들이 보였다.</p>
-<ul>
-<li><a href="http://binsolb.tistory.com/entry/javalangIllegalStateException-Can-not-perform-this-action-after-onSaveInstanceState">java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</a></li>
-<li><a href="http://www.kmshack.kr/2013/08/fragment-%ED%8C%8C%ED%97%A4%EC%B9%98%EA%B8%B0-3-fragmentmanager-fragmenttransaction%EC%97%90-%EB%8C%80%ED%95%B4%EC%84%9C/">Fragment 파헤치기 – 3. FragmentManager, FragmentTransaction에 대해서</a></li>
-</ul>
-<p><strong>간단히 요약하자면 <code>commit()</code> 대신 <code>commitAllowingStateLoss()</code>을 사용하면 된다.</strong> 원인에 대해서는 위의 글들을 참고하면 상세히 설명되어 있다. 그래서 고쳐진 코드는 다음과 같다.</p>
-<pre class="hljs java"><span class="hljs-annotation">@Override</span>
-<span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onActivityResult</span><span class="hljs-params">(<span class="hljs-keyword">int</span> requestCode, <span class="hljs-keyword">int</span> resultCode, Intent intent)</span> </span>{
-    <span class="hljs-keyword">if</span> (resultCode == RESULT_OK) {
-        FragmentManager ft = getChildFragmentManager();
-        ft.beginTransaction()
-                .replace(R.id.fragmentContainer, (Fragment) fragment)
-                .commitAllowingStateLoss();
-    }
-    <span class="hljs-keyword">super</span>.onActivityResult(requestCode, resultCode, intent);
-}</pre>
-<p>안드로이드는 이런 문제들에 대해서 알아서 좀 대응할 수 없는건가? 아쉽다.
-그런데 함수 이름에도 나와 있는 것 처럼 <code>commitAllowingStateLoss()</code>를 사용하면 상태값을 잃을 수 있다.</p>
-<p><a href="http://developer.android.com/intl/ko/reference/android/app/FragmentTransaction.html#commitAllowingStateLoss%28%29">FragmentTransaction 메뉴얼</a>에 아래와 같이 나와있다.</p>
-<blockquote>
-<p>public abstract int commitAllowingStateLoss ()</p>
-<p>Like commit() but allows the commit to be executed after an activity's state is saved. This is dangerous because the commit can be lost if the activity needs to later be restored from its state, so this should only be used for cases where it is okay for the UI state to change unexpectedly on the user.</p>
-</blockquote>
-<p><code>commitAllowingStateLoss()</code>를 사용하지 않고 해결하는 방법은 없을까? 생각해보면 실행되는 시점의 문제이므로 시점을 조금 지연하는 방법을 쓸 수도 있다.</p>
-<pre class="hljs java"><span class="hljs-annotation">@Override</span>
-<span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onActivityResult</span><span class="hljs-params">(<span class="hljs-keyword">int</span> requestCode, <span class="hljs-keyword">int</span> resultCode, Intent intent)</span> </span>{
-    <span class="hljs-keyword">if</span> (resultCode == RESULT_OK) {
-        Handler handler_ = <span class="hljs-keyword">new</span> Handler(Looper.getMainLooper());
-        handler_.postDelayed(<span class="hljs-keyword">new</span> Runnable() {
-            <span class="hljs-annotation">@Override</span>
-            <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">run</span><span class="hljs-params">()</span> </span>{
-                FragmentManager ft = getChildFragmentManager();
-                ft.beginTransaction()
-                        .replace(R.id.fragmentContainer, (Fragment) fragment)
-                        .commitAllowingStateLoss();
-            }
-        }, <span class="hljs-number">0</span>);
-    }
-    <span class="hljs-keyword">super</span>.onActivityResult(requestCode, resultCode, intent);
-}</pre>
-<p>위 코드를 보면 Handler의 <code>postDelayed()</code> 함수를 사용해서 처리시점을 지연시켰다(사실 시간은 0이므로 작업을 잠시 뒤로 미룬것이다). 이렇게 해도 위 오류는 발생하지 않는다.</p>
-<p>어떤 방법이 맞는지에 대해서는 아직은 정확히 모르겠다(이렇게하면 상태를 잃어버리는 것과 무관해 지는지 명확하지 않다는 뜻이다). 선택은 자유다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,92 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">Android 6(API 23)의 getColor() deprecated 대응 + getDrawable() deprecated</h2>
+												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
+								<span></span>
+						<time class="published" datetime="2015-08-28 06:27:49">2015.08.28. 06:27</time>
+		</div>
+		<div class="markdown-body entry-content"><p>얼마전 Android API 23 버전이 공개되었다. 이와함께 support library, design support library도 함께 23 버전으로 버전업 되었다.</p>
+<p>이에따라 여러가지 UI들이 추가되어 필요한 부분을 적용해 보고자 gradle을 수정하고 build 하니 getColor 함수가 deprecated 되었다는 warning을 보게되었다.</p>
+<p>아... 최근에 안드로이드는 기본 함수들을 너무 많이 바꾼다. 사실 이번 버전업으로 이것뿐아니라 http 관련된  api가 제거 되었다. 이미 이전부터 deprecated 되었었긴하지만 너무 갑작스럽기도 하다.
+현재시점에서 ACRA, android-async-http 등의 오픈소스들도 대응이 되지 않았다. 이에 따른 대응방법도 구글에 안내되어 있긴하다.</p>
+<p><a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a></p>
+<p>하지만 임시방편일 뿐 계속 사용하기엔 석연치 않다. 조금더 자세한 내용은 다음에 다시 글을 쓰도록 하겠다.
+(추가 포스팅 : <a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>)</p>
+<p>다시 본론으로 돌아와서 이 부분을 해결하기 위해서는 ContextCompat(android.support.v4.content.ContextCompat)을 사용하면 된다.
+단, support library 23 이상이 필요할 수 있다. 이하에서는 확인을 못했다.</p>
+<p>함수는 아래와 같이 구성되어 있다.</p>
+<pre class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> <span class="hljs-title">getColor</span><span class="hljs-params">(Context context, <span class="hljs-keyword">int</span> id)</span> </span>{
+    <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> version = Build.VERSION.SDK_INT;
+    <span class="hljs-keyword">if</span> (version &gt;= <span class="hljs-number">23</span>) {
+        <span class="hljs-keyword">return</span> ContextCompatApi23.getColor(context, id);
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">return</span> context.getResources().getColor(id);
+    }
+}</pre>
+<p>실제사용은</p>
+<pre class="hljs java">ContextCompat.getColor(context, resourceId);</pre>
+<p>이렇게 하면된다. 어떻게보면 기존보다 더 편하다. 하지만 기존에 getColor를 사용하던 부분을 고치는 것은 우리가 해야한다.</p>
+<p>추가로 보다 더 이전에 deprecated된 함수 getDrawable()가 있다. 이건 정확하지 않지만 API 21부터 deprecated 된 것 같다.
+이 문제도 동일한 class를 통해 해결 가능하다.</p>
+<pre class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> Drawable <span class="hljs-title">getDrawable</span><span class="hljs-params">(Context context, <span class="hljs-keyword">int</span> id)</span> </span>{
+    <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> version = Build.VERSION.SDK_INT;
+    <span class="hljs-keyword">if</span> (version &gt;= <span class="hljs-number">21</span>) {
+        <span class="hljs-keyword">return</span> ContextCompatApi21.getDrawable(context, id);
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">return</span> context.getResources().getDrawable(id);
+    }
+}</pre>
+<p>요즘 분위기를 보면 이런식으로 deprecated 되는 함수가 많다. 사실 개인적으로 많은 것은 기존 안드로이드가 워낙 엉망이라고 보기 때문에 문제가 되지 않는다고 생각하지만 처리하는 과정은 맘에 들이 않는다.
+한번에 싹 정리하지 않고 눈에 띄면 추가하듯 띄엄띄엄 deprecated 함수를 늘리고 실제 제거까지 오래 기다리지 않는다. 이건 꼭 새로운 버전을 사용하지 말라고 권장하는 것도 아니고 쓰라는 것도 아니고...</p>
+<p>마지막으로 PhoneNumberUtils.formatNumber 함수 예기만 하나더 하자면</p>
+<pre class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title">formatNumber</span><span class="hljs-params">(String source)</span></span>;</pre>
+<p>이 함수도 deprecated 되었다. 이제는 두번째 인자로 포멧팅할 국가 코드를 넣어야 한다.</p>
+<pre class="hljs java">PhoneNumberUtils.formatNumber(number, <span class="hljs-string">"KR"</span>);</pre>
+<p>그게 대응이 어려운 문제는 아니다. 하지만 위의 문제들과 더불어 굳이 deprecated 했어야 하는가? 하는 부분이다.
+개인적인 생각으로 두번째 인자를 생략하면 기존처럼 국가코드를 자동으로 넣으면 되지 않는가? 일부 다국어 지원 앱에서 조금더 명확한 사용을 하기 위해 대다수의 단일국가 지원 앱들이 불편을 감수해야하는가?
+다음이 기존함수이다.</p>
+<pre class="hljs java"><span class="hljs-annotation">@Deprecated</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title">formatNumber</span><span class="hljs-params">(String source)</span> </span>{
+    SpannableStringBuilder text = <span class="hljs-keyword">new</span> SpannableStringBuilder(source);
+    formatNumber(text, getFormatTypeForLocale(Locale.getDefault()));
+    <span class="hljs-keyword">return</span> text.toString();
+}</pre>
+<p>보다시피 <code>Locale.getDefault()</code> 부분을 넣어주고 있었다. 어쨌든 나는 아래와 같은 호환 함수를 만들어서 사용하고 있다.</p>
+<pre class="hljs java"><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> String <span class="hljs-title">getFormattedPhoneNumber</span><span class="hljs-params">(String number)</span> </span>{
+    <span class="hljs-keyword">if</span> (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.LOLLIPOP) {
+        <span class="hljs-keyword">return</span> PhoneNumberUtils.formatNumber(number, <span class="hljs-string">"KR"</span>);
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-comment">// noinspection deprecation</span>
+        <span class="hljs-keyword">return</span> PhoneNumberUtils.formatNumber(number);
+    }
+}</pre>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/08/28/android-getcolor-getdrawable-deprecated/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,91 +393,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">Android 6(API 23)의 getColor() deprecated 대응 + getDrawable() deprecated</h2>
-												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
-								<span></span>
-						<time class="published" datetime="2015-08-28 06:27:49">2015.08.28. 06:27</time>
-		</div>
-		<div class="markdown-body entry-content"><p>얼마전 Android API 23 버전이 공개되었다. 이와함께 support library, design support library도 함께 23 버전으로 버전업 되었다.</p>
-<p>이에따라 여러가지 UI들이 추가되어 필요한 부분을 적용해 보고자 gradle을 수정하고 build 하니 getColor 함수가 deprecated 되었다는 warning을 보게되었다.</p>
-<p>아... 최근에 안드로이드는 기본 함수들을 너무 많이 바꾼다. 사실 이번 버전업으로 이것뿐아니라 http 관련된  api가 제거 되었다. 이미 이전부터 deprecated 되었었긴하지만 너무 갑작스럽기도 하다.
-현재시점에서 ACRA, android-async-http 등의 오픈소스들도 대응이 되지 않았다. 이에 따른 대응방법도 구글에 안내되어 있긴하다.</p>
-<p><a href="https://developer.android.com/intl/ko/preview/behavior-changes.html#behavior-apache-http-client">Apache HTTP 클라이언트 제거</a></p>
-<p>하지만 임시방편일 뿐 계속 사용하기엔 석연치 않다. 조금더 자세한 내용은 다음에 다시 글을 쓰도록 하겠다.
-(추가 포스팅 : <a href="/2015/09/25/android-6-apache-http-client-removal/">Android 6(API 23 : marshmallow) : Apache HTTP 클라이언트 제거</a>)</p>
-<p>다시 본론으로 돌아와서 이 부분을 해결하기 위해서는 ContextCompat(android.support.v4.content.ContextCompat)을 사용하면 된다.
-단, support library 23 이상이 필요할 수 있다. 이하에서는 확인을 못했다.</p>
-<p>함수는 아래와 같이 구성되어 있다.</p>
-<pre class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> <span class="hljs-title">getColor</span><span class="hljs-params">(Context context, <span class="hljs-keyword">int</span> id)</span> </span>{
-    <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> version = Build.VERSION.SDK_INT;
-    <span class="hljs-keyword">if</span> (version &gt;= <span class="hljs-number">23</span>) {
-        <span class="hljs-keyword">return</span> ContextCompatApi23.getColor(context, id);
-    } <span class="hljs-keyword">else</span> {
-        <span class="hljs-keyword">return</span> context.getResources().getColor(id);
-    }
-}</pre>
-<p>실제사용은</p>
-<pre class="hljs java">ContextCompat.getColor(context, resourceId);</pre>
-<p>이렇게 하면된다. 어떻게보면 기존보다 더 편하다. 하지만 기존에 getColor를 사용하던 부분을 고치는 것은 우리가 해야한다.</p>
-<p>추가로 보다 더 이전에 deprecated된 함수 getDrawable()가 있다. 이건 정확하지 않지만 API 21부터 deprecated 된 것 같다.
-이 문제도 동일한 class를 통해 해결 가능하다.</p>
-<pre class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> Drawable <span class="hljs-title">getDrawable</span><span class="hljs-params">(Context context, <span class="hljs-keyword">int</span> id)</span> </span>{
-    <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> version = Build.VERSION.SDK_INT;
-    <span class="hljs-keyword">if</span> (version &gt;= <span class="hljs-number">21</span>) {
-        <span class="hljs-keyword">return</span> ContextCompatApi21.getDrawable(context, id);
-    } <span class="hljs-keyword">else</span> {
-        <span class="hljs-keyword">return</span> context.getResources().getDrawable(id);
-    }
-}</pre>
-<p>요즘 분위기를 보면 이런식으로 deprecated 되는 함수가 많다. 사실 개인적으로 많은 것은 기존 안드로이드가 워낙 엉망이라고 보기 때문에 문제가 되지 않는다고 생각하지만 처리하는 과정은 맘에 들이 않는다.
-한번에 싹 정리하지 않고 눈에 띄면 추가하듯 띄엄띄엄 deprecated 함수를 늘리고 실제 제거까지 오래 기다리지 않는다. 이건 꼭 새로운 버전을 사용하지 말라고 권장하는 것도 아니고 쓰라는 것도 아니고...</p>
-<p>마지막으로 PhoneNumberUtils.formatNumber 함수 예기만 하나더 하자면</p>
-<pre class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title">formatNumber</span><span class="hljs-params">(String source)</span></span>;</pre>
-<p>이 함수도 deprecated 되었다. 이제는 두번째 인자로 포멧팅할 국가 코드를 넣어야 한다.</p>
-<pre class="hljs java">PhoneNumberUtils.formatNumber(number, <span class="hljs-string">"KR"</span>);</pre>
-<p>그게 대응이 어려운 문제는 아니다. 하지만 위의 문제들과 더불어 굳이 deprecated 했어야 하는가? 하는 부분이다.
-개인적인 생각으로 두번째 인자를 생략하면 기존처럼 국가코드를 자동으로 넣으면 되지 않는가? 일부 다국어 지원 앱에서 조금더 명확한 사용을 하기 위해 대다수의 단일국가 지원 앱들이 불편을 감수해야하는가?
-다음이 기존함수이다.</p>
-<pre class="hljs java"><span class="hljs-annotation">@Deprecated</span>
-<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title">formatNumber</span><span class="hljs-params">(String source)</span> </span>{
-    SpannableStringBuilder text = <span class="hljs-keyword">new</span> SpannableStringBuilder(source);
-    formatNumber(text, getFormatTypeForLocale(Locale.getDefault()));
-    <span class="hljs-keyword">return</span> text.toString();
-}</pre>
-<p>보다시피 <code>Locale.getDefault()</code> 부분을 넣어주고 있었다. 어쨌든 나는 아래와 같은 호환 함수를 만들어서 사용하고 있다.</p>
-<pre class="hljs java"><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> String <span class="hljs-title">getFormattedPhoneNumber</span><span class="hljs-params">(String number)</span> </span>{
-    <span class="hljs-keyword">if</span> (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.LOLLIPOP) {
-        <span class="hljs-keyword">return</span> PhoneNumberUtils.formatNumber(number, <span class="hljs-string">"KR"</span>);
-    } <span class="hljs-keyword">else</span> {
-        <span class="hljs-comment">// noinspection deprecation</span>
-        <span class="hljs-keyword">return</span> PhoneNumberUtils.formatNumber(number);
-    }
-}</pre>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/08/28/android-getcolor-getdrawable-deprecated/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

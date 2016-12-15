@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,146 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">안드로이드 WebView에서 HTML5 Video Full Screen 지원</h2>
+												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
+								<span></span>
+						<time class="published" datetime="2016-08-12 20:15:23">2016.08.12. 20:15</time>
+		</div>
+		<div class="markdown-body entry-content"><p>안드로이드 WebView에서 HTML5 Video를 재생할 경우 &quot;전체창으로 보기&quot;를 사용할 수 있다. 그런데 자동적으로 사용할 수 있는 것이 아니라 관련된 처리를 직접 해주어야 한다.</p>
+<p>필요한 처리는 아래와 같다.</p>
+<ul>
+<li>WebView에 WebChromeClient를 설정해 주어야 한다. 그렇지 않으면 4.0 이후에서 NullPointerException이 발생한다.</li>
+<li>WebChromeClient를 설정하더라도  [onShowCustomView()](<a href="https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View">https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View</a>, android.webkit.WebChromeClient.CustomViewCallback%29)를 구현해주지 않으면 전체창 보기 상태에서 영상은 나오지 않고 소리만 재생되는 현상이 발생한다.</li>
+<li><code>android:hardwareAccelerated="true"</code> 등을 사용해서 Application 또는 해당 Activity에 하드웨어 가속을 켜줘야 한다.</li>
+</ul>
+<p>[onShowCustomView()](<a href="https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View">https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View</a>, android.webkit.WebChromeClient.CustomViewCallback%29)를 구현한 소스는 아래와 같다.</p>
+<pre class="hljs java"><span class="hljs-keyword">import</span> android.app.Activity;
+<span class="hljs-keyword">import</span> android.content.Context;
+<span class="hljs-keyword">import</span> android.os.Build;
+<span class="hljs-keyword">import</span> android.support.v4.content.ContextCompat;
+<span class="hljs-keyword">import</span> android.view.MotionEvent;
+<span class="hljs-keyword">import</span> android.view.View;
+<span class="hljs-keyword">import</span> android.view.ViewGroup;
+<span class="hljs-keyword">import</span> android.view.Window;
+<span class="hljs-keyword">import</span> android.view.WindowManager;
+<span class="hljs-keyword">import</span> android.webkit.WebChromeClient;
+<span class="hljs-keyword">import</span> android.widget.FrameLayout;
+
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">FullscreenableChromeClient</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">WebChromeClient</span> </span>{
+    <span class="hljs-keyword">private</span> Activity mActivity = <span class="hljs-keyword">null</span>;
+
+    <span class="hljs-keyword">private</span> View mCustomView;
+    <span class="hljs-keyword">private</span> WebChromeClient.CustomViewCallback mCustomViewCallback;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> mOriginalOrientation;
+
+    <span class="hljs-keyword">private</span> FrameLayout mFullscreenContainer;
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> FrameLayout.LayoutParams COVER_SCREEN_PARAMS = <span class="hljs-keyword">new</span> FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">FullscreenableChromeClient</span><span class="hljs-params">(Activity activity)</span> </span>{
+        <span class="hljs-keyword">this</span>.mActivity = activity;
+    }
+
+    <span class="hljs-annotation">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onShowCustomView</span><span class="hljs-params">(View view, CustomViewCallback callback)</span> </span>{
+        <span class="hljs-keyword">if</span> (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            <span class="hljs-keyword">if</span> (mCustomView != <span class="hljs-keyword">null</span>) {
+                callback.onCustomViewHidden();
+                <span class="hljs-keyword">return</span>;
+            }
+
+            mOriginalOrientation = mActivity.getRequestedOrientation();
+            FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
+            mFullscreenContainer = <span class="hljs-keyword">new</span> FullscreenHolder(mActivity);
+            mFullscreenContainer.addView(view, COVER_SCREEN_PARAMS);
+            decor.addView(mFullscreenContainer, COVER_SCREEN_PARAMS);
+            mCustomView = view;
+            setFullscreen(<span class="hljs-keyword">true</span>);
+            mCustomViewCallback = callback;
+<span class="hljs-comment">//          mActivity.setRequestedOrientation(requestedOrientation);</span>
+        }
+
+        <span class="hljs-keyword">super</span>.onShowCustomView(view, callback);
+    }
+
+    <span class="hljs-annotation">@SuppressWarnings</span>(<span class="hljs-string">"deprecation"</span>)
+    <span class="hljs-annotation">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onShowCustomView</span><span class="hljs-params">(View view, <span class="hljs-keyword">int</span> requestedOrientation, WebChromeClient.CustomViewCallback callback)</span> </span>{
+        <span class="hljs-keyword">this</span>.onShowCustomView(view, callback);
+    }
+
+    <span class="hljs-annotation">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onHideCustomView</span><span class="hljs-params">()</span> </span>{
+        <span class="hljs-keyword">if</span> (mCustomView == <span class="hljs-keyword">null</span>) {
+            <span class="hljs-keyword">return</span>;
+        }
+
+        setFullscreen(<span class="hljs-keyword">false</span>);
+        FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
+        decor.removeView(mFullscreenContainer);
+        mFullscreenContainer = <span class="hljs-keyword">null</span>;
+        mCustomView = <span class="hljs-keyword">null</span>;
+        mCustomViewCallback.onCustomViewHidden();
+        mActivity.setRequestedOrientation(mOriginalOrientation);
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">setFullscreen</span><span class="hljs-params">(<span class="hljs-keyword">boolean</span> enabled)</span> </span>{
+        Window win = mActivity.getWindow();
+        WindowManager.LayoutParams winParams = win.getAttributes();
+        <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> bits = WindowManager.LayoutParams.FLAG_FULLSCREEN;
+        <span class="hljs-keyword">if</span> (enabled) {
+            winParams.flags |= bits;
+        } <span class="hljs-keyword">else</span> {
+            winParams.flags &amp;= ~bits;
+            <span class="hljs-keyword">if</span> (mCustomView != <span class="hljs-keyword">null</span>) {
+                mCustomView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+            }
+        }
+        win.setAttributes(winParams);
+    }
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">FullscreenHolder</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">FrameLayout</span> </span>{
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">FullscreenHolder</span><span class="hljs-params">(Context ctx)</span> </span>{
+            <span class="hljs-keyword">super</span>(ctx);
+            setBackgroundColor(ContextCompat.getColor(ctx, android.R.color.black));
+        }
+
+        <span class="hljs-annotation">@Override</span>
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">onTouchEvent</span><span class="hljs-params">(MotionEvent evt)</span> </span>{
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">true</span>;
+        }
+    }
+}</pre>
+<p>사용법은 아래와 같다.</p>
+<pre class="hljs java">webView.setWebChromeClient(<span class="hljs-keyword">new</span> FullscreenableChromeClient(activity));</pre>
+<p>비슷한 방법으로 <a href="http://stackoverflow.com/a/16179544">Playing HTML5 video on fullscreen in android webview</a>에서 안내하는 방법도 있다.</p>
+<p>어쨌든 결론은 Full Screen을 위한 별도의 View를 구성해줘야 한다는 것이다. 항상 느끼는 것이지만 이런 것들은 OS 또는 SDK 차원에서 기본적으로 제공하고 Custom이 필요할 경우만 처리하도록 하면 될 텐데 안드로이드는 이런 부분들이 너무 부족하다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,145 +447,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">안드로이드 WebView에서 HTML5 Video Full Screen 지원</h2>
-												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
-								<span></span>
-						<time class="published" datetime="2016-08-12 20:15:23">2016.08.12. 20:15</time>
-		</div>
-		<div class="markdown-body entry-content"><p>안드로이드 WebView에서 HTML5 Video를 재생할 경우 &quot;전체창으로 보기&quot;를 사용할 수 있다. 그런데 자동적으로 사용할 수 있는 것이 아니라 관련된 처리를 직접 해주어야 한다.</p>
-<p>필요한 처리는 아래와 같다.</p>
-<ul>
-<li>WebView에 WebChromeClient를 설정해 주어야 한다. 그렇지 않으면 4.0 이후에서 NullPointerException이 발생한다.</li>
-<li>WebChromeClient를 설정하더라도  [onShowCustomView()](<a href="https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View">https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View</a>, android.webkit.WebChromeClient.CustomViewCallback%29)를 구현해주지 않으면 전체창 보기 상태에서 영상은 나오지 않고 소리만 재생되는 현상이 발생한다.</li>
-<li><code>android:hardwareAccelerated="true"</code> 등을 사용해서 Application 또는 해당 Activity에 하드웨어 가속을 켜줘야 한다.</li>
-</ul>
-<p>[onShowCustomView()](<a href="https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View">https://developer.android.com/reference/android/webkit/WebChromeClient.html#onShowCustomView%28android.view.View</a>, android.webkit.WebChromeClient.CustomViewCallback%29)를 구현한 소스는 아래와 같다.</p>
-<pre class="hljs java"><span class="hljs-keyword">import</span> android.app.Activity;
-<span class="hljs-keyword">import</span> android.content.Context;
-<span class="hljs-keyword">import</span> android.os.Build;
-<span class="hljs-keyword">import</span> android.support.v4.content.ContextCompat;
-<span class="hljs-keyword">import</span> android.view.MotionEvent;
-<span class="hljs-keyword">import</span> android.view.View;
-<span class="hljs-keyword">import</span> android.view.ViewGroup;
-<span class="hljs-keyword">import</span> android.view.Window;
-<span class="hljs-keyword">import</span> android.view.WindowManager;
-<span class="hljs-keyword">import</span> android.webkit.WebChromeClient;
-<span class="hljs-keyword">import</span> android.widget.FrameLayout;
-
-<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">FullscreenableChromeClient</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">WebChromeClient</span> </span>{
-    <span class="hljs-keyword">private</span> Activity mActivity = <span class="hljs-keyword">null</span>;
-
-    <span class="hljs-keyword">private</span> View mCustomView;
-    <span class="hljs-keyword">private</span> WebChromeClient.CustomViewCallback mCustomViewCallback;
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> mOriginalOrientation;
-
-    <span class="hljs-keyword">private</span> FrameLayout mFullscreenContainer;
-
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> FrameLayout.LayoutParams COVER_SCREEN_PARAMS = <span class="hljs-keyword">new</span> FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
-    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">FullscreenableChromeClient</span><span class="hljs-params">(Activity activity)</span> </span>{
-        <span class="hljs-keyword">this</span>.mActivity = activity;
-    }
-
-    <span class="hljs-annotation">@Override</span>
-    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onShowCustomView</span><span class="hljs-params">(View view, CustomViewCallback callback)</span> </span>{
-        <span class="hljs-keyword">if</span> (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            <span class="hljs-keyword">if</span> (mCustomView != <span class="hljs-keyword">null</span>) {
-                callback.onCustomViewHidden();
-                <span class="hljs-keyword">return</span>;
-            }
-
-            mOriginalOrientation = mActivity.getRequestedOrientation();
-            FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
-            mFullscreenContainer = <span class="hljs-keyword">new</span> FullscreenHolder(mActivity);
-            mFullscreenContainer.addView(view, COVER_SCREEN_PARAMS);
-            decor.addView(mFullscreenContainer, COVER_SCREEN_PARAMS);
-            mCustomView = view;
-            setFullscreen(<span class="hljs-keyword">true</span>);
-            mCustomViewCallback = callback;
-<span class="hljs-comment">//          mActivity.setRequestedOrientation(requestedOrientation);</span>
-        }
-
-        <span class="hljs-keyword">super</span>.onShowCustomView(view, callback);
-    }
-
-    <span class="hljs-annotation">@SuppressWarnings</span>(<span class="hljs-string">"deprecation"</span>)
-    <span class="hljs-annotation">@Override</span>
-    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onShowCustomView</span><span class="hljs-params">(View view, <span class="hljs-keyword">int</span> requestedOrientation, WebChromeClient.CustomViewCallback callback)</span> </span>{
-        <span class="hljs-keyword">this</span>.onShowCustomView(view, callback);
-    }
-
-    <span class="hljs-annotation">@Override</span>
-    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onHideCustomView</span><span class="hljs-params">()</span> </span>{
-        <span class="hljs-keyword">if</span> (mCustomView == <span class="hljs-keyword">null</span>) {
-            <span class="hljs-keyword">return</span>;
-        }
-
-        setFullscreen(<span class="hljs-keyword">false</span>);
-        FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
-        decor.removeView(mFullscreenContainer);
-        mFullscreenContainer = <span class="hljs-keyword">null</span>;
-        mCustomView = <span class="hljs-keyword">null</span>;
-        mCustomViewCallback.onCustomViewHidden();
-        mActivity.setRequestedOrientation(mOriginalOrientation);
-    }
-
-    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">setFullscreen</span><span class="hljs-params">(<span class="hljs-keyword">boolean</span> enabled)</span> </span>{
-        Window win = mActivity.getWindow();
-        WindowManager.LayoutParams winParams = win.getAttributes();
-        <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> bits = WindowManager.LayoutParams.FLAG_FULLSCREEN;
-        <span class="hljs-keyword">if</span> (enabled) {
-            winParams.flags |= bits;
-        } <span class="hljs-keyword">else</span> {
-            winParams.flags &amp;= ~bits;
-            <span class="hljs-keyword">if</span> (mCustomView != <span class="hljs-keyword">null</span>) {
-                mCustomView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-            }
-        }
-        win.setAttributes(winParams);
-    }
-
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">FullscreenHolder</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">FrameLayout</span> </span>{
-        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">FullscreenHolder</span><span class="hljs-params">(Context ctx)</span> </span>{
-            <span class="hljs-keyword">super</span>(ctx);
-            setBackgroundColor(ContextCompat.getColor(ctx, android.R.color.black));
-        }
-
-        <span class="hljs-annotation">@Override</span>
-        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">onTouchEvent</span><span class="hljs-params">(MotionEvent evt)</span> </span>{
-            <span class="hljs-keyword">return</span> <span class="hljs-keyword">true</span>;
-        }
-    }
-}</pre>
-<p>사용법은 아래와 같다.</p>
-<pre class="hljs java">webView.setWebChromeClient(<span class="hljs-keyword">new</span> FullscreenableChromeClient(activity));</pre>
-<p>비슷한 방법으로 <a href="http://stackoverflow.com/a/16179544">Playing HTML5 video on fullscreen in android webview</a>에서 안내하는 방법도 있다.</p>
-<p>어쨌든 결론은 Full Screen을 위한 별도의 View를 구성해줘야 한다는 것이다. 항상 느끼는 것이지만 이런 것들은 OS 또는 SDK 차원에서 기본적으로 제공하고 Custom이 필요할 경우만 처리하도록 하면 될 텐데 안드로이드는 이런 부분들이 너무 부족하다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/08/12/playing-html5-video-on-fullscreen-in-android-webview/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

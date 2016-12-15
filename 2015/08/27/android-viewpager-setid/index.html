@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,88 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">Android ViewPager를 직접 생성시 android.content.res.Resources$NotFoundException: Unable to find resource ID #0xffffffff 오류 발생</h2>
+												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
+								<span></span>
+						<time class="published" datetime="2015-08-27 10:56:56">2015.08.27. 10:56</time>
+		</div>
+		<div class="markdown-body entry-content"><p>일반적으로 ViewPager 사용시 layout xml에서 정의해서 사용한다.
+하지만 간혹 필요에 따라 ViewPager을 프로그램으로 생성해서 사용하는 경우 있다.</p>
+<pre class="hljs java">ViewPager viewPager = <span class="hljs-keyword">new</span> ViewPager(<span class="hljs-keyword">this</span>);</pre>
+<p>그런데 이렇게 사용할 경우 아래와 같은 오류를 만나게 된다.</p>
+<pre class="hljs java">android.content.res.Resources$NotFoundException: Unable to find resource ID #<span class="hljs-number">0xffffffff</span>
+            at android.content.res.Resources.getResourceName(Resources.java:<span class="hljs-number">3216</span>)
+            at android.support.v4.app.FragmentManagerImpl.moveToState(FragmentManager.java:<span class="hljs-number">1008</span>)
+            at android.support.v4.app.FragmentManagerImpl.moveToState(FragmentManager.java:<span class="hljs-number">1197</span>)
+            at android.support.v4.app.BackStackRecord.run(BackStackRecord.java:<span class="hljs-number">738</span>)
+            at android.support.v4.app.FragmentManagerImpl.execPendingActions(FragmentManager.java:<span class="hljs-number">1562</span>)
+            at android.support.v4.app.FragmentManagerImpl.executePendingTransactions(FragmentManager.java:<span class="hljs-number">535</span>)
+            at android.support.v4.app.FragmentPagerAdapter.finishUpdate(FragmentPagerAdapter.java:<span class="hljs-number">141</span>)
+            at android.support.v4.view.ViewPager.populate(ViewPager.java:<span class="hljs-number">1106</span>)
+            at android.support.v4.view.ViewPager.populate(ViewPager.java:<span class="hljs-number">952</span>)
+            at android.support.v4.view.ViewPager.onMeasure(ViewPager.java:<span class="hljs-number">1474</span>)
+            at android.view.View.measure(View.java:<span class="hljs-number">18573</span>)
+...</pre>
+<p>처음엔 웬 리소스를 못 찾는다는 에러가 나오는지 한참을 헤맸다.
+결국 알아낸 문제는 사실 개인적으로 조금 어이가 없었다. xml에서 정의된 ViewPager는 인스턴스화되면서 임시 id가 알아서 지정되는 것으로 보이나 프로그램에서 생성한 ViewPager는 그 과정이 누락되는 것이다.
+어이없는 상황. 그러나 해결법은 간단하다. id를 지정해 주면 된다.</p>
+<p>그래서 아래처럼 해봤다.</p>
+<pre class="hljs java">ViewPager viewPager = <span class="hljs-keyword">new</span> ViewPager(<span class="hljs-keyword">this</span>);
+viewPager.setId(<span class="hljs-number">1</span>);</pre>
+<p>하지만 그렇게 간단히 해결되면 안드로이드가 아니지...
+그래서 다음과 같은 방법으로 id를 생성해 주어야 한다.</p>
+<pre class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">IdGen</span> </span>{
+    <span class="hljs-keyword">final</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">private</span> AtomicInteger sNextGeneratedId = <span class="hljs-keyword">new</span> AtomicInteger(<span class="hljs-number">1</span>);
+
+    <span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> <span class="hljs-title">_generateViewId</span><span class="hljs-params">()</span> </span>{
+        <span class="hljs-keyword">for</span> (; ; ) {
+            <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> result = sNextGeneratedId.get();
+            <span class="hljs-comment">// aapt-generated IDs have the high byte nonzero; clamp to the range under that.</span>
+            <span class="hljs-keyword">int</span> newValue = result + <span class="hljs-number">1</span>;
+            <span class="hljs-keyword">if</span> (newValue &gt; <span class="hljs-number">0x00FFFFFF</span>) newValue = <span class="hljs-number">1</span>; <span class="hljs-comment">// Roll over to 1, not 0.</span>
+            <span class="hljs-keyword">if</span> (sNextGeneratedId.compareAndSet(result, newValue)) {
+                <span class="hljs-keyword">return</span> result;
+            }
+        }
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> <span class="hljs-keyword">int</span> <span class="hljs-title">generateViewId</span><span class="hljs-params">()</span> </span>{
+        <span class="hljs-keyword">if</span> (Build.VERSION.SDK_INT &lt; Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            <span class="hljs-keyword">return</span> _generateViewId();
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">return</span> View.generateViewId();
+        }
+    }
+}</pre>
+<pre class="hljs java">ViewPager viewPager = <span class="hljs-keyword">new</span> ViewPager(<span class="hljs-keyword">this</span>);
+viewPager.setId(IdGen.generateViewId());</pre>
+<p>드디어 이상없이 동작한다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/08/27/android-viewpager-setid/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,87 +389,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">Android ViewPager를 직접 생성시 android.content.res.Resources$NotFoundException: Unable to find resource ID #0xffffffff 오류 발생</h2>
-												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
-								<span></span>
-						<time class="published" datetime="2015-08-27 10:56:56">2015.08.27. 10:56</time>
-		</div>
-		<div class="markdown-body entry-content"><p>일반적으로 ViewPager 사용시 layout xml에서 정의해서 사용한다.
-하지만 간혹 필요에 따라 ViewPager을 프로그램으로 생성해서 사용하는 경우 있다.</p>
-<pre class="hljs java">ViewPager viewPager = <span class="hljs-keyword">new</span> ViewPager(<span class="hljs-keyword">this</span>);</pre>
-<p>그런데 이렇게 사용할 경우 아래와 같은 오류를 만나게 된다.</p>
-<pre class="hljs java">android.content.res.Resources$NotFoundException: Unable to find resource ID #<span class="hljs-number">0xffffffff</span>
-            at android.content.res.Resources.getResourceName(Resources.java:<span class="hljs-number">3216</span>)
-            at android.support.v4.app.FragmentManagerImpl.moveToState(FragmentManager.java:<span class="hljs-number">1008</span>)
-            at android.support.v4.app.FragmentManagerImpl.moveToState(FragmentManager.java:<span class="hljs-number">1197</span>)
-            at android.support.v4.app.BackStackRecord.run(BackStackRecord.java:<span class="hljs-number">738</span>)
-            at android.support.v4.app.FragmentManagerImpl.execPendingActions(FragmentManager.java:<span class="hljs-number">1562</span>)
-            at android.support.v4.app.FragmentManagerImpl.executePendingTransactions(FragmentManager.java:<span class="hljs-number">535</span>)
-            at android.support.v4.app.FragmentPagerAdapter.finishUpdate(FragmentPagerAdapter.java:<span class="hljs-number">141</span>)
-            at android.support.v4.view.ViewPager.populate(ViewPager.java:<span class="hljs-number">1106</span>)
-            at android.support.v4.view.ViewPager.populate(ViewPager.java:<span class="hljs-number">952</span>)
-            at android.support.v4.view.ViewPager.onMeasure(ViewPager.java:<span class="hljs-number">1474</span>)
-            at android.view.View.measure(View.java:<span class="hljs-number">18573</span>)
-...</pre>
-<p>처음엔 웬 리소스를 못 찾는다는 에러가 나오는지 한참을 헤맸다.
-결국 알아낸 문제는 사실 개인적으로 조금 어이가 없었다. xml에서 정의된 ViewPager는 인스턴스화되면서 임시 id가 알아서 지정되는 것으로 보이나 프로그램에서 생성한 ViewPager는 그 과정이 누락되는 것이다.
-어이없는 상황. 그러나 해결법은 간단하다. id를 지정해 주면 된다.</p>
-<p>그래서 아래처럼 해봤다.</p>
-<pre class="hljs java">ViewPager viewPager = <span class="hljs-keyword">new</span> ViewPager(<span class="hljs-keyword">this</span>);
-viewPager.setId(<span class="hljs-number">1</span>);</pre>
-<p>하지만 그렇게 간단히 해결되면 안드로이드가 아니지...
-그래서 다음과 같은 방법으로 id를 생성해 주어야 한다.</p>
-<pre class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">IdGen</span> </span>{
-    <span class="hljs-keyword">final</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">private</span> AtomicInteger sNextGeneratedId = <span class="hljs-keyword">new</span> AtomicInteger(<span class="hljs-number">1</span>);
-
-    <span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> <span class="hljs-title">_generateViewId</span><span class="hljs-params">()</span> </span>{
-        <span class="hljs-keyword">for</span> (; ; ) {
-            <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> result = sNextGeneratedId.get();
-            <span class="hljs-comment">// aapt-generated IDs have the high byte nonzero; clamp to the range under that.</span>
-            <span class="hljs-keyword">int</span> newValue = result + <span class="hljs-number">1</span>;
-            <span class="hljs-keyword">if</span> (newValue &gt; <span class="hljs-number">0x00FFFFFF</span>) newValue = <span class="hljs-number">1</span>; <span class="hljs-comment">// Roll over to 1, not 0.</span>
-            <span class="hljs-keyword">if</span> (sNextGeneratedId.compareAndSet(result, newValue)) {
-                <span class="hljs-keyword">return</span> result;
-            }
-        }
-    }
-
-    <span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> <span class="hljs-keyword">int</span> <span class="hljs-title">generateViewId</span><span class="hljs-params">()</span> </span>{
-        <span class="hljs-keyword">if</span> (Build.VERSION.SDK_INT &lt; Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            <span class="hljs-keyword">return</span> _generateViewId();
-        } <span class="hljs-keyword">else</span> {
-            <span class="hljs-keyword">return</span> View.generateViewId();
-        }
-    }
-}</pre>
-<pre class="hljs java">ViewPager viewPager = <span class="hljs-keyword">new</span> ViewPager(<span class="hljs-keyword">this</span>);
-viewPager.setId(IdGen.generateViewId());</pre>
-<p>드디어 이상없이 동작한다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/08/27/android-viewpager-setid/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,73 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">옥토프레스 category list 플러그인 설치</h2>
+												<a href="https://blog.asamaru.net/category/octopress/" rel="tag">octopress</a>
+								<span></span>
+						<time class="published" datetime="2015-08-28 20:45:21">2015.08.28. 20:45</time>
+		</div>
+		<div class="markdown-body entry-content"><p>이번엔 옥토프레스에 category list 플러그인을 추가해 보았다.</p>
+<p>사실 현재 시점에서 쓰고 있는 테마를 선택한 이유가 우측에 나오는 카테고리 목록이었다. 그런데 막상 테마를 설치한 후에도 카테고리 목록이 보이지 않았다. 처음엔 설정이 누락되어서 그렇다고 생각했고 시간이 없어서 그냥 두다가 오늘에서야 추가를 하고자 확인해 봤다.</p>
+<p>현재 시점에 사용하고 있는 테마는 &quot;<a href="https://github.com/kAworu/octostrap3">octostrap3</a>&quot;다. 해당 소스를 뒤져서 aside에 추가하는 부분은 찾았으나 테마엔 그 파일이 없었다. 그럼 이사람은 없는 파일을 어떻게 불러서 쓴단 말인가?</p>
+<p>알아보니 별도 플러그인을 추가해야만 했다.
+<a href="https://github.com/ctdk/octopress-category-list">https://github.com/ctdk/octopress-category-list</a>
+현재 내가 적용한 플러그인이다. 최근 업데이트가 시점이 오래되어 조금 미심쩍지만 대안이 없다.</p>
+<p>일단 설명이 된대로 소스를 받아서 안내하는 경로에 집어 넣었다.
+그리고 octostrap3에서 사용하던것 처럼 _config.xml 파일에 추가 했다.일단 사이드 영역에 &quot;custom/asides/category_list.html&quot;를 추가.</p>
+<blockquote>
+<p>default_asides: [asides/recent_posts.html, custom/asides/category_list.html, asides/github.html, asides/delicious.html, asides/pinboard.html, asides/googleplus.html]</p>
+</blockquote>
+<p>그리고는 정상적으로 적용이 되는지 확인.</p>
+<pre class="hljs bash">$ rake generate
+<span class="hljs-comment">## Generating Site with Jekyll</span>
+Configuration file: /Volumes/Data/DropBox/blog/_config.yml
+            Source: <span class="hljs-built_in">source</span>
+       Destination: public/blog
+      Generating...
+  Liquid Exception: undefined method `+<span class="hljs-string">' for nil:NilClass in _layouts/page.html
+jekyll 2.5.3 | Error:  undefined method `+'</span> <span class="hljs-keyword">for</span> nil:NilClass</pre>
+<p>하지만 오류.. 이런.. 불친절하게 어디가 문제인지 명확히 알려주지 않는다. 무작정 소스를 봤다. ruby를 아예 모르는 관계로 봐도 모르겠다. 하지만 nil 오류라고 하니 값이 없는 것이 문제라는 생각에 의심되는 부분들을 보다가 발견한 부분..</p>
+<pre class="hljs ruby"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">render</span><span class="hljs-params">(context)</span></span>
+  lists = {}
+  max, min = <span class="hljs-number">1</span>, <span class="hljs-number">1</span>
+  config = context.registers[<span class="hljs-symbol">:site</span>].config
+  category_dir = config[<span class="hljs-string">'root'</span>] + config[<span class="hljs-string">'category_dir'</span>] + <span class="hljs-string">'/'</span>
+  categories = context.registers[<span class="hljs-symbol">:site</span>].categories
+  categories.keys.sort_by{ |str| str.downcase }.each <span class="hljs-keyword">do</span> |category|
+    count = categories[category].count
+    lists[category] = count
+    max = count <span class="hljs-keyword">if</span> count &gt; max
+  <span class="hljs-keyword">end</span></pre>
+<p>여기서 config['root'] 이 부분이 문제 였다. 내 _config.xml 파일에서는 &quot;root:&quot; 부분을 비워두었다. 하위 폴더를 사용하지 않기 때문에. 여기에 값이 없어서 오류. 그래서 &quot;root: /&quot;로 수정.</p>
+<p>다시 시도.</p>
+<pre class="hljs bash">$ rake generate</pre>
+<p>이젠 된다. 카테고리 목록도 잘 나온다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/08/28/octopress-category-list-plugin-install/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,72 +374,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">옥토프레스 category list 플러그인 설치</h2>
-												<a href="https://blog.asamaru.net/category/octopress/" rel="tag">octopress</a>
-								<span></span>
-						<time class="published" datetime="2015-08-28 20:45:21">2015.08.28. 20:45</time>
-		</div>
-		<div class="markdown-body entry-content"><p>이번엔 옥토프레스에 category list 플러그인을 추가해 보았다.</p>
-<p>사실 현재 시점에서 쓰고 있는 테마를 선택한 이유가 우측에 나오는 카테고리 목록이었다. 그런데 막상 테마를 설치한 후에도 카테고리 목록이 보이지 않았다. 처음엔 설정이 누락되어서 그렇다고 생각했고 시간이 없어서 그냥 두다가 오늘에서야 추가를 하고자 확인해 봤다.</p>
-<p>현재 시점에 사용하고 있는 테마는 &quot;<a href="https://github.com/kAworu/octostrap3">octostrap3</a>&quot;다. 해당 소스를 뒤져서 aside에 추가하는 부분은 찾았으나 테마엔 그 파일이 없었다. 그럼 이사람은 없는 파일을 어떻게 불러서 쓴단 말인가?</p>
-<p>알아보니 별도 플러그인을 추가해야만 했다.
-<a href="https://github.com/ctdk/octopress-category-list">https://github.com/ctdk/octopress-category-list</a>
-현재 내가 적용한 플러그인이다. 최근 업데이트가 시점이 오래되어 조금 미심쩍지만 대안이 없다.</p>
-<p>일단 설명이 된대로 소스를 받아서 안내하는 경로에 집어 넣었다.
-그리고 octostrap3에서 사용하던것 처럼 _config.xml 파일에 추가 했다.일단 사이드 영역에 &quot;custom/asides/category_list.html&quot;를 추가.</p>
-<blockquote>
-<p>default_asides: [asides/recent_posts.html, custom/asides/category_list.html, asides/github.html, asides/delicious.html, asides/pinboard.html, asides/googleplus.html]</p>
-</blockquote>
-<p>그리고는 정상적으로 적용이 되는지 확인.</p>
-<pre class="hljs bash">$ rake generate
-<span class="hljs-comment">## Generating Site with Jekyll</span>
-Configuration file: /Volumes/Data/DropBox/blog/_config.yml
-            Source: <span class="hljs-built_in">source</span>
-       Destination: public/blog
-      Generating...
-  Liquid Exception: undefined method `+<span class="hljs-string">' for nil:NilClass in _layouts/page.html
-jekyll 2.5.3 | Error:  undefined method `+'</span> <span class="hljs-keyword">for</span> nil:NilClass</pre>
-<p>하지만 오류.. 이런.. 불친절하게 어디가 문제인지 명확히 알려주지 않는다. 무작정 소스를 봤다. ruby를 아예 모르는 관계로 봐도 모르겠다. 하지만 nil 오류라고 하니 값이 없는 것이 문제라는 생각에 의심되는 부분들을 보다가 발견한 부분..</p>
-<pre class="hljs ruby"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">render</span><span class="hljs-params">(context)</span></span>
-  lists = {}
-  max, min = <span class="hljs-number">1</span>, <span class="hljs-number">1</span>
-  config = context.registers[<span class="hljs-symbol">:site</span>].config
-  category_dir = config[<span class="hljs-string">'root'</span>] + config[<span class="hljs-string">'category_dir'</span>] + <span class="hljs-string">'/'</span>
-  categories = context.registers[<span class="hljs-symbol">:site</span>].categories
-  categories.keys.sort_by{ |str| str.downcase }.each <span class="hljs-keyword">do</span> |category|
-    count = categories[category].count
-    lists[category] = count
-    max = count <span class="hljs-keyword">if</span> count &gt; max
-  <span class="hljs-keyword">end</span></pre>
-<p>여기서 config['root'] 이 부분이 문제 였다. 내 _config.xml 파일에서는 &quot;root:&quot; 부분을 비워두었다. 하위 폴더를 사용하지 않기 때문에. 여기에 값이 없어서 오류. 그래서 &quot;root: /&quot;로 수정.</p>
-<p>다시 시도.</p>
-<pre class="hljs bash">$ rake generate</pre>
-<p>이젠 된다. 카테고리 목록도 잘 나온다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/08/28/octopress-category-list-plugin-install/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

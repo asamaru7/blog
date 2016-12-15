@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,61 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">안드로이드 WebView resumeTimers() / pauseTimers() 적용하기</h2>
+												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
+								<span></span>
+						<time class="published" datetime="2016-08-01 16:56:09">2016.08.01. 16:56</time>
+		</div>
+		<div class="markdown-body entry-content"><p>안드로이드의 WebView를 사용하다 보면 처음 페이지를 보여줄 때는 정상적으로 보이나 두번째 이후부터 페이지를 정상적으로 표시하지 못하는 경우가 있다. 이 경우는 여러가지 이유로 발생할 수 있으나 오늘은  <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a> / <a href="https://developer.android.com/reference/android/webkit/WebView.html#resumeTimers%28%29">resumeTimers</a> 때문에 발생하는 경우에 대한 이야기를 하고자 한다.</p>
+<p>우선 이 함수들이 필요한 이유부터 간단히 알아보자.</p>
+<p>메뉴얼에서 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 찾아보면 아래와 같이 설명되어 있다.</p>
+<blockquote>
+<p>Pauses all layout, parsing, and JavaScript timers for all WebViews. This is a global requests, not restricted to just this WebView. This can be useful if the application has been paused.</p>
+</blockquote>
+<p>현재 보여지는 웹뷰뿐만 아니라 모든 웹뷰에 대해 layout, parsing, JavaScript timers 를 멈추도록 지시한다. 이것이 왜 필요할까? 안드로이드는 기본적으로 앱이 백그라운드 상태로 들어가더라도 웹뷰의 동작은 자동적으로 멈추지 않고 계속 동작하기 때문이다. 이렇게되면 앱을 사용하지 않더라도 지속적으로 연산 작업이 일어나므로 배터리를 더 많이 사용하게 된다(이런 문제라면 OS 차원에서 알아서 처리하면 될텐데 왜 개발자가 직접이 문제를 처리해 주어야하는지 이해가 안된다).</p>
+<p>이 문제를 해결하기 위해서는 Activity를 벗어날 때 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 호출해주면 된다.</p>
+<p>그런데 이렇게 처리해 주었다면 Activity에 복귀할 때는 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 필히 호출해줘야 한다. 그렇지 않으면 화면이 보여지지 않는 문제를 만날 수 있다. 여러 사람들의 이야기를 들어보면 이 현상은 기기마다 차이가 있는 것으로 보인다(문제가 발생하는 기기도 있고 그렇지 않은 기기도 있다는 뜻).</p>
+<p>간단한 해결 방법은 아래와 같이 WebView를 사용하는 Activity의 onResume, onPause에서 직접 처리해주면 된다.</p>
+<pre class="hljs java"><span class="hljs-annotation">@Override</span>
+<span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onResume</span><span class="hljs-params">()</span> </span>{
+  <span class="hljs-keyword">super</span>.onResume();
+
+  webView.resumeTimers();
+}
+
+<span class="hljs-annotation">@Override</span>
+<span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onPause</span><span class="hljs-params">()</span> </span>{
+  <span class="hljs-keyword">super</span>.onPause();
+
+  webView.pauseTimers();
+}</pre>
+<p>Activity 단위로 처리하는 것이 귀찮다면 application의 life cycle에 맞춰서 일괄적으로 처리해도 된다. 메뉴얼에 나와 있듯이 application 전체의 웹뷰에 일괄적으로 적용되므로.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/08/01/android-webview-resumetimers-pausetimers/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,60 +362,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">안드로이드 WebView resumeTimers() / pauseTimers() 적용하기</h2>
-												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
-								<span></span>
-						<time class="published" datetime="2016-08-01 16:56:09">2016.08.01. 16:56</time>
-		</div>
-		<div class="markdown-body entry-content"><p>안드로이드의 WebView를 사용하다 보면 처음 페이지를 보여줄 때는 정상적으로 보이나 두번째 이후부터 페이지를 정상적으로 표시하지 못하는 경우가 있다. 이 경우는 여러가지 이유로 발생할 수 있으나 오늘은  <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a> / <a href="https://developer.android.com/reference/android/webkit/WebView.html#resumeTimers%28%29">resumeTimers</a> 때문에 발생하는 경우에 대한 이야기를 하고자 한다.</p>
-<p>우선 이 함수들이 필요한 이유부터 간단히 알아보자.</p>
-<p>메뉴얼에서 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 찾아보면 아래와 같이 설명되어 있다.</p>
-<blockquote>
-<p>Pauses all layout, parsing, and JavaScript timers for all WebViews. This is a global requests, not restricted to just this WebView. This can be useful if the application has been paused.</p>
-</blockquote>
-<p>현재 보여지는 웹뷰뿐만 아니라 모든 웹뷰에 대해 layout, parsing, JavaScript timers 를 멈추도록 지시한다. 이것이 왜 필요할까? 안드로이드는 기본적으로 앱이 백그라운드 상태로 들어가더라도 웹뷰의 동작은 자동적으로 멈추지 않고 계속 동작하기 때문이다. 이렇게되면 앱을 사용하지 않더라도 지속적으로 연산 작업이 일어나므로 배터리를 더 많이 사용하게 된다(이런 문제라면 OS 차원에서 알아서 처리하면 될텐데 왜 개발자가 직접이 문제를 처리해 주어야하는지 이해가 안된다).</p>
-<p>이 문제를 해결하기 위해서는 Activity를 벗어날 때 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 호출해주면 된다.</p>
-<p>그런데 이렇게 처리해 주었다면 Activity에 복귀할 때는 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 필히 호출해줘야 한다. 그렇지 않으면 화면이 보여지지 않는 문제를 만날 수 있다. 여러 사람들의 이야기를 들어보면 이 현상은 기기마다 차이가 있는 것으로 보인다(문제가 발생하는 기기도 있고 그렇지 않은 기기도 있다는 뜻).</p>
-<p>간단한 해결 방법은 아래와 같이 WebView를 사용하는 Activity의 onResume, onPause에서 직접 처리해주면 된다.</p>
-<pre class="hljs java"><span class="hljs-annotation">@Override</span>
-<span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onResume</span><span class="hljs-params">()</span> </span>{
-  <span class="hljs-keyword">super</span>.onResume();
-
-  webView.resumeTimers();
-}
-
-<span class="hljs-annotation">@Override</span>
-<span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onPause</span><span class="hljs-params">()</span> </span>{
-  <span class="hljs-keyword">super</span>.onPause();
-
-  webView.pauseTimers();
-}</pre>
-<p>Activity 단위로 처리하는 것이 귀찮다면 application의 life cycle에 맞춰서 일괄적으로 처리해도 된다. 메뉴얼에 나와 있듯이 application 전체의 웹뷰에 일괄적으로 적용되므로.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/08/01/android-webview-resumetimers-pausetimers/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

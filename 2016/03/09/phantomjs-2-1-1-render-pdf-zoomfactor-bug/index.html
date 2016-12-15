@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,125 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">PhantomJS 2.1.1: render PDF / zoomFactor 버그 해결</h2>
+												<a href="https://blog.asamaru.net/category/js/" rel="tag">js</a>
+								<span></span>
+						<time class="published" datetime="2016-03-09 11:18:51">2016.03.09. 11:18</time>
+		</div>
+		<div class="markdown-body entry-content"><p>어제 작성했던 <a href="/2016/03/08/phantomjs-2-pagesize-format-bug/">PhantomJS 2.1.1: render PDF / pageSize format 버그 해결</a>에서 언급했던 PhantomJS에서 웹페이지를 PDF로 저장할 때 <a href="http://phantomjs.org/api/webpage/property/zoom-factor.html">zoomFactor</a>가 정상 동작하지 않는 문제를 개선한 코드를 새로 올린다. <a href="https://github.com/ariya/phantomjs/issues/12685">PhantomJS 2: PDF rendering too large, page.zoomFactor doesn't work</a>에서 해결의 힌트가 있었음에도 불구하고 자세히 보지않아 해결하지 못했었는데 해당 부분을 조금 변형해서 조금 더 나은 방법을 적용했다(개인적인 생각).</p>
+<p>일단 코드부터.</p>
+<pre class="hljs javascript"><span class="hljs-pi">"use strict"</span>;
+<span class="hljs-comment">/*global phantom: false*/</span>
+
+<span class="hljs-keyword">var</span> dest, source;
+<span class="hljs-keyword">var</span> v = phantom.version;
+<span class="hljs-keyword">if</span> (v.major &gt;= <span class="hljs-number">2</span>) {
+    <span class="hljs-keyword">var</span> system = <span class="hljs-built_in">require</span>(<span class="hljs-string">'system'</span>);
+    dest = system.args[<span class="hljs-number">1</span>];
+    source = system.args[<span class="hljs-number">2</span>];
+} <span class="hljs-keyword">else</span> {
+    dest = phantom.args[<span class="hljs-number">0</span>];
+    source = phantom.args[<span class="hljs-number">1</span>];
+}
+
+<span class="hljs-keyword">var</span> page = <span class="hljs-built_in">require</span>(<span class="hljs-string">'webpage'</span>).create(); <span class="hljs-comment">// Web Page를 Control 하기 위한 Web Page Module 객체 생성</span>
+<span class="hljs-comment">// fixme phantomjs 2.1.1 에서 pageSize.format A4 버그 개선</span>
+<span class="hljs-keyword">var</span> width = <span class="hljs-number">1024</span>;
+page.viewportSize = {width: width, height: width * (<span class="hljs-number">768</span> / <span class="hljs-number">1024</span>)};   <span class="hljs-comment">// PhantomJS에서 화면을 어떤 사이즈로 출력할 것인지에 대한 값 : 미디어 쿼리도 동작</span>
+page.zoomFactor = <span class="hljs-number">585</span> / width;  <span class="hljs-comment">// A4 / 72 DPI : 585px X 842px</span>
+
+<span class="hljs-keyword">var</span> pageSize = {
+    format: <span class="hljs-string">'A4'</span>,
+    orientation: <span class="hljs-string">'portrait'</span>,
+    margin: {
+        top: <span class="hljs-string">'0.5cm'</span>,
+        bottom: <span class="hljs-string">'0.5cm'</span>,
+        left: <span class="hljs-string">'0.5cm'</span>,
+        right: <span class="hljs-string">'0.5cm'</span>
+    }
+};
+page.paperSize = pageSize;
+
+page.onLoadFinished = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">status</span>) </span>{
+    <span class="hljs-keyword">var</span> zoom = page.zoomFactor;
+    page.evaluate(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">zoom</span>) </span>{
+        <span class="hljs-built_in">document</span>.getElementsByTagName(<span class="hljs-string">'body'</span>)[<span class="hljs-number">0</span>].style.zoom = zoom;
+    }, zoom);
+
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        page.render(dest);    <span class="hljs-comment">// 스크린 캡쳐파일 생성</span>
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Status: '</span> + status);
+        phantom.exit();
+
+    }, <span class="hljs-number">0</span>);
+};
+
+page.open(source, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">status</span>) </span>{
+    page.evaluate(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-comment">// 폰트 문제로 사용가능한 폰트로 교체</span>
+        <span class="hljs-keyword">var</span> cssCode = <span class="hljs-string">'html body, html body * { font-family:"바른돋움OTF" !important; }'</span>;<span class="hljs-comment">// html { zoom: 1; }</span>
+        <span class="hljs-keyword">var</span> styleElement = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">"style"</span>);
+        styleElement.type = <span class="hljs-string">"text/css"</span>;
+        <span class="hljs-keyword">if</span> (styleElement.styleSheet) {
+            styleElement.styleSheet.cssText = cssCode;
+        } <span class="hljs-keyword">else</span> {
+            styleElement.appendChild(<span class="hljs-built_in">document</span>.createTextNode(cssCode));
+        }
+        <span class="hljs-built_in">document</span>.getElementsByTagName(<span class="hljs-string">"head"</span>)[<span class="hljs-number">0</span>].appendChild(styleElement);
+    });
+    <span class="hljs-keyword">if</span> (status !== <span class="hljs-string">'success'</span>) { <span class="hljs-comment">// status 인자를 통해 성공, 실패여부 확인</span>
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Cannot open webpage'</span>);
+        phantom.exit();
+    }
+});</pre>
+<p>지난 글에서의 코드와 거의 유사하다. 변경된 부분 중 중요한 부분만 아래에 설명한다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> width = <span class="hljs-number">1024</span>;
+page.viewportSize = {width: width, height: width * (<span class="hljs-number">768</span> / <span class="hljs-number">1024</span>)};   <span class="hljs-comment">// PhantomJS에서 화면을 어떤 사이즈로 출력할 것인지에 대한 값 : 미디어 쿼리도 동작</span>
+page.zoomFactor = <span class="hljs-number">585</span> / width;  <span class="hljs-comment">// A4 / 72 DPI : 585px X 842px</span></pre>
+<p>보여줄 가로 width에 따라 zoomFactor를 결정한다. 585는 72 DPI 기준에서 A4용지의 가로 px 이다.</p>
+<pre class="hljs javascript">page.onLoadFinished = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">status</span>) </span>{
+    <span class="hljs-keyword">var</span> zoom = page.zoomFactor;
+    page.evaluate(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">zoom</span>) </span>{
+        <span class="hljs-built_in">document</span>.getElementsByTagName(<span class="hljs-string">'body'</span>)[<span class="hljs-number">0</span>].style.zoom = zoom;
+    }, zoom);
+
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        page.render(dest);    <span class="hljs-comment">// 스크린 캡쳐파일 생성</span>
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Status: '</span> + status);
+        phantom.exit();
+
+    }, <span class="hljs-number">0</span>);
+};</pre>
+<p>문제가 되던 부분이 zoomFactor가 적용되지 않는 것이었다. 이를 개선하기 위해 <code>body</code>의 zoom css를 사용해서 보정한다.</p>
+<p>다른 부분의 자세한 내용은 <a href="/2016/03/08/phantomjs-2-pagesize-format-bug/">PhantomJS 2.1.1: render PDF / pageSize format 버그 해결</a>을 참고하자.</p>
+<hr />
+<p>마지막으로 위 방법도 완전한 방법은 아니다. PhantomJS가 버전업 되면서 zoomFactor 버그가 해결되면 이번엔 반대로 너무 작게 출력하게되는 코드가 될 수 있다. 그런 경우을 감안한다면 지난 글에서 언급한 방법이 나을 수도 있다(실제 PDF가 A4 사이즈가 아니라는 것을 무시한다면 : 출력시에는 A4에 맞게 잘 나온다).</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/03/09/phantomjs-2-1-1-render-pdf-zoomfactor-bug/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,124 +426,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">PhantomJS 2.1.1: render PDF / zoomFactor 버그 해결</h2>
-												<a href="https://blog.asamaru.net/category/js/" rel="tag">js</a>
-								<span></span>
-						<time class="published" datetime="2016-03-09 11:18:51">2016.03.09. 11:18</time>
-		</div>
-		<div class="markdown-body entry-content"><p>어제 작성했던 <a href="/2016/03/08/phantomjs-2-pagesize-format-bug/">PhantomJS 2.1.1: render PDF / pageSize format 버그 해결</a>에서 언급했던 PhantomJS에서 웹페이지를 PDF로 저장할 때 <a href="http://phantomjs.org/api/webpage/property/zoom-factor.html">zoomFactor</a>가 정상 동작하지 않는 문제를 개선한 코드를 새로 올린다. <a href="https://github.com/ariya/phantomjs/issues/12685">PhantomJS 2: PDF rendering too large, page.zoomFactor doesn't work</a>에서 해결의 힌트가 있었음에도 불구하고 자세히 보지않아 해결하지 못했었는데 해당 부분을 조금 변형해서 조금 더 나은 방법을 적용했다(개인적인 생각).</p>
-<p>일단 코드부터.</p>
-<pre class="hljs javascript"><span class="hljs-pi">"use strict"</span>;
-<span class="hljs-comment">/*global phantom: false*/</span>
-
-<span class="hljs-keyword">var</span> dest, source;
-<span class="hljs-keyword">var</span> v = phantom.version;
-<span class="hljs-keyword">if</span> (v.major &gt;= <span class="hljs-number">2</span>) {
-    <span class="hljs-keyword">var</span> system = <span class="hljs-built_in">require</span>(<span class="hljs-string">'system'</span>);
-    dest = system.args[<span class="hljs-number">1</span>];
-    source = system.args[<span class="hljs-number">2</span>];
-} <span class="hljs-keyword">else</span> {
-    dest = phantom.args[<span class="hljs-number">0</span>];
-    source = phantom.args[<span class="hljs-number">1</span>];
-}
-
-<span class="hljs-keyword">var</span> page = <span class="hljs-built_in">require</span>(<span class="hljs-string">'webpage'</span>).create(); <span class="hljs-comment">// Web Page를 Control 하기 위한 Web Page Module 객체 생성</span>
-<span class="hljs-comment">// fixme phantomjs 2.1.1 에서 pageSize.format A4 버그 개선</span>
-<span class="hljs-keyword">var</span> width = <span class="hljs-number">1024</span>;
-page.viewportSize = {width: width, height: width * (<span class="hljs-number">768</span> / <span class="hljs-number">1024</span>)};   <span class="hljs-comment">// PhantomJS에서 화면을 어떤 사이즈로 출력할 것인지에 대한 값 : 미디어 쿼리도 동작</span>
-page.zoomFactor = <span class="hljs-number">585</span> / width;  <span class="hljs-comment">// A4 / 72 DPI : 585px X 842px</span>
-
-<span class="hljs-keyword">var</span> pageSize = {
-    format: <span class="hljs-string">'A4'</span>,
-    orientation: <span class="hljs-string">'portrait'</span>,
-    margin: {
-        top: <span class="hljs-string">'0.5cm'</span>,
-        bottom: <span class="hljs-string">'0.5cm'</span>,
-        left: <span class="hljs-string">'0.5cm'</span>,
-        right: <span class="hljs-string">'0.5cm'</span>
-    }
-};
-page.paperSize = pageSize;
-
-page.onLoadFinished = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">status</span>) </span>{
-    <span class="hljs-keyword">var</span> zoom = page.zoomFactor;
-    page.evaluate(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">zoom</span>) </span>{
-        <span class="hljs-built_in">document</span>.getElementsByTagName(<span class="hljs-string">'body'</span>)[<span class="hljs-number">0</span>].style.zoom = zoom;
-    }, zoom);
-
-    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        page.render(dest);    <span class="hljs-comment">// 스크린 캡쳐파일 생성</span>
-        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Status: '</span> + status);
-        phantom.exit();
-
-    }, <span class="hljs-number">0</span>);
-};
-
-page.open(source, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">status</span>) </span>{
-    page.evaluate(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        <span class="hljs-comment">// 폰트 문제로 사용가능한 폰트로 교체</span>
-        <span class="hljs-keyword">var</span> cssCode = <span class="hljs-string">'html body, html body * { font-family:"바른돋움OTF" !important; }'</span>;<span class="hljs-comment">// html { zoom: 1; }</span>
-        <span class="hljs-keyword">var</span> styleElement = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">"style"</span>);
-        styleElement.type = <span class="hljs-string">"text/css"</span>;
-        <span class="hljs-keyword">if</span> (styleElement.styleSheet) {
-            styleElement.styleSheet.cssText = cssCode;
-        } <span class="hljs-keyword">else</span> {
-            styleElement.appendChild(<span class="hljs-built_in">document</span>.createTextNode(cssCode));
-        }
-        <span class="hljs-built_in">document</span>.getElementsByTagName(<span class="hljs-string">"head"</span>)[<span class="hljs-number">0</span>].appendChild(styleElement);
-    });
-    <span class="hljs-keyword">if</span> (status !== <span class="hljs-string">'success'</span>) { <span class="hljs-comment">// status 인자를 통해 성공, 실패여부 확인</span>
-        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Cannot open webpage'</span>);
-        phantom.exit();
-    }
-});</pre>
-<p>지난 글에서의 코드와 거의 유사하다. 변경된 부분 중 중요한 부분만 아래에 설명한다.</p>
-<pre class="hljs javascript"><span class="hljs-keyword">var</span> width = <span class="hljs-number">1024</span>;
-page.viewportSize = {width: width, height: width * (<span class="hljs-number">768</span> / <span class="hljs-number">1024</span>)};   <span class="hljs-comment">// PhantomJS에서 화면을 어떤 사이즈로 출력할 것인지에 대한 값 : 미디어 쿼리도 동작</span>
-page.zoomFactor = <span class="hljs-number">585</span> / width;  <span class="hljs-comment">// A4 / 72 DPI : 585px X 842px</span></pre>
-<p>보여줄 가로 width에 따라 zoomFactor를 결정한다. 585는 72 DPI 기준에서 A4용지의 가로 px 이다.</p>
-<pre class="hljs javascript">page.onLoadFinished = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">status</span>) </span>{
-    <span class="hljs-keyword">var</span> zoom = page.zoomFactor;
-    page.evaluate(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">zoom</span>) </span>{
-        <span class="hljs-built_in">document</span>.getElementsByTagName(<span class="hljs-string">'body'</span>)[<span class="hljs-number">0</span>].style.zoom = zoom;
-    }, zoom);
-
-    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        page.render(dest);    <span class="hljs-comment">// 스크린 캡쳐파일 생성</span>
-        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Status: '</span> + status);
-        phantom.exit();
-
-    }, <span class="hljs-number">0</span>);
-};</pre>
-<p>문제가 되던 부분이 zoomFactor가 적용되지 않는 것이었다. 이를 개선하기 위해 <code>body</code>의 zoom css를 사용해서 보정한다.</p>
-<p>다른 부분의 자세한 내용은 <a href="/2016/03/08/phantomjs-2-pagesize-format-bug/">PhantomJS 2.1.1: render PDF / pageSize format 버그 해결</a>을 참고하자.</p>
-<hr />
-<p>마지막으로 위 방법도 완전한 방법은 아니다. PhantomJS가 버전업 되면서 zoomFactor 버그가 해결되면 이번엔 반대로 너무 작게 출력하게되는 코드가 될 수 있다. 그런 경우을 감안한다면 지난 글에서 언급한 방법이 나을 수도 있다(실제 PDF가 A4 사이즈가 아니라는 것을 무시한다면 : 출력시에는 A4에 맞게 잘 나온다).</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/03/09/phantomjs-2-1-1-render-pdf-zoomfactor-bug/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

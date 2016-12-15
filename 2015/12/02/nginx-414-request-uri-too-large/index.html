@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,56 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">Nginx : 414 Request-URI Too Large 오류</h2>
+												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
+								<span></span>
+						<time class="published" datetime="2015-12-02 16:17:54">2015.12.02. 16:17</time>
+		</div>
+		<div class="markdown-body entry-content"><p>Nginx를 사용하는 중에 아주 긴 URL의 요청이 들어올 경우 <code>414 Request-URI Too Large</code> 오류가 나는 경우가 있다. 이는 말 그대로 URL 요청이 제한된 길이보다 길기 때문에 오류가 발생하는 것이다. 일반적인 웹 서버들은 8kb를 최대 길이로 설정되어 있는 것이 보통이다. 실제로 Nginx의 경우도 기본은 8kb이다. 하지만 URL의 길이는 서버에서 받아주는 길이도 관련이 있지만 웹 브라우저에서도 제한이 있다. 예를들어 오래된 브라우저들은 2kb 가량의 제한이 있다. 하지만 최신 브라우저들은 8kb로 제한하는 것으로 알고 있다.</p>
+<p>하지만 나의 경우는 이 값을 1kb로 설정해 둔 상태로 조금 긴 Url에서 해당 오류가 발생했다. 그래서 2kb로 늘려 두었다.</p>
+<p>그러면 Nginx에서는 이 값을 어떻게 조정할 수 있을까? 바로 <a href="http://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers">large_client_header_buffers</a>를 사용하면 된다. 예를들면 아래와 같이 사용한다(디폴트 값을 예시로 넣었다).</p>
+<pre class="hljs nginx"><span class="hljs-title">http</span> {
+  <span class="hljs-title">large_client_header_buffers</span> <span class="hljs-number">4</span> <span class="hljs-number">8k</span>;
+}</pre>
+<pre class="hljs nginx"><span class="hljs-title">http</span> {
+  <span class="hljs-title">server</span> {
+    <span class="hljs-title">large_client_header_buffers</span> <span class="hljs-number">4</span> <span class="hljs-number">8k</span>;    
+  }
+}</pre>
+<p><a href="http://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers">공식 메뉴얼</a>에는 아래와 같이 설명되어 있다.</p>
+<blockquote>
+<p>Syntax: large_client_header_buffers number size;
+Default: large_client_header_buffers 4 8k;
+Context: http, server</p>
+</blockquote>
+<p>Sets the maximum number and size of buffers used for reading large client request header. A request line cannot exceed the size of one buffer, or the 414 (Request-URI Too Large) error is returned to the client. A request header field cannot exceed the size of one buffer as well, or the 400 (Bad Request) error is returned to the client. Buffers are allocated only on demand. By default, the buffer size is equal to 8K bytes. If after the end of request processing a connection is transitioned into the keep-alive state, these buffers are released.</p>
+<p>여기서 조금 애매한 부분이 number 값인데 명확히 어떤 역할인지를 아직 잘 모르겠다. 찾아보니 number * size가 최대 사이즈라고 하는데 테스트 해보니 그건 아닌 것 같다(number가 2이고 size가 1k인 상황에서 1024자를 넘어가니 414 오류가 발생했다).</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/12/02/nginx-414-request-uri-too-large/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,55 +357,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">Nginx : 414 Request-URI Too Large 오류</h2>
-												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
-								<span></span>
-						<time class="published" datetime="2015-12-02 16:17:54">2015.12.02. 16:17</time>
-		</div>
-		<div class="markdown-body entry-content"><p>Nginx를 사용하는 중에 아주 긴 URL의 요청이 들어올 경우 <code>414 Request-URI Too Large</code> 오류가 나는 경우가 있다. 이는 말 그대로 URL 요청이 제한된 길이보다 길기 때문에 오류가 발생하는 것이다. 일반적인 웹 서버들은 8kb를 최대 길이로 설정되어 있는 것이 보통이다. 실제로 Nginx의 경우도 기본은 8kb이다. 하지만 URL의 길이는 서버에서 받아주는 길이도 관련이 있지만 웹 브라우저에서도 제한이 있다. 예를들어 오래된 브라우저들은 2kb 가량의 제한이 있다. 하지만 최신 브라우저들은 8kb로 제한하는 것으로 알고 있다.</p>
-<p>하지만 나의 경우는 이 값을 1kb로 설정해 둔 상태로 조금 긴 Url에서 해당 오류가 발생했다. 그래서 2kb로 늘려 두었다.</p>
-<p>그러면 Nginx에서는 이 값을 어떻게 조정할 수 있을까? 바로 <a href="http://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers">large_client_header_buffers</a>를 사용하면 된다. 예를들면 아래와 같이 사용한다(디폴트 값을 예시로 넣었다).</p>
-<pre class="hljs nginx"><span class="hljs-title">http</span> {
-  <span class="hljs-title">large_client_header_buffers</span> <span class="hljs-number">4</span> <span class="hljs-number">8k</span>;
-}</pre>
-<pre class="hljs nginx"><span class="hljs-title">http</span> {
-  <span class="hljs-title">server</span> {
-    <span class="hljs-title">large_client_header_buffers</span> <span class="hljs-number">4</span> <span class="hljs-number">8k</span>;    
-  }
-}</pre>
-<p><a href="http://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers">공식 메뉴얼</a>에는 아래와 같이 설명되어 있다.</p>
-<blockquote>
-<p>Syntax: large_client_header_buffers number size;
-Default: large_client_header_buffers 4 8k;
-Context: http, server</p>
-</blockquote>
-<p>Sets the maximum number and size of buffers used for reading large client request header. A request line cannot exceed the size of one buffer, or the 414 (Request-URI Too Large) error is returned to the client. A request header field cannot exceed the size of one buffer as well, or the 400 (Bad Request) error is returned to the client. Buffers are allocated only on demand. By default, the buffer size is equal to 8K bytes. If after the end of request processing a connection is transitioned into the keep-alive state, these buffers are released.</p>
-<p>여기서 조금 애매한 부분이 number 값인데 명확히 어떤 역할인지를 아직 잘 모르겠다. 찾아보니 number * size가 최대 사이즈라고 하는데 테스트 해보니 그건 아닌 것 같다(number가 2이고 size가 1k인 상황에서 1024자를 넘어가니 414 오류가 발생했다).</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/12/02/nginx-414-request-uri-too-large/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

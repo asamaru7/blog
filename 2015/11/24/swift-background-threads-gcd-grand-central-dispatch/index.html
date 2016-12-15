@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,97 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">Swift : Async - Background Threads - GCD(Grand Central Dispatch)</h2>
+												<a href="https://blog.asamaru.net/category/swift/" rel="tag">swift</a>
+									<a href="https://blog.asamaru.net/category/ios/" rel="tag">ios</a>
+								<span></span>
+						<time class="published" datetime="2015-11-24 07:35:18">2015.11.24. 07:35</time>
+		</div>
+		<div class="markdown-body entry-content"><p>오늘은 swift에 비동기 처리에 사용하는 <a href="https://github.com/duemunk/Async">Async</a>라는 라이브러리를 소개하고자 한다. <a href="https://github.com/duemunk/Async">Async</a>는 &quot;Syntactic sugar in Swift for asynchronous dispatches in Grand Central Dispatch&quot;라고 소개되어 있다. <a href="https://github.com/duemunk/Async">Async</a>를 소개하기 전에 swift에서의 기본적인 비동기 처리에 대해 먼저 설명한다.</p>
+<p>swift는 비동기(Asynchronous) 처리에 사용하는 <a href="https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/">GCD(Grand Central Dispatch)</a>를 사용할 수 있다. GCD(Grand Central Dispatch)는 C로 구성된 스레드 관리 기술로 iOS4 부터 지원한다. NSThread, NSOperation 보다 쉽게 쉽게 사용할 수 있다.</p>
+<p>스레드는 다양한 병렬 작업에 사용하지만 특히 앱 개발시에는 더욱 자주 사용하게 된다. 안드로이드와 iOS는 UI처리 등의 앱의 실행을 main 스레드에서 처리한다. 그런데 이 main 스레드에서 무거운 작업을 하게 된다면 UI의 갱신이 지연되므로 화면의 멈춤 현상이 발생한다. 특히 안드로이드의 경우는 main 스레드에서 네트워크 처리 등을 할 수 없도록 제한이 걸려있다(제한을 풀 수 있으나 ANR 문제 등으로 결국은 사용하지 못하는 것과 같다). 이러한 문제를 해결하기 위해서는 스레드의 사용이 필수다.</p>
+<p>그럼 <a href="https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/">GCD(Grand Central Dispatch)</a>에 대해서 알아보자.</p>
+<p>GCD는 기본적으로 아래의 queue를 가지고 있다.</p>
+<ul>
+<li>
+<p><strong>Main</strong>: tasks execute serially on your application’s main thread</p>
+</li>
+<li>
+<p><strong>Concurrent</strong>: tasks are dequeued in FIFO order, but run concurrently and can finish in any order.</p>
+</li>
+<li><strong>Serial</strong>: tasks execute one at a time in FIFO order</li>
+</ul>
+<p>GCD에 대한 자세한 설명은 워낙에 많으니 자세히 설명하지 않고 간단한 예시만 보여주고자 한다.</p>
+<p>일단 swift 이전에 objective-c에서는 아래와 같이 사용한다.</p>
+<pre class="hljs objectivec"><span class="hljs-built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="hljs-number">0</span>), ^{
+    <span class="hljs-comment">// do some task</span>
+    <span class="hljs-built_in">dispatch_async</span>(dispatch_get_main_queue(), ^{
+        <span class="hljs-comment">// update some UI</span>
+    });
+});</pre>
+<p>동일한 동작을 swift에서 사용하면 아래와 같다.</p>
+<pre class="hljs swift"><span class="hljs-keyword">let</span> priority = <span class="hljs-type">DISPATCH_QUEUE_PRIORITY_DEFAULT</span>
+dispatch_async(dispatch_get_global_queue(priority, <span class="hljs-number">0</span>)) {
+    <span class="hljs-comment">// do some task</span>
+    dispatch_async(dispatch_get_main_queue()) {
+        <span class="hljs-comment">// update some UI</span>
+    }
+}</pre>
+<p>block object의 표현만 차이가 날 뿐 사실상 거의 차이가 없다.</p>
+<p>위 코드를 간단히 설명하자면 global queue에서 작업을 수행하고 main queue에서 UI 변경 작업을 하도록 한 코드다.</p>
+<p>뭐 크게 사용이 어렵지도 않고 크게 불편하지는 않다. 하지만 이런 과정을 더욱 쉽게 구성할 수 있도록 도와주는 것이 <a href="https://github.com/duemunk/Async">Async</a>다. 상세한 예시는 해당 사이트를 방문하면 다양하게 소개하고 있다.</p>
+<p>그 중에서 Async의 장점을 잘 보여주는 예시를 하나 소개한다.</p>
+<pre class="hljs swift"><span class="hljs-keyword">let</span> seconds = <span class="hljs-number">0.5</span>
+<span class="hljs-type">Async</span>.main(after: seconds) {
+    <span class="hljs-built_in">println</span>(<span class="hljs-string">"Is called after 0.5 seconds"</span>)
+}.background(after: <span class="hljs-number">0.4</span>) {
+    <span class="hljs-built_in">println</span>(<span class="hljs-string">"At least 0.4 seconds after previous block, and 0.9 after Async code is called"</span>)
+}</pre>
+<p>&quot;Is called after 0.5 seconds&quot; 메시지를 main 스레드에서 0.5초 뒤에 출력한 후 0.4초 뒤 background 스레드에서 &quot;At least 0.4 seconds after previous block, and 0.9 after Async code is called&quot;를 출력하는 예시다. 이 예시를 보면 알 수 있듯이 <a href="https://github.com/duemunk/Async">Async</a>는 chaining을 지원하며 스레드를 작업 완료에 따라 순차적으로 실행 할 수 있도록 도와준다.</p>
+<p>스레드 작업을 취소하는 예시 하나만 더 아래에 소개한다.</p>
+<pre class="hljs swift"><span class="hljs-comment">// Cancel blocks not yet dispatched</span>
+<span class="hljs-keyword">let</span> block1 = <span class="hljs-type">Async</span>.background {
+    <span class="hljs-comment">// Heavy work</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-number">0</span>...<span class="hljs-number">1000</span> {
+        <span class="hljs-built_in">println</span>(<span class="hljs-string">"A <span class="hljs-subst">\(i)</span>"</span>)
+    }
+}
+<span class="hljs-keyword">let</span> block2 = block1.background {
+    <span class="hljs-built_in">println</span>(<span class="hljs-string">"B – shouldn't be reached, since cancelled"</span>)
+}
+<span class="hljs-type">Async</span>.main {
+    <span class="hljs-comment">// Cancel async to allow block1 to begin</span>
+    block1.cancel() <span class="hljs-comment">// First block is _not_ cancelled</span>
+    block2.cancel() <span class="hljs-comment">// Second block _is_ cancelled</span>
+}</pre>
+<p>위에서 소개한 것처럼 <a href="https://github.com/duemunk/Async">Async</a>는 swift에서의 thread 작업을 아주 쉽게 할 수 있도록 도와준다.</p>
+<p>한가지 라이브러리를 더 소개하자면 위 라이브러리와는 성격이 조금 다르지만 안드로이드의 AsyncTask 같은 작업이 필요하다면 <a href="https://github.com/ReactKit/SwiftTask">SwiftTask</a>를 참고해보면 도움이 될 것 같다. <a href="https://github.com/ReactKit/SwiftTask">SwiftTask</a>는 &quot;Promise + progress + pause + cancel + retry for Swift.&quot;라고 소개하고 있다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/11/24/swift-background-threads-gcd-grand-central-dispatch/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,96 +398,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">Swift : Async - Background Threads - GCD(Grand Central Dispatch)</h2>
-												<a href="https://blog.asamaru.net/category/swift/" rel="tag">swift</a>
-									<a href="https://blog.asamaru.net/category/ios/" rel="tag">ios</a>
-								<span></span>
-						<time class="published" datetime="2015-11-24 07:35:18">2015.11.24. 07:35</time>
-		</div>
-		<div class="markdown-body entry-content"><p>오늘은 swift에 비동기 처리에 사용하는 <a href="https://github.com/duemunk/Async">Async</a>라는 라이브러리를 소개하고자 한다. <a href="https://github.com/duemunk/Async">Async</a>는 &quot;Syntactic sugar in Swift for asynchronous dispatches in Grand Central Dispatch&quot;라고 소개되어 있다. <a href="https://github.com/duemunk/Async">Async</a>를 소개하기 전에 swift에서의 기본적인 비동기 처리에 대해 먼저 설명한다.</p>
-<p>swift는 비동기(Asynchronous) 처리에 사용하는 <a href="https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/">GCD(Grand Central Dispatch)</a>를 사용할 수 있다. GCD(Grand Central Dispatch)는 C로 구성된 스레드 관리 기술로 iOS4 부터 지원한다. NSThread, NSOperation 보다 쉽게 쉽게 사용할 수 있다.</p>
-<p>스레드는 다양한 병렬 작업에 사용하지만 특히 앱 개발시에는 더욱 자주 사용하게 된다. 안드로이드와 iOS는 UI처리 등의 앱의 실행을 main 스레드에서 처리한다. 그런데 이 main 스레드에서 무거운 작업을 하게 된다면 UI의 갱신이 지연되므로 화면의 멈춤 현상이 발생한다. 특히 안드로이드의 경우는 main 스레드에서 네트워크 처리 등을 할 수 없도록 제한이 걸려있다(제한을 풀 수 있으나 ANR 문제 등으로 결국은 사용하지 못하는 것과 같다). 이러한 문제를 해결하기 위해서는 스레드의 사용이 필수다.</p>
-<p>그럼 <a href="https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/">GCD(Grand Central Dispatch)</a>에 대해서 알아보자.</p>
-<p>GCD는 기본적으로 아래의 queue를 가지고 있다.</p>
-<ul>
-<li>
-<p><strong>Main</strong>: tasks execute serially on your application’s main thread</p>
-</li>
-<li>
-<p><strong>Concurrent</strong>: tasks are dequeued in FIFO order, but run concurrently and can finish in any order.</p>
-</li>
-<li><strong>Serial</strong>: tasks execute one at a time in FIFO order</li>
-</ul>
-<p>GCD에 대한 자세한 설명은 워낙에 많으니 자세히 설명하지 않고 간단한 예시만 보여주고자 한다.</p>
-<p>일단 swift 이전에 objective-c에서는 아래와 같이 사용한다.</p>
-<pre class="hljs objectivec"><span class="hljs-built_in">dispatch_async</span>(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="hljs-number">0</span>), ^{
-    <span class="hljs-comment">// do some task</span>
-    <span class="hljs-built_in">dispatch_async</span>(dispatch_get_main_queue(), ^{
-        <span class="hljs-comment">// update some UI</span>
-    });
-});</pre>
-<p>동일한 동작을 swift에서 사용하면 아래와 같다.</p>
-<pre class="hljs swift"><span class="hljs-keyword">let</span> priority = <span class="hljs-type">DISPATCH_QUEUE_PRIORITY_DEFAULT</span>
-dispatch_async(dispatch_get_global_queue(priority, <span class="hljs-number">0</span>)) {
-    <span class="hljs-comment">// do some task</span>
-    dispatch_async(dispatch_get_main_queue()) {
-        <span class="hljs-comment">// update some UI</span>
-    }
-}</pre>
-<p>block object의 표현만 차이가 날 뿐 사실상 거의 차이가 없다.</p>
-<p>위 코드를 간단히 설명하자면 global queue에서 작업을 수행하고 main queue에서 UI 변경 작업을 하도록 한 코드다.</p>
-<p>뭐 크게 사용이 어렵지도 않고 크게 불편하지는 않다. 하지만 이런 과정을 더욱 쉽게 구성할 수 있도록 도와주는 것이 <a href="https://github.com/duemunk/Async">Async</a>다. 상세한 예시는 해당 사이트를 방문하면 다양하게 소개하고 있다.</p>
-<p>그 중에서 Async의 장점을 잘 보여주는 예시를 하나 소개한다.</p>
-<pre class="hljs swift"><span class="hljs-keyword">let</span> seconds = <span class="hljs-number">0.5</span>
-<span class="hljs-type">Async</span>.main(after: seconds) {
-    <span class="hljs-built_in">println</span>(<span class="hljs-string">"Is called after 0.5 seconds"</span>)
-}.background(after: <span class="hljs-number">0.4</span>) {
-    <span class="hljs-built_in">println</span>(<span class="hljs-string">"At least 0.4 seconds after previous block, and 0.9 after Async code is called"</span>)
-}</pre>
-<p>&quot;Is called after 0.5 seconds&quot; 메시지를 main 스레드에서 0.5초 뒤에 출력한 후 0.4초 뒤 background 스레드에서 &quot;At least 0.4 seconds after previous block, and 0.9 after Async code is called&quot;를 출력하는 예시다. 이 예시를 보면 알 수 있듯이 <a href="https://github.com/duemunk/Async">Async</a>는 chaining을 지원하며 스레드를 작업 완료에 따라 순차적으로 실행 할 수 있도록 도와준다.</p>
-<p>스레드 작업을 취소하는 예시 하나만 더 아래에 소개한다.</p>
-<pre class="hljs swift"><span class="hljs-comment">// Cancel blocks not yet dispatched</span>
-<span class="hljs-keyword">let</span> block1 = <span class="hljs-type">Async</span>.background {
-    <span class="hljs-comment">// Heavy work</span>
-    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-number">0</span>...<span class="hljs-number">1000</span> {
-        <span class="hljs-built_in">println</span>(<span class="hljs-string">"A <span class="hljs-subst">\(i)</span>"</span>)
-    }
-}
-<span class="hljs-keyword">let</span> block2 = block1.background {
-    <span class="hljs-built_in">println</span>(<span class="hljs-string">"B – shouldn't be reached, since cancelled"</span>)
-}
-<span class="hljs-type">Async</span>.main {
-    <span class="hljs-comment">// Cancel async to allow block1 to begin</span>
-    block1.cancel() <span class="hljs-comment">// First block is _not_ cancelled</span>
-    block2.cancel() <span class="hljs-comment">// Second block _is_ cancelled</span>
-}</pre>
-<p>위에서 소개한 것처럼 <a href="https://github.com/duemunk/Async">Async</a>는 swift에서의 thread 작업을 아주 쉽게 할 수 있도록 도와준다.</p>
-<p>한가지 라이브러리를 더 소개하자면 위 라이브러리와는 성격이 조금 다르지만 안드로이드의 AsyncTask 같은 작업이 필요하다면 <a href="https://github.com/ReactKit/SwiftTask">SwiftTask</a>를 참고해보면 도움이 될 것 같다. <a href="https://github.com/ReactKit/SwiftTask">SwiftTask</a>는 &quot;Promise + progress + pause + cancel + retry for Swift.&quot;라고 소개하고 있다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/11/24/swift-background-threads-gcd-grand-central-dispatch/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

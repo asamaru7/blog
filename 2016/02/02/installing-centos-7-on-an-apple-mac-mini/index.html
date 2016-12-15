@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,95 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">구형 애플 맥 미니 CentOS 7 서버로 재활용하기</h2>
+												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
+									<a href="https://blog.asamaru.net/category/osx/" rel="tag">osx</a>
+								<span></span>
+						<time class="published" datetime="2016-02-02 03:37:47">2016.02.02. 03:37</time>
+		</div>
+		<div class="markdown-body entry-content"><p>회사에서 맥북 프로를 새로 구매하면서 맥 미니(2012년형)가 한대 남게 되었다. 사실은 다른 이유로 2대가 남게 되었는데 한대는 예비로 그냥 두고 한대를 서버로 사용하기로 했다. 그래서 설치 방법을 찾아보다 <a href="http://drewcdecker.me/2014/08/installing-centos-7-on-an-apple-mac-mini/">Installing CentOS 7 on an Apple Mac Mini</a>를 찾았다. 그런데 이 글에서는 <a href="https://www.centos.org/">CentOS 7</a>을 바로 설치할 수 없어 CentOS 6.5를 설치 후 7으로 업데이트하는 방법을 안내하고 있었다. 이 방법은 개인적인 취향상 선택하기 싫었다. 그래서 조금 더 찾다보니 <a href="http://www.myiphoneadventure.com/os-x/create-a-bootable-centos-usb-drive-with-a-mac-os-x">Create a bootable CentOS USB drive with a Mac (OS X) for a PC</a>라는 글이 있었다. 여기서는 맥 설치용 CentOS 7 부트 USB를 만드는 법을 설명하고 있어서 이 글을 참고해서 작업을 시작했다.</p>
+<hr />
+<p>우선 <a href="https://www.centos.org/download/">CentOS 7용 iso 이미지</a>를 내려 받는다. 나는 minimal을 선호하기 때문에 위 글의 설명과 달리 minimal을 다운 받았다.</p>
+<p>해당 이미지가 있는 폴더에 가서 아래와 같이 dmg 파일을 우선 생성한다. 당연히 맥에서 작업해야 한다.</p>
+<pre class="hljs bash">$ hdiutil convert -format UDRW -o target.img CentOS-<span class="hljs-number">7</span>-x86_64-Minimal-<span class="hljs-number">1511</span>.iso
+
+Master Boot Record(MBR : <span class="hljs-number">0</span>) 읽는 중...
+CentOS <span class="hljs-number">7</span> x86_64                 (Apple_ISO : <span class="hljs-number">1</span>) 읽는 중...
+(Type EF : <span class="hljs-number">2</span>) 읽는 중...
+.
+CentOS <span class="hljs-number">7</span> x86_64                 (Apple_ISO : <span class="hljs-number">3</span>) 읽는 중...
+....................................................................................................................................................................
+경과 시간: <span class="hljs-number">661.204</span>ms
+속도: <span class="hljs-number">912.0</span>Mbytes/초
+저장: <span class="hljs-number">0.0</span>%
+created: /Users/yjyou/Downloads/target.img.dmg</pre>
+<p>부트 이미지를 담을 USB를 연결한 다음 아래와 같이 <code>diskutil</code>을 사용해서 disk 번호를 확인한다.</p>
+<pre class="hljs bash">$ diskutil list
+
+/dev/disk0 (internal, physical):
+   <span class="hljs-comment">#:                       TYPE NAME                    SIZE       IDENTIFIER</span>
+   <span class="hljs-number">0</span>:      GUID_partition_scheme                        *<span class="hljs-number">500.3</span> GB   disk0
+   <span class="hljs-number">1</span>:                        EFI EFI                     <span class="hljs-number">209.7</span> MB   disk0s1
+   <span class="hljs-number">2</span>:          Apple_CoreStorage Macintosh HD            <span class="hljs-number">250.5</span> GB   disk0s2
+   <span class="hljs-number">3</span>:                 Apple_Boot Recovery HD             <span class="hljs-number">650.0</span> MB   disk0s3
+   <span class="hljs-number">4</span>:                  Apple_HFS DATA                    <span class="hljs-number">248.8</span> GB   disk0s4
+/dev/disk1 (internal, virtual):
+   <span class="hljs-comment">#:                       TYPE NAME                    SIZE       IDENTIFIER</span>
+   <span class="hljs-number">0</span>:                  Apple_HFS Macintosh HD           +<span class="hljs-number">250.1</span> GB   disk1
+                                 Logical Volume on disk0s2
+                                 <span class="hljs-number">55</span>AC6B2F-B3B4-<span class="hljs-number">450</span>F-B4DE-E025311E9955
+                                 Unencrypted
+/dev/disk2 (external, physical):
+   <span class="hljs-comment">#:                       TYPE NAME                    SIZE       IDENTIFIER</span>
+   <span class="hljs-number">0</span>:      GUID_partition_scheme                        *<span class="hljs-number">15.8</span> GB    disk2
+   <span class="hljs-number">1</span>:                        EFI EFI                     <span class="hljs-number">209.7</span> MB   disk2s1
+   <span class="hljs-number">2</span>:       Microsoft Basic Data USB                     <span class="hljs-number">15.6</span> GB    disk2s2</pre>
+<p>나의 경우는 <code>/dev/disk2</code>에 mount 되어 있었다. <strong>이후의 과정에서는 당연히 자신에게 맞는 disk 번호를 사용해야 한다.</strong></p>
+<p>우선 USB를 unmount 한다.</p>
+<pre class="hljs bash">$  diskutil unmountDisk /dev/disk2
+
+Unmount of all volumes on disk2 was successful</pre>
+<p>이제는 실제로 위에 만든 dmg 이미지를 이용해서 부트 USB를 만든다.</p>
+<pre class="hljs bash">$ time sudo dd <span class="hljs-keyword">if</span>=target.img.dmg of=/dev/disk2 bs=<span class="hljs-number">1</span>m
+
+<span class="hljs-number">602</span>+<span class="hljs-number">1</span> records <span class="hljs-keyword">in</span>
+<span class="hljs-number">602</span>+<span class="hljs-number">1</span> records out
+<span class="hljs-number">632262656</span> bytes transferred <span class="hljs-keyword">in</span> <span class="hljs-number">155.872514</span> secs (<span class="hljs-number">4056281</span> bytes/sec)
+
+real    <span class="hljs-number">2</span>m36.<span class="hljs-number">025</span>s
+user    <span class="hljs-number">0</span>m0.<span class="hljs-number">006</span>s
+sys <span class="hljs-number">0</span>m2.<span class="hljs-number">548</span>s</pre>
+<p>이미지를 만드는데 시간이 조금 소요되니 걱정하지 말고 기다리자. 그리고 생성되고 나면 해당 디스크를 인식할 수 없다고 자동적으로 추출된다. 이제는 USB를 빼서 설치할 맥 미니에 연결하고 부팅한다. 당연히 <code>alt/option</code>를 누르고 부팅해서 부팅 디스크를 선택하는 화면으로 진입해야 한다.</p>
+<p>이후 과정을 진행하기 전에 파티션의 변경이 필요하다면 미리 맥 미니 내에서 설정해 두어야 한다. 나의 경우를 보자면 500G의 디스크를 2개의 파티션으로 나누고 복구 파티션까지 3개가 있었다. 처음엔 복구 파티션을 두고 두개의 파티션을 CentOS 설치 과정에서 묶으려고 했는데 복구 파티션이 두개 파티션 사이에 위치해 합칠 수 없었다. 그래서 맥에서 두개의 파티션을 합쳐주고 다시 설치했다. 사실은 이 과정은 복구 파티션을 두려고 했던 것인데 실제 CentOS를 설치하면서 복구 파티션도 날렸다(원하지 않았지만). 이렇게되면 위 과정이 필요없었을 수 있지만 혹시나해서 남겨둔다.</p>
+<p>이제부터는 일반적으로 CentOS를 설치하는 것과 동일하게 설치하면 된다. 설치 방법이 궁금하다면 <a href="/2015/10/14/centos-7-minimal-install/">CentOS 7 minimal 설치</a>를  참고해도 된다.</p>
+<p>마지막으로 중요한 부분이 있다. 파티션 설치시 <code>/boot/efi</code>을 별도로 지정해야 한다는 것이다. 일반적인 설치에서는 하지 않던 작업인데 맥 미니의 경우 해당 파티션이 기본적으로 없어서 그런 것인지 지정하지 않으면 파티셔닝이 완료되지 않았다. <code>/boot/efi</code>의 용량은 최소 100MB를 지정하도록 권장하는 것 같다. 이 부분 또한 자동 파티셔닝이 아닌 사용자 지정 파티션을 사용해서 발생한 문제일지도 모르겠다. 하지만 개인적인 생각으로 &quot;맥 미니에서 다른 CentOS 설치시 잘 안되는 경우는 이것 때문이지 않을까?&quot;해서 경험을 남겨둔다.</p>
+<p>이후부터는 정말 CentOS 설치와 동일하다(일단 나의 경우엔).</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/02/02/installing-centos-7-on-an-apple-mac-mini/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,94 +396,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">구형 애플 맥 미니 CentOS 7 서버로 재활용하기</h2>
-												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
-									<a href="https://blog.asamaru.net/category/osx/" rel="tag">osx</a>
-								<span></span>
-						<time class="published" datetime="2016-02-02 03:37:47">2016.02.02. 03:37</time>
-		</div>
-		<div class="markdown-body entry-content"><p>회사에서 맥북 프로를 새로 구매하면서 맥 미니(2012년형)가 한대 남게 되었다. 사실은 다른 이유로 2대가 남게 되었는데 한대는 예비로 그냥 두고 한대를 서버로 사용하기로 했다. 그래서 설치 방법을 찾아보다 <a href="http://drewcdecker.me/2014/08/installing-centos-7-on-an-apple-mac-mini/">Installing CentOS 7 on an Apple Mac Mini</a>를 찾았다. 그런데 이 글에서는 <a href="https://www.centos.org/">CentOS 7</a>을 바로 설치할 수 없어 CentOS 6.5를 설치 후 7으로 업데이트하는 방법을 안내하고 있었다. 이 방법은 개인적인 취향상 선택하기 싫었다. 그래서 조금 더 찾다보니 <a href="http://www.myiphoneadventure.com/os-x/create-a-bootable-centos-usb-drive-with-a-mac-os-x">Create a bootable CentOS USB drive with a Mac (OS X) for a PC</a>라는 글이 있었다. 여기서는 맥 설치용 CentOS 7 부트 USB를 만드는 법을 설명하고 있어서 이 글을 참고해서 작업을 시작했다.</p>
-<hr />
-<p>우선 <a href="https://www.centos.org/download/">CentOS 7용 iso 이미지</a>를 내려 받는다. 나는 minimal을 선호하기 때문에 위 글의 설명과 달리 minimal을 다운 받았다.</p>
-<p>해당 이미지가 있는 폴더에 가서 아래와 같이 dmg 파일을 우선 생성한다. 당연히 맥에서 작업해야 한다.</p>
-<pre class="hljs bash">$ hdiutil convert -format UDRW -o target.img CentOS-<span class="hljs-number">7</span>-x86_64-Minimal-<span class="hljs-number">1511</span>.iso
-
-Master Boot Record(MBR : <span class="hljs-number">0</span>) 읽는 중...
-CentOS <span class="hljs-number">7</span> x86_64                 (Apple_ISO : <span class="hljs-number">1</span>) 읽는 중...
-(Type EF : <span class="hljs-number">2</span>) 읽는 중...
-.
-CentOS <span class="hljs-number">7</span> x86_64                 (Apple_ISO : <span class="hljs-number">3</span>) 읽는 중...
-....................................................................................................................................................................
-경과 시간: <span class="hljs-number">661.204</span>ms
-속도: <span class="hljs-number">912.0</span>Mbytes/초
-저장: <span class="hljs-number">0.0</span>%
-created: /Users/yjyou/Downloads/target.img.dmg</pre>
-<p>부트 이미지를 담을 USB를 연결한 다음 아래와 같이 <code>diskutil</code>을 사용해서 disk 번호를 확인한다.</p>
-<pre class="hljs bash">$ diskutil list
-
-/dev/disk0 (internal, physical):
-   <span class="hljs-comment">#:                       TYPE NAME                    SIZE       IDENTIFIER</span>
-   <span class="hljs-number">0</span>:      GUID_partition_scheme                        *<span class="hljs-number">500.3</span> GB   disk0
-   <span class="hljs-number">1</span>:                        EFI EFI                     <span class="hljs-number">209.7</span> MB   disk0s1
-   <span class="hljs-number">2</span>:          Apple_CoreStorage Macintosh HD            <span class="hljs-number">250.5</span> GB   disk0s2
-   <span class="hljs-number">3</span>:                 Apple_Boot Recovery HD             <span class="hljs-number">650.0</span> MB   disk0s3
-   <span class="hljs-number">4</span>:                  Apple_HFS DATA                    <span class="hljs-number">248.8</span> GB   disk0s4
-/dev/disk1 (internal, virtual):
-   <span class="hljs-comment">#:                       TYPE NAME                    SIZE       IDENTIFIER</span>
-   <span class="hljs-number">0</span>:                  Apple_HFS Macintosh HD           +<span class="hljs-number">250.1</span> GB   disk1
-                                 Logical Volume on disk0s2
-                                 <span class="hljs-number">55</span>AC6B2F-B3B4-<span class="hljs-number">450</span>F-B4DE-E025311E9955
-                                 Unencrypted
-/dev/disk2 (external, physical):
-   <span class="hljs-comment">#:                       TYPE NAME                    SIZE       IDENTIFIER</span>
-   <span class="hljs-number">0</span>:      GUID_partition_scheme                        *<span class="hljs-number">15.8</span> GB    disk2
-   <span class="hljs-number">1</span>:                        EFI EFI                     <span class="hljs-number">209.7</span> MB   disk2s1
-   <span class="hljs-number">2</span>:       Microsoft Basic Data USB                     <span class="hljs-number">15.6</span> GB    disk2s2</pre>
-<p>나의 경우는 <code>/dev/disk2</code>에 mount 되어 있었다. <strong>이후의 과정에서는 당연히 자신에게 맞는 disk 번호를 사용해야 한다.</strong></p>
-<p>우선 USB를 unmount 한다.</p>
-<pre class="hljs bash">$  diskutil unmountDisk /dev/disk2
-
-Unmount of all volumes on disk2 was successful</pre>
-<p>이제는 실제로 위에 만든 dmg 이미지를 이용해서 부트 USB를 만든다.</p>
-<pre class="hljs bash">$ time sudo dd <span class="hljs-keyword">if</span>=target.img.dmg of=/dev/disk2 bs=<span class="hljs-number">1</span>m
-
-<span class="hljs-number">602</span>+<span class="hljs-number">1</span> records <span class="hljs-keyword">in</span>
-<span class="hljs-number">602</span>+<span class="hljs-number">1</span> records out
-<span class="hljs-number">632262656</span> bytes transferred <span class="hljs-keyword">in</span> <span class="hljs-number">155.872514</span> secs (<span class="hljs-number">4056281</span> bytes/sec)
-
-real    <span class="hljs-number">2</span>m36.<span class="hljs-number">025</span>s
-user    <span class="hljs-number">0</span>m0.<span class="hljs-number">006</span>s
-sys <span class="hljs-number">0</span>m2.<span class="hljs-number">548</span>s</pre>
-<p>이미지를 만드는데 시간이 조금 소요되니 걱정하지 말고 기다리자. 그리고 생성되고 나면 해당 디스크를 인식할 수 없다고 자동적으로 추출된다. 이제는 USB를 빼서 설치할 맥 미니에 연결하고 부팅한다. 당연히 <code>alt/option</code>를 누르고 부팅해서 부팅 디스크를 선택하는 화면으로 진입해야 한다.</p>
-<p>이후 과정을 진행하기 전에 파티션의 변경이 필요하다면 미리 맥 미니 내에서 설정해 두어야 한다. 나의 경우를 보자면 500G의 디스크를 2개의 파티션으로 나누고 복구 파티션까지 3개가 있었다. 처음엔 복구 파티션을 두고 두개의 파티션을 CentOS 설치 과정에서 묶으려고 했는데 복구 파티션이 두개 파티션 사이에 위치해 합칠 수 없었다. 그래서 맥에서 두개의 파티션을 합쳐주고 다시 설치했다. 사실은 이 과정은 복구 파티션을 두려고 했던 것인데 실제 CentOS를 설치하면서 복구 파티션도 날렸다(원하지 않았지만). 이렇게되면 위 과정이 필요없었을 수 있지만 혹시나해서 남겨둔다.</p>
-<p>이제부터는 일반적으로 CentOS를 설치하는 것과 동일하게 설치하면 된다. 설치 방법이 궁금하다면 <a href="/2015/10/14/centos-7-minimal-install/">CentOS 7 minimal 설치</a>를  참고해도 된다.</p>
-<p>마지막으로 중요한 부분이 있다. 파티션 설치시 <code>/boot/efi</code>을 별도로 지정해야 한다는 것이다. 일반적인 설치에서는 하지 않던 작업인데 맥 미니의 경우 해당 파티션이 기본적으로 없어서 그런 것인지 지정하지 않으면 파티셔닝이 완료되지 않았다. <code>/boot/efi</code>의 용량은 최소 100MB를 지정하도록 권장하는 것 같다. 이 부분 또한 자동 파티셔닝이 아닌 사용자 지정 파티션을 사용해서 발생한 문제일지도 모르겠다. 하지만 개인적인 생각으로 &quot;맥 미니에서 다른 CentOS 설치시 잘 안되는 경우는 이것 때문이지 않을까?&quot;해서 경험을 남겨둔다.</p>
-<p>이후부터는 정말 CentOS 설치와 동일하다(일단 나의 경우엔).</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/02/02/installing-centos-7-on-an-apple-mac-mini/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

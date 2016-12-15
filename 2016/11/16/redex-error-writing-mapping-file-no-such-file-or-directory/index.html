@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,70 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">OSX에서 Facebook redex 사용시 Error writing mapping file: No such file or directory 오류 해결</h2>
+												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
+								<span></span>
+						<time class="published" datetime="2016-11-16 19:12:50">2016.11.16. 19:12</time>
+		</div>
+		<div class="markdown-body entry-content"><p>안드로이드 앱을 개발하면서 <a href="http://fbredex.com/">redex</a>를 이용해 최적화를 하고 있다. 이미 proguard를 사용하고 있기 때문에 용량에서는 큰 차이가 나지 않지만 성능면에서 도움이 된다고 소개하고 있어 사용하는 것이다(체감으로는 잘 느끼지 못하겠다).</p>
+<p>그런데 오늘 redex에서 오류가 발생했다.</p>
+<p><a href="https://github.com/facebook/redex/issues/185">Error writing mapping file: No such file or directory</a></p>
+<p>정확히는 내 작업 PC가 아닌 동료의 PC에서 redex를 사용하면서 발생했다. 내 작업 PC에서는 이상이 없어서 확인을 하던 중 redex의 버전 문제인가? 하고 최신 버전을 받아 빌드해서 실행해보니 동일한 오류가 발생했다.</p>
+<p>그래서 redex 소스를 뒤져서 원인을 확인하고 오류를 해결했다. 원인은 나중에 다시 언급하도록 하고 일단 해결 방법부터 보자.</p>
+<p>아래의 내용을 <strong>redex.conf</strong> 파일로 저장한다(파일 이름은 상관없다).</p>
+<pre class="hljs json">{
+    "<span class="hljs-attribute">redex</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">passes</span>": <span class="hljs-value">[
+            <span class="hljs-string">"ReBindRefsPass"</span>,
+            <span class="hljs-string">"BridgePass"</span>,
+            <span class="hljs-string">"SynthPass"</span>,
+            <span class="hljs-string">"FinalInlinePass"</span>,
+            <span class="hljs-string">"DelSuperPass"</span>,
+            <span class="hljs-string">"SingleImplPass"</span>,
+            <span class="hljs-string">"SimpleInlinePass"</span>,
+            <span class="hljs-string">"StaticReloPass"</span>,
+            <span class="hljs-string">"RemoveEmptyClassesPass"</span>,
+            <span class="hljs-string">"ShortenSrcStringsPass"</span>
+        ]
+    </span>}</span>,
+    "<span class="hljs-attribute">ShortenSrcStringsPass</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">filename_mappings</span>": <span class="hljs-value"><span class="hljs-string">"filename_mappings.txt"</span>
+    </span>}
+</span>}</pre>
+<p>그리고 redex 실행시 <code>-c CONFIG, --config CONFIG Configuration file</code> 옵션을 추가하면 이 오류는 해결된다. 예를들면 아래와 같다(~~ 부분은 기존 옵션).</p>
+<pre class="hljs bash">$ redex ~~ -c redex.conf</pre>
+<p>오류 해결을 위해 추가된 부분은 아래와 같다. 나머지 부분은 redex 소스의 <code>redex/config/default.config</code> 파일 내용과 같다(이 파일이 기본 옵션이 저장된 파일이다).</p>
+<pre class="hljs json"><span class="hljs-string">"ShortenSrcStringsPass"</span>: {
+    "<span class="hljs-attribute">filename_mappings</span>": <span class="hljs-value"><span class="hljs-string">"filename_mappings.txt"</span>
+</span>}</pre>
+<p>이 문제의 원인은 <code>filename_mappings</code> 옵션의 기본값인 <code>/tmp/filename_mappings.txt</code> 때문이다. <code>/tmp/</code> 폴더가 시스템 폴더로 redex에서 접근할 권한이 없기 때문에 해당 파일을 찾을 수 없다는 오류가 나는 것이다.</p>
+<p>아마도 머지않아 패치가 되겠지만 그 전에 이 오류가 발생하는 사람들에게 도움이 될 수 있기를 바라며 글을 남긴다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/11/16/redex-error-writing-mapping-file-no-such-file-or-directory/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,69 +371,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">OSX에서 Facebook redex 사용시 Error writing mapping file: No such file or directory 오류 해결</h2>
-												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
-								<span></span>
-						<time class="published" datetime="2016-11-16 19:12:50">2016.11.16. 19:12</time>
-		</div>
-		<div class="markdown-body entry-content"><p>안드로이드 앱을 개발하면서 <a href="http://fbredex.com/">redex</a>를 이용해 최적화를 하고 있다. 이미 proguard를 사용하고 있기 때문에 용량에서는 큰 차이가 나지 않지만 성능면에서 도움이 된다고 소개하고 있어 사용하는 것이다(체감으로는 잘 느끼지 못하겠다).</p>
-<p>그런데 오늘 redex에서 오류가 발생했다.</p>
-<p><a href="https://github.com/facebook/redex/issues/185">Error writing mapping file: No such file or directory</a></p>
-<p>정확히는 내 작업 PC가 아닌 동료의 PC에서 redex를 사용하면서 발생했다. 내 작업 PC에서는 이상이 없어서 확인을 하던 중 redex의 버전 문제인가? 하고 최신 버전을 받아 빌드해서 실행해보니 동일한 오류가 발생했다.</p>
-<p>그래서 redex 소스를 뒤져서 원인을 확인하고 오류를 해결했다. 원인은 나중에 다시 언급하도록 하고 일단 해결 방법부터 보자.</p>
-<p>아래의 내용을 <strong>redex.conf</strong> 파일로 저장한다(파일 이름은 상관없다).</p>
-<pre class="hljs json">{
-    "<span class="hljs-attribute">redex</span>": <span class="hljs-value">{
-        "<span class="hljs-attribute">passes</span>": <span class="hljs-value">[
-            <span class="hljs-string">"ReBindRefsPass"</span>,
-            <span class="hljs-string">"BridgePass"</span>,
-            <span class="hljs-string">"SynthPass"</span>,
-            <span class="hljs-string">"FinalInlinePass"</span>,
-            <span class="hljs-string">"DelSuperPass"</span>,
-            <span class="hljs-string">"SingleImplPass"</span>,
-            <span class="hljs-string">"SimpleInlinePass"</span>,
-            <span class="hljs-string">"StaticReloPass"</span>,
-            <span class="hljs-string">"RemoveEmptyClassesPass"</span>,
-            <span class="hljs-string">"ShortenSrcStringsPass"</span>
-        ]
-    </span>}</span>,
-    "<span class="hljs-attribute">ShortenSrcStringsPass</span>": <span class="hljs-value">{
-        "<span class="hljs-attribute">filename_mappings</span>": <span class="hljs-value"><span class="hljs-string">"filename_mappings.txt"</span>
-    </span>}
-</span>}</pre>
-<p>그리고 redex 실행시 <code>-c CONFIG, --config CONFIG Configuration file</code> 옵션을 추가하면 이 오류는 해결된다. 예를들면 아래와 같다(~~ 부분은 기존 옵션).</p>
-<pre class="hljs bash">$ redex ~~ -c redex.conf</pre>
-<p>오류 해결을 위해 추가된 부분은 아래와 같다. 나머지 부분은 redex 소스의 <code>redex/config/default.config</code> 파일 내용과 같다(이 파일이 기본 옵션이 저장된 파일이다).</p>
-<pre class="hljs json"><span class="hljs-string">"ShortenSrcStringsPass"</span>: {
-    "<span class="hljs-attribute">filename_mappings</span>": <span class="hljs-value"><span class="hljs-string">"filename_mappings.txt"</span>
-</span>}</pre>
-<p>이 문제의 원인은 <code>filename_mappings</code> 옵션의 기본값인 <code>/tmp/filename_mappings.txt</code> 때문이다. <code>/tmp/</code> 폴더가 시스템 폴더로 redex에서 접근할 권한이 없기 때문에 해당 파일을 찾을 수 없다는 오류가 나는 것이다.</p>
-<p>아마도 머지않아 패치가 되겠지만 그 전에 이 오류가 발생하는 사람들에게 도움이 될 수 있기를 바라며 글을 남긴다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/11/16/redex-error-writing-mapping-file-no-such-file-or-directory/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

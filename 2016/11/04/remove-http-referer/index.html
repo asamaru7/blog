@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,86 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">HTTP referrer(referer) 숨기기</h2>
+												<a href="https://blog.asamaru.net/category/html/" rel="tag">html</a>
+									<a href="https://blog.asamaru.net/category/js/" rel="tag">js</a>
+								<span></span>
+						<time class="published" datetime="2016-11-04 11:50:26">2016.11.04. 11:50</time>
+		</div>
+		<div class="markdown-body entry-content"><p>브라우저에서 http 요청을 하는 경우 대부분 referrer 정보가 넘어간다.(HTTP 리퍼러를 정의한 RFC에서 'referrer'를 'referer'라고 잘못 친 것에서 기인하여 HTTP 리퍼러는 'HTTP referer'라고 불린다 : <a href="https://ko.wikipedia.org/wiki/%EB%A6%AC%ED%8D%BC%EB%9F%AC">위키백과</a>)</p>
+<p>그런데 간혹 이 referrer를 숨기고 싶을 때가 있다. 현 페이지에서 resouces(js, css, image, ajax 등)를 요청할 때나 페이지를 이동할 때 referrer가 전송되는데 여기서는 resouces를 호출할 때 referrer를 숨기는 방법에 대해 설명하려고 한다.</p>
+<hr />
+<ul>
+<li><em><code>&lt;meta&gt;</code> Tag를 이용한 referrer 제거</em></li>
+</ul>
+<p><a href="http://stackoverflow.com/a/32014225/6736772">Remove http referrer</a>에 보면 아래와 같이 referrer를 제거하는 방법을 소개하고 있다.</p>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">meta</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"referrer"</span> <span class="hljs-attribute">content</span>=<span class="hljs-value">"no-referrer"</span> /&gt;</span></pre>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> meta = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'meta'</span>);
+meta.name = <span class="hljs-string">"referrer"</span>;
+meta.content = <span class="hljs-string">"no-referrer"</span>;
+<span class="hljs-built_in">document</span>.getElementsByTagName(<span class="hljs-string">'head'</span>)[<span class="hljs-number">0</span>].appendChild(meta);</pre>
+<p>html, javascript로 처리하는 두가지 방식이 있는데 html의 경우 <code>&lt;head&gt;</code> 내부에 넣어주면 된다. 그리고 javascript의 경우는 필요한 시점에 실행해주면 된다. 예를들어 특정 ajax 호출시에만 referrer를 숨기고자 하는 경우 등이다.</p>
+<p><code>no-referrer</code> 외에 사용할 수 있는 값은 <code>unsafe-url</code>, <code>origin-when-cross-origin</code> 등이 있는데 자세한 내용은 <a href="https://www.w3.org/TR/referrer-policy/">W3C Referrer Policy</a>를 참고하면 된다. 여기보면 <code>&lt;a href="http://example.com" referrerpolicy="origin"&gt;</code> 와 같이 개별 링크에 Referrer 정책을 지정하는 방법들도 안내되어 있다.</p>
+<hr />
+<ul>
+<li><em><code>&lt;IFrame&gt;</code> Tag를 이용한 referrer 제거</em></li>
+</ul>
+<p>다른 방법으로는 iframe을 이용해서 referrer를 제거할 수 있다. 일단 아래의 코드를 보자.</p>
+<pre class="hljs xml"><span class="hljs-doctype">&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/css"</span>&gt;</span><span class="css">
+        <span class="hljs-tag">html</span>, <span class="hljs-tag">body</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">width</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">height</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">margin</span>:<span class="hljs-value"><span class="hljs-number">0</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">padding</span>:<span class="hljs-value"><span class="hljs-number">0</span></span></span>; }</span>
+        <span class="hljs-tag">textarea</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">display</span>:<span class="hljs-value">none</span></span>; }</span>
+        <span class="hljs-tag">iframe</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">width</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">height</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>; }</span>
+    </span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">body</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">textarea</span> <span class="hljs-attribute">id</span>=<span class="hljs-value">"html"</span>&gt;</span><span class="hljs-comment">&lt;!-- 실제 들어갈 HTML --&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">textarea</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/javascript"</span>&gt;</span><span class="javascript">
+    <span class="hljs-keyword">var</span> iframe = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'iframe'</span>);
+    <span class="hljs-built_in">document</span>.body.appendChild(iframe);
+
+    <span class="hljs-keyword">var</span> html = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'html'</span>).value;
+
+    <span class="hljs-comment">// 가장 간단하지만 crass domain 문제가 있을 수 있다.</span>
+    <span class="hljs-comment">// iframe.src = 'data:text/html;charset=utf-8,' + encodeURI(html);</span>
+
+    <span class="hljs-comment">// cross domain issue 해결</span>
+    iframe.srcdoc = html;
+
+    <span class="hljs-comment">// (iframe.contentDefault || iframe.contentWindow.document).domain = document.domain;</span>
+</span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">html</span>&gt;</span></pre>
+<p><code>srcdoc</code>이 생소하다면 <a href="http://stackoverflow.com/questions/19739001/which-is-the-difference-between-srcdoc-and-src-datatext-html-in-an">Which is the difference between srcdoc=“…” and src=“data:text/html,…” in an <iframe>?</a>를 참고하길 바란다.</p>
+<p>아주 간단한 코드니 굳이 설명하지 않아도 내용은 이해할 수 있으리라 본다. 원리만 간단히 설명하자면 iframe은 하나의 독립 문서이므로 새로운 iframe을 만들고 동적으로 html을 출력하면 넘겨주고 싶어도 넘겨줄 referrer가 없으므로 referrer를 제거하는 것과 같은 효과가 난다. 사실 이 방법은 referrer를 숨기는 것 외에도 여러가지로 활용될 수 있다(활용은 개인의 몫).</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/11/04/remove-http-referer/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,85 +387,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">HTTP referrer(referer) 숨기기</h2>
-												<a href="https://blog.asamaru.net/category/html/" rel="tag">html</a>
-									<a href="https://blog.asamaru.net/category/js/" rel="tag">js</a>
-								<span></span>
-						<time class="published" datetime="2016-11-04 11:50:26">2016.11.04. 11:50</time>
-		</div>
-		<div class="markdown-body entry-content"><p>브라우저에서 http 요청을 하는 경우 대부분 referrer 정보가 넘어간다.(HTTP 리퍼러를 정의한 RFC에서 'referrer'를 'referer'라고 잘못 친 것에서 기인하여 HTTP 리퍼러는 'HTTP referer'라고 불린다 : <a href="https://ko.wikipedia.org/wiki/%EB%A6%AC%ED%8D%BC%EB%9F%AC">위키백과</a>)</p>
-<p>그런데 간혹 이 referrer를 숨기고 싶을 때가 있다. 현 페이지에서 resouces(js, css, image, ajax 등)를 요청할 때나 페이지를 이동할 때 referrer가 전송되는데 여기서는 resouces를 호출할 때 referrer를 숨기는 방법에 대해 설명하려고 한다.</p>
-<hr />
-<ul>
-<li><em><code>&lt;meta&gt;</code> Tag를 이용한 referrer 제거</em></li>
-</ul>
-<p><a href="http://stackoverflow.com/a/32014225/6736772">Remove http referrer</a>에 보면 아래와 같이 referrer를 제거하는 방법을 소개하고 있다.</p>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">meta</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"referrer"</span> <span class="hljs-attribute">content</span>=<span class="hljs-value">"no-referrer"</span> /&gt;</span></pre>
-<pre class="hljs javascript"><span class="hljs-keyword">var</span> meta = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'meta'</span>);
-meta.name = <span class="hljs-string">"referrer"</span>;
-meta.content = <span class="hljs-string">"no-referrer"</span>;
-<span class="hljs-built_in">document</span>.getElementsByTagName(<span class="hljs-string">'head'</span>)[<span class="hljs-number">0</span>].appendChild(meta);</pre>
-<p>html, javascript로 처리하는 두가지 방식이 있는데 html의 경우 <code>&lt;head&gt;</code> 내부에 넣어주면 된다. 그리고 javascript의 경우는 필요한 시점에 실행해주면 된다. 예를들어 특정 ajax 호출시에만 referrer를 숨기고자 하는 경우 등이다.</p>
-<p><code>no-referrer</code> 외에 사용할 수 있는 값은 <code>unsafe-url</code>, <code>origin-when-cross-origin</code> 등이 있는데 자세한 내용은 <a href="https://www.w3.org/TR/referrer-policy/">W3C Referrer Policy</a>를 참고하면 된다. 여기보면 <code>&lt;a href="http://example.com" referrerpolicy="origin"&gt;</code> 와 같이 개별 링크에 Referrer 정책을 지정하는 방법들도 안내되어 있다.</p>
-<hr />
-<ul>
-<li><em><code>&lt;IFrame&gt;</code> Tag를 이용한 referrer 제거</em></li>
-</ul>
-<p>다른 방법으로는 iframe을 이용해서 referrer를 제거할 수 있다. 일단 아래의 코드를 보자.</p>
-<pre class="hljs xml"><span class="hljs-doctype">&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-title">html</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-title">head</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/css"</span>&gt;</span><span class="css">
-        <span class="hljs-tag">html</span>, <span class="hljs-tag">body</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">width</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">height</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">margin</span>:<span class="hljs-value"><span class="hljs-number">0</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">padding</span>:<span class="hljs-value"><span class="hljs-number">0</span></span></span>; }</span>
-        <span class="hljs-tag">textarea</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">display</span>:<span class="hljs-value">none</span></span>; }</span>
-        <span class="hljs-tag">iframe</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">width</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">height</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>; }</span>
-    </span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">head</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-title">body</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-title">textarea</span> <span class="hljs-attribute">id</span>=<span class="hljs-value">"html"</span>&gt;</span><span class="hljs-comment">&lt;!-- 실제 들어갈 HTML --&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">textarea</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/javascript"</span>&gt;</span><span class="javascript">
-    <span class="hljs-keyword">var</span> iframe = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'iframe'</span>);
-    <span class="hljs-built_in">document</span>.body.appendChild(iframe);
-
-    <span class="hljs-keyword">var</span> html = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'html'</span>).value;
-
-    <span class="hljs-comment">// 가장 간단하지만 crass domain 문제가 있을 수 있다.</span>
-    <span class="hljs-comment">// iframe.src = 'data:text/html;charset=utf-8,' + encodeURI(html);</span>
-
-    <span class="hljs-comment">// cross domain issue 해결</span>
-    iframe.srcdoc = html;
-
-    <span class="hljs-comment">// (iframe.contentDefault || iframe.contentWindow.document).domain = document.domain;</span>
-</span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">body</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">html</span>&gt;</span></pre>
-<p><code>srcdoc</code>이 생소하다면 <a href="http://stackoverflow.com/questions/19739001/which-is-the-difference-between-srcdoc-and-src-datatext-html-in-an">Which is the difference between srcdoc=“…” and src=“data:text/html,…” in an <iframe>?</a>를 참고하길 바란다.</p>
-<p>아주 간단한 코드니 굳이 설명하지 않아도 내용은 이해할 수 있으리라 본다. 원리만 간단히 설명하자면 iframe은 하나의 독립 문서이므로 새로운 iframe을 만들고 동적으로 html을 출력하면 넘겨주고 싶어도 넘겨줄 referrer가 없으므로 referrer를 제거하는 것과 같은 효과가 난다. 사실 이 방법은 referrer를 숨기는 것 외에도 여러가지로 활용될 수 있다(활용은 개인의 몫).</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/11/04/remove-http-referer/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

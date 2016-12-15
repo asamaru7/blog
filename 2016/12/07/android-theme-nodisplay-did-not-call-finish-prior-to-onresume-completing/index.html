@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,73 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">Theme.NoDisplay 테마 사용시 안드로이드 API 23에서 did not call finish() prior to onResume() completing 오류 발생</h2>
+												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
+								<span></span>
+						<time class="published" datetime="2016-12-07 20:40:04">2016.12.07. 20:40</time>
+		</div>
+		<div class="markdown-body entry-content"><p>눈에 보이지 않는 Activity를 생성하기 위해 &quot;Theme.NoDisplay&quot; 테마를 사용한 앱에서 오류가 발생했다. 오류 내용을 보면 onResume()이 호출되기 전에 finish()가 호출되지 않았다는 것이다.
+확인해보니 &quot;Theme.NoDisplay&quot; 테마가 사용된 Activity는 윈도우 자체가 생성되지 않기 때문에 onResume()이 호출되기 전에 finish()가 호출되어야 하는 조건이 있다. 예를들면 아래와 같다.</p>
+<pre class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">NoDisplayActivity</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Activity</span> </span>{  
+    <span class="hljs-annotation">@Override</span>  
+    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onCreate</span><span class="hljs-params">(Bundle savedInstanceState)</span> </span>{  
+        <span class="hljs-keyword">super</span>.onCreate(savedInstanceState);  
+        finish();  
+    }  
+}  </pre>
+<p>이와 관련된 내용은 <a href="https://commonsware.com/blog/2015/11/02/psa-android-6p0-theme.nodisplay-regression.html">PSA: Android 6.0 Theme.NoDisplay Regression</a>에서 자세히 설명하고 있다. 이 글에 따르면 Android 6.0의 문서화되지 않은 변경으로 인해 targetSdkVersion이 23 이상에서 실행시 오류가 발생할 수 있다고 경고하고 있다.</p>
+<p>이 문제는 &quot;Android M developer preview의 버그다(<a href="https://web.archive.org/web/20151116170752/https://code.google.com/p/android-developer-preview/issues/detail?id=2353">Issue 2353:    Activity crash with @android:style/Theme.NoDisplay</a>)&quot;라는 이야기도 있으나 실제 Android 6에서 오류가 발생하고 있으므로 버그라 하더라도 무시할 수 없다.</p>
+<hr />
+<p>나도 이번 작업에서 이 문제를 겪게 되었다. 나의 경우 targetSdkVersion이 24 였으며 오류가 보고된 기기는 모두 API 23(Android 6.0) 버전이었다.</p>
+<p>이 문제에 대한 근본적인 문제 해결 방법은 onCreate() 또는 onStart() 단계에서 finish()를 호출하는 것이다. 비동기 처리 등의 상황으로 인해 이렇게 할 수 없는 상황이라면 <strong>Theme.NoDisplay 테마를 사용하지 말고 <a href="/2016/12/07/android-transparent-no-display-activity/">Android 투명 / 보이지 않는 Activity 만들기(Theme.Translucent / Theme.NoDisplay)</a>에서 안내한 것과 같이 투명한 Activity를 만들어서 적용하는 방법</strong> 을 써야 한다.</p>
+<p>위에서 언급한 비동기 처리 외에도 requestPermissions()을 사용하는 것과 같이 startActivityForResult()를 사용하게 되는 상황 등에서도 동일한 문제가 발생할 수 있다.</p>
+<p>다른 해결 방법으로 아래와 같이 onStart() 함수에서 <code>setVisible(true);</code>를 호출해서 해결했다는 이야기도 있으나 해결되지 않는다는 이야기들이 있어 안전한 방법이라고 할 수 없다.</p>
+<pre class="hljs java"><span class="hljs-annotation">@Override</span>
+<span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onStart</span><span class="hljs-params">()</span> </span>{
+    <span class="hljs-keyword">super</span>.onStart();
+    setVisible(<span class="hljs-keyword">true</span>);
+}</pre>
+<hr />
+<p>결론적으로 내가 생각하는 가장 쉽고 안전한 방법은 투명한 Activity를 이용해서 NoDisplay를 대체 구현하는 것이다.</p>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"NoDisplay"</span> <span class="hljs-attribute">parent</span>=<span class="hljs-value">"android:Theme"</span>&gt;</span><span class="css">
+  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:windowIsTranslucent"</span>&gt;<span class="hljs-tag">true</span>&lt;/<span class="hljs-tag">item</span>&gt;
+  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:windowBackground"</span>&gt;<span class="hljs-at_rule">@<span class="hljs-keyword">android:color/transparent&lt;/item&gt;</span>
+  &lt;item name=<span class="hljs-string">"android:windowContentOverlay"</span>&gt;@null&lt;/item&gt;
+  &lt;item name=<span class="hljs-string">"android:windowNoTitle"</span>&gt;true&lt;/item&gt;
+
+  &lt;item name=<span class="hljs-string">"android:windowIsFloating"</span>&gt;true&lt;/item&gt;
+  &lt;item name=<span class="hljs-string">"android:backgroundDimEnabled"</span>&gt;false&lt;/item&gt;
+
+  &lt;item name=<span class="hljs-string">"android:colorBackgroundCacheHint"</span>&gt;@null&lt;/item&gt;
+  &lt;item name=<span class="hljs-string">"android:windowAnimationStyle"</span>&gt;@android:style/Animation&lt;/item&gt;
+  &lt;item name=<span class="hljs-string">"android:windowFullscreen"</span>&gt;true&lt;/item&gt;
+</span></span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/12/07/android-theme-nodisplay-did-not-call-finish-prior-to-onresume-completing/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,72 +374,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">Theme.NoDisplay 테마 사용시 안드로이드 API 23에서 did not call finish() prior to onResume() completing 오류 발생</h2>
-												<a href="https://blog.asamaru.net/category/android/" rel="tag">android</a>
-								<span></span>
-						<time class="published" datetime="2016-12-07 20:40:04">2016.12.07. 20:40</time>
-		</div>
-		<div class="markdown-body entry-content"><p>눈에 보이지 않는 Activity를 생성하기 위해 &quot;Theme.NoDisplay&quot; 테마를 사용한 앱에서 오류가 발생했다. 오류 내용을 보면 onResume()이 호출되기 전에 finish()가 호출되지 않았다는 것이다.
-확인해보니 &quot;Theme.NoDisplay&quot; 테마가 사용된 Activity는 윈도우 자체가 생성되지 않기 때문에 onResume()이 호출되기 전에 finish()가 호출되어야 하는 조건이 있다. 예를들면 아래와 같다.</p>
-<pre class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">NoDisplayActivity</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Activity</span> </span>{  
-    <span class="hljs-annotation">@Override</span>  
-    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onCreate</span><span class="hljs-params">(Bundle savedInstanceState)</span> </span>{  
-        <span class="hljs-keyword">super</span>.onCreate(savedInstanceState);  
-        finish();  
-    }  
-}  </pre>
-<p>이와 관련된 내용은 <a href="https://commonsware.com/blog/2015/11/02/psa-android-6p0-theme.nodisplay-regression.html">PSA: Android 6.0 Theme.NoDisplay Regression</a>에서 자세히 설명하고 있다. 이 글에 따르면 Android 6.0의 문서화되지 않은 변경으로 인해 targetSdkVersion이 23 이상에서 실행시 오류가 발생할 수 있다고 경고하고 있다.</p>
-<p>이 문제는 &quot;Android M developer preview의 버그다(<a href="https://web.archive.org/web/20151116170752/https://code.google.com/p/android-developer-preview/issues/detail?id=2353">Issue 2353:    Activity crash with @android:style/Theme.NoDisplay</a>)&quot;라는 이야기도 있으나 실제 Android 6에서 오류가 발생하고 있으므로 버그라 하더라도 무시할 수 없다.</p>
-<hr />
-<p>나도 이번 작업에서 이 문제를 겪게 되었다. 나의 경우 targetSdkVersion이 24 였으며 오류가 보고된 기기는 모두 API 23(Android 6.0) 버전이었다.</p>
-<p>이 문제에 대한 근본적인 문제 해결 방법은 onCreate() 또는 onStart() 단계에서 finish()를 호출하는 것이다. 비동기 처리 등의 상황으로 인해 이렇게 할 수 없는 상황이라면 <strong>Theme.NoDisplay 테마를 사용하지 말고 <a href="/2016/12/07/android-transparent-no-display-activity/">Android 투명 / 보이지 않는 Activity 만들기(Theme.Translucent / Theme.NoDisplay)</a>에서 안내한 것과 같이 투명한 Activity를 만들어서 적용하는 방법</strong> 을 써야 한다.</p>
-<p>위에서 언급한 비동기 처리 외에도 requestPermissions()을 사용하는 것과 같이 startActivityForResult()를 사용하게 되는 상황 등에서도 동일한 문제가 발생할 수 있다.</p>
-<p>다른 해결 방법으로 아래와 같이 onStart() 함수에서 <code>setVisible(true);</code>를 호출해서 해결했다는 이야기도 있으나 해결되지 않는다는 이야기들이 있어 안전한 방법이라고 할 수 없다.</p>
-<pre class="hljs java"><span class="hljs-annotation">@Override</span>
-<span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onStart</span><span class="hljs-params">()</span> </span>{
-    <span class="hljs-keyword">super</span>.onStart();
-    setVisible(<span class="hljs-keyword">true</span>);
-}</pre>
-<hr />
-<p>결론적으로 내가 생각하는 가장 쉽고 안전한 방법은 투명한 Activity를 이용해서 NoDisplay를 대체 구현하는 것이다.</p>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"NoDisplay"</span> <span class="hljs-attribute">parent</span>=<span class="hljs-value">"android:Theme"</span>&gt;</span><span class="css">
-  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:windowIsTranslucent"</span>&gt;<span class="hljs-tag">true</span>&lt;/<span class="hljs-tag">item</span>&gt;
-  &lt;<span class="hljs-tag">item</span> <span class="hljs-tag">name</span>="<span class="hljs-tag">android</span><span class="hljs-pseudo">:windowBackground"</span>&gt;<span class="hljs-at_rule">@<span class="hljs-keyword">android:color/transparent&lt;/item&gt;</span>
-  &lt;item name=<span class="hljs-string">"android:windowContentOverlay"</span>&gt;@null&lt;/item&gt;
-  &lt;item name=<span class="hljs-string">"android:windowNoTitle"</span>&gt;true&lt;/item&gt;
-
-  &lt;item name=<span class="hljs-string">"android:windowIsFloating"</span>&gt;true&lt;/item&gt;
-  &lt;item name=<span class="hljs-string">"android:backgroundDimEnabled"</span>&gt;false&lt;/item&gt;
-
-  &lt;item name=<span class="hljs-string">"android:colorBackgroundCacheHint"</span>&gt;@null&lt;/item&gt;
-  &lt;item name=<span class="hljs-string">"android:windowAnimationStyle"</span>&gt;@android:style/Animation&lt;/item&gt;
-  &lt;item name=<span class="hljs-string">"android:windowFullscreen"</span>&gt;true&lt;/item&gt;
-</span></span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span></pre>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/12/07/android-theme-nodisplay-did-not-call-finish-prior-to-onresume-completing/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

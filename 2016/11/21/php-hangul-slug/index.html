@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,155 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">PHP 한글 slug</h2>
+												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
+								<span></span>
+						<time class="published" datetime="2016-11-21 20:11:27">2016.11.21. 20:11</time>
+		</div>
+		<div class="markdown-body entry-content"><p><a href="http://bingles1600.blogspot.kr/2012/04/slug.html">&quot;슬러그(Slug)란?&quot;</a> 글을 보면 slug에 대해 잘 설명되어 있다.</p>
+<p>PHP로 작업 중 한글로 된 이름을 URL에서 사용하기에 적합한 slug로 변환하는 것이 필요해 몇가지 자료를 참고해서 간단히 작성했다(짜집기). 간단하게 사용하려고 만든 것이다 보니 충분한 테스트가 된 코드는 아니다. 따라서 처리 과정에 대한 참고 자료로 활용하길 바란다(크게 중요한 부분이 아니라면 그대로 가져다 써도 큰 문제는 없을 듯하다).</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Hangul</span>
+</span>{
+    <span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">slug</span><span class="hljs-params">(<span class="hljs-variable">$str</span>, <span class="hljs-variable">$options</span> = [])</span>
+    </span>{
+        <span class="hljs-comment">// Make sure string is in UTF-8 and strip invalid UTF-8 characters</span>
+        <span class="hljs-variable">$str</span> = mb_convert_encoding((string)<span class="hljs-variable">$str</span>, <span class="hljs-string">'UTF-8'</span>, mb_list_encodings());
+
+        <span class="hljs-variable">$defaults</span> = [
+            <span class="hljs-string">'delimiter'</span> =&gt; <span class="hljs-string">'-'</span>,
+            <span class="hljs-string">'limit'</span> =&gt; <span class="hljs-keyword">null</span>,
+            <span class="hljs-string">'lowercase'</span> =&gt; <span class="hljs-keyword">true</span>,
+            <span class="hljs-string">'replacements'</span> =&gt; [],
+            <span class="hljs-string">'transliterate'</span> =&gt; <span class="hljs-keyword">true</span>,
+        ];
+        <span class="hljs-comment">// Merge options</span>
+        <span class="hljs-variable">$options</span> = array_merge(<span class="hljs-variable">$defaults</span>, <span class="hljs-variable">$options</span>);
+
+        <span class="hljs-comment">// Make custom replacements</span>
+        <span class="hljs-variable">$str</span> = preg_replace(array_keys(<span class="hljs-variable">$options</span>[<span class="hljs-string">'replacements'</span>]), <span class="hljs-variable">$options</span>[<span class="hljs-string">'replacements'</span>], <span class="hljs-variable">$str</span>);
+
+        <span class="hljs-comment">// Transliterate characters to ASCII</span>
+        <span class="hljs-keyword">if</span> (<span class="hljs-variable">$options</span>[<span class="hljs-string">'transliterate'</span>]) {
+            <span class="hljs-variable">$str</span> = <span class="hljs-keyword">static</span>::han2eng(<span class="hljs-variable">$str</span>);
+        }
+
+        <span class="hljs-comment">// Replace non-alphanumeric characters with our delimiter</span>
+        <span class="hljs-variable">$str</span> = preg_replace(<span class="hljs-string">'/[^\p{L}\p{Nd}]+/u'</span>, <span class="hljs-variable">$options</span>[<span class="hljs-string">'delimiter'</span>], <span class="hljs-variable">$str</span>);
+
+        <span class="hljs-comment">// Remove duplicate delimiters</span>
+        <span class="hljs-variable">$str</span> = preg_replace(<span class="hljs-string">'/('</span> . preg_quote(<span class="hljs-variable">$options</span>[<span class="hljs-string">'delimiter'</span>], <span class="hljs-string">'/'</span>) . <span class="hljs-string">'){2,}/'</span>, <span class="hljs-string">'$1'</span>, <span class="hljs-variable">$str</span>);
+
+        <span class="hljs-comment">// Truncate slug to max. characters</span>
+        <span class="hljs-variable">$str</span> = mb_substr(<span class="hljs-variable">$str</span>, <span class="hljs-number">0</span>, (<span class="hljs-variable">$options</span>[<span class="hljs-string">'limit'</span>] ? <span class="hljs-variable">$options</span>[<span class="hljs-string">'limit'</span>] : mb_strlen(<span class="hljs-variable">$str</span>, <span class="hljs-string">'UTF-8'</span>)), <span class="hljs-string">'UTF-8'</span>);
+
+        <span class="hljs-comment">// Remove delimiter from ends</span>
+        <span class="hljs-variable">$str</span> = trim(<span class="hljs-variable">$str</span>, <span class="hljs-variable">$options</span>[<span class="hljs-string">'delimiter'</span>]);
+
+        <span class="hljs-keyword">return</span> <span class="hljs-variable">$options</span>[<span class="hljs-string">'lowercase'</span>] ? mb_strtolower(<span class="hljs-variable">$str</span>, <span class="hljs-string">'UTF-8'</span>) : <span class="hljs-variable">$str</span>;
+    }
+
+    <span class="hljs-keyword">static</span> <span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">han2eng</span><span class="hljs-params">(<span class="hljs-variable">$text</span>)</span>
+    </span>{
+        <span class="hljs-comment">/* 초중성에 대응하는 영문 알파벳 배열화 */</span>
+        <span class="hljs-comment">// $LCtable = array("ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ");</span>
+        <span class="hljs-comment">// $MVtable = array("ㅏ", "ㅐ", "ㅑ", "ㅒ", "ㅓ", "ㅔ", "ㅕ", "ㅖ", "ㅗ", "ㅘ", "ㅙ", "ㅚ", "ㅛ", "ㅜ", "ㅝ", "ㅞ", "ㅟ", "ㅠ", "ㅡ", "ㅢ", "ㅣ");</span>
+        <span class="hljs-comment">// $TCtable = array("", "ㄱ", "ㄲ", "ㄳ", "ㄴ", "ㄵ", "ㄶ", "ㄷ", "ㄹ", "ㄺ", "ㄻ", "ㄼ", "ㄽ", "ㄾ", "ㄿ", "ㅀ", "ㅁ", "ㅂ", "ㅄ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ");</span>
+
+        <span class="hljs-variable">$LCetable</span> = [<span class="hljs-string">"k"</span>, <span class="hljs-string">"kk"</span>, <span class="hljs-string">"n"</span>, <span class="hljs-string">"d"</span>, <span class="hljs-string">"tt"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"m"</span>, <span class="hljs-string">"b"</span>, <span class="hljs-string">"pp"</span>, <span class="hljs-string">"s"</span>, <span class="hljs-string">"ss"</span>, <span class="hljs-string">""</span>, <span class="hljs-string">"j"</span>, <span class="hljs-string">"jj"</span>, <span class="hljs-string">"ch"</span>, <span class="hljs-string">"k"</span>, <span class="hljs-string">"t"</span>, <span class="hljs-string">"p"</span>, <span class="hljs-string">"h"</span>];
+        <span class="hljs-variable">$MVetable</span> = [<span class="hljs-string">"a"</span>, <span class="hljs-string">"ae"</span>, <span class="hljs-string">"ya"</span>, <span class="hljs-string">"yae"</span>, <span class="hljs-string">"eo"</span>, <span class="hljs-string">"e"</span>, <span class="hljs-string">"yeo"</span>, <span class="hljs-string">"ye"</span>, <span class="hljs-string">"o"</span>, <span class="hljs-string">"wa"</span>, <span class="hljs-string">"wae"</span>, <span class="hljs-string">"oe"</span>, <span class="hljs-string">"yo"</span>, <span class="hljs-string">"u"</span>, <span class="hljs-string">"wo"</span>, <span class="hljs-string">"we"</span>, <span class="hljs-string">"wi"</span>, <span class="hljs-string">"yu"</span>, <span class="hljs-string">"eu"</span>, <span class="hljs-string">"ui"</span>, <span class="hljs-string">"i"</span>];
+        <span class="hljs-variable">$TCetable</span> = [<span class="hljs-string">""</span>, <span class="hljs-string">"g"</span>, <span class="hljs-string">"kk"</span>, <span class="hljs-string">"k"</span>, <span class="hljs-string">"n"</span>, <span class="hljs-string">"n"</span>, <span class="hljs-string">"n"</span>, <span class="hljs-string">"t"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"m"</span>, <span class="hljs-string">"p"</span>, <span class="hljs-string">"p"</span>, <span class="hljs-string">"s"</span>, <span class="hljs-string">"ss"</span>, <span class="hljs-string">"ng"</span>, <span class="hljs-string">"j"</span>, <span class="hljs-string">"ch"</span>, <span class="hljs-string">"k"</span>, <span class="hljs-string">"t"</span>, <span class="hljs-string">"p"</span>, <span class="hljs-string">"h"</span>];
+
+        <span class="hljs-variable">$returnValue</span> = <span class="hljs-string">''</span>;
+
+        <span class="hljs-comment">// UTF-8로 변환된 문장을 유니코드로 변환한다.</span>
+        <span class="hljs-variable">$result</span> = <span class="hljs-keyword">static</span>::utf8ToUnicode(<span class="hljs-variable">$text</span>);
+
+        <span class="hljs-comment">// 유니코드로 변환된 글이 한글코드 안에 있으면 초중성으로 분리한다</span>
+        <span class="hljs-comment">// 원본에서 약간 수정함. 한글 외 글자에서 중복패턴이 나오는 부분 수정함.</span>
+        <span class="hljs-comment">// 단, 한글외 [0-9a-Z]는 확인했지만 그 외 문자에서는 확인 해 보지 않음.</span>
+        <span class="hljs-keyword">foreach</span> (<span class="hljs-variable">$result</span> <span class="hljs-keyword">AS</span> <span class="hljs-variable">$key</span> =&gt; <span class="hljs-variable">$val</span>) {
+            <span class="hljs-keyword">if</span> (<span class="hljs-variable">$val</span> &gt;= <span class="hljs-number">44032</span> &amp;&amp; <span class="hljs-variable">$val</span> &lt;= <span class="hljs-number">55203</span>) {
+                <span class="hljs-variable">$chr</span> = <span class="hljs-string">""</span>;
+                <span class="hljs-variable">$code</span> = <span class="hljs-variable">$val</span>;
+                <span class="hljs-variable">$temp1</span> = <span class="hljs-variable">$code</span> - <span class="hljs-number">44032</span>;
+                <span class="hljs-variable">$T</span> = (int)<span class="hljs-variable">$temp1</span> % <span class="hljs-number">28</span>;
+                <span class="hljs-variable">$temp1</span> /= <span class="hljs-number">28</span>;
+                <span class="hljs-variable">$V</span> = (int)<span class="hljs-variable">$temp1</span> % <span class="hljs-number">21</span>;
+                <span class="hljs-variable">$temp1</span> /= <span class="hljs-number">21</span>;
+                <span class="hljs-variable">$L</span> = (int)<span class="hljs-variable">$temp1</span>;
+                <span class="hljs-variable">$chr</span> .= <span class="hljs-variable">$LCetable</span>[<span class="hljs-variable">$L</span>] . <span class="hljs-variable">$MVetable</span>[<span class="hljs-variable">$V</span>] . <span class="hljs-variable">$TCetable</span>[<span class="hljs-variable">$T</span>];
+
+                <span class="hljs-variable">$returnValue</span> .= ucfirst(<span class="hljs-variable">$chr</span>);
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-variable">$returnValue</span> .= chr(<span class="hljs-variable">$val</span>);
+            }
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-variable">$returnValue</span>;
+    }
+
+    <span class="hljs-keyword">static</span> <span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">utf8ToUnicode</span><span class="hljs-params">(<span class="hljs-variable">$str</span>)</span>
+    </span>{
+        <span class="hljs-variable">$unicode</span> = [];
+        <span class="hljs-variable">$values</span> = [];
+        <span class="hljs-variable">$lookingFor</span> = <span class="hljs-number">1</span>;
+
+        <span class="hljs-keyword">for</span> (<span class="hljs-variable">$i</span> = <span class="hljs-number">0</span>; <span class="hljs-variable">$i</span> &lt; strlen(<span class="hljs-variable">$str</span>); <span class="hljs-variable">$i</span>++) {
+            <span class="hljs-variable">$thisValue</span> = ord(<span class="hljs-variable">$str</span>[<span class="hljs-variable">$i</span>]);
+            <span class="hljs-keyword">if</span> (<span class="hljs-variable">$thisValue</span> &lt; <span class="hljs-number">128</span>) {
+                <span class="hljs-variable">$unicode</span>[] = <span class="hljs-variable">$thisValue</span>;
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-keyword">if</span> (count(<span class="hljs-variable">$values</span>) == <span class="hljs-number">0</span>) {
+                    <span class="hljs-variable">$lookingFor</span> = (<span class="hljs-variable">$thisValue</span> &lt; <span class="hljs-number">224</span>) ? <span class="hljs-number">2</span> : <span class="hljs-number">3</span>;
+                }
+                <span class="hljs-variable">$values</span>[] = <span class="hljs-variable">$thisValue</span>;
+                <span class="hljs-keyword">if</span> (count(<span class="hljs-variable">$values</span>) == <span class="hljs-variable">$lookingFor</span>) {
+
+                    <span class="hljs-variable">$number</span> = (<span class="hljs-variable">$lookingFor</span> == <span class="hljs-number">3</span>) ?
+                        ((<span class="hljs-variable">$values</span>[<span class="hljs-number">0</span>] % <span class="hljs-number">16</span>) * <span class="hljs-number">4096</span>) + ((<span class="hljs-variable">$values</span>[<span class="hljs-number">1</span>] % <span class="hljs-number">64</span>) * <span class="hljs-number">64</span>) + (<span class="hljs-variable">$values</span>[<span class="hljs-number">2</span>] % <span class="hljs-number">64</span>) :
+                        ((<span class="hljs-variable">$values</span>[<span class="hljs-number">0</span>] % <span class="hljs-number">32</span>) * <span class="hljs-number">64</span>) + (<span class="hljs-variable">$values</span>[<span class="hljs-number">1</span>] % <span class="hljs-number">64</span>);
+
+                    <span class="hljs-variable">$unicode</span>[] = <span class="hljs-variable">$number</span>;
+                    <span class="hljs-variable">$values</span> = [];
+                    <span class="hljs-variable">$lookingFor</span> = <span class="hljs-number">1</span>;
+                }
+            }
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-variable">$unicode</span>;
+    }
+}</pre>
+<p><strong>참고자료 :</strong></p>
+<ul>
+<li><a href="https://gist.github.com/sgmurphy/3098978">URL Slugs in PHP (with UTF-8 and Transliteration Support)</a></li>
+<li><a href="http://bluebreeze.co.kr/818">PHP han2eng</a></li>
+</ul>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/11/21/php-hangul-slug/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,154 +456,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">PHP 한글 slug</h2>
-												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
-								<span></span>
-						<time class="published" datetime="2016-11-21 20:11:27">2016.11.21. 20:11</time>
-		</div>
-		<div class="markdown-body entry-content"><p><a href="http://bingles1600.blogspot.kr/2012/04/slug.html">&quot;슬러그(Slug)란?&quot;</a> 글을 보면 slug에 대해 잘 설명되어 있다.</p>
-<p>PHP로 작업 중 한글로 된 이름을 URL에서 사용하기에 적합한 slug로 변환하는 것이 필요해 몇가지 자료를 참고해서 간단히 작성했다(짜집기). 간단하게 사용하려고 만든 것이다 보니 충분한 테스트가 된 코드는 아니다. 따라서 처리 과정에 대한 참고 자료로 활용하길 바란다(크게 중요한 부분이 아니라면 그대로 가져다 써도 큰 문제는 없을 듯하다).</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Hangul</span>
-</span>{
-    <span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">slug</span><span class="hljs-params">(<span class="hljs-variable">$str</span>, <span class="hljs-variable">$options</span> = [])</span>
-    </span>{
-        <span class="hljs-comment">// Make sure string is in UTF-8 and strip invalid UTF-8 characters</span>
-        <span class="hljs-variable">$str</span> = mb_convert_encoding((string)<span class="hljs-variable">$str</span>, <span class="hljs-string">'UTF-8'</span>, mb_list_encodings());
-
-        <span class="hljs-variable">$defaults</span> = [
-            <span class="hljs-string">'delimiter'</span> =&gt; <span class="hljs-string">'-'</span>,
-            <span class="hljs-string">'limit'</span> =&gt; <span class="hljs-keyword">null</span>,
-            <span class="hljs-string">'lowercase'</span> =&gt; <span class="hljs-keyword">true</span>,
-            <span class="hljs-string">'replacements'</span> =&gt; [],
-            <span class="hljs-string">'transliterate'</span> =&gt; <span class="hljs-keyword">true</span>,
-        ];
-        <span class="hljs-comment">// Merge options</span>
-        <span class="hljs-variable">$options</span> = array_merge(<span class="hljs-variable">$defaults</span>, <span class="hljs-variable">$options</span>);
-
-        <span class="hljs-comment">// Make custom replacements</span>
-        <span class="hljs-variable">$str</span> = preg_replace(array_keys(<span class="hljs-variable">$options</span>[<span class="hljs-string">'replacements'</span>]), <span class="hljs-variable">$options</span>[<span class="hljs-string">'replacements'</span>], <span class="hljs-variable">$str</span>);
-
-        <span class="hljs-comment">// Transliterate characters to ASCII</span>
-        <span class="hljs-keyword">if</span> (<span class="hljs-variable">$options</span>[<span class="hljs-string">'transliterate'</span>]) {
-            <span class="hljs-variable">$str</span> = <span class="hljs-keyword">static</span>::han2eng(<span class="hljs-variable">$str</span>);
-        }
-
-        <span class="hljs-comment">// Replace non-alphanumeric characters with our delimiter</span>
-        <span class="hljs-variable">$str</span> = preg_replace(<span class="hljs-string">'/[^\p{L}\p{Nd}]+/u'</span>, <span class="hljs-variable">$options</span>[<span class="hljs-string">'delimiter'</span>], <span class="hljs-variable">$str</span>);
-
-        <span class="hljs-comment">// Remove duplicate delimiters</span>
-        <span class="hljs-variable">$str</span> = preg_replace(<span class="hljs-string">'/('</span> . preg_quote(<span class="hljs-variable">$options</span>[<span class="hljs-string">'delimiter'</span>], <span class="hljs-string">'/'</span>) . <span class="hljs-string">'){2,}/'</span>, <span class="hljs-string">'$1'</span>, <span class="hljs-variable">$str</span>);
-
-        <span class="hljs-comment">// Truncate slug to max. characters</span>
-        <span class="hljs-variable">$str</span> = mb_substr(<span class="hljs-variable">$str</span>, <span class="hljs-number">0</span>, (<span class="hljs-variable">$options</span>[<span class="hljs-string">'limit'</span>] ? <span class="hljs-variable">$options</span>[<span class="hljs-string">'limit'</span>] : mb_strlen(<span class="hljs-variable">$str</span>, <span class="hljs-string">'UTF-8'</span>)), <span class="hljs-string">'UTF-8'</span>);
-
-        <span class="hljs-comment">// Remove delimiter from ends</span>
-        <span class="hljs-variable">$str</span> = trim(<span class="hljs-variable">$str</span>, <span class="hljs-variable">$options</span>[<span class="hljs-string">'delimiter'</span>]);
-
-        <span class="hljs-keyword">return</span> <span class="hljs-variable">$options</span>[<span class="hljs-string">'lowercase'</span>] ? mb_strtolower(<span class="hljs-variable">$str</span>, <span class="hljs-string">'UTF-8'</span>) : <span class="hljs-variable">$str</span>;
-    }
-
-    <span class="hljs-keyword">static</span> <span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">han2eng</span><span class="hljs-params">(<span class="hljs-variable">$text</span>)</span>
-    </span>{
-        <span class="hljs-comment">/* 초중성에 대응하는 영문 알파벳 배열화 */</span>
-        <span class="hljs-comment">// $LCtable = array("ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ");</span>
-        <span class="hljs-comment">// $MVtable = array("ㅏ", "ㅐ", "ㅑ", "ㅒ", "ㅓ", "ㅔ", "ㅕ", "ㅖ", "ㅗ", "ㅘ", "ㅙ", "ㅚ", "ㅛ", "ㅜ", "ㅝ", "ㅞ", "ㅟ", "ㅠ", "ㅡ", "ㅢ", "ㅣ");</span>
-        <span class="hljs-comment">// $TCtable = array("", "ㄱ", "ㄲ", "ㄳ", "ㄴ", "ㄵ", "ㄶ", "ㄷ", "ㄹ", "ㄺ", "ㄻ", "ㄼ", "ㄽ", "ㄾ", "ㄿ", "ㅀ", "ㅁ", "ㅂ", "ㅄ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ");</span>
-
-        <span class="hljs-variable">$LCetable</span> = [<span class="hljs-string">"k"</span>, <span class="hljs-string">"kk"</span>, <span class="hljs-string">"n"</span>, <span class="hljs-string">"d"</span>, <span class="hljs-string">"tt"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"m"</span>, <span class="hljs-string">"b"</span>, <span class="hljs-string">"pp"</span>, <span class="hljs-string">"s"</span>, <span class="hljs-string">"ss"</span>, <span class="hljs-string">""</span>, <span class="hljs-string">"j"</span>, <span class="hljs-string">"jj"</span>, <span class="hljs-string">"ch"</span>, <span class="hljs-string">"k"</span>, <span class="hljs-string">"t"</span>, <span class="hljs-string">"p"</span>, <span class="hljs-string">"h"</span>];
-        <span class="hljs-variable">$MVetable</span> = [<span class="hljs-string">"a"</span>, <span class="hljs-string">"ae"</span>, <span class="hljs-string">"ya"</span>, <span class="hljs-string">"yae"</span>, <span class="hljs-string">"eo"</span>, <span class="hljs-string">"e"</span>, <span class="hljs-string">"yeo"</span>, <span class="hljs-string">"ye"</span>, <span class="hljs-string">"o"</span>, <span class="hljs-string">"wa"</span>, <span class="hljs-string">"wae"</span>, <span class="hljs-string">"oe"</span>, <span class="hljs-string">"yo"</span>, <span class="hljs-string">"u"</span>, <span class="hljs-string">"wo"</span>, <span class="hljs-string">"we"</span>, <span class="hljs-string">"wi"</span>, <span class="hljs-string">"yu"</span>, <span class="hljs-string">"eu"</span>, <span class="hljs-string">"ui"</span>, <span class="hljs-string">"i"</span>];
-        <span class="hljs-variable">$TCetable</span> = [<span class="hljs-string">""</span>, <span class="hljs-string">"g"</span>, <span class="hljs-string">"kk"</span>, <span class="hljs-string">"k"</span>, <span class="hljs-string">"n"</span>, <span class="hljs-string">"n"</span>, <span class="hljs-string">"n"</span>, <span class="hljs-string">"t"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"l"</span>, <span class="hljs-string">"m"</span>, <span class="hljs-string">"p"</span>, <span class="hljs-string">"p"</span>, <span class="hljs-string">"s"</span>, <span class="hljs-string">"ss"</span>, <span class="hljs-string">"ng"</span>, <span class="hljs-string">"j"</span>, <span class="hljs-string">"ch"</span>, <span class="hljs-string">"k"</span>, <span class="hljs-string">"t"</span>, <span class="hljs-string">"p"</span>, <span class="hljs-string">"h"</span>];
-
-        <span class="hljs-variable">$returnValue</span> = <span class="hljs-string">''</span>;
-
-        <span class="hljs-comment">// UTF-8로 변환된 문장을 유니코드로 변환한다.</span>
-        <span class="hljs-variable">$result</span> = <span class="hljs-keyword">static</span>::utf8ToUnicode(<span class="hljs-variable">$text</span>);
-
-        <span class="hljs-comment">// 유니코드로 변환된 글이 한글코드 안에 있으면 초중성으로 분리한다</span>
-        <span class="hljs-comment">// 원본에서 약간 수정함. 한글 외 글자에서 중복패턴이 나오는 부분 수정함.</span>
-        <span class="hljs-comment">// 단, 한글외 [0-9a-Z]는 확인했지만 그 외 문자에서는 확인 해 보지 않음.</span>
-        <span class="hljs-keyword">foreach</span> (<span class="hljs-variable">$result</span> <span class="hljs-keyword">AS</span> <span class="hljs-variable">$key</span> =&gt; <span class="hljs-variable">$val</span>) {
-            <span class="hljs-keyword">if</span> (<span class="hljs-variable">$val</span> &gt;= <span class="hljs-number">44032</span> &amp;&amp; <span class="hljs-variable">$val</span> &lt;= <span class="hljs-number">55203</span>) {
-                <span class="hljs-variable">$chr</span> = <span class="hljs-string">""</span>;
-                <span class="hljs-variable">$code</span> = <span class="hljs-variable">$val</span>;
-                <span class="hljs-variable">$temp1</span> = <span class="hljs-variable">$code</span> - <span class="hljs-number">44032</span>;
-                <span class="hljs-variable">$T</span> = (int)<span class="hljs-variable">$temp1</span> % <span class="hljs-number">28</span>;
-                <span class="hljs-variable">$temp1</span> /= <span class="hljs-number">28</span>;
-                <span class="hljs-variable">$V</span> = (int)<span class="hljs-variable">$temp1</span> % <span class="hljs-number">21</span>;
-                <span class="hljs-variable">$temp1</span> /= <span class="hljs-number">21</span>;
-                <span class="hljs-variable">$L</span> = (int)<span class="hljs-variable">$temp1</span>;
-                <span class="hljs-variable">$chr</span> .= <span class="hljs-variable">$LCetable</span>[<span class="hljs-variable">$L</span>] . <span class="hljs-variable">$MVetable</span>[<span class="hljs-variable">$V</span>] . <span class="hljs-variable">$TCetable</span>[<span class="hljs-variable">$T</span>];
-
-                <span class="hljs-variable">$returnValue</span> .= ucfirst(<span class="hljs-variable">$chr</span>);
-            } <span class="hljs-keyword">else</span> {
-                <span class="hljs-variable">$returnValue</span> .= chr(<span class="hljs-variable">$val</span>);
-            }
-        }
-        <span class="hljs-keyword">return</span> <span class="hljs-variable">$returnValue</span>;
-    }
-
-    <span class="hljs-keyword">static</span> <span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">utf8ToUnicode</span><span class="hljs-params">(<span class="hljs-variable">$str</span>)</span>
-    </span>{
-        <span class="hljs-variable">$unicode</span> = [];
-        <span class="hljs-variable">$values</span> = [];
-        <span class="hljs-variable">$lookingFor</span> = <span class="hljs-number">1</span>;
-
-        <span class="hljs-keyword">for</span> (<span class="hljs-variable">$i</span> = <span class="hljs-number">0</span>; <span class="hljs-variable">$i</span> &lt; strlen(<span class="hljs-variable">$str</span>); <span class="hljs-variable">$i</span>++) {
-            <span class="hljs-variable">$thisValue</span> = ord(<span class="hljs-variable">$str</span>[<span class="hljs-variable">$i</span>]);
-            <span class="hljs-keyword">if</span> (<span class="hljs-variable">$thisValue</span> &lt; <span class="hljs-number">128</span>) {
-                <span class="hljs-variable">$unicode</span>[] = <span class="hljs-variable">$thisValue</span>;
-            } <span class="hljs-keyword">else</span> {
-                <span class="hljs-keyword">if</span> (count(<span class="hljs-variable">$values</span>) == <span class="hljs-number">0</span>) {
-                    <span class="hljs-variable">$lookingFor</span> = (<span class="hljs-variable">$thisValue</span> &lt; <span class="hljs-number">224</span>) ? <span class="hljs-number">2</span> : <span class="hljs-number">3</span>;
-                }
-                <span class="hljs-variable">$values</span>[] = <span class="hljs-variable">$thisValue</span>;
-                <span class="hljs-keyword">if</span> (count(<span class="hljs-variable">$values</span>) == <span class="hljs-variable">$lookingFor</span>) {
-
-                    <span class="hljs-variable">$number</span> = (<span class="hljs-variable">$lookingFor</span> == <span class="hljs-number">3</span>) ?
-                        ((<span class="hljs-variable">$values</span>[<span class="hljs-number">0</span>] % <span class="hljs-number">16</span>) * <span class="hljs-number">4096</span>) + ((<span class="hljs-variable">$values</span>[<span class="hljs-number">1</span>] % <span class="hljs-number">64</span>) * <span class="hljs-number">64</span>) + (<span class="hljs-variable">$values</span>[<span class="hljs-number">2</span>] % <span class="hljs-number">64</span>) :
-                        ((<span class="hljs-variable">$values</span>[<span class="hljs-number">0</span>] % <span class="hljs-number">32</span>) * <span class="hljs-number">64</span>) + (<span class="hljs-variable">$values</span>[<span class="hljs-number">1</span>] % <span class="hljs-number">64</span>);
-
-                    <span class="hljs-variable">$unicode</span>[] = <span class="hljs-variable">$number</span>;
-                    <span class="hljs-variable">$values</span> = [];
-                    <span class="hljs-variable">$lookingFor</span> = <span class="hljs-number">1</span>;
-                }
-            }
-        }
-        <span class="hljs-keyword">return</span> <span class="hljs-variable">$unicode</span>;
-    }
-}</pre>
-<p><strong>참고자료 :</strong></p>
-<ul>
-<li><a href="https://gist.github.com/sgmurphy/3098978">URL Slugs in PHP (with UTF-8 and Transliteration Support)</a></li>
-<li><a href="http://bluebreeze.co.kr/818">PHP han2eng</a></li>
-</ul>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2016/11/21/php-hangul-slug/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,50 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">selinux + PHP : Session Permission denied 오류</h2>
+												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
+								<span></span>
+						<time class="published" datetime="2015-12-02 12:53:59">2015.12.02. 12:53</time>
+		</div>
+		<div class="markdown-body entry-content"><p>서버를 새로 세팅하면서 CentOS 7에서 selinux와 함께 PHP 5.6을 설치했다. 기존에는 selinux를 사용하지 않도록 했었는데 이번에는 사용하도록 설정해서 설치를 완료했다. 그런데 세션을 사용하려고 <code>session_start();</code>를 하면 아래와 유사한 오류가 발생했다.</p>
+<pre><code>FastCGI sent in stderr: "PHP message: PHP Warning: session_start(): open(/var/lib/php/session/sess_sk456vdemnp391spiv3i622i96, O_RDWR) failed: Permission denied</code></pre>
+<p>당연히 원인은 selinux이다. selinux가 적용된 상태라면 아무리 777 권한을 부여해도 접근을 할 수 없다. 그 해결법은 <a href="http://stackoverflow.com/a/33030627">(nginx/selinux) Permission denied error for sessions but files are created</a>에 잘 설명되어 있다.</p>
+<p>결과적으로 아래의 방법을 통해 문제를 해결할 수 있다.</p>
+<pre class="hljs bash">$ mkdir /var/lib/php/session
+$ mkdir /var/lib/php/wsdlcache
+$ chmod <span class="hljs-number">777</span> /var/lib/php/session /var/lib/php/wsdlcache
+
+$ restorecon -v <span class="hljs-string">"/var/lib/php/session"</span>
+$ semanage fcontext <span class="hljs-operator">-a</span> -t httpd_sys_rw_content_t /var/lib/php/session
+$ restorecon -v <span class="hljs-string">"/var/lib/php/wsdlcache"</span>
+$ semanage fcontext <span class="hljs-operator">-a</span> -t httpd_sys_rw_content_t /var/lib/php/wsdlcache</pre>
+<p>mkdir과 chmod는 필요 없을 수 있다. 나의 경우는 아예 폴더도 만들어져 있지 않아서 폴더를 생성하고 권한도 함께 지정했다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/12/02/selinux-plus-php-session-permission-denied-error/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,49 +351,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">selinux + PHP : Session Permission denied 오류</h2>
-												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
-								<span></span>
-						<time class="published" datetime="2015-12-02 12:53:59">2015.12.02. 12:53</time>
-		</div>
-		<div class="markdown-body entry-content"><p>서버를 새로 세팅하면서 CentOS 7에서 selinux와 함께 PHP 5.6을 설치했다. 기존에는 selinux를 사용하지 않도록 했었는데 이번에는 사용하도록 설정해서 설치를 완료했다. 그런데 세션을 사용하려고 <code>session_start();</code>를 하면 아래와 유사한 오류가 발생했다.</p>
-<pre><code>FastCGI sent in stderr: "PHP message: PHP Warning: session_start(): open(/var/lib/php/session/sess_sk456vdemnp391spiv3i622i96, O_RDWR) failed: Permission denied</code></pre>
-<p>당연히 원인은 selinux이다. selinux가 적용된 상태라면 아무리 777 권한을 부여해도 접근을 할 수 없다. 그 해결법은 <a href="http://stackoverflow.com/a/33030627">(nginx/selinux) Permission denied error for sessions but files are created</a>에 잘 설명되어 있다.</p>
-<p>결과적으로 아래의 방법을 통해 문제를 해결할 수 있다.</p>
-<pre class="hljs bash">$ mkdir /var/lib/php/session
-$ mkdir /var/lib/php/wsdlcache
-$ chmod <span class="hljs-number">777</span> /var/lib/php/session /var/lib/php/wsdlcache
-
-$ restorecon -v <span class="hljs-string">"/var/lib/php/session"</span>
-$ semanage fcontext <span class="hljs-operator">-a</span> -t httpd_sys_rw_content_t /var/lib/php/session
-$ restorecon -v <span class="hljs-string">"/var/lib/php/wsdlcache"</span>
-$ semanage fcontext <span class="hljs-operator">-a</span> -t httpd_sys_rw_content_t /var/lib/php/wsdlcache</pre>
-<p>mkdir과 chmod는 필요 없을 수 있다. 나의 경우는 아예 폴더도 만들어져 있지 않아서 폴더를 생성하고 권한도 함께 지정했다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/12/02/selinux-plus-php-session-permission-denied-error/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,62 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">Swift UIPageViewController에서 UIPageControl 오버랩하기</h2>
+												<a href="https://blog.asamaru.net/category/ios/" rel="tag">ios</a>
+								<span></span>
+						<time class="published" datetime="2015-11-03 17:12:21">2015.11.03. 17:12</time>
+		</div>
+		<div class="markdown-body entry-content"><p>UIPageViewController 사용시에 하단에 현재 페이지의 위치를 알려주는 UIPageControl가 별도의 공간을 차지하고 표시된다.</p>
+<p><img src="/res/img/post/2015-11-03-swift-uipagecontrol-overlap-1.png" alt="UIPageControl" width="640" height="960" /></p>
+<p>이 부분의 공간을 제거하고 내용 페이지의 위에 오버랩하려면 아래와 같이 <code>viewDidLayoutSubviews</code>에 필요한 소스를 추가하면 된다. 기본적으로 UIPageControl는 투명이라 자연스럽게 덮힌다.</p>
+<pre class="hljs swift"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PageViewController</span>: <span class="hljs-title">UIPageViewController</span> </span>{
+  <span class="hljs-keyword">override</span> <span class="hljs-func"><span class="hljs-keyword">func</span> <span class="hljs-title">viewDidLayoutSubviews</span><span class="hljs-params">()</span></span> {
+        <span class="hljs-comment">// UIPageControl overlap</span>
+        <span class="hljs-keyword">let</span> v = <span class="hljs-keyword">self</span>.view
+        <span class="hljs-keyword">let</span> subviews = v.subviews
+        <span class="hljs-keyword">var</span> sv: <span class="hljs-type">UIView</span>? = <span class="hljs-literal">nil</span>
+        <span class="hljs-keyword">var</span> pc: <span class="hljs-type">UIView</span>? = <span class="hljs-literal">nil</span>
+        <span class="hljs-keyword">for</span> t: <span class="hljs-type">UIView</span> <span class="hljs-keyword">in</span> subviews {
+            <span class="hljs-keyword">if</span> (t.isKindOfClass(<span class="hljs-type">UIScrollView</span>)) {
+                sv = t
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (t.isKindOfClass(<span class="hljs-type">UIPageControl</span>)) {
+                pc = t
+            }
+        }
+        <span class="hljs-keyword">if</span> ((sv != <span class="hljs-literal">nil</span>) &amp;&amp; (pc != <span class="hljs-literal">nil</span>)) {
+            sv!.frame = v.bounds
+            v.bringSubviewToFront(pc!)
+        }
+        <span class="hljs-keyword">super</span>.viewDidLayoutSubviews()
+    }
+}</pre>
+<p>Objective-c에서의 처리 방법은 <a href="http://stackoverflow.com/a/24851985">How do I make the bottom bar with dots of a UIPageViewController translucent?</a>를 참고.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/11/03/swift-uipagecontrol-overlap/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,61 +363,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">Swift UIPageViewController에서 UIPageControl 오버랩하기</h2>
-												<a href="https://blog.asamaru.net/category/ios/" rel="tag">ios</a>
-								<span></span>
-						<time class="published" datetime="2015-11-03 17:12:21">2015.11.03. 17:12</time>
-		</div>
-		<div class="markdown-body entry-content"><p>UIPageViewController 사용시에 하단에 현재 페이지의 위치를 알려주는 UIPageControl가 별도의 공간을 차지하고 표시된다.</p>
-<p><img src="/res/img/post/2015-11-03-swift-uipagecontrol-overlap-1.png" alt="UIPageControl" width="640" height="960" /></p>
-<p>이 부분의 공간을 제거하고 내용 페이지의 위에 오버랩하려면 아래와 같이 <code>viewDidLayoutSubviews</code>에 필요한 소스를 추가하면 된다. 기본적으로 UIPageControl는 투명이라 자연스럽게 덮힌다.</p>
-<pre class="hljs swift"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PageViewController</span>: <span class="hljs-title">UIPageViewController</span> </span>{
-  <span class="hljs-keyword">override</span> <span class="hljs-func"><span class="hljs-keyword">func</span> <span class="hljs-title">viewDidLayoutSubviews</span><span class="hljs-params">()</span></span> {
-        <span class="hljs-comment">// UIPageControl overlap</span>
-        <span class="hljs-keyword">let</span> v = <span class="hljs-keyword">self</span>.view
-        <span class="hljs-keyword">let</span> subviews = v.subviews
-        <span class="hljs-keyword">var</span> sv: <span class="hljs-type">UIView</span>? = <span class="hljs-literal">nil</span>
-        <span class="hljs-keyword">var</span> pc: <span class="hljs-type">UIView</span>? = <span class="hljs-literal">nil</span>
-        <span class="hljs-keyword">for</span> t: <span class="hljs-type">UIView</span> <span class="hljs-keyword">in</span> subviews {
-            <span class="hljs-keyword">if</span> (t.isKindOfClass(<span class="hljs-type">UIScrollView</span>)) {
-                sv = t
-            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (t.isKindOfClass(<span class="hljs-type">UIPageControl</span>)) {
-                pc = t
-            }
-        }
-        <span class="hljs-keyword">if</span> ((sv != <span class="hljs-literal">nil</span>) &amp;&amp; (pc != <span class="hljs-literal">nil</span>)) {
-            sv!.frame = v.bounds
-            v.bringSubviewToFront(pc!)
-        }
-        <span class="hljs-keyword">super</span>.viewDidLayoutSubviews()
-    }
-}</pre>
-<p>Objective-c에서의 처리 방법은 <a href="http://stackoverflow.com/a/24851985">How do I make the bottom bar with dots of a UIPageViewController translucent?</a>를 참고.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/11/03/swift-uipagecontrol-overlap/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,86 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">CentOS 7 minimal 설치</h2>
+												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
+								<span></span>
+						<time class="published" datetime="2015-10-14 11:46:55">2015.10.14. 11:46</time>
+		</div>
+		<div class="markdown-body entry-content"><h2>Minimal 설치</h2>
+<p>설치를 시작하면 아래와 같은 화면이 나온다. 그냥 Enter를 치면된다.</p>
+<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-1.png" alt="centos-7-minimal-install-1" width="832" height="555" /></p>
+<p>커서를 옮겨 &quot;Install CentOS 7&quot;을 선택한다.</p>
+<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-2.png" alt="centos-7-minimal-install-2" width="752" height="635" /></p>
+<p>언어를 한국어로 선택한다.</p>
+<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-3.png" alt="centos-7-minimal-install-3" width="1136" height="923" /></p>
+<p>설치 대상을 선택해서 드라이브를 선택한다.</p>
+<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-4.png" alt="centos-7-minimal-install-4" width="1136" height="923" /></p>
+<p>파티션을 직접 설정하고 싶다면 &quot;파티션을 설정합니다.&quot;를 체크하고 완료한다.</p>
+<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-5.png" alt="centos-7-minimal-install-5" width="1136" height="923" /></p>
+<p>직접 설정하기로 했다면 왼쪽 하단의 &quot;+&quot;를 누르면 아래와 같이 파티션과 용량을 선택할 수 있는 화면이 나온다.</p>
+<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-6.png" alt="centos-7-minimal-install-6" width="1136" height="923" /></p>
+<p>파티션과 용량은 자신에게 맞게 설정하면 된다. 관련해서는 <a href="/2015/10/14/centos-7-install-partitioning/">Centos 7 설치시 파티셔닝</a>을 참고하길 바란다.</p>
+<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-7.png" alt="centos-7-minimal-install-7" width="1136" height="923" /></p>
+<p>완료를 선택하면 확인 창이 나온다. 확인 후 이상이 없다면 &quot;변경 사항을 적용&quot;을 선택한다.</p>
+<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-8.png" alt="centos-7-minimal-install-8" width="1136" height="923" /></p>
+<p>이제 설치가 시작된다.</p>
+<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-9.png" alt="centos-7-minimal-install-9" width="1136" height="923" /></p>
+<p>설치가 되는 동안 &quot;Root 암호&quot;를 선택해서 암호를 입력한다.</p>
+<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-10.png" alt="centos-7-minimal-install-10" width="1136" height="923" /></p>
+<p>설치가 완료되면 Consol이 나타난다. 여기서는 root로 로그인하면 되는데 비밀번호는 설치과정에서 입력했던 비밀번호를 사용하면 된다.</p>
+<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-11.png" alt="centos-7-minimal-install-11" width="832" height="555" /></p>
+<p>일단 설치는 완료.</p>
+<h2>초기 설정</h2>
+<p>Minimal 설치 과정에서 네트워크 설정을 하지 않았다면 네트워크부터 설정해야 한다.</p>
+<pre class="hljs bash">$ vi /etc/sysconfig/network-scripts/ifcfg-enp0s3</pre>
+<p>네트워크 설정 파일을 열어 필요한 부분을 수정한다. 단, <code>ifcfg-enp0s3</code> 부분은 장비에 따라 다르게 나올 수 있다.
+기본적으로 dhcp를 사용하도록 되어 있을텐데 dhcp를 그대로 사용한다면 <code>ONBOOT=no</code> 부분을 <code>ONBOOT=yes</code>으로 바꿔주기만 하면된다. dhcp를 사용하지 않는다면 사용할 IP를 지정한다.</p>
+<p>네트워크를 재시작하여 네트워크를 활성화한다.</p>
+<pre class="hljs bash">$ service network restart</pre>
+<p>설정에 이상이 없다면 이제 네트워크를 사용할 수 있다. 이제부터는 ssh를 통해서 접속해서 작업하는게 편하다. 그런데 그러려면 해당 IP를 알아야하고(dhcp 사용시) ssh server가 설치되어야 한다.</p>
+<p>아이피부터 확인하자.</p>
+<pre class="hljs bash">$ ifconfig <span class="hljs-operator">-a</span></pre>
+<p>그런데 위 명령을 입력하면 <code>command not found</code> 오류가 난다. centos 7에서는 이것도 기본 설치에서 제외되어 있는 듯 하다(기억이 잘나지 않지만 7 미만 버전에서는 이건 기본 설치 되어 있었던 것 같은데). 일단 다른 명령으로 ip를 확인하자. 굳이 ifconfig를 당장 써야 겠다면 <a href="http://www.unixmen.com/ifconfig-command-found-centos-7-minimal-installation-quick-tip-fix/">‘Ifconfig’ Command Not Found In CentOS 7 Minimal Installation – A Quick Tip To Fix It</a>를 참고하자.</p>
+<pre class="hljs bash">$ ip addr</pre>
+<p>이제는 ssh server를 설치하자. 어짜피 ifconfig 등을 사용할테니 net-tools도 함께 설치하자. 그리고 ssh server를 켜고 재부팅시 자동으로 시작되도록 수정한다.</p>
+<pre class="hljs bash">$ yum install -y openssh-server net-tools
+
+$ service sshd start
+Redirecting to /bin/systemctl restart  sshd.service
+
+$ chkconfig sshd on
+알림: <span class="hljs-string">'systemctl enable sshd.service'</span>에 요청을 전송하고 있습니다.</pre>
+<p>위 내용에서 보이듯이 <code>service sshd start</code> 명령 실행시 <code>/bin/systemctl restart  sshd.service</code>으로 대체되었다고 나온다. 그 아래 <code>chkconfig sshd on</code> 명령 실행시에도 마찬가지다. 이유는 CentOS 7 부터 initd 대신 systemd가 기본으로 사용된다. 따라서 안내된 명령이 정확한 명령이다. 위 내용은 이 부분을 보여주기 위해서 일부러 CentOS 7 미만에서 사용되던 명령을 보여준 것이다. systemd에 대해서는 <a href="http://lunatine.net/about-systemd/">systemd 살펴보기</a>를 참고하자.</p>
+<p>이제는 ssh client로 접속도 가능하다. 직접 콘솔을 사용하는 것보다 client로 접속해서 처리하는게 간편하니 ssh client로 접속해서 작업하자. 아직 다른 계정을 만들지 않았으므로 root로 접속하면 된다. 그냥 콘솔에서 하겠다면 그냥 해도 된다.</p>
+<p>이제는 최신 버전으로 패키지를 업데이트 한다. 최신 버전의 CentOS를 받아서 설치했더라도 패키지들의 업데이트가 있을테니 업데이트하는게 좋다.</p>
+<pre class="hljs bash">$ yum update -y</pre>
+<p>이것으로 가장 기본적인 설치까지 완료되었다. 말그대로 초기세팅만 했은니 사용을 위해서는 여러가지 작업을 따로 해야한다. 이 부분은 용도에 따라 달라질 수 있으니 상황에 맞게 작업하면 된다. 다만 여기서는 길어져서 설명하진 않지만 방화벽 설정, ssh 설정 등 사용을 위한 기본적인 설정은 하는게 좋다. 이와 관련해서는 따로 포스팅하도록 하겠다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/10/14/centos-7-minimal-install/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,85 +387,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">CentOS 7 minimal 설치</h2>
-												<a href="https://blog.asamaru.net/category/linux/" rel="tag">linux</a>
-								<span></span>
-						<time class="published" datetime="2015-10-14 11:46:55">2015.10.14. 11:46</time>
-		</div>
-		<div class="markdown-body entry-content"><h2>Minimal 설치</h2>
-<p>설치를 시작하면 아래와 같은 화면이 나온다. 그냥 Enter를 치면된다.</p>
-<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-1.png" alt="centos-7-minimal-install-1" width="832" height="555" /></p>
-<p>커서를 옮겨 &quot;Install CentOS 7&quot;을 선택한다.</p>
-<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-2.png" alt="centos-7-minimal-install-2" width="752" height="635" /></p>
-<p>언어를 한국어로 선택한다.</p>
-<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-3.png" alt="centos-7-minimal-install-3" width="1136" height="923" /></p>
-<p>설치 대상을 선택해서 드라이브를 선택한다.</p>
-<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-4.png" alt="centos-7-minimal-install-4" width="1136" height="923" /></p>
-<p>파티션을 직접 설정하고 싶다면 &quot;파티션을 설정합니다.&quot;를 체크하고 완료한다.</p>
-<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-5.png" alt="centos-7-minimal-install-5" width="1136" height="923" /></p>
-<p>직접 설정하기로 했다면 왼쪽 하단의 &quot;+&quot;를 누르면 아래와 같이 파티션과 용량을 선택할 수 있는 화면이 나온다.</p>
-<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-6.png" alt="centos-7-minimal-install-6" width="1136" height="923" /></p>
-<p>파티션과 용량은 자신에게 맞게 설정하면 된다. 관련해서는 <a href="/2015/10/14/centos-7-install-partitioning/">Centos 7 설치시 파티셔닝</a>을 참고하길 바란다.</p>
-<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-7.png" alt="centos-7-minimal-install-7" width="1136" height="923" /></p>
-<p>완료를 선택하면 확인 창이 나온다. 확인 후 이상이 없다면 &quot;변경 사항을 적용&quot;을 선택한다.</p>
-<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-8.png" alt="centos-7-minimal-install-8" width="1136" height="923" /></p>
-<p>이제 설치가 시작된다.</p>
-<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-9.png" alt="centos-7-minimal-install-9" width="1136" height="923" /></p>
-<p>설치가 되는 동안 &quot;Root 암호&quot;를 선택해서 암호를 입력한다.</p>
-<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-10.png" alt="centos-7-minimal-install-10" width="1136" height="923" /></p>
-<p>설치가 완료되면 Consol이 나타난다. 여기서는 root로 로그인하면 되는데 비밀번호는 설치과정에서 입력했던 비밀번호를 사용하면 된다.</p>
-<p><img src="/res/img/post/2015-10-14-centos-7-minimal-install-11.png" alt="centos-7-minimal-install-11" width="832" height="555" /></p>
-<p>일단 설치는 완료.</p>
-<h2>초기 설정</h2>
-<p>Minimal 설치 과정에서 네트워크 설정을 하지 않았다면 네트워크부터 설정해야 한다.</p>
-<pre class="hljs bash">$ vi /etc/sysconfig/network-scripts/ifcfg-enp0s3</pre>
-<p>네트워크 설정 파일을 열어 필요한 부분을 수정한다. 단, <code>ifcfg-enp0s3</code> 부분은 장비에 따라 다르게 나올 수 있다.
-기본적으로 dhcp를 사용하도록 되어 있을텐데 dhcp를 그대로 사용한다면 <code>ONBOOT=no</code> 부분을 <code>ONBOOT=yes</code>으로 바꿔주기만 하면된다. dhcp를 사용하지 않는다면 사용할 IP를 지정한다.</p>
-<p>네트워크를 재시작하여 네트워크를 활성화한다.</p>
-<pre class="hljs bash">$ service network restart</pre>
-<p>설정에 이상이 없다면 이제 네트워크를 사용할 수 있다. 이제부터는 ssh를 통해서 접속해서 작업하는게 편하다. 그런데 그러려면 해당 IP를 알아야하고(dhcp 사용시) ssh server가 설치되어야 한다.</p>
-<p>아이피부터 확인하자.</p>
-<pre class="hljs bash">$ ifconfig <span class="hljs-operator">-a</span></pre>
-<p>그런데 위 명령을 입력하면 <code>command not found</code> 오류가 난다. centos 7에서는 이것도 기본 설치에서 제외되어 있는 듯 하다(기억이 잘나지 않지만 7 미만 버전에서는 이건 기본 설치 되어 있었던 것 같은데). 일단 다른 명령으로 ip를 확인하자. 굳이 ifconfig를 당장 써야 겠다면 <a href="http://www.unixmen.com/ifconfig-command-found-centos-7-minimal-installation-quick-tip-fix/">‘Ifconfig’ Command Not Found In CentOS 7 Minimal Installation – A Quick Tip To Fix It</a>를 참고하자.</p>
-<pre class="hljs bash">$ ip addr</pre>
-<p>이제는 ssh server를 설치하자. 어짜피 ifconfig 등을 사용할테니 net-tools도 함께 설치하자. 그리고 ssh server를 켜고 재부팅시 자동으로 시작되도록 수정한다.</p>
-<pre class="hljs bash">$ yum install -y openssh-server net-tools
-
-$ service sshd start
-Redirecting to /bin/systemctl restart  sshd.service
-
-$ chkconfig sshd on
-알림: <span class="hljs-string">'systemctl enable sshd.service'</span>에 요청을 전송하고 있습니다.</pre>
-<p>위 내용에서 보이듯이 <code>service sshd start</code> 명령 실행시 <code>/bin/systemctl restart  sshd.service</code>으로 대체되었다고 나온다. 그 아래 <code>chkconfig sshd on</code> 명령 실행시에도 마찬가지다. 이유는 CentOS 7 부터 initd 대신 systemd가 기본으로 사용된다. 따라서 안내된 명령이 정확한 명령이다. 위 내용은 이 부분을 보여주기 위해서 일부러 CentOS 7 미만에서 사용되던 명령을 보여준 것이다. systemd에 대해서는 <a href="http://lunatine.net/about-systemd/">systemd 살펴보기</a>를 참고하자.</p>
-<p>이제는 ssh client로 접속도 가능하다. 직접 콘솔을 사용하는 것보다 client로 접속해서 처리하는게 간편하니 ssh client로 접속해서 작업하자. 아직 다른 계정을 만들지 않았으므로 root로 접속하면 된다. 그냥 콘솔에서 하겠다면 그냥 해도 된다.</p>
-<p>이제는 최신 버전으로 패키지를 업데이트 한다. 최신 버전의 CentOS를 받아서 설치했더라도 패키지들의 업데이트가 있을테니 업데이트하는게 좋다.</p>
-<pre class="hljs bash">$ yum update -y</pre>
-<p>이것으로 가장 기본적인 설치까지 완료되었다. 말그대로 초기세팅만 했은니 사용을 위해서는 여러가지 작업을 따로 해야한다. 이 부분은 용도에 따라 달라질 수 있으니 상황에 맞게 작업하면 된다. 다만 여기서는 길어져서 설명하진 않지만 방화벽 설정, ssh 설정 등 사용을 위한 기본적인 설정은 하는게 좋다. 이와 관련해서는 따로 포스팅하도록 하겠다.</p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/10/14/centos-7-minimal-install/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,101 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()</h2>
+												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
+								<span></span>
+						<time class="published" datetime="2015-09-14 20:13:22">2015.09.14. 20:13</time>
+		</div>
+		<div class="markdown-body entry-content"><p>앞선 포스팅 <a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a>에서 levenshtein() 함수에 대해 알아보았다. 이번엔 이와 유사한 함수인 similar_text()에 대해 알아보고자 한다.</p>
+<h2><a href="http://php.net/manual/en/function.similar-text.php">similar_text()</a> 함수</h2>
+<p><a href="http://php.net/manual/en/function.similar-text.php">php 메뉴얼의 설명</a>에 따르면 similar_text() 함수는 두 문자열의 유사도를 계산한다고 되어 있다.</p>
+<p>두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World's Best Algorithms by Oliver (ISBN 0-131-00413-1) 에서 설명되어 있다. 이 구현은 pseudo code와 다르게 스택은 아니지만, 재귀 호출이므로 전체 프로세스의 속도에 영향을 줄 수 있다. 이 계산 알고리즘은 시간복잡도 <code>O(N**3)</code>를 가지며 여기서 N은 두 문자열 중 긴 문자열의 길이를 뜻한다.</p>
+<p>문자열의 길이에 따라 성능이 극도로 떨어질 수 있으므로 가급적 짧은 문장의 비교에 사용하는 것이 좋다. 메뉴얼에서 paul은 20000자 이상에서만 성능에 문제가 있었다고는 하나 시간복잡도를 보더라도 긴 문자열은 자제하는게 좋겠다.</p>
+<h3>기본 사용법</h3>
+<pre class="hljs php">int similar_text ( string <span class="hljs-variable">$first</span> , string <span class="hljs-variable">$second</span> [, float &amp;<span class="hljs-variable">$percent</span> ] )</pre>
+<h3>함수 인자</h3>
+<h4>first</h4>
+<p>첫번째 문자열</p>
+<h4>second</h4>
+<p>두번째 문자열</p>
+<h4>percent</h4>
+<p>reference로 넘겨져야하는 세번째 인자는 similar_text() 함수의 계산 결과인 문서 유사도를 퍼센트(%)로 제공해 준다.</p>
+<h3>반환값</h3>
+<p>두 문자열에서 매칭되는 문자수를 반환한다.</p>
+<h3>예시</h3>
+<p>이 함수는 몇가지 특성을 가지고 있으므로 메뉴얼에 안내되어 있는 아래의 예시들을 통해 차이를 알고 사용해야 한다.</p>
+<h4>인자의 입력 순서에 따라 결과가 달라진다.</h4>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$var_1</span> = <span class="hljs-string">'PHP IS GREAT'</span>;
+<span class="hljs-variable">$var_2</span> = <span class="hljs-string">'WITH MYSQL'</span>;
+
+similar_text(<span class="hljs-variable">$var_1</span>, <span class="hljs-variable">$var_2</span>, <span class="hljs-variable">$percent</span>);
+
+<span class="hljs-keyword">echo</span> <span class="hljs-variable">$percent</span>;
+<span class="hljs-comment">// 27.272727272727</span>
+
+similar_text(<span class="hljs-variable">$var_2</span>, <span class="hljs-variable">$var_1</span>, <span class="hljs-variable">$percent</span>);
+
+<span class="hljs-keyword">echo</span> <span class="hljs-variable">$percent</span>;
+<span class="hljs-comment">// 18.181818181818</span></pre>
+<h4>공백은 비교에서 제외된다.(그렇다고 trim이 되거나 문자열 내 공백이 제거되고 비교하는 것은 아니다.)</h4>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-string">" "</span>, <span class="hljs-string">""</span>, <span class="hljs-variable">$sim</span>);
+<span class="hljs-keyword">echo</span> <span class="hljs-string">" -&gt; "</span>;
+<span class="hljs-keyword">echo</span> <span class="hljs-variable">$sim</span>;
+<span class="hljs-keyword">echo</span> <span class="hljs-string">"\n"</span>;
+<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-string">"ab c"</span>, <span class="hljs-string">"abc"</span>, <span class="hljs-variable">$sim</span>);
+<span class="hljs-keyword">echo</span> <span class="hljs-string">" -&gt; "</span>;
+<span class="hljs-keyword">echo</span> <span class="hljs-variable">$sim</span>;
+<span class="hljs-keyword">echo</span> <span class="hljs-string">"\n"</span>;
+<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-string">" abc"</span>, <span class="hljs-string">"abc"</span>, <span class="hljs-variable">$sim</span>);
+<span class="hljs-keyword">echo</span> <span class="hljs-string">" -&gt; "</span>;
+<span class="hljs-keyword">echo</span> <span class="hljs-variable">$sim</span>;
+<span class="hljs-keyword">echo</span> <span class="hljs-string">"\n"</span>;
+
+<span class="hljs-comment">// 결과</span>
+<span class="hljs-comment">// 0 -&gt; 0</span>
+<span class="hljs-comment">// 3 -&gt; 85.714285714286</span>
+<span class="hljs-comment">// 3 -&gt; 85.714285714286</span></pre>
+<h4>대소문자를 구분한다.</h4>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$var1</span> = <span class="hljs-string">'Hello'</span>;
+<span class="hljs-variable">$var2</span> = <span class="hljs-string">'Hello'</span>;
+<span class="hljs-variable">$var3</span> = <span class="hljs-string">'hello'</span>;
+
+<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-variable">$var1</span>, <span class="hljs-variable">$var2</span>);  <span class="hljs-comment">// 5</span>
+<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-variable">$var1</span>, <span class="hljs-variable">$var3</span>);  <span class="hljs-comment">// 4</span></pre>
+<h3>유사함수</h3>
+<p>비슷한 역할을 하는 함수에 대해 알고 싶다면 아래의 포스팅을 참고하자.</p>
+<ul>
+<li><a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a></li>
+</ul>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,100 +402,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()</h2>
-												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
-								<span></span>
-						<time class="published" datetime="2015-09-14 20:13:22">2015.09.14. 20:13</time>
-		</div>
-		<div class="markdown-body entry-content"><p>앞선 포스팅 <a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a>에서 levenshtein() 함수에 대해 알아보았다. 이번엔 이와 유사한 함수인 similar_text()에 대해 알아보고자 한다.</p>
-<h2><a href="http://php.net/manual/en/function.similar-text.php">similar_text()</a> 함수</h2>
-<p><a href="http://php.net/manual/en/function.similar-text.php">php 메뉴얼의 설명</a>에 따르면 similar_text() 함수는 두 문자열의 유사도를 계산한다고 되어 있다.</p>
-<p>두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World's Best Algorithms by Oliver (ISBN 0-131-00413-1) 에서 설명되어 있다. 이 구현은 pseudo code와 다르게 스택은 아니지만, 재귀 호출이므로 전체 프로세스의 속도에 영향을 줄 수 있다. 이 계산 알고리즘은 시간복잡도 <code>O(N**3)</code>를 가지며 여기서 N은 두 문자열 중 긴 문자열의 길이를 뜻한다.</p>
-<p>문자열의 길이에 따라 성능이 극도로 떨어질 수 있으므로 가급적 짧은 문장의 비교에 사용하는 것이 좋다. 메뉴얼에서 paul은 20000자 이상에서만 성능에 문제가 있었다고는 하나 시간복잡도를 보더라도 긴 문자열은 자제하는게 좋겠다.</p>
-<h3>기본 사용법</h3>
-<pre class="hljs php">int similar_text ( string <span class="hljs-variable">$first</span> , string <span class="hljs-variable">$second</span> [, float &amp;<span class="hljs-variable">$percent</span> ] )</pre>
-<h3>함수 인자</h3>
-<h4>first</h4>
-<p>첫번째 문자열</p>
-<h4>second</h4>
-<p>두번째 문자열</p>
-<h4>percent</h4>
-<p>reference로 넘겨져야하는 세번째 인자는 similar_text() 함수의 계산 결과인 문서 유사도를 퍼센트(%)로 제공해 준다.</p>
-<h3>반환값</h3>
-<p>두 문자열에서 매칭되는 문자수를 반환한다.</p>
-<h3>예시</h3>
-<p>이 함수는 몇가지 특성을 가지고 있으므로 메뉴얼에 안내되어 있는 아래의 예시들을 통해 차이를 알고 사용해야 한다.</p>
-<h4>인자의 입력 순서에 따라 결과가 달라진다.</h4>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$var_1</span> = <span class="hljs-string">'PHP IS GREAT'</span>;
-<span class="hljs-variable">$var_2</span> = <span class="hljs-string">'WITH MYSQL'</span>;
-
-similar_text(<span class="hljs-variable">$var_1</span>, <span class="hljs-variable">$var_2</span>, <span class="hljs-variable">$percent</span>);
-
-<span class="hljs-keyword">echo</span> <span class="hljs-variable">$percent</span>;
-<span class="hljs-comment">// 27.272727272727</span>
-
-similar_text(<span class="hljs-variable">$var_2</span>, <span class="hljs-variable">$var_1</span>, <span class="hljs-variable">$percent</span>);
-
-<span class="hljs-keyword">echo</span> <span class="hljs-variable">$percent</span>;
-<span class="hljs-comment">// 18.181818181818</span></pre>
-<h4>공백은 비교에서 제외된다.(그렇다고 trim이 되거나 문자열 내 공백이 제거되고 비교하는 것은 아니다.)</h4>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-string">" "</span>, <span class="hljs-string">""</span>, <span class="hljs-variable">$sim</span>);
-<span class="hljs-keyword">echo</span> <span class="hljs-string">" -&gt; "</span>;
-<span class="hljs-keyword">echo</span> <span class="hljs-variable">$sim</span>;
-<span class="hljs-keyword">echo</span> <span class="hljs-string">"\n"</span>;
-<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-string">"ab c"</span>, <span class="hljs-string">"abc"</span>, <span class="hljs-variable">$sim</span>);
-<span class="hljs-keyword">echo</span> <span class="hljs-string">" -&gt; "</span>;
-<span class="hljs-keyword">echo</span> <span class="hljs-variable">$sim</span>;
-<span class="hljs-keyword">echo</span> <span class="hljs-string">"\n"</span>;
-<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-string">" abc"</span>, <span class="hljs-string">"abc"</span>, <span class="hljs-variable">$sim</span>);
-<span class="hljs-keyword">echo</span> <span class="hljs-string">" -&gt; "</span>;
-<span class="hljs-keyword">echo</span> <span class="hljs-variable">$sim</span>;
-<span class="hljs-keyword">echo</span> <span class="hljs-string">"\n"</span>;
-
-<span class="hljs-comment">// 결과</span>
-<span class="hljs-comment">// 0 -&gt; 0</span>
-<span class="hljs-comment">// 3 -&gt; 85.714285714286</span>
-<span class="hljs-comment">// 3 -&gt; 85.714285714286</span></pre>
-<h4>대소문자를 구분한다.</h4>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$var1</span> = <span class="hljs-string">'Hello'</span>;
-<span class="hljs-variable">$var2</span> = <span class="hljs-string">'Hello'</span>;
-<span class="hljs-variable">$var3</span> = <span class="hljs-string">'hello'</span>;
-
-<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-variable">$var1</span>, <span class="hljs-variable">$var2</span>);  <span class="hljs-comment">// 5</span>
-<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-variable">$var1</span>, <span class="hljs-variable">$var3</span>);  <span class="hljs-comment">// 4</span></pre>
-<h3>유사함수</h3>
-<p>비슷한 역할을 하는 함수에 대해 알고 싶다면 아래의 포스팅을 참고하자.</p>
-<ul>
-<li><a href="/2015/09/14/calculate-distance-between-two-strings-in-php-levenshtein/">PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()</a></li>
-</ul>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

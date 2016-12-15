@@ -41,7 +41,7 @@
 						
 	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
 
-			<link href="/res/css/min/x39cc0e7ab27e947bb3c2a083100745d89b346845.css" type="text/css" rel="stylesheet" />
+			<link href="/res/css/min/x5567b434b4719e71ecf9bf30b03aaa633189c1a3.css" type="text/css" rel="stylesheet" />
 
 	 <script type="application/ld+json">{
     "@context": "http://schema.org",
@@ -86,6 +86,104 @@
 			</div>
 </header>
 <section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</h2>
+												<a href="https://blog.asamaru.net/category/vagrant/" rel="tag">vagrant</a>
+								<span></span>
+						<time class="published" datetime="2015-12-02 19:39:43">2015.12.02. 19:39</time>
+		</div>
+		<div class="markdown-body entry-content"><p>vagrant를 사용하면서 로컬과 가상 머신 사이의 파일 전달을 간단히 하려면 synced_folder를 사용하면 된다. 설정도 아주 간단하다. <code>Vagrantfile</code>에 아래의 내용을 추가하면 된다. 당연히 설정값은 자신의 상황에 맞게 지정하면 된다.</p>
+<pre class="hljs bash">config.vm.synced_folder <span class="hljs-string">"/local/vagrant/share"</span>, <span class="hljs-string">"/vagrant"</span>, owner: <span class="hljs-string">"web"</span>, group: <span class="hljs-string">"usergroup"</span>, mount_options: [<span class="hljs-string">"dmode=777,fmode=777"</span>]</pre>
+<p>사실 synced_folder의 단점은 퍼미션에 있다. 나의 경우는 osx 환경에서 centos 가상 머신을 사용하는 상황이라 퍼미션을 유지한 상태로 폴더를 연결하고 싶으나 그렇게는 되지 않는다. 그래서 나는 synced_folder는 파일 전달용으로 사용하고 작업 소스 폴더 등은 NFS를 이용해서 로컬과 가상 머신을 연결한다. 그렇게하면 퍼미션도 유지할 수 있기 때문에 관련 작업시 편하다. 이와 관련해서는 오늘 이야기하고자 하는 부분이 아니므로 일단 넘어가기로 한다.</p>
+<p>사실 나도 이렇게 잘 사용하고 있었는데 얼마 전부터 아래와 같은 오류가 나면서 정상적으로 연결이 되지 않았다.</p>
+<pre class="hljs bash">default: /vagrant =&gt; /<span class="hljs-built_in">local</span>/vagrant/share
+Failed to mount folders <span class="hljs-keyword">in</span> Linux guest. This is usually because
+the <span class="hljs-string">"vboxsf"</span> file system is not available. Please verify that
+the guest additions are properly installed <span class="hljs-keyword">in</span> the guest and
+can work properly. The <span class="hljs-built_in">command</span> attempted was:
+
+mount -t vboxsf -o uid=`id -u web`,gid=`getent group usergroup | cut <span class="hljs-operator">-d</span>: <span class="hljs-operator">-f</span>3`,dmode=<span class="hljs-number">777</span>,fmode=<span class="hljs-number">777</span> vagrant /vagrant
+mount -t vboxsf -o uid=`id -u web`,gid=`id -g usergroup`,dmode=<span class="hljs-number">777</span>,fmode=<span class="hljs-number">777</span> vagrant /vagrant</pre>
+<p>synced_folder의 경우 주로 사용하는 작업용 폴더가 아니라서 일단 무시하고 사용하고 있었는데 vagrant up 할 때마다 오류가 보여서 해결하기로 했다.</p>
+<p>기존에는 아무 문제가 없었다. 그래서 가만히 생각해보니 얼마전 VirtualBox를 버전업 했다는 사실이 떠올랐다. 그래서 확인해보니 이 부분이 문제를 일으키는 원인이 맞았다. synced_folder의 경우 vboxsf를 사용하는데 VirtualBox가 버전업 되면서 호환이 되지 않았던 것이다(4.3.30 -&gt; 5.0.10). 간단히 생각하면 VBoxGuestAdditions을 다시 설치해주면 된다. 그런데 이렇게 하려니 가상 머신마다 일일이 작업을 해야하기 때문에 귀찮다.</p>
+<p>그래서 조금 찾아보니 <a href="https://github.com/mitchellh/vagrant/issues/3341">Vagrant can't mount shared folder in VirtualBox 4.3.10</a>에 해결 방법이 있었다.</p>
+<p>간단히 요약하면 <code>vagrant-vbguest</code> 플러그인을 설치하면 vagrant up 시에 알아서 GuestAdditions을 다시 설치해 준다. 우선 <code>vagrant-vbguest</code> 플러그인을 설치하려면 local에서 아래와 같이 실행한다(osx 기준이다).</p>
+<pre class="hljs bash">$ vagrant plugin install vagrant-vbguest
+
+Installing the `vagrant-vbguest` plugin. This can take a few minutes...
+Installed the plugin <span class="hljs-string">'vagrant-vbguest (0.11.0)'</span>!</pre>
+<p>그리고 다시 vagrant up을 하면 아래와 같이 다시 설치하는 모습을 볼 수 있다.</p>
+<pre class="hljs bash">==&gt; default: Machine booted and ready!
+GuestAdditions versions on your host (<span class="hljs-number">5.0</span>.<span class="hljs-number">10</span>) and guest (<span class="hljs-number">4.3</span>.<span class="hljs-number">30</span>) <span class="hljs-keyword">do</span> not match.
+Loaded plugins: fastestmirror
+Repodata is over <span class="hljs-number">2</span> weeks old. Install yum-cron? Or run: yum makecache fast
+Determining fastest mirrors
+ * base: mirror.premi.st
+ * extras: mirror.premi.st
+ * updates: mirror.premi.st
+Package kernel-devel-<span class="hljs-number">3.10</span>.<span class="hljs-number">0</span>-<span class="hljs-number">229.14</span>.<span class="hljs-number">1</span>.el7.x86_64 already installed and latest version
+Package gcc-<span class="hljs-number">4.8</span>.<span class="hljs-number">3</span>-<span class="hljs-number">9</span>.el7.x86_64 already installed and latest version
+Package <span class="hljs-number">1</span>:make-<span class="hljs-number">3.82</span>-<span class="hljs-number">21</span>.el7.x86_64 already installed and latest version
+Package <span class="hljs-number">4</span>:perl-<span class="hljs-number">5.16</span>.<span class="hljs-number">3</span>-<span class="hljs-number">285</span>.el7.x86_64 already installed and latest version
+Package bzip2-<span class="hljs-number">1.0</span>.<span class="hljs-number">6</span>-<span class="hljs-number">12</span>.el7.x86_64 already installed and latest version
+Nothing to <span class="hljs-keyword">do</span>
+Copy iso file /Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso into the box /tmp/VBoxGuestAdditions.iso
+mount: /dev/loop0 is write-protected, mounting <span class="hljs-built_in">read</span>-only
+Installing Virtualbox Guest Additions <span class="hljs-number">5.0</span>.<span class="hljs-number">10</span> - guest version is <span class="hljs-number">4.3</span>.<span class="hljs-number">30</span>
+Verifying archive integrity... All good.
+Uncompressing VirtualBox <span class="hljs-number">5.0</span>.<span class="hljs-number">10</span> Guest Additions <span class="hljs-keyword">for</span> Linux............
+VirtualBox Guest Additions installer
+Removing installed version <span class="hljs-number">4.3</span>.<span class="hljs-number">30</span> of VirtualBox Guest Additions...
+Copying additional installer modules ...
+Installing additional modules ...
+Removing existing VirtualBox non-DKMS kernel modules[  OK  ]
+Building the VirtualBox Guest Additions kernel modules
+Building the main Guest Additions module[  OK  ]
+Building the shared folder support module[  OK  ]
+Building the OpenGL support module[  OK  ]
+Doing non-kernel setup of the Guest Additions[  OK  ]
+You should restart your guest to make sure the new modules are actually used</pre>
+<p><a href="https://github.com/mitchellh/vagrant/issues/3341">Vagrant can't mount shared folder in VirtualBox 4.3.10</a>에서는 <code>sudo ln -s /opt/VBoxGuestAdditions-4.3.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</code> 처리를 통해 심볼릭 링크를 만들어 주고 있지만 나의 경우는 <code>vagrant-vbguest</code> 플러그인이 이 과정도 처리해놔서 별도로 처리하지는 않았다.</p>
+<p>하지만 이 과정이 필요하다면 동일하게 처리해 줘야할 수 있다. 나의 경우로 예를들자면 VirtualBox가 5.0.10이므로 <code>sudo ln -s /opt/VBoxGuestAdditions-5.0.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</code>라고 해야한다. 그런데 여기서도 문제가 있을 수 있다. 나의 경우는 최초 설치가 아니라 이미 사용중이었으므로 <code>/usr/lib/VBoxGuestAdditions</code> 파일이 이미 존재하고 이 파일은 <code>/opt/VBoxGuestAdditions-4.3.30/lib/VBoxGuestAdditions</code>의 심볼릭 링크다. 그래서 아래와 같이 처리해 주어야 한다. 당연히 이 과정은 가상 머신에서 실행한다. 하지만</p>
+<pre class="hljs bash">$ sudo su -
+$ rm <span class="hljs-operator">-f</span> /usr/lib/VBoxGuestAdditions
+$ ln <span class="hljs-operator">-s</span> /opt/VBoxGuestAdditions-<span class="hljs-number">5.0</span>.<span class="hljs-number">10</span>/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</pre>
+<p>그런데 다시 vagrant up 시에 아래와 같은 오류가 날 수 있다.</p>
+<pre class="hljs bash">GuestAdditions seems to be installed (<span class="hljs-number">5.0</span>.<span class="hljs-number">10</span>) correctly, but not running.</pre>
+<p>또는</p>
+<pre class="hljs bash">/sbin/mount.vboxsf: mounting failed with the error: No such device</pre>
+<p>이 경우는 vboxadd 서비스가 부팅시에 자동으로 시작되도록 되어있지 않기 때문이다. 따라서 서비스를 아래와 같이 추가해 주어야 한다. 이 명령 또한 가상 머신에서 실행하는 것이다.</p>
+<pre class="hljs bash">$ systemctl <span class="hljs-built_in">enable</span> vboxadd.service</pre>
+<p>단, 여기서 유의할 점은 위 과정은 CentOS 7 기준이라는 것이다. 따라서 상황에 따라 <code>systemctl</code>에 관련된 부분을 수정해야 한다. 예를들어 CentOS 6.5의 경우라면 아래의 명령을 사용해야 한다.</p>
+<pre class="hljs bash">$ chkconfig --add vboxadd
+$ chkconfig vboxadd on</pre>
+<p>이제 다 되었다. 기존처럼 synced_folder를 사용할 수 있다.</p>
+<p>이 글의 내용을 요약하자면 이렇다. <strong>VirtualBox의 버전업을 한 후 vboxsf가 정상 동작하지 않는다면 VBoxGuestAdditions를 재설치 해야한다. 매번 재설치하는 것이 귀찮다면 <code>vagrant-vbguest</code> 플러그인을 사용한다.</strong></p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2015/12/02/vagrant-cant-mount-shared-folder/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
 <nav id="cSide">
 	<div class="dSideBox">
 										
@@ -307,103 +405,6 @@
 
 
 
-
-<main id="cMainPanel" class="clearfix">
-		
-	<article id="cArticle" class="dArticle hentry">
-		<div class="dTitle">
-			<h2 class="entry-title">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</h2>
-												<a href="https://blog.asamaru.net/category/vagrant/" rel="tag">vagrant</a>
-								<span></span>
-						<time class="published" datetime="2015-12-02 19:39:43">2015.12.02. 19:39</time>
-		</div>
-		<div class="markdown-body entry-content"><p>vagrant를 사용하면서 로컬과 가상 머신 사이의 파일 전달을 간단히 하려면 synced_folder를 사용하면 된다. 설정도 아주 간단하다. <code>Vagrantfile</code>에 아래의 내용을 추가하면 된다. 당연히 설정값은 자신의 상황에 맞게 지정하면 된다.</p>
-<pre class="hljs bash">config.vm.synced_folder <span class="hljs-string">"/local/vagrant/share"</span>, <span class="hljs-string">"/vagrant"</span>, owner: <span class="hljs-string">"web"</span>, group: <span class="hljs-string">"usergroup"</span>, mount_options: [<span class="hljs-string">"dmode=777,fmode=777"</span>]</pre>
-<p>사실 synced_folder의 단점은 퍼미션에 있다. 나의 경우는 osx 환경에서 centos 가상 머신을 사용하는 상황이라 퍼미션을 유지한 상태로 폴더를 연결하고 싶으나 그렇게는 되지 않는다. 그래서 나는 synced_folder는 파일 전달용으로 사용하고 작업 소스 폴더 등은 NFS를 이용해서 로컬과 가상 머신을 연결한다. 그렇게하면 퍼미션도 유지할 수 있기 때문에 관련 작업시 편하다. 이와 관련해서는 오늘 이야기하고자 하는 부분이 아니므로 일단 넘어가기로 한다.</p>
-<p>사실 나도 이렇게 잘 사용하고 있었는데 얼마 전부터 아래와 같은 오류가 나면서 정상적으로 연결이 되지 않았다.</p>
-<pre class="hljs bash">default: /vagrant =&gt; /<span class="hljs-built_in">local</span>/vagrant/share
-Failed to mount folders <span class="hljs-keyword">in</span> Linux guest. This is usually because
-the <span class="hljs-string">"vboxsf"</span> file system is not available. Please verify that
-the guest additions are properly installed <span class="hljs-keyword">in</span> the guest and
-can work properly. The <span class="hljs-built_in">command</span> attempted was:
-
-mount -t vboxsf -o uid=`id -u web`,gid=`getent group usergroup | cut <span class="hljs-operator">-d</span>: <span class="hljs-operator">-f</span>3`,dmode=<span class="hljs-number">777</span>,fmode=<span class="hljs-number">777</span> vagrant /vagrant
-mount -t vboxsf -o uid=`id -u web`,gid=`id -g usergroup`,dmode=<span class="hljs-number">777</span>,fmode=<span class="hljs-number">777</span> vagrant /vagrant</pre>
-<p>synced_folder의 경우 주로 사용하는 작업용 폴더가 아니라서 일단 무시하고 사용하고 있었는데 vagrant up 할 때마다 오류가 보여서 해결하기로 했다.</p>
-<p>기존에는 아무 문제가 없었다. 그래서 가만히 생각해보니 얼마전 VirtualBox를 버전업 했다는 사실이 떠올랐다. 그래서 확인해보니 이 부분이 문제를 일으키는 원인이 맞았다. synced_folder의 경우 vboxsf를 사용하는데 VirtualBox가 버전업 되면서 호환이 되지 않았던 것이다(4.3.30 -&gt; 5.0.10). 간단히 생각하면 VBoxGuestAdditions을 다시 설치해주면 된다. 그런데 이렇게 하려니 가상 머신마다 일일이 작업을 해야하기 때문에 귀찮다.</p>
-<p>그래서 조금 찾아보니 <a href="https://github.com/mitchellh/vagrant/issues/3341">Vagrant can't mount shared folder in VirtualBox 4.3.10</a>에 해결 방법이 있었다.</p>
-<p>간단히 요약하면 <code>vagrant-vbguest</code> 플러그인을 설치하면 vagrant up 시에 알아서 GuestAdditions을 다시 설치해 준다. 우선 <code>vagrant-vbguest</code> 플러그인을 설치하려면 local에서 아래와 같이 실행한다(osx 기준이다).</p>
-<pre class="hljs bash">$ vagrant plugin install vagrant-vbguest
-
-Installing the `vagrant-vbguest` plugin. This can take a few minutes...
-Installed the plugin <span class="hljs-string">'vagrant-vbguest (0.11.0)'</span>!</pre>
-<p>그리고 다시 vagrant up을 하면 아래와 같이 다시 설치하는 모습을 볼 수 있다.</p>
-<pre class="hljs bash">==&gt; default: Machine booted and ready!
-GuestAdditions versions on your host (<span class="hljs-number">5.0</span>.<span class="hljs-number">10</span>) and guest (<span class="hljs-number">4.3</span>.<span class="hljs-number">30</span>) <span class="hljs-keyword">do</span> not match.
-Loaded plugins: fastestmirror
-Repodata is over <span class="hljs-number">2</span> weeks old. Install yum-cron? Or run: yum makecache fast
-Determining fastest mirrors
- * base: mirror.premi.st
- * extras: mirror.premi.st
- * updates: mirror.premi.st
-Package kernel-devel-<span class="hljs-number">3.10</span>.<span class="hljs-number">0</span>-<span class="hljs-number">229.14</span>.<span class="hljs-number">1</span>.el7.x86_64 already installed and latest version
-Package gcc-<span class="hljs-number">4.8</span>.<span class="hljs-number">3</span>-<span class="hljs-number">9</span>.el7.x86_64 already installed and latest version
-Package <span class="hljs-number">1</span>:make-<span class="hljs-number">3.82</span>-<span class="hljs-number">21</span>.el7.x86_64 already installed and latest version
-Package <span class="hljs-number">4</span>:perl-<span class="hljs-number">5.16</span>.<span class="hljs-number">3</span>-<span class="hljs-number">285</span>.el7.x86_64 already installed and latest version
-Package bzip2-<span class="hljs-number">1.0</span>.<span class="hljs-number">6</span>-<span class="hljs-number">12</span>.el7.x86_64 already installed and latest version
-Nothing to <span class="hljs-keyword">do</span>
-Copy iso file /Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso into the box /tmp/VBoxGuestAdditions.iso
-mount: /dev/loop0 is write-protected, mounting <span class="hljs-built_in">read</span>-only
-Installing Virtualbox Guest Additions <span class="hljs-number">5.0</span>.<span class="hljs-number">10</span> - guest version is <span class="hljs-number">4.3</span>.<span class="hljs-number">30</span>
-Verifying archive integrity... All good.
-Uncompressing VirtualBox <span class="hljs-number">5.0</span>.<span class="hljs-number">10</span> Guest Additions <span class="hljs-keyword">for</span> Linux............
-VirtualBox Guest Additions installer
-Removing installed version <span class="hljs-number">4.3</span>.<span class="hljs-number">30</span> of VirtualBox Guest Additions...
-Copying additional installer modules ...
-Installing additional modules ...
-Removing existing VirtualBox non-DKMS kernel modules[  OK  ]
-Building the VirtualBox Guest Additions kernel modules
-Building the main Guest Additions module[  OK  ]
-Building the shared folder support module[  OK  ]
-Building the OpenGL support module[  OK  ]
-Doing non-kernel setup of the Guest Additions[  OK  ]
-You should restart your guest to make sure the new modules are actually used</pre>
-<p><a href="https://github.com/mitchellh/vagrant/issues/3341">Vagrant can't mount shared folder in VirtualBox 4.3.10</a>에서는 <code>sudo ln -s /opt/VBoxGuestAdditions-4.3.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</code> 처리를 통해 심볼릭 링크를 만들어 주고 있지만 나의 경우는 <code>vagrant-vbguest</code> 플러그인이 이 과정도 처리해놔서 별도로 처리하지는 않았다.</p>
-<p>하지만 이 과정이 필요하다면 동일하게 처리해 줘야할 수 있다. 나의 경우로 예를들자면 VirtualBox가 5.0.10이므로 <code>sudo ln -s /opt/VBoxGuestAdditions-5.0.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</code>라고 해야한다. 그런데 여기서도 문제가 있을 수 있다. 나의 경우는 최초 설치가 아니라 이미 사용중이었으므로 <code>/usr/lib/VBoxGuestAdditions</code> 파일이 이미 존재하고 이 파일은 <code>/opt/VBoxGuestAdditions-4.3.30/lib/VBoxGuestAdditions</code>의 심볼릭 링크다. 그래서 아래와 같이 처리해 주어야 한다. 당연히 이 과정은 가상 머신에서 실행한다. 하지만</p>
-<pre class="hljs bash">$ sudo su -
-$ rm <span class="hljs-operator">-f</span> /usr/lib/VBoxGuestAdditions
-$ ln <span class="hljs-operator">-s</span> /opt/VBoxGuestAdditions-<span class="hljs-number">5.0</span>.<span class="hljs-number">10</span>/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions</pre>
-<p>그런데 다시 vagrant up 시에 아래와 같은 오류가 날 수 있다.</p>
-<pre class="hljs bash">GuestAdditions seems to be installed (<span class="hljs-number">5.0</span>.<span class="hljs-number">10</span>) correctly, but not running.</pre>
-<p>또는</p>
-<pre class="hljs bash">/sbin/mount.vboxsf: mounting failed with the error: No such device</pre>
-<p>이 경우는 vboxadd 서비스가 부팅시에 자동으로 시작되도록 되어있지 않기 때문이다. 따라서 서비스를 아래와 같이 추가해 주어야 한다. 이 명령 또한 가상 머신에서 실행하는 것이다.</p>
-<pre class="hljs bash">$ systemctl <span class="hljs-built_in">enable</span> vboxadd.service</pre>
-<p>단, 여기서 유의할 점은 위 과정은 CentOS 7 기준이라는 것이다. 따라서 상황에 따라 <code>systemctl</code>에 관련된 부분을 수정해야 한다. 예를들어 CentOS 6.5의 경우라면 아래의 명령을 사용해야 한다.</p>
-<pre class="hljs bash">$ chkconfig --add vboxadd
-$ chkconfig vboxadd on</pre>
-<p>이제 다 되었다. 기존처럼 synced_folder를 사용할 수 있다.</p>
-<p>이 글의 내용을 요약하자면 이렇다. <strong>VirtualBox의 버전업을 한 후 vboxsf가 정상 동작하지 않는다면 VBoxGuestAdditions를 재설치 해야한다. 매번 재설치하는 것이 귀찮다면 <code>vagrant-vbguest</code> 플러그인을 사용한다.</strong></p>
-</div>
-	</article>
-			<div id="disqus_thread"></div>
-	<script type="text/javascript">
-		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
-		// var disqus_developer = 1; // Comment out when the site is live
-		var disqus_identifier = "/2015/12/02/vagrant-cant-mount-shared-folder/";
-
-		/* * * DON'T EDIT BELOW THIS LINE * * */
-		(function () {
-			var dsq = document.createElement('script');
-			dsq.type = 'text/javascript';
-			dsq.async = true;
-			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-		})();
-	</script>
-	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</main>
 
 </section>
 <footer>

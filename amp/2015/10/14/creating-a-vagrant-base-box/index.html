@@ -1,0 +1,698 @@
+<!doctype html>
+<html ⚡ lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+			<title>Vagrant BASE Box 만들기(CentOS 7) - 이 세상에 하나는 남기고 가자</title>
+		<meta name="author" content="유영재">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="description" content="Vagrant에는 Discover Vagrant Boxes 페이지를 제공하는데 여기에는 여러가지 Box가 이미 만들어져 있어 그중 하나를 선택해서 사용할 수 있다. 하지만 여기서 원하는 Box를 찾을 수 없거나 특별히 직접 만들어야 할 경우가 있다. 이 글은 이런 경우에 직접 Box를 만드는 방법에 대해 설명한다. 단, 아래는 OSX에서 작업하는 것을 기준으로 설명한다. Vagrant 설치 INSTALLING VAGRANT의 안내에 따라 DOWNLOAD VAGRANT에 가면 OS별로 Vagrant 설치 파일을 다운 받을 수 있다. ">
+	<meta name="referrer" content="always">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="shortcut icon" type="image/x-icon" href="https://blog.asamaru.net/favicon.ico"/>
+	<link rel="canonical" href="https://blog.asamaru.net/2015/10/14/creating-a-vagrant-base-box/"/>
+
+	
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+
+	
+	
+	<meta property="og:type" content="website">
+	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
+	<meta property="og:title" content="Vagrant BASE Box 만들기(CentOS 7)">
+	<meta property="og:description" content="Vagrant에는 Discover Vagrant Boxes 페이지를 제공하는데 여기에는 여러가지 Box가 이미 만들어져 있어 그중 하나를 선택해서 사용할 수 있다. 하지만 여기서 원하는 Box를 찾을 수 없거나 특별히 직접 만들어야 할 경우가 있다. 이 글은 이런 경우에 직접 Box를 만드는 방법에 대해 설명한다. 단, 아래는 OSX에서 작업하는 것을 기준으로 설명한다. Vagrant 설치 INSTALLING VAGRANT의 안내에 따라 DOWNLOAD VAGRANT에 가면 OS별로 Vagrant 설치 파일을 다운 받을 수 있다. ">
+	<meta property="og:image" content="/res/img/post/2015-10-14-creating-a-vagrant-base-box-1.png">
+	
+
+	
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="@asamaru7">
+	<meta name="twitter:title" content="Vagrant BASE Box 만들기(CentOS 7)">
+	<meta name="twitter:description" content="Vagrant에는 Discover Vagrant Boxes 페이지를 제공하는데 여기에는 여러가지 Box가 이미 만들어져 있어 그중 하나를 선택해서 사용할 수 있다. 하지만 여기서 원하는 Box를 찾을 수 없거나 특별히 직접 만들어야 할 경우가 있다. 이 글은 이런 경우에 직접 Box를 만드는 방법에 대해 설명한다. 단, 아래는 OSX에서 작업하는 것을 기준으로 설명한다. Vagrant 설치 INSTALLING VAGRANT의 안내에 따라 DOWNLOAD VAGRANT에 가면 OS별로 Vagrant 설치 파일을 다운 받을 수 있다. ">
+	<meta property="twitter:image" content="/res/img/post/2015-10-14-creating-a-vagrant-base-box-1.png">
+	
+
+										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
+												<link rel="apple-touch-icon" sizes="76x76" href="/res/img/icon/76.png">
+												<link rel="apple-touch-icon" sizes="120x120" href="/res/img/icon/120.png">
+												<link rel="apple-touch-icon" sizes="152x152" href="/res/img/icon/152.png">
+						
+	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
+
+	 <script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "headline": "Vagrant BASE Box 만들기(CentOS 7)",
+    "author": {
+        "@type": "Person",
+        "name": "유영재"
+    },
+    "datePublished": "2015-10-14",
+    "articleSection": "vagrant",
+    "url": "https://blog.asamaru.net/2015/10/14/creating-a-vagrant-base-box/",
+    "image": "",
+    "publisher": {
+        "@type": "Organization",
+        "name": "유영재"
+    }
+}</script> 
+		<style amp-custom>
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,textarea,p,blockquote,th,td,input,select,textarea,button{margin:0;padding:0;outline:0}fieldset,img{border:0 none}dl,ul,ol,menu,li{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}input,select,textarea,button{vertical-align:middle}input::-ms-clear{display:none}button{border:0 none;background-color:transparent;cursor:pointer}body,th,td,input,select,textarea,button{font-size:14px;line-height:1.5;font-family:HelveticaNeue-Light,AppleSDGothicNeo-Light,Dotum,'돋움',Helvetica,AppleSDGothicNeo,sans-serif;color:#666}address,caption,cite,code,dfn,em,var{font-style:normal;font-weight:normal}a{color:#333;text-decoration:none}a:active,a:hover{text-decoration:underline;color:#48bff2}a:active{background-color:transparent}a.dInverse{color:#48bff2}a.dInverse:active,a.dInverse:hover{color:#333}hr{border:0 none;border-bottom:#ebebeb solid 1px;margin:0;padding:0}.dIcon{display:inline-block;overflow:hidden;font-size:0;line-height:0;background:url("/res/img/ico_skin.gif") 0 0 no-repeat;text-indent:-9999px}.dImageCenter{text-align:center;position:relative}.dImageCenter amp-img,.dImageCenter img{max-width:100%;max-height:100%;width:auto;height:auto;position:absolute;top:0;bottom:0;left:0;right:0;margin:auto}.clearfix:after{content:" ";display:table;clear:both}.markdown-body ul,.markdown-body li{list-style:disc}header{z-index:1000;border-bottom:1px solid #ebebeb;background-color:#fff;background-color:rgba(255,255,255,.9)}header>.dProfile{max-width:1060px;margin:0 auto;height:80px;padding:15px 0 0 30px;box-sizing:border-box}header>.dProfile:after{display:block;visibility:hidden;height:0;font-size:0;clear:both;content:''}header>.dProfile>a{float:left}header>.dProfile>a>amp-img,header>.dProfile>a>img{float:left;margin-right:16px;width:50px;height:50px}header>.dProfile>h1,header>.dProfile>p{margin-left:60px;max-width:270px}header>.dProfile>h1{font-size:14px;margin-top:5px;font-weight:bold;margin-bottom:2px}header>.dProfile>p{width:100%;font-size:12px;color:#aaa;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}section.dMainBody{max-width:1000px;margin:0 auto;padding:0 20px}footer{clear:both;height:50px;font-size:12px;line-height:50px;text-align:center;background-color:#f0f0f0;color:#aaa;position:relative;z-index:1002;margin-top:30px}footer>em{color:#48bff2}ul.dArticles a.dTxt:visited{color:#609}ul.dArticles>li{padding:35px 0;border-bottom:1px solid #ebebeb}ul.dArticles>li .dImageCenter{float:right;height:148px;width:148px;border:#ddd solid 1px;background:#f5f5f5;margin:4px 0 4px 30px}ul.dArticles>li .dTxt{display:block;overflow:hidden;text-decoration:none}ul.dArticles>li .dTxt:hover>strong{text-decoration:underline;color:#48bff2}ul.dArticles>li .dTxt>strong{display:block;font-weight:normal;font-size:28px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}ul.dArticles>li .dTxt>p{display:block;display:-webkit-box;display:-ms-flexbox;overflow:hidden;max-height:80px;margin-top:1px;font-size:16px;line-height:28px;color:#666;vertical-align:top;word-break:break-all;-webkit-box-orient:vertical;-webkit-line-clamp:3;text-overflow:ellipsis}ul.dArticles>li>div{margin-top:16px;font-size:12px;color:#aaa}ul.dArticles>li>div>a{font-size:12px;text-decoration:none}ul.dArticles>li>div>span{display:inline-block;width:1px;height:9px;margin:0 5px;background-color:#ebebeb}nav.dPaging{margin:30px 0 30px;text-align:center}nav.dPaging>ul{display:inline-block}nav.dPaging>ul>li{display:inline-block}nav.dPaging .dLinkPrev,nav.dPaging .dLinkNext{padding:0;margin-bottom:6px;width:24px;height:24px}nav.dPaging .dLinkPrev{margin-right:20px;background-position:0 -100px}nav.dPaging .dLinkNext{margin-left:20px;background-position:0 -150px}nav.dPaging .dNoMorePrev{background-position:0 -75px}nav.dPaging .no-more-next{background-position:0 -125px}nav.dPaging .dInterword{padding:6px 12px 0;display:block;overflow:hidden}nav.dPaging a{display:block;padding:9px 14px 5px;color:#666;overflow:hidden}nav.dPaging a.dSelected{border-radius:3px;background-color:#48bff2;color:#fff;font-weight:bold;padding:8px 14px 6px}main#cMainPanel{margin-right:330px;overflow:auto}nav#cSide{float:right;width:300px;padding-top:35px}nav#cSide h3{border-bottom:#ebebeb solid 1px;padding-bottom:5px;margin-bottom:10px}nav#cSide>div.dSideBox>dl{margin-bottom:30px}nav#cSide dt{font-weight:bold;border-bottom:#ebebeb solid 1px;padding-bottom:5px;margin-bottom:10px}nav#cSide dd{display:inline-block;margin-right:10px;margin-bottom:4px}nav#cSide dd span{font-size:11px;color:#999;padding-left:4px;letter-spacing:1px}nav#cSide dl.dPages>dt{margin-bottom:10px}nav#cSide dd.dYear{display:block;margin-top:10px}nav#cSide>div.dSideBox>dl>dd>dl{margin-left:15px;margin-top:5px}nav#cSide form.dFormSearch{display:block;margin:0 2px 30px 0;border:1px solid #ebebeb;border-radius:3px;background:#fff;vertical-align:top;height:36px}nav#cSide form.dFormSearch legend{display:none}nav#cSide form.dFormSearch label.dIcon{float:left;width:16px;height:16px;margin:10px 9px 0 12px;background-position:0 -400px}nav#cSide form.dFormSearch input{display:block;margin-top:7px;border:0 none;vertical-align:top}nav#cSide .dLinks{margin-bottom:30px;text-align:right}nav#cSide .dLinks li:first-child{border:0 none}nav#cSide .dLinks>li{display:inline-block;padding:0 5px}nav#cSide .dLinks>li.dPipe{width:1px;height:9px;margin:0 5px;background-color:#ebebeb;padding:0}#menu-button,#cBtnSlide{display:none;background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0zIC02IDI0IDI0Ij48cGF0aCBmaWxsPSIjNEE0QTRBIiBkPSJNMCAxMmgxOHYtMkgwdjJNMCA3aDE4VjVIMHYyTTAgMHYyaDE4VjBIMCIvPjwvc3ZnPg==");background-repeat:no-repeat;background-size:30px 24px;background-position:center center;background-color:transparent;width:40px;height:40px;border:0;position:absolute;top:10px;right:10px;z-index:1001;cursor:pointer}@media only screen and (min-width:821px){main#cMainPanel{transform:none}}@media only screen and (max-width:820px){header{position:fixed;top:0;left:0;right:0;height:60px}header>.dProfile{height:auto;padding-left:15px}header>.dProfile>a>amp-img,header>.dProfile>a>img{width:30px;height:30px;margin-right:10px}header>.dProfile>h1{margin-left:0}header>.dProfile>p{display:none}section.dMainBody{padding:0 15px}ul.dArticles>li .dTxt>strong{font-size:24px}ul.dArticles>li .dTxt>p{font-size:14px}ul.dArticles>li .dImageCenter{height:90px;width:90px;margin:4px 0 4px 15px}section.dDateList{padding-left:45px}nav.dPaging .dLinkPrev,nav.dPaging .dLinkNext{padding:0;margin-bottom:1px}nav.dPaging .dLinkPrev{margin-right:0}nav.dPaging .dLinkNext{margin-left:0}nav.dPaging .dInterword{padding:6px 0 0}nav.dPaging a{padding:5px 7px 2px}nav.dPaging a.dSelected{padding:6px 14px 2px}main#cMainPanel{margin-top:60px;margin-right:0;background:#fff}nav#cSide{padding-top:15px;background:#f9f9f9;box-shadow:inset 10px 0 9px -7px rgba(0,0,0,.1)}nav#cSide>div.dSideBox{padding:0 15px 50px 15px}#cBtnSlide{display:inline-block;position:fixed}body{width:100%;height:100%}.slideout-menu{position:fixed;top:60px;bottom:0;box-sizing:border-box;overflow-y:scroll;-webkit-overflow-scrolling:touch;z-index:0;display:none}.slideout-menu-left{left:0}.slideout-menu-right{right:0}.slideout-panel{position:relative;z-index:1;will-change:transform;background-color:#FFF;min-height:100vh}.slideout-open,.slideout-open body,.slideout-open .slideout-panel{overflow:hidden}.slideout-open .slideout-menu{display:block}}
+article.dArticle{padding-bottom:30px}article.dArticle .dTitle{margin-bottom:30px;padding:44px 15px 20px;border-bottom:1px solid #ebebeb;text-align:center}article.dArticle .dTitle h2{color:#000;font-weight:bold;font-size:26px;line-height:31px;margin-bottom:10px}article.dArticle .dTitle>a{font-size:12px;text-decoration:none;color:#48bff2}article.dArticle .dTitle>span{display:inline-block;width:1px;height:9px;margin:0 5px;background-color:#ebebeb}article.dArticle .dTitle>time{color:#999}
+@font-face{font-family:octicons-link;src:url(data:font/woff;charset=utf-8;base64,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) format('woff')}.markdown-body{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;line-height:1.5;color:#333;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";font-size:16px;line-height:1.5;word-wrap:break-word}.markdown-body .pl-c{color:#969896}.markdown-body .pl-c1,.markdown-body .pl-s .pl-v{color:#0086b3}.markdown-body .pl-e,.markdown-body .pl-en{color:#795da3}.markdown-body .pl-smi,.markdown-body .pl-s .pl-s1{color:#333}.markdown-body .pl-ent{color:#63a35c}.markdown-body .pl-k{color:#a71d5d}.markdown-body .pl-s,.markdown-body .pl-pds,.markdown-body .pl-s .pl-pse .pl-s1,.markdown-body .pl-sr,.markdown-body .pl-sr .pl-cce,.markdown-body .pl-sr .pl-sre,.markdown-body .pl-sr .pl-sra{color:#183691}.markdown-body .pl-v{color:#ed6a43}.markdown-body .pl-id{color:#b52a1d}.markdown-body .pl-ii{color:#f8f8f8;background-color:#b52a1d}.markdown-body .pl-sr .pl-cce{font-weight:bold;color:#63a35c}.markdown-body .pl-ml{color:#693a17}.markdown-body .pl-mh,.markdown-body .pl-mh .pl-en,.markdown-body .pl-ms{font-weight:bold;color:#1d3e81}.markdown-body .pl-mq{color:teal}.markdown-body .pl-mi{font-style:italic;color:#333}.markdown-body .pl-mb{font-weight:bold;color:#333}.markdown-body .pl-md{color:#bd2c00;background-color:#ffecec}.markdown-body .pl-mi1{color:#55a532;background-color:#eaffea}.markdown-body .pl-mdr{font-weight:bold;color:#795da3}.markdown-body .pl-mo{color:#1d3e81}.markdown-body .octicon{display:inline-block;vertical-align:text-top;fill:currentColor}.markdown-body a{background-color:transparent;-webkit-text-decoration-skip:objects}.markdown-body a:active,.markdown-body a:hover{outline-width:0}.markdown-body strong{font-weight:inherit}.markdown-body strong{font-weight:bolder}.markdown-body h1{font-size:2em;margin:.67em 0}.markdown-body img{border-style:none}.markdown-body svg:not(:root){overflow:hidden}.markdown-body code,.markdown-body kbd,.markdown-body pre{font-family:monospace,monospace;font-size:1em}.markdown-body hr{box-sizing:content-box;height:0;overflow:visible}.markdown-body input{font:inherit;margin:0}.markdown-body input{overflow:visible}.markdown-body [type="checkbox"]{box-sizing:border-box;padding:0}.markdown-body *{box-sizing:border-box}.markdown-body input{font-family:inherit;font-size:inherit;line-height:inherit}.markdown-body a{color:#4078c0;text-decoration:none}.markdown-body a:hover,.markdown-body a:active{text-decoration:underline}.markdown-body strong{font-weight:600}.markdown-body hr{height:0;margin:15px 0;overflow:hidden;background:transparent;border:0;border-bottom:1px solid #ddd}.markdown-body hr::before{display:table;content:""}.markdown-body hr::after{display:table;clear:both;content:""}.markdown-body table{border-spacing:0;border-collapse:collapse}.markdown-body td,.markdown-body th{padding:0}.markdown-body h1,.markdown-body h2,.markdown-body h3,.markdown-body h4,.markdown-body h5,.markdown-body h6{margin-top:0;margin-bottom:0}.markdown-body h1{font-size:32px;font-weight:600}.markdown-body h2{font-size:24px;font-weight:600}.markdown-body h3{font-size:20px;font-weight:600}.markdown-body h4{font-size:16px;font-weight:600}.markdown-body h5{font-size:14px;font-weight:600}.markdown-body h6{font-size:12px;font-weight:600}.markdown-body p{margin-top:0;margin-bottom:10px}.markdown-body blockquote{margin:0}.markdown-body ul,.markdown-body ol{padding-left:0;margin-top:0;margin-bottom:0}.markdown-body ol ol,.markdown-body ul ol{list-style-type:lower-roman}.markdown-body ul ul ol,.markdown-body ul ol ol,.markdown-body ol ul ol,.markdown-body ol ol ol{list-style-type:lower-alpha}.markdown-body dd{margin-left:0}.markdown-body code{font-family:Consolas,"Liberation Mono",Menlo,Courier,monospace;font-size:12px}.markdown-body pre{margin-top:0;margin-bottom:0;font:12px Consolas,"Liberation Mono",Menlo,Courier,monospace}.markdown-body .octicon{vertical-align:text-bottom}.markdown-body input{-webkit-font-feature-settings:"liga" 0;font-feature-settings:"liga" 0}.markdown-body::before{display:table;content:""}.markdown-body::after{display:table;clear:both;content:""}.markdown-body>*:first-child{margin-top:0}.markdown-body>*:last-child{margin-bottom:0}.markdown-body a:not([href]){color:inherit;text-decoration:none}.markdown-body .anchor{float:left;padding-right:4px;margin-left:-20px;line-height:1}.markdown-body .anchor:focus{outline:0}.markdown-body p,.markdown-body blockquote,.markdown-body ul,.markdown-body ol,.markdown-body dl,.markdown-body table,.markdown-body pre{margin-top:0;margin-bottom:16px}.markdown-body hr{height:.25em;padding:0;margin:24px 0;background-color:#e7e7e7;border:0}.markdown-body blockquote{padding:0 1em;color:#777;border-left:.25em solid #ddd}.markdown-body blockquote>:first-child{margin-top:0}.markdown-body blockquote>:last-child{margin-bottom:0}.markdown-body kbd{display:inline-block;padding:3px 5px;font-size:11px;line-height:10px;color:#555;vertical-align:middle;background-color:#fcfcfc;border:solid 1px #ccc;border-bottom-color:#bbb;border-radius:3px;box-shadow:inset 0 -1px 0 #bbb}.markdown-body h1,.markdown-body h2,.markdown-body h3,.markdown-body h4,.markdown-body h5,.markdown-body h6{margin-top:24px;margin-bottom:16px;font-weight:600;line-height:1.25}.markdown-body h1 .octicon-link,.markdown-body h2 .octicon-link,.markdown-body h3 .octicon-link,.markdown-body h4 .octicon-link,.markdown-body h5 .octicon-link,.markdown-body h6 .octicon-link{color:#000;vertical-align:middle;visibility:hidden}.markdown-body h1:hover .anchor,.markdown-body h2:hover .anchor,.markdown-body h3:hover .anchor,.markdown-body h4:hover .anchor,.markdown-body h5:hover .anchor,.markdown-body h6:hover .anchor{text-decoration:none}.markdown-body h1:hover .anchor .octicon-link,.markdown-body h2:hover .anchor .octicon-link,.markdown-body h3:hover .anchor .octicon-link,.markdown-body h4:hover .anchor .octicon-link,.markdown-body h5:hover .anchor .octicon-link,.markdown-body h6:hover .anchor .octicon-link{visibility:visible}.markdown-body h1{padding-bottom:.3em;font-size:2em;border-bottom:1px solid #eee}.markdown-body h2{padding-bottom:.3em;font-size:1.5em;border-bottom:1px solid #eee}.markdown-body h3{font-size:1.25em}.markdown-body h4{font-size:1em}.markdown-body h5{font-size:.875em}.markdown-body h6{font-size:.85em;color:#777}.markdown-body ul,.markdown-body ol{padding-left:2em}.markdown-body ul ul,.markdown-body ul ol,.markdown-body ol ol,.markdown-body ol ul{margin-top:0;margin-bottom:0}.markdown-body li>p{margin-top:16px}.markdown-body li+li{margin-top:.25em}.markdown-body dl{padding:0}.markdown-body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:bold}.markdown-body dl dd{padding:0 16px;margin-bottom:16px}.markdown-body table{display:block;width:100%;overflow:auto}.markdown-body table th{font-weight:bold}.markdown-body table th,.markdown-body table td{padding:6px 13px;border:1px solid #ddd}.markdown-body table tr{background-color:#fff;border-top:1px solid #ccc}.markdown-body table tr:nth-child(2n){background-color:#f8f8f8}.markdown-body img{max-width:100%;box-sizing:content-box;background-color:#fff}.markdown-body code{padding:0;padding-top:.2em;padding-bottom:.2em;margin:0;font-size:85%;background-color:rgba(0,0,0,0.04);border-radius:3px}.markdown-body code::before,.markdown-body code::after{letter-spacing:-.2em;content:"\00a0"}.markdown-body pre{word-wrap:normal}.markdown-body pre>code{padding:0;margin:0;font-size:100%;word-break:normal;white-space:pre;background:transparent;border:0}.markdown-body .highlight{margin-bottom:16px}.markdown-body .highlight pre{margin-bottom:0;word-break:normal}.markdown-body .highlight pre,.markdown-body pre{padding:16px;overflow:auto;font-size:85%;line-height:1.45;background-color:#f7f7f7;border-radius:3px}.markdown-body pre code{display:inline;max-width:auto;padding:0;margin:0;overflow:visible;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}.markdown-body pre code::before,.markdown-body pre code::after{content:normal}.markdown-body .pl-0{padding-left:0}.markdown-body .pl-1{padding-left:3px}.markdown-body .pl-2{padding-left:6px}.markdown-body .pl-3{padding-left:12px}.markdown-body .pl-4{padding-left:24px}.markdown-body .pl-5{padding-left:36px}.markdown-body .pl-6{padding-left:48px}.markdown-body .full-commit .btn-outline:not(:disabled):hover{color:#4078c0;border:1px solid #4078c0}.markdown-body kbd{display:inline-block;padding:3px 5px;font:11px Consolas,"Liberation Mono",Menlo,Courier,monospace;line-height:10px;color:#555;vertical-align:middle;background-color:#fcfcfc;border:solid 1px #ccc;border-bottom-color:#bbb;border-radius:3px;box-shadow:inset 0 -1px 0 #bbb}.markdown-body :checked+.radio-label{position:relative;z-index:1;border-color:#4078c0}.markdown-body .task-list-item{list-style-type:none}.markdown-body .task-list-item+.task-list-item{margin-top:3px}.markdown-body .task-list-item input{margin:0 .2em .25em -1.6em;vertical-align:middle}.markdown-body hr{border-bottom-color:#eee}
+.hljs{display:block;background:white;padding:.5em;color:#333;overflow-x:auto;-webkit-text-size-adjust:none}.hljs-comment,.bash .hljs-shebang,.java .hljs-javadoc,.javascript .hljs-javadoc,.rust .hljs-preprocessor{color:#969896}.hljs-string,.apache .hljs-sqbracket,.coffeescript .hljs-subst,.coffeescript .hljs-regexp,.cpp .hljs-preprocessor,.c .hljs-preprocessor,.javascript .hljs-regexp,.json .hljs-attribute,.makefile .hljs-variable,.markdown .hljs-value,.markdown .hljs-link_label,.markdown .hljs-strong,.markdown .hljs-emphasis,.markdown .hljs-blockquote,.nginx .hljs-regexp,.nginx .hljs-number,.objectivec .hljs-preprocessor .hljs-title,.perl .hljs-regexp,.php .hljs-regexp,.xml .hljs-value,.less .hljs-built_in,.scss .hljs-built_in{color:#df5000}.hljs-keyword,.css .hljs-at_rule,.css .hljs-important,.http .hljs-request,.ini .hljs-setting,.haskell .hljs-type,.java .hljs-javadoctag,.javascript .hljs-tag,.javascript .hljs-javadoctag,.nginx .hljs-title,.objectivec .hljs-preprocessor,.php .hljs-phpdoc,.sql .hljs-built_in,.less .hljs-tag,.less .hljs-at_rule,.scss .hljs-tag,.scss .hljs-at_rule,.scss .hljs-important,.stylus .hljs-at_rule,.go .hljs-typename,.swift .hljs-preprocessor{color:#a71d5d}.apache .hljs-common,.apache .hljs-cbracket,.apache .hljs-keyword,.bash .hljs-literal,.bash .hljs-built_in,.coffeescript .hljs-literal,.coffeescript .hljs-built_in,.coffeescript .hljs-number,.cpp .hljs-number,.cpp .hljs-built_in,.c .hljs-number,.c .hljs-built_in,.cs .hljs-number,.cs .hljs-built_in,.css .hljs-attribute,.css .hljs-hexcolor,.css .hljs-number,.css .hljs-function,.haskell .hljs-number,.http .hljs-literal,.http .hljs-attribute,.java .hljs-number,.javascript .hljs-built_in,.javascript .hljs-literal,.javascript .hljs-number,.json .hljs-number,.makefile .hljs-keyword,.markdown .hljs-link_reference,.nginx .hljs-built_in,.objectivec .hljs-literal,.objectivec .hljs-number,.objectivec .hljs-built_in,.php .hljs-literal,.php .hljs-number,.python .hljs-number,.ruby .hljs-prompt,.ruby .hljs-constant,.ruby .hljs-number,.ruby .hljs-subst .hljs-keyword,.ruby .hljs-symbol,.rust .hljs-number,.sql .hljs-number,.puppet .hljs-function,.less .hljs-number,.less .hljs-hexcolor,.less .hljs-function,.less .hljs-attribute,.scss .hljs-preprocessor,.scss .hljs-number,.scss .hljs-hexcolor,.scss .hljs-function,.scss .hljs-attribute,.stylus .hljs-number,.stylus .hljs-hexcolor,.stylus .hljs-attribute,.stylus .hljs-params,.go .hljs-built_in,.go .hljs-constant,.swift .hljs-built_in,.swift .hljs-number{color:#0086b3}.apache .hljs-tag,.cs .hljs-xmlDocTag,.css .hljs-tag,.xml .hljs-title,.stylus .hljs-tag{color:#63a35c}.bash .hljs-variable,.cs .hljs-preprocessor,.cs .hljs-preprocessor .hljs-keyword,.css .hljs-attr_selector,.css .hljs-value,.ini .hljs-value,.ini .hljs-keyword,.javascript .hljs-tag .hljs-title,.makefile .hljs-constant,.nginx .hljs-variable,.xml .hljs-tag,.scss .hljs-variable{color:#333}.bash .hljs-title,.coffeescript .hljs-title,.cpp .hljs-title,.c .hljs-title,.cs .hljs-title,.css .hljs-id,.css .hljs-class,.css .hljs-pseudo,.ini .hljs-title,.haskell .hljs-title,.haskell .hljs-pragma,.java .hljs-title,.javascript .hljs-title,.makefile .hljs-title,.objectivec .hljs-title,.perl .hljs-sub,.php .hljs-title,.python .hljs-decorator,.python .hljs-title,.ruby .hljs-parent,.ruby .hljs-title,.rust .hljs-title,.xml .hljs-attribute,.puppet .hljs-title,.less .hljs-id,.less .hljs-pseudo,.less .hljs-class,.scss .hljs-id,.scss .hljs-pseudo,.scss .hljs-class,.stylus .hljs-class,.stylus .hljs-id,.stylus .hljs-pseudo,.stylus .hljs-title,.swift .hljs-title,.diff .hljs-chunk{color:#795da3}.coffeescript .hljs-reserved,.coffeescript .hljs-attribute{color:#1d3e81}.diff .hljs-chunk{font-weight:bold}.diff .hljs-addition{color:#55a532;background-color:#eaffea}.diff .hljs-deletion{color:#bd2c00;background-color:#ffecec}.markdown .hljs-link_url{text-decoration:underline}
+@media only screen and (max-width:820px){amp-sidebar>nav#cSide{float:none;width:auto;box-shadow:none;padding-top:50px}#menu-button{display:block}.dMainBody nav#cSide{display:none}}
+</style><style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes  -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
+
+	<script async src="https://cdn.ampproject.org/v0.js"></script>
+	<script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
+	<script async custom-element="amp-sidebar" src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"></script>
+			<script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
+		<amp-analytics>
+			<script type="application/json">
+				{
+			      "vars": {
+			        "account": "UA-65749108-2"
+			      },
+			      "triggers": {
+			        "trackPageview": {
+			          "on": "visible",
+			          "request": "pageview"
+			        }
+			      }
+			    }
+			</script>
+		</amp-analytics>
+	</head>
+<body>
+<button type="button" id="cBtnSlide" on="tap:sidebar.toggle"></button>
+<amp-sidebar id="sidebar" side="right" layout="nodisplay">
+	<nav id="cSide">
+	<div class="dSideBox">
+										
+										<dl class="dTags">
+					<dt>태그</dt>
+											<dd>
+							<a href="https://blog.asamaru.net/category/android/">
+								android<span>(56)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/blog/">
+								blog<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/css/">
+								css<span>(3)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/db/">
+								db<span>(6)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/flash/">
+								flash<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/git/">
+								git<span>(7)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/html/">
+								html<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ios/">
+								ios<span>(20)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/java/">
+								java<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/jekyll/">
+								jekyll<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/js/">
+								js<span>(11)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/linux/">
+								linux<span>(27)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/octopress/">
+								octopress<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/osx/">
+								osx<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/php/">
+								php<span>(25)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/programming/">
+								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/swift/">
+								swift<span>(6)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/thinking/">
+								thinking<span>(4)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/tip/">
+								tip<span>(15)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/vagrant/">
+								vagrant<span>(6)</span>
+							</a>
+						</dd>
+									</dl>
+			
+			
+										<dl class="dArchives">
+					<dt>글 보관함</dt>
+											<dd class="dYear"><a href="https://blog.asamaru.net/2016/">2016 <span>(66)</span></a></dd>
+													<dd>
+								<dl>
+									
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/12/">12 <span>(6)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/11/">11 <span>(11)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/10/">10 <span>(2)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/09/">09 <span>(2)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/08/">08 <span>(2)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/07/">07 <span>(5)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/05/">05 <span>(1)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/04/">04 <span>(9)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/03/">03 <span>(13)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/02/">02 <span>(7)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/01/">01 <span>(8)</span></a>
+										</dd>
+																	</dl>
+							</dd>
+																	<dd class="dYear"><a href="https://blog.asamaru.net/2015/">2015 <span>(118)</span></a></dd>
+													<dd>
+								<dl>
+									
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/12/">12 <span>(16)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/11/">11 <span>(16)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/10/">10 <span>(41)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/09/">09 <span>(37)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/08/">08 <span>(8)</span></a>
+										</dd>
+																	</dl>
+							</dd>
+																	<dd class="dYear"><a href="https://blog.asamaru.net/2012/">2012 <span>(7)</span></a></dd>
+													<dd>
+								<dl>
+									
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2012/10/">10 <span>(1)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2012/09/">09 <span>(6)</span></a>
+										</dd>
+																	</dl>
+							</dd>
+															</dl>
+					
+				
+		
+		<form action="https://www.google.com/search" method="get" target="_blank" class="dFormSearch">
+			<fieldset>
+				<input type="hidden" name="sitesearch" value="https://blog.asamaru.net">
+				<legend>검색하기 폼</legend>
+				<label class="dIcon">검색하기</label>
+				<input type="text" name="q" value="" placeholder="Search"/>
+			</fieldset>
+		</form>
+
+		
+		<ul class="dLinks">
+			<li><a href="https://blog.asamaru.net/archives/" class="dInverse">전체글 보기</a></li>
+			<li class="dPipe"></li>
+			<li><a href="https://blog.asamaru.net/atom.xml" class="dInverse" target="_blank">RSS</a></li>
+		</ul>
+	</div>
+</nav>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	<button class="tab hamburger" id="menu-button" on="tap:sidebar.toggle"></button>
+</amp-sidebar>
+
+<header>
+	<div class="dProfile">
+		<a href="https://blog.asamaru.net"><amp-img src="/res/img/icon/icon.png" width="50" height="50" alt="profile" layout="responsive"></a>
+		<h1><a href="https://blog.asamaru.net">이 세상에 하나는 남기고 가자</a></h1>
+					<p>세상에 필요한 소스코드 한줄 남기고 가자</p>
+			</div>
+</header>
+<section class="dMainBody">
+<nav id="cSide">
+	<div class="dSideBox">
+										
+										<dl class="dTags">
+					<dt>태그</dt>
+											<dd>
+							<a href="https://blog.asamaru.net/category/android/">
+								android<span>(56)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/blog/">
+								blog<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/css/">
+								css<span>(3)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/db/">
+								db<span>(6)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/flash/">
+								flash<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/git/">
+								git<span>(7)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/html/">
+								html<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ios/">
+								ios<span>(20)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/java/">
+								java<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/jekyll/">
+								jekyll<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/js/">
+								js<span>(11)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/linux/">
+								linux<span>(27)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/octopress/">
+								octopress<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/osx/">
+								osx<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/php/">
+								php<span>(25)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/programming/">
+								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/swift/">
+								swift<span>(6)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/thinking/">
+								thinking<span>(4)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/tip/">
+								tip<span>(15)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/vagrant/">
+								vagrant<span>(6)</span>
+							</a>
+						</dd>
+									</dl>
+			
+			
+										<dl class="dArchives">
+					<dt>글 보관함</dt>
+											<dd class="dYear"><a href="https://blog.asamaru.net/2016/">2016 <span>(66)</span></a></dd>
+													<dd>
+								<dl>
+									
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/12/">12 <span>(6)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/11/">11 <span>(11)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/10/">10 <span>(2)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/09/">09 <span>(2)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/08/">08 <span>(2)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/07/">07 <span>(5)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/05/">05 <span>(1)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/04/">04 <span>(9)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/03/">03 <span>(13)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/02/">02 <span>(7)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/01/">01 <span>(8)</span></a>
+										</dd>
+																	</dl>
+							</dd>
+																	<dd class="dYear"><a href="https://blog.asamaru.net/2015/">2015 <span>(118)</span></a></dd>
+													<dd>
+								<dl>
+									
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/12/">12 <span>(16)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/11/">11 <span>(16)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/10/">10 <span>(41)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/09/">09 <span>(37)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/08/">08 <span>(8)</span></a>
+										</dd>
+																	</dl>
+							</dd>
+																	<dd class="dYear"><a href="https://blog.asamaru.net/2012/">2012 <span>(7)</span></a></dd>
+													<dd>
+								<dl>
+									
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2012/10/">10 <span>(1)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2012/09/">09 <span>(6)</span></a>
+										</dd>
+																	</dl>
+							</dd>
+															</dl>
+					
+				
+		
+		<form action="https://www.google.com/search" method="get" target="_blank" class="dFormSearch">
+			<fieldset>
+				<input type="hidden" name="sitesearch" value="https://blog.asamaru.net">
+				<legend>검색하기 폼</legend>
+				<label class="dIcon">검색하기</label>
+				<input type="text" name="q" value="" placeholder="Search"/>
+			</fieldset>
+		</form>
+
+		
+		<ul class="dLinks">
+			<li><a href="https://blog.asamaru.net/archives/" class="dInverse">전체글 보기</a></li>
+			<li class="dPipe"></li>
+			<li><a href="https://blog.asamaru.net/atom.xml" class="dInverse" target="_blank">RSS</a></li>
+		</ul>
+	</div>
+</nav>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<main id="cMainPanel" class="clearfix">
+		
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">Vagrant BASE Box 만들기(CentOS 7)</h2>
+												<a href="https://blog.asamaru.net/category/vagrant/" rel="tag">vagrant</a>
+								<span></span>
+						<time class="published" datetime="2015-10-14 12:50:15">2015.10.14. 12:50</time>
+		</div>
+		<div class="markdown-body entry-content"><p>Vagrant에는 <a href="https://atlas.hashicorp.com/boxes/search">Discover Vagrant Boxes</a> 페이지를 제공하는데 여기에는 여러가지 Box가 이미 만들어져 있어 그중 하나를 선택해서 사용할 수 있다. 하지만 여기서 원하는 Box를 찾을 수 없거나 특별히 직접 만들어야 할 경우가 있다. 이 글은 이런 경우에 직접 Box를 만드는 방법에 대해 설명한다. 단, 아래는 OSX에서 작업하는 것을 기준으로 설명한다.</p>
+<h2>Vagrant 설치</h2>
+<p><a href="http://docs.vagrantup.com/v2/installation/index.html">INSTALLING VAGRANT</a>의 안내에 따라 <a href="http://www.vagrantup.com/downloads">DOWNLOAD VAGRANT</a>에 가면 OS별로 Vagrant 설치 파일을 다운 받을 수 있다. 설치는 다운 받아서 설치하면 되므로 굳이 설명할 것이 없다.</p>
+<p>그리고 필요한 것이 <a href="https://www.virtualbox.org/">VirtualBox</a>인데 이것 또한 그냥 다운 받아 실행하면 설치가 완료되므로 간단하다.</p>
+<h2>Base Box 만들기</h2>
+<h3>VirtualBox 가상 머신 생성</h3>
+<p>Box를 만드려면 VirtualBox 가상 머신이 필요하다. 우선 VirtualBox를 실행해서 "새로 만들기"를 선택하면 아래의 화면이 나타난다. 적절한 이름과 종류를 선택하고 계속을 선택한다. 여기서는 CentOS 7을 설치하는 것을 기준으로 설명한다.</p>
+<p><amp-img src="/res/img/post/2015-10-14-creating-a-vagrant-base-box-1.png" alt="creating-a-vagrant-base-box-1" width="882" height="750" layout="responsive"></amp-img></p>
+<p>그 다음엔 사용할 메모리 크기를 설정하는 화면이 나오는데 필요에 맞게 설정한다. 나는 1GB를 할당했다.</p>
+<p><amp-img src="/res/img/post/2015-10-14-creating-a-vagrant-base-box-2.png" alt="creating-a-vagrant-base-box-2" width="882" height="750" layout="responsive"></amp-img></p>
+<p>그 다음엔 가상 하드 드라이브를 설정하는 화면이다. 특별한 경우가 아니라면 "지금 가상 하드 드라이브 만들기"를 선택하면 된다.</p>
+<p><amp-img src="/res/img/post/2015-10-14-creating-a-vagrant-base-box-3.png" alt="creating-a-vagrant-base-box-3" width="882" height="750" layout="responsive"></amp-img></p>
+<p>디스크 파일 형식의 경우는 기본으로 선택된 VDI를 선택한다.</p>
+<p><amp-img src="/res/img/post/2015-10-14-creating-a-vagrant-base-box-4.png" alt="creating-a-vagrant-base-box-4" width="882" height="750" layout="responsive"></amp-img></p>
+<p>하드 드라이브의 크기는 특별한 이유가 없다면 동적 할당을 선택하면 된다.</p>
+<p><amp-img src="/res/img/post/2015-10-14-creating-a-vagrant-base-box-5.png" alt="creating-a-vagrant-base-box-5" width="882" height="750" layout="responsive"></amp-img></p>
+<p>파일 위치 및 크기는 용도에 맞게 설정하면 된다.</p>
+<p><amp-img src="/res/img/post/2015-10-14-creating-a-vagrant-base-box-6.png" alt="creating-a-vagrant-base-box-6" width="882" height="750" layout="responsive"></amp-img></p>
+<p>여기까지 설정하고 나면 가상 머신이 하나 만들어 진다.</p>
+<p><amp-img src="/res/img/post/2015-10-14-creating-a-vagrant-base-box-7.png" alt="creating-a-vagrant-base-box-7" width="854" height="722" layout="responsive"></amp-img></p>
+<p>만들어진 가상 머신을 선택하고 설정을 선택하면 아래의 화면이 나온다.</p>
+<p><amp-img src="/res/img/post/2015-10-14-creating-a-vagrant-base-box-8.png" alt="creating-a-vagrant-base-box-8" width="854" height="722" layout="responsive"></amp-img></p>
+<p>여기서는 필요한 설정을 해주면 되는데 나의 경우엔 플로피디스크, USB, Audio를 사용하지 않도록 하고 네트워크는 "NAT"를 선택했다. "브릿지 어뎁터"를 사용하면 내 컴퓨터의 IP를 함께 사용하지 않고 새로운 IP를 설정할 수 있는데 특수한 경우가 아니라면 일단 NAT를 사용하도록 설정한다. 그리고 NAT를 사용하게되면 가상의 사설 IP가 할당되므로 나중에 SSH 접속을하기 위해서는 포트 포워딩 설정이 필요하다. 아래의 이미지를 참고해서 2222포트를 22포트로 포워딩 되도록 설정한다.</p>
+<p><amp-img src="/res/img/post/2015-10-14-creating-a-vagrant-base-box-9.png" alt="creating-a-vagrant-base-box-9" width="854" height="722" layout="responsive"></amp-img></p>
+<p><amp-img src="/res/img/post/2015-10-14-creating-a-vagrant-base-box-10.png" alt="creating-a-vagrant-base-box-10" width="854" height="722" layout="responsive"></amp-img></p>
+<h3>사용할 OS 설치</h3>
+<p>이제는 설치할 OS를 지정해 줘야 한다. 설정 화면에서 저장소를 선택하면 컨트롤러 IDE에 CD 드라이브가 보일 것이다. 나는 CentOS 7을 설치할 것이므로 해당 ISO 파일을 다운 받아서 선택해 줬다.</p>
+<p>이제 설정을 완료하고 서버를 시작하면 설정 해준 ISO(CD)가 로딩되면서 OS 설치가 시작될 것이다. 내가 설치한 CentOS 7의 설치 과정은 <a href="/2015/10/14/centos-7-minimal-install/">CentOS 7 minimal 설치</a>를 참고하면 된다.</p>
+<p>OS에 대한 기본 설치를 마쳤다면 VirtualBox에서 해당 가상 머신을 켠 상태에서 메뉴의 "Devices &gt; Insert Guest Additions CD Image..."를 선택한다. 그 다음엔 콘솔에서 아래의 명령을 수행해서 게스트 확장을 설치한다. 그리고 설치가 정상적으로 완료되었다면 재시작 한다(굳이 할 필요는 없지만 kernel과 관련된 변경이 있는 것으로 보여 재시작 해 줬다).</p>
+<pre class="hljs bash">$ su
+$ mount -r /dev/cdrom /media/
+$ ll /media/
+$ yum install -y bzip2 kernel-devel make gcc perl
+$ /media/VBoxLinuxAdditions.run --nox11
+$ yum clean all
+
+$ usermod -u <span class="hljs-number">471</span> vboxadd
+$ groupmod -g <span class="hljs-number">471</span> vboxsf
+<span class="hljs-comment">#lsmod | grep vboxsf</span>
+
+$ <span class="hljs-built_in">export</span> MAKE=<span class="hljs-string">'/usr/bin/gmake -i'</span>
+$ /etc/init.d/vboxadd setup
+$ <span class="hljs-built_in">unset</span> MAKE
+
+$ reboot</pre>
+<p>간혹 VBoxLinuxAdditions.run을 실행하는 과정에 kernel-devel이 없다는 오류가 날 수 있다. 이 경우엔 오류 메시지에 kernel-devel의 특정 버전을 yum으로 설치하라는 내용이 포함되어 있다. 이 명령을 따라 kernel-devel을 설치하고 VBoxLinuxAdditions.run를 다시 실행하면 오류없이 설치가 된다. </p>
+<h3>Vagrant 관련 설정</h3>
+<p>우선 vagrant 계정을 추가한다.</p>
+<pre class="hljs bash">$ /usr/sbin/groupadd -g <span class="hljs-number">470</span> vagrant
+$ /usr/sbin/useradd -g vagrant -u <span class="hljs-number">470</span> vagrant
+$ passwd vagrant
+    <span class="hljs-comment"># vagrant 를 암호로 입력</span>
+$ chown vagrant.vagrant /home/vagrant/</pre>
+<p>vagrant 계정에서 root 명량을 수행할 수 있도록 sudo에 추가해 준다.</p>
+<pre class="hljs bash">$ visudo
+    <span class="hljs-comment"># 아래 내용 추가</span>
+Defaults    env_keep += <span class="hljs-string">"SSH_AUTH_SOCK"</span>
+%vagrant        ALL=(ALL)       NOPASSWD: ALL
+Defaults:vagrant !requiretty</pre>
+<p>sudo에 정상적으로 추가되었는지를 확인하기 위해 아래의 명령을 수행해 본다.</p>
+<pre class="hljs bash">$ su vagrant
+$ <span class="hljs-built_in">cd</span>
+$ sudo ls -al</pre>
+<p>vagrant의 ssh key를 추가해 준다. 위의 확인 코드를 수행했다면 /home/vagrant에 위치하고 있을 것이다. 아니라면 해당 폴더로 이동한다.</p>
+<pre class="hljs bash">$ mkdir .ssh
+$ curl -k https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub &gt; .ssh/authorized_keys
+$ chmod <span class="hljs-number">0700</span> .ssh
+$ chmod <span class="hljs-number">0600</span> .ssh/authorized_keys
+<span class="hljs-comment"># .ssh/authorized_keys 내용 확인</span>
+$ cat .ssh/authorized_keys</pre>
+<p>여기서 주의할 것이 있다. authorized_keys 파일이 빈 파일로 저장되는 경우가 있다. 정확한 원인은 확인하지 못했지만 이번에 작업하다보니 이런 경우가 생겼다. 현재로써는 curl의 문제로 보이지만 확실하진 않다. 이 경우엔 일단 파일을 받아야 하니 아래와 같이 wget을 사용해서 받자.</p>
+<pre class="hljs bash">$ sudo yum install wget -y
+$ mkdir .ssh
+$ wget --no-check-certificate https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -O .ssh/authorized_keys
+$ chmod <span class="hljs-number">0700</span> .ssh
+$ chmod <span class="hljs-number">0600</span> .ssh/authorized_keys
+<span class="hljs-comment"># .ssh/authorized_keys 내용 확인</span>
+$ cat .ssh/authorized_keys</pre>
+<p>이제는 ssh 설정을 조정한다.</p>
+<pre class="hljs bash">$ sudo vi /etc/ssh/sshd_config
+    <span class="hljs-comment"># 아래의 내용을 확인해서 맞춰준다.</span>
+Port <span class="hljs-number">22</span>
+PubkeyAuthentication yes
+AuthorizedKeysFile      .ssh/authorized_keys</pre>
+<p>디스크를 정리해서 용량을 줄인다. 디스크 용량이 부족하다는 오류가 나올 수 있는데 무시하면 된다. 디스크가 가득 찰때까지 내용을 채우기 때문이라고 한다.(<a href="http://stackoverflow.com/a/24956805">http://stackoverflow.com/a/24956805</a>) 이렇게 하면 가상이미지를 Box로 변환시 용량을 줄일 수 있다고 한다.</p>
+<pre class="hljs bash">sudo dd <span class="hljs-keyword">if</span>=/dev/zero of=/EMPTY bs=<span class="hljs-number">1</span>M
+sudo rm <span class="hljs-operator">-f</span> /EMPTY</pre>
+<p>이제 기본 설정을 마쳤으므로 서버를 종료한다.</p>
+<pre class="hljs bash">$ sudo halt</pre>
+<h3>Box 만들기</h3>
+<p>이제 마지막 단계다. OSX의 shell에서 아래 명령을 입력하면 설치된 VirtualBox 목록이 출력된다. 여기서 생성했던 가상 머신의 이름을 확인한다.</p>
+<pre class="hljs bash">VBoxManage list vms</pre>
+<p>이제 박스를 만든다. "vagrant-centos7-x86_64"는 위에서 확인한 VirtualBox 이름을 넣으면 되고 "centos7-x86_64.box"는 생성할 박스의 이름을 넣으면 된다.</p>
+<pre class="hljs bash">vagrant package --output centos7-x86_64.box --base vagrant-centos7-x86_64</pre>
+<p>혹시 퍼미션 오류가 난다면 아래처럼 sudo를 사용하면 된다. 사실 일반적인 경우라면 당연히 퍼미션 오류가 나지 않는다. 그런데 나의 경우엔 1024 이하의 포트를 포트 포워딩하기 위해 vagrant와 VirtualBox를 root 권한에서 사용하고 있다(OSX에서는 1024 포트를 포트 포워딩하기 위해서는 root 권한이 필요하다). 이런 경우라면 vagrant 명령에서 권한 오류가 날 수 있다.</p>
+<pre class="hljs bash">sudo vagrant package --output centos7-x86_64.box --base vagrant-centos7-x86_64</pre>
+<h3>Vagrantfile 만들기</h3>
+<p>아래의 명령을 실행하면 Vagrantfile가 만들어 진다. 아래는 두가지 방법을 설명하고 있다. 첫번째는 local에 box을 추가해서 init하는 것이고 두번째는 현재 폴더의 box 파일을 사용해서 init하는 것이다. 어떤 방법을 써도 Vagrantfile는 만들어지니 편한 방법을 사용하면 된다. 어짜피 vagrant up 실행시 박스는 만들어진다. 보통 "~/.vagrant.d/boxes"에 Box 파일이 추가된다.</p>
+<pre class="hljs bash">$ vagrant box add centos7 centos7-x86_64.box
+$ vagrant init centos7</pre>
+<p>또는</p>
+<pre class="hljs bash">$ vagrant init centos7-x86_64.box
+<span class="hljs-comment"># or</span>
+$ vagrant init</pre>
+<p>여기서 만들어진 파일은 가장 기본 설정만 되어 있으므로 자신에게 맞는 설정을 해주어야 한다. 이 부분은 또 내용이 길기 때문에 다음에 포스팅 하도록 하겠다.</p>
+<h3>실행해보기</h3>
+<pre class="hljs bash">$ vagrant up</pre>
+<p>앞선 과정에서 문제가 없었다면 정상적으로 vagrant가 실행된다. 당연히 최소 실행시에는 box를 다운받는 과정이 있어 실행이 좀 오래 걸린다.</p>
+<p>아래의 명령으로 접속이 된다면 일단 성공이다.</p>
+<pre class="hljs bash">$ vagrant ssh</pre>
+<p>박스의 종료.</p>
+<pre class="hljs bash">$ vagrant halt</pre>
+<p>추가된 box를 제거하려면 아래를 참고하자.</p>
+<pre class="hljs bash">$ vagrant destroy
+
+$ vagrant box list
+$ vagrant box remove centos7-x86_64.box</pre>
+<p>destroy는 VirtualBox에서 가상 머신을 제거한다. 하지만 추가된 box는 제거되지 않는다. 따라서 box list를 이용해서 box명을 확인해서 box remove를 해주어야 box까지 제거된다. 여기서 제거란 설치된 파일의 제거를 뜻하므로 만들어둔 box파일과 Vagrantfile 파일은 그대로 유지된다.</p>
+</div>
+	</article>
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "https://blog.asamaru.net/2015/10/14/creating-a-vagrant-base-box/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+	</main>
+
+</section>
+<footer>
+	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+</footer>
+</body>
+</html>

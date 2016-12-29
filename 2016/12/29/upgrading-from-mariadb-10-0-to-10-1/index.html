@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+			<title>MariaDB 10.0에서 10.1로 업그레이드(yum) - 이 세상에 하나는 남기고 가자</title>
+		<meta name="author" content="유영재">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="description" content="MariaDB 최신 버전 설치(yum) - CentOS 7 이라는 글에서 MariaDB를 설치하는 방법에 대해 소개 했었다. 그 글에서는 처음부터 10.1을 설치하기를 권장했었는데 회사에서 사용하는 서버 중에 10.0을 사용하는 서버가 있어 이번에 업그레이드했던 내용을 간단히 남긴다. 본론에 들어가기에 앞서 10.1에서의 변경 사항이 궁금하다면 What is MariaDB 10.1?를 참고하자. MariaDB의 메뉴얼에 보면 Upgrading from MariaDB 10.0 to 10.1에서 업그레이드 과정 및 변경 사항을 자세히 ">
+	<meta name="referrer" content="always">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="shortcut icon" type="image/x-icon" href="https://blog.asamaru.net/favicon.ico"/>
+	<link rel="canonical" href="https://blog.asamaru.net/2016/12/29/upgrading-from-mariadb-10-0-to-10-1/"/>
+			<link rel="amphtml" href="https://blog.asamaru.net/amp/2016/12/29/upgrading-from-mariadb-10-0-to-10-1/">
+	
+	
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+
+	
+	
+	<meta property="og:type" content="website">
+	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
+	<meta property="og:title" content="MariaDB 10.0에서 10.1로 업그레이드(yum)">
+	<meta property="og:description" content="MariaDB 최신 버전 설치(yum) - CentOS 7 이라는 글에서 MariaDB를 설치하는 방법에 대해 소개 했었다. 그 글에서는 처음부터 10.1을 설치하기를 권장했었는데 회사에서 사용하는 서버 중에 10.0을 사용하는 서버가 있어 이번에 업그레이드했던 내용을 간단히 남긴다. 본론에 들어가기에 앞서 10.1에서의 변경 사항이 궁금하다면 What is MariaDB 10.1?를 참고하자. MariaDB의 메뉴얼에 보면 Upgrading from MariaDB 10.0 to 10.1에서 업그레이드 과정 및 변경 사항을 자세히 ">
+	<meta property="og:image" content="/res/img/post/2016/12/mariadb-icon.png">
+	
+
+	
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="@asamaru7">
+	<meta name="twitter:title" content="MariaDB 10.0에서 10.1로 업그레이드(yum)">
+	<meta name="twitter:description" content="MariaDB 최신 버전 설치(yum) - CentOS 7 이라는 글에서 MariaDB를 설치하는 방법에 대해 소개 했었다. 그 글에서는 처음부터 10.1을 설치하기를 권장했었는데 회사에서 사용하는 서버 중에 10.0을 사용하는 서버가 있어 이번에 업그레이드했던 내용을 간단히 남긴다. 본론에 들어가기에 앞서 10.1에서의 변경 사항이 궁금하다면 What is MariaDB 10.1?를 참고하자. MariaDB의 메뉴얼에 보면 Upgrading from MariaDB 10.0 to 10.1에서 업그레이드 과정 및 변경 사항을 자세히 ">
+	<meta property="twitter:image" content="/res/img/post/2016/12/mariadb-icon.png">
+	
+
+										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
+												<link rel="apple-touch-icon" sizes="76x76" href="/res/img/icon/76.png">
+												<link rel="apple-touch-icon" sizes="120x120" href="/res/img/icon/120.png">
+												<link rel="apple-touch-icon" sizes="152x152" href="/res/img/icon/152.png">
+						
+	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
+
+			<link href="/res/css/min/x94f5e63f5987c8618ada4116836f00ef7f641da4.css" type="text/css" rel="stylesheet" />
+
+	 <script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "headline": "MariaDB 10.0에서 10.1로 업그레이드(yum)",
+    "author": {
+        "@type": "Person",
+        "name": "유영재"
+    },
+    "datePublished": "2016-12-29",
+    "dateModified": "2016-12-29",
+    "articleSection": "vagrant",
+    "url": "https://blog.asamaru.net/2016/12/29/upgrading-from-mariadb-10-0-to-10-1/",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://blog.asamaru.net/res/img/post/2016/12/mariadb-icon.png",
+        "width": 512,
+        "height": 512
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "유영재",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://blog.asamaru.net/res/img/icon/icon.60.png",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://blog.asamaru.net/2016/12/29/upgrading-from-mariadb-10-0-to-10-1/"
+    }
+}</script> 
+			<script type="text/javascript">
+			(function (i, s, o, g, r, a, m) {
+				i['GoogleAnalyticsObject'] = r;
+				i[r] = i[r] || function () {
+						(i[r].q = i[r].q || []).push(arguments)
+					}, i[r].l = 1 * new Date();
+				a = s.createElement(o),
+					m = s.getElementsByTagName(o)[0];
+				a.async = 1;
+				a.src = g;
+				m.parentNode.insertBefore(a, m)
+			})(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+			ga('create', 'UA-65749108-2', 'auto');
+			ga('send', 'pageview');
+		</script>
+	</head>
+<body>
+<header>
+	<div class="dProfile">
+		<a href="https://blog.asamaru.net"><img src="/res/img/icon/icon.png" width="50" height="50" alt="profile"></a>
+		<h1><a href="https://blog.asamaru.net">이 세상에 하나는 남기고 가자</a></h1>
+					<p>세상에 필요한 소스코드 한줄 남기고 가자</p>
+				<button type="button" id="cBtnSlide"></button>
+	</div>
+</header>
+<section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">MariaDB 10.0에서 10.1로 업그레이드(yum)</h2>
+												<a href="https://blog.asamaru.net/category/vagrant/" rel="tag">vagrant</a>
+								<span></span>
+						<time class="published" datetime="2016-12-29 09:26:33">2016.12.29. 09:26</time>
+		</div>
+		<div class="markdown-body entry-content"><p><img src="/res/img/post/2016/12/mariadb-icon.png" alt="MariaDB" width="512" height="512" /></p>
+<p><a href="/2015/12/04/installing-mariadb-on-centos-7/">MariaDB 최신 버전 설치(yum) - CentOS 7</a> 이라는 글에서 <a href="https://mariadb.com">MariaDB</a>를 설치하는 방법에 대해 소개 했었다. 그 글에서는 처음부터 10.1을 설치하기를 권장했었는데 회사에서 사용하는 서버 중에 10.0을 사용하는 서버가 있어 이번에 업그레이드했던 내용을 간단히 남긴다.</p>
+<p>본론에 들어가기에 앞서 10.1에서의 변경 사항이 궁금하다면 <a href="https://mariadb.com/kb/en/mariadb/what-is-mariadb-101/">What is MariaDB 10.1?</a>를 참고하자.</p>
+<hr />
+<p><a href="https://mariadb.com">MariaDB</a>의 메뉴얼에 보면 <a href="https://mariadb.com/kb/en/mariadb/upgrading-from-mariadb-100-to-101/">Upgrading from MariaDB 10.0 to 10.1</a>에서 업그레이드 과정 및 변경 사항을 자세히 설명하고 있다.</p>
+<ol>
+<li><a href="https://mariadb.com">MariaDB</a> 10.0 종료</li>
+<li>데이터 백업</li>
+<li>MariaDB 10.0 제거</li>
+<li>MariaDB 10.1 설치</li>
+<li>mysql_upgrade를 실행
+<ul>
+<li>Ubuntu 및 Debian 패키지는 설치시 자동으로 실행(Red Hat, CentOS 및 Fedora 패키지는 자동 실행 안함)</li>
+<li>mysql_upgrade는 두 가지 작업을 수행한다.</li>
+<li>몇몇 새로운 필드로 mysql 데이터베이스의 권한 테이블을 업그레이드</li>
+<li>모든 테이블을 매우 빠르게 검사하여 MariaDB 10.1과 호환되는 것으로 표시</li>
+<li>대부분의 경우이 이 작업은 빠르게 종료된다(물론 테이블 수에 따라 다름)</li>
+</ul></li>
+<li>기능을 사용하려면 my.cnf에 새 옵션을 추가
+<ul>
+<li>my.cnf를 변경하면 mysqld를 재시작</li>
+</ul></li>
+</ol>
+<hr />
+<p>아래는 yum으로 설치된 상황에서의 처리 예시다.</p>
+<p>MariaDB 레포지토리 설정 파일을 연다.</p>
+<pre class="hljs bash">$ vi /etc/yum.repos.d/MariaDB.repo</pre>
+<p>아마도 아래와 비슷한 내용이 나올 것이다.</p>
+<pre><code>[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.0/centos6-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1</code></pre>
+<p>여기서 10.0 부분을 10.1로 수정하고 저장한다. <a href="https://downloads.mariadb.org/mariadb/repositories/">Downloads Setting up MariaDB Repositories</a>에 가면 더 정확한 레포지토리 주소를 얻을 수 있다. 하지만 이번 경우는 10.1로 고치는 것만으로도 충분하다.</p>
+<p>MariaDB를 종료한다.</p>
+<pre class="hljs bash">$ service mysql stop</pre>
+<p>데이터를 백업한다. 이 과정은 만일의 사태에 대한 대비를 위한 것이다. 실제로는 업그레이드 후 데이터를 새로 넣어야 하는 과정은 없다. 업그레이드 과정에서 데이터가 손실되는 경우에 복구를 위해 예방 차원이다.</p>
+<pre class="hljs bash"><span class="hljs-comment"># 이 부분은 예시일 뿐이니 자신의 상황에 맞게 백업해야 한다.</span>
+$ mysqldump -uroot dbname --default-character-set=utf8 --routines &gt; dbname.sql</pre>
+<p>이제는 MariaDB를 제거한다. 이 과정에서 의존성이 있는 패키지들이 함께 제거될 수 있다(나의 경우 crontab과 postfix가 함께 제거되었다). 따라서 삭제된 패키지를 기록해 두었다가 업그레이드 후 다시 설치해 줘야 한다. 그리고 /etc/my.cnf 파일과 기타 설정 파일(/etc/my.cnf.d/)도 백업해 두길 권장한다. 기본적으로 yum remove 과정에서 /etc/my.cnf.rpmsave 파일로 자동 백업 되긴한데 혹시나 모르니. 그리도 my.cnf의 경로는 상황에 따라 차이가 있을 수 있다.</p>
+<pre class="hljs bash">$ rpm -qa | grep -i <span class="hljs-string">'^MariaDB'</span>
+<span class="hljs-comment"># rpm 명령으로 확인된 MariaDB 관련 패키지를 아래와 같이 나열하여 제거한다.</span>
+$ yum remove MariaDB-server MariaDB-client MariaDB-compat MariaDB-common</pre>
+<p>MariaDB를 다시 설치한다.</p>
+<pre class="hljs bash">$ yum install MariaDB-server MariaDB-client</pre>
+<p>설정 파일들(/etc/my.cnf, /etc/my.cnf.d/)을 복구한다. 이 과정에서 그냥 파일을 덮어쓰지 말고 기존 설정과 재설치 후 생성된 cnf 파일들을 비교해 보길 권장한다. 새로운 속성이 추가된 것들이 있을 수 있으니 변경점을 확인하기 위해서다(비교해서 추가하지 않아도 기본값으로 모두 동작 할테니 크게 문제 되진 않는다).</p>
+<pre class="hljs bash">$ mv /etc/my.cnf.rpmsave /etc/my.cnf
+<span class="hljs-comment"># 추가적으로 /etc/my.cnf.d/ 를 백업했던 파일들도 복구한다.</span></pre>
+<p>MariaDB를 다시 실행해서 정상적으로 데몬이 뜨는지 확인한다.</p>
+<pre class="hljs bash">service mysql start</pre>
+<p>DB를 업그레이드 한다. 이 과정에서 주의할 것이 있다. <a href="https://mariadb.com/kb/en/mariadb/archive/">MariaDB Documentation » Storage Engines » Archive</a>에 안내되어 있는데 ARCHIVE Storage Engine은 10.0까지만 기본 설치된다. 따라서 10.1에서는 추가 설정이 필요하다. 따라서 관련 처리를 해주거나 mysql_upgrade 전에 미리 Engine을 변경해야 한다.</p>
+<pre class="hljs bash">mysql_upgrade -u root -p</pre>
+<p>여기까지 문제없이 진행되었다면 업그레이드 과정은 끝났다.</p>
+<hr />
+<p><strong>후기</strong></p>
+<p>사실 크게 복잡할 것 없는 과정인데 나의 실수로 인해 엄청난 삽질을 했다. 레포지토리 주소를 수정하는 과정에서 그냥 버전만 변경했어야 하는데 조금 더 정확히 하겠다는 생각으로 사이트에 안내된 레포지토리를 복사해서 붙여넣어 사용했다. 여기서 실수해서 centos 7 레포지토리 주소를 넣어버린 것이다. 해당 서버는 centos 6인데...
+패키지는 지웠는데 다시 설치하려니 gcc++, gcc의 버전이 맞지 않다고 계속 설치 거부. 그래서 gcc++과 gcc 버전을 직접 재설치 하려는데 여러가지 문제에 부딪혔다. 특히 gcc의 경우는 무작정 버전업을 했다가는 골치 아픈 문제들을 만나게 된다. 워낙에 연결된 곳이 많다보니... 이 과정에서 참고한 사이트들은 아래와 같다.</p>
+<ul>
+<li><a href="https://www.saintsouth.net/blog/update-libstdcpp-on-centos6/">CentOS6의 libstdc++ 업데이트</a></li>
+<li><a href="http://qiita.com/Wanwannodao/items/42c93686e49498c43529">CentOS6.7에 TensorFlow 설치</a></li>
+<li><a href="http://stackoverflow.com/questions/35616650/how-to-upgrade-glibc-from-version-2-12-to-2-14-on-centos">How to upgrade glibc from version 2.12 to 2.14 on CentOS?</a></li>
+<li><a href="http://www.linuxquestions.org/questions/linux-general-1/glibc-backward-compatibility-4175445005/">Glibc backward compatibility</a></li>
+</ul>
+<p>참고삼아 위 사이트들을 소개했지만 centos 6에서 gcc를 버전업하는 것은 권장하지 않는다.
+이번 작업은 어쨌든 사소한 실수 하나로 간단한 작업이 엄청난 재앙을 일으킨 작업이었다.</p>
+</div>
+	</article>
+
+	<section class="dShare">
+	
+			<amp-social-share type="facebook" data-param-app_id="1796234843959223" width="60" height="44"></amp-social-share>
+		<amp-social-share type="twitter" width="60" height="44"></amp-social-share>
+	<amp-social-share type="gplus" width="60" height="44"></amp-social-share>
+	<amp-social-share type="pinterest" width="60" height="44"></amp-social-share>
+	<amp-social-share type="linkedin" width="60" height="44"></amp-social-share>
+	<amp-social-share type="email" width="60" height="44"></amp-social-share>
+</section>
+
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2016/12/29/upgrading-from-mariadb-10-0-to-10-1/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
+<nav id="cSide">
+	<div class="dSideBox">
+										
+										<dl class="dTags">
+					<dt>태그</dt>
+											<dd>
+							<a href="https://blog.asamaru.net/category/android/">
+								android<span>(56)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/blog/">
+								blog<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/css/">
+								css<span>(3)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/db/">
+								db<span>(6)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/flash/">
+								flash<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/git/">
+								git<span>(7)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/html/">
+								html<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ios/">
+								ios<span>(21)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/java/">
+								java<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/jekyll/">
+								jekyll<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/js/">
+								js<span>(11)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/linux/">
+								linux<span>(27)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/octopress/">
+								octopress<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/osx/">
+								osx<span>(9)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/php/">
+								php<span>(25)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/programming/">
+								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/swift/">
+								swift<span>(6)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/thinking/">
+								thinking<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/tip/">
+								tip<span>(15)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/vagrant/">
+								vagrant<span>(7)</span>
+							</a>
+						</dd>
+									</dl>
+			
+			
+										<dl class="dArchives">
+					<dt>글 보관함</dt>
+											<dd class="dYear"><a href="https://blog.asamaru.net/2016/">2016 <span>(69)</span></a></dd>
+													<dd>
+								<dl>
+									
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/12/">12 <span>(9)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/11/">11 <span>(11)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/10/">10 <span>(2)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/09/">09 <span>(2)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/08/">08 <span>(2)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/07/">07 <span>(5)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/05/">05 <span>(1)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/04/">04 <span>(9)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/03/">03 <span>(13)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/02/">02 <span>(7)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2016/01/">01 <span>(8)</span></a>
+										</dd>
+																	</dl>
+							</dd>
+																	<dd class="dYear"><a href="https://blog.asamaru.net/2015/">2015 <span>(118)</span></a></dd>
+													<dd>
+								<dl>
+									
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/12/">12 <span>(16)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/11/">11 <span>(16)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/10/">10 <span>(41)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/09/">09 <span>(37)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2015/08/">08 <span>(8)</span></a>
+										</dd>
+																	</dl>
+							</dd>
+																	<dd class="dYear"><a href="https://blog.asamaru.net/2012/">2012 <span>(7)</span></a></dd>
+													<dd>
+								<dl>
+									
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2012/10/">10 <span>(1)</span></a>
+										</dd>
+																			<dd class="dMonth">
+											<a href="https://blog.asamaru.net/2012/09/">09 <span>(6)</span></a>
+										</dd>
+																	</dl>
+							</dd>
+															</dl>
+					
+				
+		
+		<form action="https://www.google.com/search" method="get" target="_blank" class="dFormSearch">
+			<fieldset>
+				<input type="hidden" name="sitesearch" value="https://blog.asamaru.net">
+				<legend>검색하기 폼</legend>
+				<label class="dIcon">검색하기</label>
+				<input type="text" name="q" value="" placeholder="Search"/>
+			</fieldset>
+		</form>
+
+		
+		<ul class="dLinks">
+			<li><a href="https://blog.asamaru.net/archives/" class="dInverse">전체글 보기</a></li>
+			<li class="dPipe"></li>
+			<li><a href="https://blog.asamaru.net/atom.xml" class="dInverse" target="_blank">RSS</a></li>
+		</ul>
+	</div>
+</nav>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</section>
+<footer>
+	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+</footer>
+<script src="/res/js/min/x25c84402d894075554f1198a50334a11367f0ad8.js" type="text/javascript"></script>
+<script>
+	(function () {
+		function addEvent(element, evnt, funct) {
+			if (element.attachEvent)
+				return element.attachEvent('on' + evnt, funct);
+			else
+				return element.addEventListener(evnt, funct, false);
+		}
+
+		var slideout = new Slideout({
+			'panel': document.getElementById('cMainPanel'),
+			'menu': document.getElementById('cSide'),
+			'padding': 300,
+			'tolerance': 70,
+			'side': 'right'
+		});
+		addEvent(
+			document.getElementById('cBtnSlide'),
+			'click',
+			function () {
+				slideout.toggle();
+			}
+		);
+	})();
+</script>
+
+
+
+<script async src="https://cdn.ampproject.org/v0.js"></script>
+<script async custom-element="amp-social-share" src="https://cdn.ampproject.org/v0/amp-social-share-0.1.js"></script>
+
+</body>
+</html>

@@ -127,6 +127,41 @@
 </ul>
 <hr />
 <p>다음은 정규식 사용 예시를 몇가지 남겨둔다. 웹 상에서 공개되어 있는 예시들도 있고 직접 만들어 사용했던 정규식도 포함되어 있다.</p>
+<h4>대상 내에서 문자열로 정의된 영역을 추출하는 예시</h4>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-variable">$string</span> = <span class="hljs-string">&lt;&lt;&lt;STR
+\$a = "123test-string";
+"test-string\"test-string"
+'test-string"test-string\'test-string'
+
+'test-string"
+        test-string\'test-string'
+
+sample</span>
+
+<span class="hljs-string">""</span>
+<span class="hljs-string">'"'</span>
+<span class="hljs-string">''</span>
+STR;
+
+<span class="hljs-variable">$regex</span> = <span class="hljs-string">'/(?P&lt;string&gt;(["\'])(?s:(?=(\\\\?))\3.)*?\2)/'</span>;
+preg_match_all(<span class="hljs-variable">$regex</span>, <span class="hljs-variable">$string</span>, <span class="hljs-variable">$matches</span>);
+print_r(<span class="hljs-variable">$matches</span>[<span class="hljs-string">'string'</span>]);</pre>
+<h4>위 예시를 응용해서 html에서 이미지 url만 추출하는 예시다.</h4>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$string</span> = <span class="hljs-string">&lt;&lt;&lt;STR
+&lt;img src="test url" /&gt;
+&lt;img alt="ver" src="http://test/\"'url" /&gt;
+&lt;img alt="v\"er" src="test url" /&gt;
+STR;</span>
+
+<span class="hljs-variable">$regex</span> = <span class="hljs-string">'/&lt;img\s+[^&gt;]*src\s*=\s*(?P&lt;images&gt;(["\'])(?s:(?=(\\\\?))\g{-1}.)*?\g{-2})/'</span>;
+preg_match_all(<span class="hljs-variable">$regex</span>, <span class="hljs-variable">$string</span>, <span class="hljs-variable">$matches</span>);
+print_r(<span class="hljs-variable">$matches</span>[<span class="hljs-string">'images'</span>]);</pre>
+<p>더 간단히 아래와 같이 해도 상관없다(url 내에 ' 또는 &quot; 가 나올 수 없으므로).</p>
+<pre><code>&lt;?php
+preg_match_all('/&lt;img\s+[^&gt;]*src\s*=\s*[\'"]([^\'"]+)[\'"][^&gt;]*&gt;/', $string, $matches);</code></pre>
 <hr />
 <ul>
 <li><a href="/2017/01/07/php-regex-prolog/">PHP 정규식(PCRE)의 모든 것 - 프롤로그</a></li>

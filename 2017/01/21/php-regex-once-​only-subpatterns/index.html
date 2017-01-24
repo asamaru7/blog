@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+					<title>PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns) - 이 세상에 하나는 남기고 가자</title>
+	<meta name="author" content="유영재">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	
+	<meta name="description" content="문서 내용 보강중 Once-​only subpatterns (단일 서브 패턴) 반복을 최대화하고 최소화하면서 반복되는 항목이 실패하면 반복되는 항목의 재평가가 발생하여 다른 반복 횟수로 나머지 패턴을 일치시킬 수 있다. 때로는 패턴의 작성자가 계속 수행 할 점이 없음을 알 때이를 방지하거나 일치 성질을 변경하거나 다른 방법보다 먼저 실패하게하는 것이 유용하다. 예를 들어, 제목 줄 123456bar에 적용될 때 \d+foo 패턴을 고려해 보자. 6자리 모두를 매치 한 다음 &quot;foo&quot;와 일치하지 않으면, 정규식의 정상적인 동작은 \d">
+	<meta name="referrer" content="always">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="shortcut icon" type="image/x-icon" href="https://blog.asamaru.net/favicon.ico"/>
+	<link rel="canonical" href="https://blog.asamaru.net/2017/01/21/php-regex-once-​only-subpatterns/"/>
+			<link rel="amphtml" href="https://blog.asamaru.net/amp/2017/01/21/php-regex-once-​only-subpatterns/">
+	
+	
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+
+	
+	
+	<meta property="og:type" content="website">
+	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
+	<meta property="og:title" content="PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns)">
+	<meta property="og:description" content="문서 내용 보강중 Once-​only subpatterns (단일 서브 패턴) 반복을 최대화하고 최소화하면서 반복되는 항목이 실패하면 반복되는 항목의 재평가가 발생하여 다른 반복 횟수로 나머지 패턴을 일치시킬 수 있다. 때로는 패턴의 작성자가 계속 수행 할 점이 없음을 알 때이를 방지하거나 일치 성질을 변경하거나 다른 방법보다 먼저 실패하게하는 것이 유용하다. 예를 들어, 제목 줄 123456bar에 적용될 때 \d+foo 패턴을 고려해 보자. 6자리 모두를 매치 한 다음 &quot;foo&quot;와 일치하지 않으면, 정규식의 정상적인 동작은 \d">
+	<meta property="og:image" content="/res/img/icon/icon.png">
+	
+
+	
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="@asamaru7">
+	<meta name="twitter:title" content="PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns)">
+	<meta name="twitter:description" content="문서 내용 보강중 Once-​only subpatterns (단일 서브 패턴) 반복을 최대화하고 최소화하면서 반복되는 항목이 실패하면 반복되는 항목의 재평가가 발생하여 다른 반복 횟수로 나머지 패턴을 일치시킬 수 있다. 때로는 패턴의 작성자가 계속 수행 할 점이 없음을 알 때이를 방지하거나 일치 성질을 변경하거나 다른 방법보다 먼저 실패하게하는 것이 유용하다. 예를 들어, 제목 줄 123456bar에 적용될 때 \d+foo 패턴을 고려해 보자. 6자리 모두를 매치 한 다음 &quot;foo&quot;와 일치하지 않으면, 정규식의 정상적인 동작은 \d">
+	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	
+
+										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
+												<link rel="apple-touch-icon" sizes="76x76" href="/res/img/icon/76.png">
+												<link rel="apple-touch-icon" sizes="120x120" href="/res/img/icon/120.png">
+												<link rel="apple-touch-icon" sizes="152x152" href="/res/img/icon/152.png">
+						
+	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
+
+			<link href="/res/css/min/xb0faeb9025a25021c55f2eca5fdd4308b8d1b312.css" type="text/css" rel="stylesheet" />
+
+	 <script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "headline": "PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns)",
+    "author": {
+        "@type": "Person",
+        "name": "유영재"
+    },
+    "datePublished": "2017-1-21",
+    "dateModified": "2017-1-21",
+    "articleSection": "php",
+    "url": "https://blog.asamaru.net/2017/01/21/php-regex-once-​only-subpatterns/",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://blog.asamaru.net/res/img/icon/icon.696.png",
+        "width": 696,
+        "height": 696
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "유영재",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://blog.asamaru.net/res/img/icon/icon.60.png",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://blog.asamaru.net/2017/01/21/php-regex-once-​only-subpatterns/"
+    }
+}</script> 
+			<script type="text/javascript">
+			(function (i, s, o, g, r, a, m) {
+				i['GoogleAnalyticsObject'] = r;
+				i[r] = i[r] || function () {
+						(i[r].q = i[r].q || []).push(arguments)
+					}, i[r].l = 1 * new Date();
+				a = s.createElement(o),
+					m = s.getElementsByTagName(o)[0];
+				a.async = 1;
+				a.src = g;
+				m.parentNode.insertBefore(a, m)
+			})(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+			ga('create', 'UA-65749108-2', 'auto');
+			ga('send', 'pageview');
+		</script>
+	</head>
+<body>
+<header>
+	<div class="dProfile">
+		<a href="https://blog.asamaru.net"><img src="/res/img/icon/icon.png" width="50" height="50" alt="profile"></a>
+		<h1><a href="https://blog.asamaru.net">이 세상에 하나는 남기고 가자</a></h1>
+					<p>세상에 필요한 소스코드 한줄 남기고 가자</p>
+				<button type="button" id="cBtnSlide"></button>
+	</div>
+</header>
+<section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns)</h2>
+												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
+													<span></span>
+										<time class="published " datetime="2017-01-21 18:25:01">2017.01.21. 18:25</time>
+		</div>
+		<div class="markdown-body entry-content"><blockquote>
+<p>문서 내용 보강중</p>
+</blockquote>
+<h3><a href="http://php.net/manual/kr/regexp.reference.onlyonce.php">Once-​only subpatterns</a> (단일 서브 패턴)</h3>
+<p>반복을 최대화하고 최소화하면서 반복되는 항목이 실패하면 반복되는 항목의 재평가가 발생하여 다른 반복 횟수로 나머지 패턴을 일치시킬 수 있다. 때로는 패턴의 작성자가 계속 수행 할 점이 없음을 알 때이를 방지하거나 일치 성질을 변경하거나 다른 방법보다 먼저 실패하게하는 것이 유용하다.</p>
+<p>예를 들어, 제목 줄 123456bar에 적용될 때 <code>\d+foo</code> 패턴을 고려해 보자.</p>
+<p>6자리 모두를 매치 한 다음 &quot;foo&quot;와 일치하지 않으면, 정규식의 정상적인 동작은 <code>\d+</code> 항목과 일치하는 5자리 숫자로 다시 시도한 다음 4등으로 다시 시도하여 궁극적으로 실패한다.
+한 번만의 서브 패턴은 패턴의 일부가 매치되면,이 방법으로 재평가되지 않게하기 위해서, 매치자는 최초로 &quot;foo&quot;와의 매치가 실패했을 경우는 즉시 포기할 것을 지정하는 수단을 제공한다. 이 표기법은 또 다른 종류의 특수 괄호로, <code>(?&gt;</code>이 예제에서와 같이 시작 : <code>(?&gt;\d+)bar</code></p>
+<p>이런 종류의 괄호는 패턴이 일치하면 패턴의 일부를 &quot;locks up&quot; 그리고 패턴으로의 더 이상의 실패는 패턴으로 되돌아가는 것을 방지한다. 그러나 이전 항목으로 이동하면 정상적으로 작동한다.</p>
+<p>또 다른 설명은 이 유형의 서브 패턴이 제목 문자열의 현재 위치에 고정되어 있으면 동일한 독립형 패턴이 일치하는 문자의 문자열과 일치한다는 것이다.</p>
+<p>한 번만의 서브 패턴은 서브 패턴을 캡처하지 않는다. 위의 예제와 같은 간단한 경우는 가능한 모든 것을 삼켜 야하는 최대화 반복으로 생각할 수 있다. 그래서 <code>\d+</code>와 <code>\d+?</code> 패턴 일치의 나머지 부분을 만들기 위해 일치시키는 자릿수를 조정할 준비가되어 있다 <code>(?&gt;\d+)</code>. 전체 자릿수 시퀀스 만 일치시킬 수 있다.</p>
+<p>물론이 구조는 임의로 복잡한 서브 패턴을 포함할 수 있으며 중첩 될 수 있다.</p>
+<p>한 번만 사용할 수있는 서브 패턴은 look-behind <a href="/2017/01/15/php-regex-alternation/">어설션</a>과 함께 사용하여 제목 문자열 끝에 효율적인 일치를 지정한다. 일치하지 않는 긴 문자열에 적용 할 때 <code>abcd$</code>와 같은 간단한 패턴을 고려하자. 매칭은 왼쪽에서 오른쪽으로 진행되기 때문에, PCRE는 피사체의 각 &quot;a&quot;를 찾아 다음 패턴이 나머지 패턴과 일치하는지 확인하다. 패턴이 <code>^.*abcd$</code>로 지정되면 초기 <code>.*</code>는 처음에는 전체 문자열과 일치하지만 실패 할 경우 ( &quot;a&quot; 다음에 없기 때문에) 마지막 문자를 제외하고 모두 일치하도록 역 추적 한 다음 모두 그러나 마지막 두 글자 등 . 다시 한 번 &quot;a&quot;에 대한 검색은 오른쪽에서 왼쪽으로 전체 문자열을 포함하므로 더 나아지지 않는다. 그러나 패턴이 <code>^(?&gt;.*)(?&lt;=abcd)</code>로 쓰여진 경우 <code>.*</code> 항목에 대해 역 추적이 불가능 할 수 있다. 전체 문자열 만 일치시킬 수 있다. 후속 look-behind <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 마지막 네 문자에 대해 단일 테스트를 수행한다. 실패하면 즉시 일치하지 않는다. 긴 문자열의 경우 이 접근 방식은 처리 시간에 중요한 차이를 만든다.</p>
+<p>패턴이 무한 반복 횟수만큼 반복 될 수 있는 서브 패턴 내부에 무제한 반복을 포함하는 패턴은 한 번만 서브 패턴을 사용하는 것이 매우 오랜 시간 동안 실패한 일부 일치를 피할 수있는 유일한 방법이다. 패턴 <code>(\D+|&lt;\d+&gt;)*[!?]</code>은 숫자가 아닌 숫자 또는 <code>&lt;&gt;</code>로 묶인 숫자와 무작위로 일치하는 부분 문자열을 일치시킨다. <code>!</code> 또는 <code>?</code> 일치하면 빠르게 실행된다. 그러나 &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;에 적용되면 실패를 보고 하기까지 시간이 오래 걸린다. 이것은 문자열이 여러 가지 방법으로 두 반복 사이에서 나눌 수 있기 때문에 모두 시도해야한다. (PCRE와 Perl은 단일 문자가 사용될 때 빠른 오류를 허용하는 최적화 기능을 가지고 있기 때문에 끝에있는 단일 문자 대신 <code>[!?]</code>를 사용한다. 일치하는데 필요한 마지막 단일 문자를 기억하고, 패턴이 <code>((?&gt;\D+)|&lt;\d+&gt;)*[!?]</code>로 변경되면 숫자가 아닌 시퀀스는 깨질 수 없으므로 오류가 빠르게 발생한다.</p>
+<hr />
+<ul>
+<li><a href="/2017/01/07/php-regex-prolog/">PHP 정규식(PCRE)의 모든 것 - 프롤로그</a></li>
+<li><a href="/2017/01/08/php-regex-delimiters/">PHP 정규식(PCRE)의 모든 것 - 구분기호(Delimiters)</a></li>
+<li><a href="/2017/01/09/php-regex-meta-characters/">PHP 정규식(PCRE)의 모든 것 - 메타문자(Meta-characters)</a></li>
+<li><a href="/2017/01/10/php-regex-escape-sequences/">PHP 정규식(PCRE)의 모든 것 - 이스케이프 시퀀스(Escape Sequences)</a></li>
+<li><a href="/2017/01/11/php-regex-unicode-character-properties/">PHP 정규식(PCRE)의 모든 것 - 유니코드 문자 속성(Unicode character properties)</a></li>
+<li><a href="/2017/01/12/php-regex-anchors/">PHP 정규식(PCRE)의 모든 것 - 앵커(Anchors)</a></li>
+<li><a href="/2017/01/13/php-regex-dot/">PHP 정규식(PCRE)의 모든 것 - 점(Dot)</a></li>
+<li><a href="/2017/01/14/php-regex-character-classes/">PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes)</a></li>
+<li><a href="/2017/01/15/php-regex-alternation/">PHP 정규식(PCRE)의 모든 것 - 대안(Alternation)</a></li>
+<li><a href="/2017/01/16/php-regex-internal-option-setting/">PHP 정규식(PCRE)의 모든 것 - 내부 옵션 설정(Internal option setting)</a></li>
+<li><a href="/2017/01/17/php-regex-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns)</a></li>
+<li><a href="/2017/01/18/php-regex-repetition/">PHP 정규식(PCRE)의 모든 것 - 반복(Repetition)</a></li>
+<li><a href="/2017/01/19/php-regex-back-references/">PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references)</a></li>
+<li><a href="/2017/01/20/php-regex-assertions/">PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)</a></li>
+<li>> <strong>PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns)</strong></li>
+<li><a href="/2017/01/22/php-regex-conditional-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 조건부 서브 패턴(Conditional subpatterns)</a></li>
+<li><a href="/2017/01/23/php-regex-comments/">PHP 정규식(PCRE)의 모든 것 - 주석(Comments)</a></li>
+<li><a href="/2017/01/24/php-regex-recursive-patterns/">PHP 정규식(PCRE)의 모든 것 - 재귀 패턴(Recursive patterns)</a></li>
+<li><a href="/2017/01/25/php-regex-epilogue/">PHP 정규식(PCRE)의 모든 것 - 에필로그</a></li>
+</ul>
+</div>
+			</article>
+
+	<section class="dShare">
+	
+			<amp-social-share type="facebook" data-param-app_id="1796234843959223" width="60" height="44"></amp-social-share>
+		<amp-social-share type="twitter" width="60" height="44"></amp-social-share>
+	<amp-social-share type="gplus" width="60" height="44"></amp-social-share>
+	<amp-social-share type="pinterest" width="60" height="44"></amp-social-share>
+	<amp-social-share type="linkedin" width="60" height="44"></amp-social-share>
+	<amp-social-share type="email" width="60" height="44"></amp-social-share>
+</section>
+
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2017/01/21/php-regex-once-​only-subpatterns/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
+<nav id="cSide">
+	<div class="dSideBox">
+										
+										<dl class="dTags">
+					<dt>카테고리</dt>
+											<dd>
+							<a href="https://blog.asamaru.net/category/android/">
+								android<span>(56)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/blog/">
+								blog<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/css/">
+								css<span>(3)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/db/">
+								db<span>(6)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/flash/">
+								flash<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/git/">
+								git<span>(7)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/html/">
+								html<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ios/">
+								ios<span>(23)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/java/">
+								java<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/jekyll/">
+								jekyll<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/js/">
+								js<span>(11)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/linux/">
+								linux<span>(27)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/octopress/">
+								octopress<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/osx/">
+								osx<span>(9)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/php/">
+								php<span>(45)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/programming/">
+								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/swift/">
+								swift<span>(7)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/thinking/">
+								thinking<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/tip/">
+								tip<span>(15)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/vagrant/">
+								vagrant<span>(7)</span>
+							</a>
+						</dd>
+									</dl>
+			
+			
+						
+			
+																<dl class="dArchives">
+						<dt>글 보관함</dt>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(22)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/01/">01 <span>(22)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2016/">2016 <span>(69)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/12/">12 <span>(9)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/11/">11 <span>(11)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/10/">10 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/09/">09 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/08/">08 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/07/">07 <span>(5)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/05/">05 <span>(1)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/04/">04 <span>(9)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/03/">03 <span>(13)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/02/">02 <span>(7)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/01/">01 <span>(8)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2015/">2015 <span>(118)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/12/">12 <span>(16)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/11/">11 <span>(16)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/10/">10 <span>(41)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/09/">09 <span>(37)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/08/">08 <span>(8)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2012/">2012 <span>(7)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2012/10/">10 <span>(1)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2012/09/">09 <span>(6)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																		</dl>
+									
+				
+		
+		<form action="https://www.google.com/search" method="get" target="_blank" class="dFormSearch">
+			<fieldset>
+				<input type="hidden" name="sitesearch" value="https://blog.asamaru.net">
+				<legend>검색하기 폼</legend>
+				<label class="dIcon">검색하기</label>
+				<input type="text" name="q" value="" placeholder="Search"/>
+			</fieldset>
+		</form>
+
+		
+		<ul class="dLinks">
+							<li><a href="https://blog.asamaru.net/archives/" class="dInverse">전체글 보기</a></li>
+				<li class="dPipe"></li>
+						<li><a href="https://blog.asamaru.net/atom.xml" class="dInverse" target="_blank">RSS</a></li>
+		</ul>
+	</div>
+</nav>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</section>
+<footer>
+	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+</footer>
+<script src="/res/js/min/x25c84402d894075554f1198a50334a11367f0ad8.js" type="text/javascript"></script>
+<script>
+	(function () {
+		function addEvent(element, evnt, funct) {
+			if (element.attachEvent)
+				return element.attachEvent('on' + evnt, funct);
+			else
+				return element.addEventListener(evnt, funct, false);
+		}
+
+		var slideout = new Slideout({
+			'panel': document.getElementById('cMainPanel'),
+			'menu': document.getElementById('cSide'),
+			'padding': 300,
+			'tolerance': 70,
+			'side': 'right'
+		});
+		addEvent(
+			document.getElementById('cBtnSlide'),
+			'click',
+			function () {
+				slideout.toggle();
+			}
+		);
+	})();
+</script>
+
+
+
+<script async src="https://cdn.ampproject.org/v0.js"></script>
+<script async custom-element="amp-social-share" src="https://cdn.ampproject.org/v0/amp-social-share-0.1.js"></script>
+
+</body>
+</html>

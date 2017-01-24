@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+					<title>PHP 정규식(PCRE)의 모든 것 - Escape sequences - 이 세상에 하나는 남기고 가자</title>
+	<meta name="author" content="유영재">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	
+	<meta name="description" content="문서 내용 보강중 Escape sequences 백 슬래시 문자는 여러 용도로 사용된다. 첫째, 영숫자가 아닌 문자가 나오면 문자가 가질 수 있는 특별한 의미가 없어진다. 이스케이프 문자로 백 슬래시를 사용하면 캐릭터 클래스의 내부 및 외부에 모두 적용된다. 예를 들어, &quot;*&quot; 문자를 일치시키려면 패턴에 &quot;\*&quot;을 쓴다. 이것은 \ 다음 문자가 메타 문자로 해석될지 여부와 관계없이 적용되므로 영숫자가 아닌 문자 앞에 &quot;\&quot;를 붙이면 문자 자체를 의미하는 것으로 항상 안전하다. 단, 백 슬래시와 일치시키려면 &quot;\\&quot;이라고 써야 한다.">
+	<meta name="referrer" content="always">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="shortcut icon" type="image/x-icon" href="https://blog.asamaru.net/favicon.ico"/>
+	<link rel="canonical" href="https://blog.asamaru.net/2017/01/10/php-regex-escape-sequences/"/>
+			<link rel="amphtml" href="https://blog.asamaru.net/amp/2017/01/10/php-regex-escape-sequences/">
+	
+	
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+
+	
+	
+	<meta property="og:type" content="website">
+	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
+	<meta property="og:title" content="PHP 정규식(PCRE)의 모든 것 - Escape sequences">
+	<meta property="og:description" content="문서 내용 보강중 Escape sequences 백 슬래시 문자는 여러 용도로 사용된다. 첫째, 영숫자가 아닌 문자가 나오면 문자가 가질 수 있는 특별한 의미가 없어진다. 이스케이프 문자로 백 슬래시를 사용하면 캐릭터 클래스의 내부 및 외부에 모두 적용된다. 예를 들어, &quot;*&quot; 문자를 일치시키려면 패턴에 &quot;\*&quot;을 쓴다. 이것은 \ 다음 문자가 메타 문자로 해석될지 여부와 관계없이 적용되므로 영숫자가 아닌 문자 앞에 &quot;\&quot;를 붙이면 문자 자체를 의미하는 것으로 항상 안전하다. 단, 백 슬래시와 일치시키려면 &quot;\\&quot;이라고 써야 한다.">
+	<meta property="og:image" content="/res/img/icon/icon.png">
+	
+
+	
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="@asamaru7">
+	<meta name="twitter:title" content="PHP 정규식(PCRE)의 모든 것 - Escape sequences">
+	<meta name="twitter:description" content="문서 내용 보강중 Escape sequences 백 슬래시 문자는 여러 용도로 사용된다. 첫째, 영숫자가 아닌 문자가 나오면 문자가 가질 수 있는 특별한 의미가 없어진다. 이스케이프 문자로 백 슬래시를 사용하면 캐릭터 클래스의 내부 및 외부에 모두 적용된다. 예를 들어, &quot;*&quot; 문자를 일치시키려면 패턴에 &quot;\*&quot;을 쓴다. 이것은 \ 다음 문자가 메타 문자로 해석될지 여부와 관계없이 적용되므로 영숫자가 아닌 문자 앞에 &quot;\&quot;를 붙이면 문자 자체를 의미하는 것으로 항상 안전하다. 단, 백 슬래시와 일치시키려면 &quot;\\&quot;이라고 써야 한다.">
+	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	
+
+										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
+												<link rel="apple-touch-icon" sizes="76x76" href="/res/img/icon/76.png">
+												<link rel="apple-touch-icon" sizes="120x120" href="/res/img/icon/120.png">
+												<link rel="apple-touch-icon" sizes="152x152" href="/res/img/icon/152.png">
+						
+	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
+
+			<link href="/res/css/min/xb0faeb9025a25021c55f2eca5fdd4308b8d1b312.css" type="text/css" rel="stylesheet" />
+
+	 <script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "headline": "PHP 정규식(PCRE)의 모든 것 - Escape sequences",
+    "author": {
+        "@type": "Person",
+        "name": "유영재"
+    },
+    "datePublished": "2017-1-10",
+    "dateModified": "2017-1-23",
+    "articleSection": "php",
+    "url": "https://blog.asamaru.net/2017/01/10/php-regex-escape-sequences/",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://blog.asamaru.net/res/img/icon/icon.696.png",
+        "width": 696,
+        "height": 696
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "유영재",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://blog.asamaru.net/res/img/icon/icon.60.png",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://blog.asamaru.net/2017/01/10/php-regex-escape-sequences/"
+    }
+}</script> 
+			<script type="text/javascript">
+			(function (i, s, o, g, r, a, m) {
+				i['GoogleAnalyticsObject'] = r;
+				i[r] = i[r] || function () {
+						(i[r].q = i[r].q || []).push(arguments)
+					}, i[r].l = 1 * new Date();
+				a = s.createElement(o),
+					m = s.getElementsByTagName(o)[0];
+				a.async = 1;
+				a.src = g;
+				m.parentNode.insertBefore(a, m)
+			})(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+			ga('create', 'UA-65749108-2', 'auto');
+			ga('send', 'pageview');
+		</script>
+	</head>
+<body>
+<header>
+	<div class="dProfile">
+		<a href="https://blog.asamaru.net"><img src="/res/img/icon/icon.png" width="50" height="50" alt="profile"></a>
+		<h1><a href="https://blog.asamaru.net">이 세상에 하나는 남기고 가자</a></h1>
+					<p>세상에 필요한 소스코드 한줄 남기고 가자</p>
+				<button type="button" id="cBtnSlide"></button>
+	</div>
+</header>
+<section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">PHP 정규식(PCRE)의 모든 것 - Escape sequences</h2>
+												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
+													<span></span>
+										<time class="published " datetime="2017-01-10 16:28:08">2017.01.10. 16:28</time>
+		</div>
+		<div class="markdown-body entry-content"><blockquote>
+<p>문서 내용 보강중</p>
+</blockquote>
+<h3><a href="http://php.net/manual/kr/regexp.reference.escape.php">Escape sequences</a></h3>
+<p>백 슬래시 문자는 여러 용도로 사용된다.</p>
+<h4>첫째, 영숫자가 아닌 문자가 나오면 문자가 가질 수 있는 특별한 의미가 없어진다.</h4>
+<p>이스케이프 문자로 백 슬래시를 사용하면 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a>의 내부 및 외부에 모두 적용된다.</p>
+<p>예를 들어, &quot;<code>*</code>&quot; 문자를 일치시키려면 패턴에 &quot;<code>\*</code>&quot;을 쓴다. 이것은 <code>\</code> 다음 문자가 <a href="/2017/01/09/php-regex-meta-characters/">메타 문자</a>로 해석될지 여부와 관계없이 적용되므로 영숫자가 아닌 문자 앞에 &quot;<code>\</code>&quot;를 붙이면 문자 자체를 의미하는 것으로 항상 안전하다. 단, 백 슬래시와 일치시키려면 &quot;<code>\\</code>&quot;이라고 써야 한다.</p>
+<blockquote>
+<p>' 또는 &quot; 따옴표가 붙은 PHP 문자열은 백 슬래시가 특별한 의미를 가진다. 따라서 <code>\</code>가 일반 표현식 <code>\\</code>과 일치해야 한다면 &quot;<code>\\\\</code>&quot; 또는 '<code>\\\\</code>'가 PHP 코드에서 사용 되어야 한다.</p>
+</blockquote>
+<p>패턴이 <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_EXTENDED</a> 옵션으로 컴파일 된 경우 패턴의 공백(<a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 제외)과 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 외부의 &quot;<code>#</code>&quot; 사이의 문자와 다음 줄 바꿈 문자는 무시된다. 백 슬래시를 사용하여 공백이나 &quot;<code>#</code>&quot; 문자를 패턴의 일부로 포함할 수 있다.</p>
+<h4>두번째, 백 슬래시는 시각적으로 패턴의 비인쇄 문자를 인코딩하는 방법을 제공한다.</h4>
+<p>패턴을 끝내는 바이너리 0은 제외하고 인쇄되지 않는 문자의 모양에는 제한이 없지만 텍스트 편집으로 패턴을 사용하는 경우 일반적으로 이진 문자 보다 다음 이스케이프 시퀀스 중 하나를 사용하는 것이 더 쉽다.</p>
+<p>다음은 그 예시다.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">문자</th>
+<th>설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>\a</code></td>
+<td>알람, 즉 BEL 문자 (hex 07)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\cx</code></td>
+<td>&quot;control-x&quot;, 여기서 x는 임의의 문자이다.</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\e</code></td>
+<td>escape (hex 1B)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\f</code></td>
+<td>formfeed (hex 0C)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\n</code></td>
+<td>newline (hex 0A)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\p{xx}</code></td>
+<td>xx 속성을 가진 문자, 자세한 정보는 유니 코드 속성을 참조</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\P{xx}</code></td>
+<td>xx 속성이 없는 문자, 자세한 정보는 유니 코드 속성을 참조</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\r</code></td>
+<td>carriage return (hex 0D)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\t</code></td>
+<td>tab (hex 09)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\xhh</code></td>
+<td>자세한 정보는 16 진법 코드 hh 유니 코드 특성을 가진 문자</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\ddd</code></td>
+<td>8진 코드 ddd 또는 역 참조가 있는 문자</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>\cx</code></strong> : &quot;control-x&quot;를 나타낸다(ctrl키 + x). 변환과정은 다음과 같다. &quot;x&quot;가 소문자 인 경우 대문자로 변환된다. 그런 다음 문자의 6번 비트 (16진수 40)가 반전된다.
+따라서 &quot;<code>\cz</code>&quot;는 16진수 1A가 되지만 &quot;<code>\c{</code>&quot;는 16진수 3B가 되고 &quot;<code>\c;</code>&quot;는 16진수 7B가 된다.
+변환 과정은 아래의 코드를 보면 더 빠르게 이해가 될 것이다.</p>
+<pre class="hljs php"><span class="hljs-variable">$tmp</span> = [<span class="hljs-string">'z'</span> =&gt; <span class="hljs-string">'1a'</span>, <span class="hljs-string">'{'</span> =&gt; <span class="hljs-string">'3b'</span>, <span class="hljs-string">';'</span> =&gt; <span class="hljs-string">'7b'</span>];
+<span class="hljs-keyword">foreach</span> (<span class="hljs-variable">$tmp</span> <span class="hljs-keyword">as</span> <span class="hljs-variable">$from</span> =&gt; <span class="hljs-variable">$expect</span>) {
+    <span class="hljs-variable">$fromBit</span> = sprintf(<span class="hljs-string">'%07s'</span>, decbin(ord(strtoupper(<span class="hljs-variable">$from</span>))));
+    <span class="hljs-keyword">echo</span> <span class="hljs-string">"\t"</span> . <span class="hljs-variable">$fromBit</span> . <span class="hljs-string">' '</span> . <span class="hljs-string">"\n"</span>;
+
+    <span class="hljs-variable">$toBit</span> = (!substr(<span class="hljs-variable">$fromBit</span>, -<span class="hljs-number">7</span>, <span class="hljs-number">1</span>) ? <span class="hljs-string">'1'</span> : <span class="hljs-string">'0'</span>) . substr(<span class="hljs-variable">$fromBit</span>, -<span class="hljs-number">6</span>);
+
+    <span class="hljs-keyword">echo</span> <span class="hljs-string">"\t"</span> . <span class="hljs-variable">$toBit</span> . <span class="hljs-string">"\n"</span>;
+    <span class="hljs-keyword">if</span> (strcmp(dechex(bindec(<span class="hljs-variable">$toBit</span>)), <span class="hljs-variable">$expect</span>) != <span class="hljs-number">0</span>) {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> \<span class="hljs-keyword">Exception</span>(<span class="hljs-string">'변환 오류'</span>);
+    }
+    <span class="hljs-keyword">echo</span> <span class="hljs-string">"\t"</span> . dechex(bindec(<span class="hljs-variable">$toBit</span>)) . <span class="hljs-string">' &lt;- '</span> . <span class="hljs-variable">$expect</span> . <span class="hljs-string">"\n"</span>;
+    <span class="hljs-keyword">echo</span> <span class="hljs-string">"\t"</span> . <span class="hljs-variable">$from</span> . <span class="hljs-string">' -&gt; '</span> . chr(bindec(<span class="hljs-variable">$toBit</span>)) . <span class="hljs-string">"\n"</span>;
+    <span class="hljs-keyword">echo</span> <span class="hljs-string">"\n"</span>;
+}</pre>
+<p><strong><code>\x</code></strong> : &quot;<code>\x</code>&quot; 뒤에 나오는 최대 두 개의 16진수를 읽는다(문자는 대문자 또는 소문자로 입력 할 수 있음). UTF-8 모드에서는 &quot;<code>\x{...}</code>&quot;가 허용되며 중괄호의 내용은 16진수 문자열이다. 주어진 16진수 코드 넘버는 UTF-8 문자로 해석된다. 원래 16진수 이스케이프 시퀀스인 <code>\xhh</code>가 127보다 큰 경우에는 2바이트 UTF-8 문자를 찾는다.</p>
+<p><strong><code>\0</code></strong> : &quot;<code>\0</code>&quot; 뒤에 나오는 최대 두 개의 8진수를 읽는다. 두 자릿수 미만이면 존재하는 숫자만 사용된다. 따라서 시퀀스 &quot;<code>\0\x\07</code>&quot;은 BEL 문자 다음에 오는 2진 0을 지정한다. 뒤에 나오는 문자 그 자체가 8진수 이면 처음 0 뒤에 두 자리를 입력해야 한다.</p>
+<p>백 슬래시 뒤에 0이 아닌 숫자가 오는 경우 처리가 복잡하다. PCRE는 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 외부에서 10진수로 그 이후의 모든 자릿수를 읽는다. 숫자가 10보다 작거나 표현식에서 이전에 캡처한 왼쪽 괄호가 많으면 전체 시퀀스가 ​​역 참조로 간주된다. 이것이 어떻게 작동하는지에 대한 설명은 괄호로 묶인 서브 패턴에 대한 설명 이후에 다시 한다.</p>
+<p><a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 내에서, 또는 10진수가 9보다 크고 많은 패턴을 포착하지 않으면, PCRE는 백 슬래시 다음에 최대 세 개의 8진수를 다시 읽으며, 가장 중요한 8비트에서 1바이트를 생성하고 이후의 숫자는 그 자체를 나타낸다. 다음의 예시를 살펴보자 :</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">문자</th>
+<th>설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>\040</code></td>
+<td>space(공백)의 다른 표현</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\40</code></td>
+<td>is the same, provided there are fewer than 40 previous capturing subpatterns</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\7</code></td>
+<td>항상 back reference를 의미</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\11</code></td>
+<td>back reference 이거나 tab(탭)듸 다른 표현</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\011</code></td>
+<td>tab(탭)의 다른 표현</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\0113</code></td>
+<td>탭 문자 뒤에 &quot;3&quot;</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\113</code></td>
+<td>8진수 코드 113을 가진 문자 (99개의 역 참조가있을 수 없으므로)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\377</code></td>
+<td>완전히 1 비트로 구성된 바이트</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\81</code></td>
+<td>back reference 이거나 2진수 &quot;8&quot;과 &quot;1&quot;이 뒤 따르는 2진수</td>
+</tr>
+</tbody>
+</table>
+<p>세개 이상의 8진수는 읽히지 않으므로 100 이상의 8진수 값은 선행 0과 함께 사용하면 안된다.</p>
+<p>단일 바이트 값을 정의하는 모든 시퀀스는 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a>의 내부 및 외부 모두에서 사용할 수 있다. 또한 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 내에서 시퀀스 &quot;<code>\b</code>&quot;는 백 스페이스 문자 (16진수 08)로 해석된다. <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 외부에는 다른 의미가 있다 (아래 참조).</p>
+<h4>세번째, 일반 문자 유형을 지정하는 것이다.</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">문자</th>
+<th>설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>\d</code></td>
+<td>임의의 10진수</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\D</code></td>
+<td>십진수가 아닌 문자</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\h</code></td>
+<td>모든 수평 공백 문자 (PHP 5.2.4 이후)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\H</code></td>
+<td>수평 공백 문자가 아닌 문자 (PHP 5.2.4 이후)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\s</code></td>
+<td>공백 문자</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\S</code></td>
+<td>공백이 아닌 모든 문자</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\v</code></td>
+<td>모든 수직 공백 문자 (PHP 5.2.4 이후)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\V</code></td>
+<td>수직 공백 문자가 아닌 문자 (PHP 5.2.4 이후)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\w</code></td>
+<td>모든 &quot;단어&quot; 문자</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\W</code></td>
+<td>모든 &quot;비단어&quot; 문자</td>
+</tr>
+</tbody>
+</table>
+<p>각 쌍의 이스케이프 시퀀스는 완전한 문자 집합을 두 개의 분리 된 집합으로 분할한다. 주어진 문자는 각 쌍 중 하나와 일치한다.</p>
+<p>&quot;단어&quot;문자는 임의의 문자 또는 숫자 또는 밑줄 문자, 즉 Perl &quot;단어&quot;의 일부가 될 수 있는 문자이다. 문자 및 숫자의 정의는 PCRE(Perl Compatible Regular Expressions)의 문자 테이블에 의해 제어되며 locale 특정 일치가 발생하는 경우 달라질 수 있다. 예를 들어 &quot;fr&quot;(프랑스어) 로켈에서 128보다 큰 일부 문자 코드는 악센트 부호가있는 문자에 사용되며이 문자는 <code>\w</code>와 일치한다.</p>
+<p>이러한 문자 유형 시퀀스는 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a>의 안과 밖 모두에서 나타날 수 있다. 그것들은 각각 적절한 유형의 한 문자와 일치한다. 현재 일치하는 지점이 제목 문자열의 끝에 있으면 해당 문자가 모두 일치하지 않으므로 모두 일치하지 않는다.</p>
+<h4>네번째, 특정 단순한 <a href="/2017/01/15/php-regex-alternation/">어설션</a>을 위한 것이다.</h4>
+<p><a href="/2017/01/15/php-regex-alternation/">어설션</a>은 대상 문자열의 문자를 사용하지 않고 일치하는 특정 지점에서 충족되어야하는 조건을 지정한다. 보다 복잡한 <a href="/2017/01/15/php-regex-alternation/">어설션</a>을 위한 서브 패턴의 사용은 아래에 설명되어 있다. 백 슬래쉬 어설션은</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">문자</th>
+<th>설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>\b</code></td>
+<td>단어 경계</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\B</code></td>
+<td>비단어 경계</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\A</code></td>
+<td>문장 시작 (다중 행 모드와 무관)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\Z</code></td>
+<td>문장 끝 또는 마지막 줄 바꿈 (다중 행 모드와 무관)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\z</code></td>
+<td>문장 끝 (다중 행 모드와 무관)</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>\G</code></td>
+<td>문장에서 첫번째로 일치하는 위치</td>
+</tr>
+</tbody>
+</table>
+<p>이러한 <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a>에 나타나지 않을 수도 있다 (단, &quot;<code>\b</code>&quot;는 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 내에서 백 스페이스 문자와는 다른 의미를 가진다).</p>
+<p>A word boundary is a position in the subject string where the current character and the previous character do not both match <code>\w</code> or <code>\W</code> (i.e. one matches <code>\w</code> and the other matches <code>\W</code>),</p>
+<p>or the start or end of the string if the first or last character matches <code>\w</code>, respectively.</p>
+<p>단어 경계는 현재 문자와 이전 문자가 모두 <code>\w</code> 또는 <code>\W</code>와 일치하지 않는 대상 문자열에서의 위치이다(즉, <code>\w</code>와 일치하고 <code>\W</code>와 일치하는 문자열) 또는 첫 번째 또는 마지막 문자는 각각 <code>\w</code>와 일치하는 문자열의 시작 또는 끝.</p>
+<p><code>\A</code>, <code>\Z</code> 및 <code>\z</code> <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 기존 곡절(^) 기호 및 달러($)와 달리 옵션이 설정 되더라도 주제 문자열의 시작과 끝 부분에서만 일치한다. 이들은 <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_MULTILINE</a> 또는 <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_DOLLAR_ENDONLY</a> 옵션의 영향을 받지 않는다. <code>\Z</code>와 <code>\z</code>의 차이점은 <code>\z</code>가 문자열의 마지막 문자와 줄 끝의 줄 바꿈 앞에 일치한다는 것이다. 반면 <code>\z</code>는 끝에만 일치한다.</p>
+<p><code>\G</code> <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 현재 일치하는 위치가 <a href="http://php.net/manual/kr/function.preg-match.php">preg_match()</a>의 offset 인수에 지정된 일치 항목의 시작 지점에 있는 경우에만 true이다. offset 값이 0이 아닌 경우 <code>\A</code>와 다르다.</p>
+<p><code>\Q</code>와 <code>\E</code>는 패턴에서 regexp 메타 문자를 무시하는 데 사용될 수 있다. 예 : <code>\w+\Q.$.\E$</code>는 하나 이상의 단어 문자와 일치하며 그 뒤에 리터럴이다. 문자열 끝에 고정된다.</p>
+<p><code>\K</code>는 PHP 5.2.4부터 매치 시작을 재설정하는데 사용될 수 있다. 예를 들어, <code>foo\Kbar</code> 패턴은 &quot;foobar&quot;와 일치하지만 &quot;bar&quot;와도 일치한다고 보고한다. <code>\K</code>를 사용하면 캡처된 부분 문자열의 설정을 방해하지 않는다. 예를 들어, 패턴 <code>(foo)\Kbar</code>가 &quot;foobar&quot;와 일치하면 첫 번째 하위 문자열은 여전히 ​​&quot;foo&quot;로 설정된다.</p>
+<hr />
+<ul>
+<li><a href="/2017/01/07/php-regex-prolog/">PHP 정규식(PCRE)의 모든 것 - 프롤로그</a></li>
+<li><a href="/2017/01/08/php-regex-delimiters/">PHP 정규식(PCRE)의 모든 것 - 구분기호(Delimiters)</a></li>
+<li><a href="/2017/01/09/php-regex-meta-characters/">PHP 정규식(PCRE)의 모든 것 - 메타문자(Meta-characters)</a></li>
+<li>> <strong>PHP 정규식(PCRE)의 모든 것 - 이스케이프 시퀀스(Escape Sequences)</strong></li>
+<li><a href="/2017/01/11/php-regex-unicode-character-properties/">PHP 정규식(PCRE)의 모든 것 - 유니코드 문자 속성(Unicode character properties)</a></li>
+<li><a href="/2017/01/12/php-regex-anchors/">PHP 정규식(PCRE)의 모든 것 - 앵커(Anchors)</a></li>
+<li><a href="/2017/01/13/php-regex-dot/">PHP 정규식(PCRE)의 모든 것 - 점(Dot)</a></li>
+<li><a href="/2017/01/14/php-regex-character-classes/">PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes)</a></li>
+<li><a href="/2017/01/15/php-regex-alternation/">PHP 정규식(PCRE)의 모든 것 - 대안(Alternation)</a></li>
+<li><a href="/2017/01/16/php-regex-internal-option-setting/">PHP 정규식(PCRE)의 모든 것 - 내부 옵션 설정(Internal option setting)</a></li>
+<li><a href="/2017/01/17/php-regex-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns)</a></li>
+<li><a href="/2017/01/18/php-regex-repetition/">PHP 정규식(PCRE)의 모든 것 - 반복(Repetition)</a></li>
+<li><a href="/2017/01/19/php-regex-back-references/">PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references)</a></li>
+<li><a href="/2017/01/20/php-regex-assertions/">PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)</a></li>
+<li><a href="/2017/01/21/php-regex-once-​only-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns)</a></li>
+<li><a href="/2017/01/22/php-regex-conditional-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 조건부 서브 패턴(Conditional subpatterns)</a></li>
+<li><a href="/2017/01/23/php-regex-comments/">PHP 정규식(PCRE)의 모든 것 - 주석(Comments)</a></li>
+<li><a href="/2017/01/24/php-regex-recursive-patterns/">PHP 정규식(PCRE)의 모든 것 - 재귀 패턴(Recursive patterns)</a></li>
+<li><a href="/2017/01/25/php-regex-epilogue/">PHP 정규식(PCRE)의 모든 것 - 에필로그</a></li>
+</ul>
+</div>
+			</article>
+
+	<section class="dShare">
+	
+			<amp-social-share type="facebook" data-param-app_id="1796234843959223" width="60" height="44"></amp-social-share>
+		<amp-social-share type="twitter" width="60" height="44"></amp-social-share>
+	<amp-social-share type="gplus" width="60" height="44"></amp-social-share>
+	<amp-social-share type="pinterest" width="60" height="44"></amp-social-share>
+	<amp-social-share type="linkedin" width="60" height="44"></amp-social-share>
+	<amp-social-share type="email" width="60" height="44"></amp-social-share>
+</section>
+
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2017/01/10/php-regex-escape-sequences/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
+<nav id="cSide">
+	<div class="dSideBox">
+										
+										<dl class="dTags">
+					<dt>카테고리</dt>
+											<dd>
+							<a href="https://blog.asamaru.net/category/android/">
+								android<span>(56)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/blog/">
+								blog<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/css/">
+								css<span>(3)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/db/">
+								db<span>(6)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/flash/">
+								flash<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/git/">
+								git<span>(7)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/html/">
+								html<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ios/">
+								ios<span>(23)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/java/">
+								java<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/jekyll/">
+								jekyll<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/js/">
+								js<span>(11)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/linux/">
+								linux<span>(27)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/octopress/">
+								octopress<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/osx/">
+								osx<span>(9)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/php/">
+								php<span>(45)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/programming/">
+								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/swift/">
+								swift<span>(7)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/thinking/">
+								thinking<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/tip/">
+								tip<span>(15)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/vagrant/">
+								vagrant<span>(7)</span>
+							</a>
+						</dd>
+									</dl>
+			
+			
+						
+			
+																<dl class="dArchives">
+						<dt>글 보관함</dt>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(22)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/01/">01 <span>(22)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2016/">2016 <span>(69)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/12/">12 <span>(9)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/11/">11 <span>(11)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/10/">10 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/09/">09 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/08/">08 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/07/">07 <span>(5)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/05/">05 <span>(1)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/04/">04 <span>(9)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/03/">03 <span>(13)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/02/">02 <span>(7)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/01/">01 <span>(8)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2015/">2015 <span>(118)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/12/">12 <span>(16)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/11/">11 <span>(16)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/10/">10 <span>(41)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/09/">09 <span>(37)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/08/">08 <span>(8)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2012/">2012 <span>(7)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2012/10/">10 <span>(1)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2012/09/">09 <span>(6)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																		</dl>
+									
+				
+		
+		<form action="https://www.google.com/search" method="get" target="_blank" class="dFormSearch">
+			<fieldset>
+				<input type="hidden" name="sitesearch" value="https://blog.asamaru.net">
+				<legend>검색하기 폼</legend>
+				<label class="dIcon">검색하기</label>
+				<input type="text" name="q" value="" placeholder="Search"/>
+			</fieldset>
+		</form>
+
+		
+		<ul class="dLinks">
+							<li><a href="https://blog.asamaru.net/archives/" class="dInverse">전체글 보기</a></li>
+				<li class="dPipe"></li>
+						<li><a href="https://blog.asamaru.net/atom.xml" class="dInverse" target="_blank">RSS</a></li>
+		</ul>
+	</div>
+</nav>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</section>
+<footer>
+	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+</footer>
+<script src="/res/js/min/x25c84402d894075554f1198a50334a11367f0ad8.js" type="text/javascript"></script>
+<script>
+	(function () {
+		function addEvent(element, evnt, funct) {
+			if (element.attachEvent)
+				return element.attachEvent('on' + evnt, funct);
+			else
+				return element.addEventListener(evnt, funct, false);
+		}
+
+		var slideout = new Slideout({
+			'panel': document.getElementById('cMainPanel'),
+			'menu': document.getElementById('cSide'),
+			'padding': 300,
+			'tolerance': 70,
+			'side': 'right'
+		});
+		addEvent(
+			document.getElementById('cBtnSlide'),
+			'click',
+			function () {
+				slideout.toggle();
+			}
+		);
+	})();
+</script>
+
+
+
+<script async src="https://cdn.ampproject.org/v0.js"></script>
+<script async custom-element="amp-social-share" src="https://cdn.ampproject.org/v0/amp-social-share-0.1.js"></script>
+
+</body>
+</html>

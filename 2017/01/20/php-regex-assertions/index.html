@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+					<title>PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions) - 이 세상에 하나는 남기고 가자</title>
+	<meta name="author" content="유영재">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	
+	<meta name="description" content="문서 내용 보강중 [Assertions] (http://php.net/manual/kr/regexp.reference.assertions.php) (어설션) 어설션은 실제로 어떤 문자도 사용하지 않고 현재 일치 지점의 앞/뒤 문자에 대한 테스트이다. \b, \B, \A, \Z, \z, ^ 및 $로 코딩된 간단한 어설션은 위에 설명되어 있다. 더 복잡한 어서션은 서브 패턴으로 코딩 된다. 이 어설션은 대상 문자열의 현재 위치보다 앞서 보이는 것들(look ahead)과 그 뒤에 보이는 것들(look behind) 두 가지 종류가 있다">
+	<meta name="referrer" content="always">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="shortcut icon" type="image/x-icon" href="https://blog.asamaru.net/favicon.ico"/>
+	<link rel="canonical" href="https://blog.asamaru.net/2017/01/20/php-regex-assertions/"/>
+			<link rel="amphtml" href="https://blog.asamaru.net/amp/2017/01/20/php-regex-assertions/">
+	
+	
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+
+	
+	
+	<meta property="og:type" content="website">
+	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
+	<meta property="og:title" content="PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)">
+	<meta property="og:description" content="문서 내용 보강중 [Assertions] (http://php.net/manual/kr/regexp.reference.assertions.php) (어설션) 어설션은 실제로 어떤 문자도 사용하지 않고 현재 일치 지점의 앞/뒤 문자에 대한 테스트이다. \b, \B, \A, \Z, \z, ^ 및 $로 코딩된 간단한 어설션은 위에 설명되어 있다. 더 복잡한 어서션은 서브 패턴으로 코딩 된다. 이 어설션은 대상 문자열의 현재 위치보다 앞서 보이는 것들(look ahead)과 그 뒤에 보이는 것들(look behind) 두 가지 종류가 있다">
+	<meta property="og:image" content="/res/img/icon/icon.png">
+	
+
+	
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="@asamaru7">
+	<meta name="twitter:title" content="PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)">
+	<meta name="twitter:description" content="문서 내용 보강중 [Assertions] (http://php.net/manual/kr/regexp.reference.assertions.php) (어설션) 어설션은 실제로 어떤 문자도 사용하지 않고 현재 일치 지점의 앞/뒤 문자에 대한 테스트이다. \b, \B, \A, \Z, \z, ^ 및 $로 코딩된 간단한 어설션은 위에 설명되어 있다. 더 복잡한 어서션은 서브 패턴으로 코딩 된다. 이 어설션은 대상 문자열의 현재 위치보다 앞서 보이는 것들(look ahead)과 그 뒤에 보이는 것들(look behind) 두 가지 종류가 있다">
+	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	
+
+										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
+												<link rel="apple-touch-icon" sizes="76x76" href="/res/img/icon/76.png">
+												<link rel="apple-touch-icon" sizes="120x120" href="/res/img/icon/120.png">
+												<link rel="apple-touch-icon" sizes="152x152" href="/res/img/icon/152.png">
+						
+	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
+
+			<link href="/res/css/min/xb0faeb9025a25021c55f2eca5fdd4308b8d1b312.css" type="text/css" rel="stylesheet" />
+
+	 <script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "headline": "PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)",
+    "author": {
+        "@type": "Person",
+        "name": "유영재"
+    },
+    "datePublished": "2017-1-20",
+    "dateModified": "2017-1-20",
+    "articleSection": "php",
+    "url": "https://blog.asamaru.net/2017/01/20/php-regex-assertions/",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://blog.asamaru.net/res/img/icon/icon.696.png",
+        "width": 696,
+        "height": 696
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "유영재",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://blog.asamaru.net/res/img/icon/icon.60.png",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://blog.asamaru.net/2017/01/20/php-regex-assertions/"
+    }
+}</script> 
+			<script type="text/javascript">
+			(function (i, s, o, g, r, a, m) {
+				i['GoogleAnalyticsObject'] = r;
+				i[r] = i[r] || function () {
+						(i[r].q = i[r].q || []).push(arguments)
+					}, i[r].l = 1 * new Date();
+				a = s.createElement(o),
+					m = s.getElementsByTagName(o)[0];
+				a.async = 1;
+				a.src = g;
+				m.parentNode.insertBefore(a, m)
+			})(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+			ga('create', 'UA-65749108-2', 'auto');
+			ga('send', 'pageview');
+		</script>
+	</head>
+<body>
+<header>
+	<div class="dProfile">
+		<a href="https://blog.asamaru.net"><img src="/res/img/icon/icon.png" width="50" height="50" alt="profile"></a>
+		<h1><a href="https://blog.asamaru.net">이 세상에 하나는 남기고 가자</a></h1>
+					<p>세상에 필요한 소스코드 한줄 남기고 가자</p>
+				<button type="button" id="cBtnSlide"></button>
+	</div>
+</header>
+<section class="dMainBody">
+<div class="dWrapContent">
+	<main id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)</h2>
+												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
+													<span></span>
+										<time class="published " datetime="2017-01-20 19:54:12">2017.01.20. 19:54</time>
+		</div>
+		<div class="markdown-body entry-content"><blockquote>
+<p>문서 내용 보강중</p>
+</blockquote>
+<h3>[Assertions] (<a href="http://php.net/manual/kr/regexp.reference.assertions.php">http://php.net/manual/kr/regexp.reference.assertions.php</a>) (어설션)</h3>
+<p>어설션은 실제로 어떤 문자도 사용하지 않고 현재 일치 지점의 앞/뒤 문자에 대한 테스트이다. <code>\b</code>, <code>\B</code>, <code>\A</code>, <code>\Z</code>, <code>\z</code>, <code>^</code> 및 <code>$</code>로 코딩된 간단한 어설션은 위에 설명되어 있다. 더 복잡한 어서션은 서브 패턴으로 코딩 된다. 이 어설션은 대상 문자열의 현재 위치보다 앞서 보이는 것들(look ahead)과 그 뒤에 보이는 것들(look behind) 두 가지 종류가 있다.</p>
+<p>어설션 서브 패턴은 현재 일치하는 위치가 변경되지 않는다는 점을 제외하면 일반적인 방법으로 매치된다.</p>
+<p>Lookahead 어설션은 <code>(?=</code> 긍정 어설션, <code>(?!</code>은 부정 어설션을 나타낸다. 예를 들어, <code>\w+(?=;)</code>는 단어 뒤에 세미콜론을 매치하지만 세미콜론은 매치하지 않으며 <code>foo(?!bar)</code>는 &quot;bar&quot;가 뒤에 붙지 않는 &quot;foo&quot;와 매치된다. 기억할 점은 유사한 패턴인 <code>(?!foo)bar</code>는 &quot;foo&quot;로 시작되지 않는 &quot;bar&quot; 항목을 찾지 않는다는 것이다. 다음 3개의 문자가 &quot;bar&quot;일 때 어설션 <code>(?!foo)</code>은 항상 TRUE 이므로 모든 항목을 찾는다. 아래의 예시를 참고하자.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$string</span> = <span class="hljs-string">"fooXbar"</span>;
+<span class="hljs-keyword">echo</span> preg_match(<span class="hljs-string">'/foo(?!bar)/'</span>, <span class="hljs-variable">$string</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-variable">$string</span> = <span class="hljs-string">"foobar"</span>;
+<span class="hljs-keyword">echo</span> preg_match(<span class="hljs-string">'/(?!foo)bar/'</span>, <span class="hljs-variable">$string</span>) . <span class="hljs-string">"\n"</span>;
+
+<span class="hljs-comment">// 1</span>
+<span class="hljs-comment">// 1</span></pre>
+<p>원하는 결과를 얻으려면 lookbehind 어설션이 필요하다.</p>
+<p>Lookbehind 어설션은 <code>(?&lt;=</code> 긍정 어설션, <code>(?&lt;!</code>은 부정 어설션을 나타낸다. 예를 들어, <code>(?&lt;!foo)bar</code>는 &quot;foo&quot;가 앞에 붙지 않는 &quot;bar&quot;의 항목을 찾는다. lookbehind 어설션은 일치하는 모든 문자열이 고정 길이가 되도록 제한되지만, 여러 가지 대안이 있는 경우 모두 동일한 고정 길이를 가져야하는 것은 아니다. 따라서 <code>(?&lt;=bullock|donkey)</code>는 허용된다. 그러나 <code>(?&lt;!dogs?|cats?)</code>는 컴파일 타임에 오류가 발생한다.
+다른 길이의 문자열에 일치하는 분기는 lookbehind 어설션의 최상위 수준에서만 허용된다. 이것은 모든 분기에서 동일한 길이를 요구하는 Perl 5.005와 비교되는 확장이다.
+<code>(?&lt;=ab(c|de))</code>와 같은 어설션은 허용되지 않는다. 왜냐하면 단일 최상위 분기가 두 개의 다른 길이를 일치시킬 수 있기 때문이다. 그러나 두 개의 최상위 레벨 분기를 사용하도록 <code>(?&lt;=abc|abde)</code>로 다시 작성하면 허용된다.
+Lookbehind 어설션의 구현은 각 대안에 따라 현재 위치를 고정 폭만큼 임시로 이동시킨 다음 일치시키려고 시도한다. 현재 위치 앞에 문자가 충분하지 않으면 일치가 실패한 것으로 간주된다. 한 번만 사용 할 수 있는 하위 패턴과 관련된 Lookbehind는 특히 문자열 끝에 매칭하는데 유용 할 수 있다. <a href="/2017/01/21/php-regex-once-​only-subpatterns/">once-only subpatterns</a>에 대한 섹션에 예제가 있다.</p>
+<p>여러 어설션이 연속해서 발생할 수 있다. 예를 들어, <code>(?&lt;=\d{3})(?&lt;!999)foo</code>는 &quot;foo&quot; 앞에 &quot;999&quot;가 아닌 세 자리를 찾는다. 각 어설션은 주제 문자열의 동일한 지점에서 독립적으로 적용된다. 먼저 앞의 세 문자가 모두 숫자임을 확인한 다음 동일한 세 문자가 &quot;999&quot;가 아닌지 확인한다. 이 패턴은 &quot;foo&quot;와 6 문자 앞의 문자는 일치하지 않는다. 첫 번째 문자는 숫자이고 마지막 세 문자는 &quot;999&quot;가 아니다. 예를 들어, &quot;123abcfoo&quot;와 일치하지 않는다(<code>(?&lt;=\d{3}...)(?&lt;!999)foo</code>를 사용하면 매치된다).</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$string</span> = <span class="hljs-string">"123abcfoo"</span>;
+<span class="hljs-keyword">echo</span> preg_match(<span class="hljs-string">'/(?&lt;=\d{3})(?&lt;!999)foo/'</span>, <span class="hljs-variable">$string</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-keyword">echo</span> preg_match(<span class="hljs-string">'/(?&lt;=\d{3}...)(?&lt;!999)foo/'</span>, <span class="hljs-variable">$string</span>) . <span class="hljs-string">"\n"</span>;
+
+<span class="hljs-comment">// 0</span>
+<span class="hljs-comment">// 1</span></pre>
+<p>이번에는 첫 번째 어설션은 앞의 여섯개 문자를 살펴보고 첫 번째 세 개가 숫자임을 확인한 다음 두 번째 어설션은 앞의 세 문자가 &quot;999&quot;가 아님을 확인한다.</p>
+<p>어설션은 임의의 조합으로 중첩 될 수 있다. 예를 들어 <code>(?&lt;=(?&lt;!foo)bar)baz</code>는 앞에 &quot;foo&quot;가 없는 &quot;bar&quot;가 앞에 오는 &quot;baz&quot;의 발생과 일치하지만 <code>(?&lt;=\d{3}...(?&lt;!999))foo</code>는 &quot;foo&quot;앞에 3 자리 숫자와 &quot;999&quot;가 아닌 3 자와 일치하는 다른 패턴이다.</p>
+<p>어설션 서브 패턴은 서브 패턴을 캡쳐하지 않으며 반복되지 않을 수 있다. 동일한 것을 여러 번 선언하는 것은 의미가 없기 때문이다. 임의의 종류의 어설션에 하위 패턴 캡처가 포함되어 있으면 이러한 패턴은 전체 패턴에서 캡처하는 하위 패턴에 번호를 매기는 목적으로 계산된다. 그러나 부분 문자열 캡처는 긍정적인 어설션에 대해서만 수행된다. 왜냐하면 부정적인 어설션에 대해서는 의미가 없기 때문입니다.</p>
+<p>어설션은 최대 200개의 괄호로 묶은 하위 패턴으로 계산된다.</p>
+<hr />
+<ul>
+<li><a href="/2017/01/07/php-regex-prolog/">PHP 정규식(PCRE)의 모든 것 - 프롤로그</a></li>
+<li><a href="/2017/01/08/php-regex-delimiters/">PHP 정규식(PCRE)의 모든 것 - 구분기호(Delimiters)</a></li>
+<li><a href="/2017/01/09/php-regex-meta-characters/">PHP 정규식(PCRE)의 모든 것 - 메타문자(Meta-characters)</a></li>
+<li><a href="/2017/01/10/php-regex-escape-sequences/">PHP 정규식(PCRE)의 모든 것 - 이스케이프 시퀀스(Escape Sequences)</a></li>
+<li><a href="/2017/01/11/php-regex-unicode-character-properties/">PHP 정규식(PCRE)의 모든 것 - 유니코드 문자 속성(Unicode character properties)</a></li>
+<li><a href="/2017/01/12/php-regex-anchors/">PHP 정규식(PCRE)의 모든 것 - 앵커(Anchors)</a></li>
+<li><a href="/2017/01/13/php-regex-dot/">PHP 정규식(PCRE)의 모든 것 - 점(Dot)</a></li>
+<li><a href="/2017/01/14/php-regex-character-classes/">PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes)</a></li>
+<li><a href="/2017/01/15/php-regex-alternation/">PHP 정규식(PCRE)의 모든 것 - 대안(Alternation)</a></li>
+<li><a href="/2017/01/16/php-regex-internal-option-setting/">PHP 정규식(PCRE)의 모든 것 - 내부 옵션 설정(Internal option setting)</a></li>
+<li><a href="/2017/01/17/php-regex-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns)</a></li>
+<li><a href="/2017/01/18/php-regex-repetition/">PHP 정규식(PCRE)의 모든 것 - 반복(Repetition)</a></li>
+<li><a href="/2017/01/19/php-regex-back-references/">PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references)</a></li>
+<li>> <strong>PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)</strong></li>
+<li><a href="/2017/01/21/php-regex-once-​only-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns)</a></li>
+<li><a href="/2017/01/22/php-regex-conditional-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 조건부 서브 패턴(Conditional subpatterns)</a></li>
+<li><a href="/2017/01/23/php-regex-comments/">PHP 정규식(PCRE)의 모든 것 - 주석(Comments)</a></li>
+<li><a href="/2017/01/24/php-regex-recursive-patterns/">PHP 정규식(PCRE)의 모든 것 - 재귀 패턴(Recursive patterns)</a></li>
+<li><a href="/2017/01/25/php-regex-epilogue/">PHP 정규식(PCRE)의 모든 것 - 에필로그</a></li>
+</ul>
+</div>
+			</article>
+
+	<section class="dShare">
+	
+			<amp-social-share type="facebook" data-param-app_id="1796234843959223" width="60" height="44"></amp-social-share>
+		<amp-social-share type="twitter" width="60" height="44"></amp-social-share>
+	<amp-social-share type="gplus" width="60" height="44"></amp-social-share>
+	<amp-social-share type="pinterest" width="60" height="44"></amp-social-share>
+	<amp-social-share type="linkedin" width="60" height="44"></amp-social-share>
+	<amp-social-share type="email" width="60" height="44"></amp-social-share>
+</section>
+
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2017/01/20/php-regex-assertions/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</main>
+</div>
+<nav id="cSide">
+	<div class="dSideBox">
+										
+										<dl class="dTags">
+					<dt>카테고리</dt>
+											<dd>
+							<a href="https://blog.asamaru.net/category/android/">
+								android<span>(56)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/blog/">
+								blog<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/css/">
+								css<span>(3)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/db/">
+								db<span>(6)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/flash/">
+								flash<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/git/">
+								git<span>(7)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/html/">
+								html<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ios/">
+								ios<span>(23)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/java/">
+								java<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/jekyll/">
+								jekyll<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/js/">
+								js<span>(11)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/linux/">
+								linux<span>(27)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/octopress/">
+								octopress<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/osx/">
+								osx<span>(9)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/php/">
+								php<span>(45)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/programming/">
+								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/swift/">
+								swift<span>(7)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/thinking/">
+								thinking<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/tip/">
+								tip<span>(15)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/vagrant/">
+								vagrant<span>(7)</span>
+							</a>
+						</dd>
+									</dl>
+			
+			
+						
+			
+																<dl class="dArchives">
+						<dt>글 보관함</dt>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(22)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/01/">01 <span>(22)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2016/">2016 <span>(69)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/12/">12 <span>(9)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/11/">11 <span>(11)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/10/">10 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/09/">09 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/08/">08 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/07/">07 <span>(5)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/05/">05 <span>(1)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/04/">04 <span>(9)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/03/">03 <span>(13)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/02/">02 <span>(7)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/01/">01 <span>(8)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2015/">2015 <span>(118)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/12/">12 <span>(16)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/11/">11 <span>(16)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/10/">10 <span>(41)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/09/">09 <span>(37)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/08/">08 <span>(8)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2012/">2012 <span>(7)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2012/10/">10 <span>(1)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2012/09/">09 <span>(6)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																		</dl>
+									
+				
+		
+		<form action="https://www.google.com/search" method="get" target="_blank" class="dFormSearch">
+			<fieldset>
+				<input type="hidden" name="sitesearch" value="https://blog.asamaru.net">
+				<legend>검색하기 폼</legend>
+				<label class="dIcon">검색하기</label>
+				<input type="text" name="q" value="" placeholder="Search"/>
+			</fieldset>
+		</form>
+
+		
+		<ul class="dLinks">
+							<li><a href="https://blog.asamaru.net/archives/" class="dInverse">전체글 보기</a></li>
+				<li class="dPipe"></li>
+						<li><a href="https://blog.asamaru.net/atom.xml" class="dInverse" target="_blank">RSS</a></li>
+		</ul>
+	</div>
+</nav>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</section>
+<footer>
+	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+</footer>
+<script src="/res/js/min/x25c84402d894075554f1198a50334a11367f0ad8.js" type="text/javascript"></script>
+<script>
+	(function () {
+		function addEvent(element, evnt, funct) {
+			if (element.attachEvent)
+				return element.attachEvent('on' + evnt, funct);
+			else
+				return element.addEventListener(evnt, funct, false);
+		}
+
+		var slideout = new Slideout({
+			'panel': document.getElementById('cMainPanel'),
+			'menu': document.getElementById('cSide'),
+			'padding': 300,
+			'tolerance': 70,
+			'side': 'right'
+		});
+		addEvent(
+			document.getElementById('cBtnSlide'),
+			'click',
+			function () {
+				slideout.toggle();
+			}
+		);
+	})();
+</script>
+
+
+
+<script async src="https://cdn.ampproject.org/v0.js"></script>
+<script async custom-element="amp-social-share" src="https://cdn.ampproject.org/v0/amp-social-share-0.1.js"></script>
+
+</body>
+</html>

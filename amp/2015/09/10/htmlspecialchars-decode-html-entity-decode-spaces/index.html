@@ -49,7 +49,7 @@
         "name": "유영재"
     },
     "datePublished": "2015-9-10",
-    "dateModified": "2015-9-10",
+    "dateModified": "2017-1-25",
     "articleSection": "php",
     "url": "https://blog.asamaru.net/2015/09/10/htmlspecialchars-decode-html-entity-decode-spaces/",
     "image": {
@@ -418,7 +418,11 @@ htmlspecialchars_decode와 html_entity_decode는 유사하나 html_entity_decode
 <span class="hljs-keyword">echo</span> (strcmp(<span class="hljs-variable">$str</span>, <span class="hljs-string">'X'</span>) == <span class="hljs-number">0</span>) ? <span class="hljs-string">'ok'</span> : <span class="hljs-string">'oops'</span>;</pre>
 <p>결과는 메뉴얼대로 'ok' 이다. 그럼 'UTF-8'에서는 어떻게 하나? 아래의 코드를 보자.</p>
 <pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = trim(str_replace(<span class="hljs-string">"\xc2\xa0"</span>, <span class="hljs-string">""</span>, html_entity_decode(<span class="hljs-string">"&amp;nbsp;X&amp;nbsp;"</span>)));
+<span class="hljs-variable">$str</span> = trim(str_replace(<span class="hljs-string">"\xc2\xa0"</span>, <span class="hljs-string">''</span>, html_entity_decode(<span class="hljs-string">"&amp;nbsp;X&amp;nbsp;"</span>)));
+<span class="hljs-keyword">echo</span> (strcmp(<span class="hljs-variable">$str</span>, <span class="hljs-string">'X'</span>) == <span class="hljs-number">0</span>) ? <span class="hljs-string">'ok'</span> : <span class="hljs-string">'oops'</span>;</pre>
+<p>정규식으로 처리한다면 아래와 같이 할 수도 있다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$str</span> = trim(preg_replace(<span class="hljs-string">'/[\\pZ\\pC]+/u'</span>, <span class="hljs-string">''</span>, html_entity_decode(<span class="hljs-string">"&amp;nbsp;X&amp;nbsp;"</span>)));
 <span class="hljs-keyword">echo</span> (strcmp(<span class="hljs-variable">$str</span>, <span class="hljs-string">'X'</span>) == <span class="hljs-number">0</span>) ? <span class="hljs-string">'ok'</span> : <span class="hljs-string">'oops'</span>;</pre>
 <p>드디어 'ok'가 나온다. 중요한 차이는 "\xc2\xa0" 이다. UTF-8에서는 "\xc2\xa0"는 <a href="http://www.utf8-chartable.de/unicode-utf8-table.pl?start=128&amp;number=128&amp;utf8=string-literal&amp;unicodeinhtml=hex">UTF-8 encoding table and Unicode characters</a>에서 확인해보면 UTF-8에서의 "NO-BREAK SPACE"라고 되어 있다.</p>
 <p>참 별것 아닌것 같은 함수가 잘모르고 사용하다보면 예상치 못한 문제들을 일으킨다. 사실 <code>&amp;nbsp;</code>만 처리하면 된다면 더 간단하게 <code>str_replace('&amp;nbsp;', ' ', $str)</code>로 해결해도 된다. 하지만 프로그램에선 항상 어떤 값이 들어올지 모르는 것이니 보다 명확하게 처리하는 것이 낫지 않을까?</p>

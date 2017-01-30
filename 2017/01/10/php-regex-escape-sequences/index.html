@@ -53,7 +53,7 @@
         "name": "유영재"
     },
     "datePublished": "2017-1-10",
-    "dateModified": "2017-1-23",
+    "dateModified": "2017-1-26",
     "articleSection": "php",
     "url": "https://blog.asamaru.net/2017/01/10/php-regex-escape-sequences/",
     "image": {
@@ -358,7 +358,21 @@
 <p>이러한 <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a>에 나타나지 않을 수도 있다 (단, &quot;<code>\b</code>&quot;는 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 내에서 백 스페이스 문자와는 다른 의미를 가진다).</p>
 <p>&quot;word&quot; 경계는 현재 문자와 이전 문자가 모두 <code>\w</code> 또는 <code>\W</code>와 일치하지 않는 대상 문자열에서의 위치이다(즉, 하나의 글자가 <code>\w</code>와 일치하고 다른 글자가 <code>\W</code>와 일치 경우). 또는, 시작 또는 마지막 문자가 각각 <code>\w</code>와 일치하면 문자열의 시작 또는 끝이 경계가 된다.</p>
 <p><code>\A</code>, <code>\Z</code> 및 <code>\z</code> <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 기존 곡절 부호(^) 및 달러 부호($)와 달리 옵션이 설정 되더라도 대상 문자열의 시작과 끝 부분에서만 일치한다. 이들은 <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_MULTILINE</a> 또는 <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_DOLLAR_ENDONLY</a> 옵션의 영향을 받지 않는다. <code>\Z</code>와 <code>\z</code>의 차이점은 <code>\Z</code>는 문자열의 마지막 문자뿐만 아니라 문자열 끝에 있는 개행 문자 앞도 일치하지만 <code>\z</code>는 문자열 끝에만 일치한다는 것이다.</p>
-<p><code>\G</code> <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 현재 일치하는 위치가 <a href="http://php.net/manual/kr/function.preg-match.php">preg_match()</a>의 offset 인수에 지정된 일치 항목의 시작 지점에 있는 경우에만 매치된다. offset 값이 0이 아닌 경우 <code>\A</code>와 다르다.</p>
+<p><code>\G</code> <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 현재 일치하는 위치가 <a href="http://php.net/manual/kr/function.preg-match.php">preg_match()</a>의 offset 인수에 지정된 일치 항목의 시작 지점에 있는 경우에만 매치된다. offset 값이 0이 아닌 경우 <code>\A</code>와 다르다(Perl에서의 <code>\G</code>와 다르다).</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+preg_match(<span class="hljs-string">'/\G1234/'</span>, <span class="hljs-string">'test1234'</span>, <span class="hljs-variable">$matches</span>, <span class="hljs-number">0</span>, <span class="hljs-number">3</span>);
+print_r(<span class="hljs-variable">$matches</span>);
+<span class="hljs-comment">// offset 위치의 시작이 "t"이므로 매치되지 않음</span>
+<span class="hljs-comment">//Array</span>
+<span class="hljs-comment">//(</span>
+<span class="hljs-comment">//)</span>
+
+preg_match(<span class="hljs-string">'/\G1234/'</span>, <span class="hljs-string">'test1234'</span>, <span class="hljs-variable">$matches</span>, <span class="hljs-number">0</span>, <span class="hljs-number">4</span>);
+print_r(<span class="hljs-variable">$matches</span>);
+<span class="hljs-comment">//Array</span>
+<span class="hljs-comment">//(</span>
+<span class="hljs-comment">//  [0] =&gt; 1234</span>
+<span class="hljs-comment">//)</span></pre>
 <p><code>\Q</code>와 <code>\E</code>는 패턴에서 regexp 메타 문자를 무시하는데 사용될 수 있다. 예를 들어 <code>\w+\Q.$.\E$</code>는 하나 이상의 단어 문자와 일치하며 리터럴 <code>.$.</code>이 따라 오며 문자열 끝에 고정된다. 간단히 말해 <code>\Q</code>로 시작해서 <code>\E</code>로 끝나는 내부의 글자는 리터럴로 인지한다는 것이다.</p>
 <pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
 <span class="hljs-variable">$str</span> = <span class="hljs-string">'asdf abc.$.'</span>;

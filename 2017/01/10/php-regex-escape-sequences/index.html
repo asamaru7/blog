@@ -53,7 +53,7 @@
         "name": "유영재"
     },
     "datePublished": "2017-1-10",
-    "dateModified": "2017-1-26",
+    "dateModified": "2017-2-1",
     "articleSection": "php",
     "url": "https://blog.asamaru.net/2017/01/10/php-regex-escape-sequences/",
     "image": {
@@ -214,7 +214,15 @@
 <span class="hljs-comment">// 7b &lt;- 7b</span>
 <span class="hljs-comment">// ; -&gt; {</span></pre>
 <p><strong><code>\x</code></strong> : &quot;<code>\x</code>&quot; 뒤에 나오는 최대 두 개의 16진수를 읽는다(문자는 대문자 또는 소문자로 입력 할 수 있음). UTF-8 모드에서는 &quot;<code>\x{...}</code>&quot;가 허용되며 중괄호의 내용은 16진수 문자열이다. 주어진 16진수 코드 넘버는 UTF-8 문자로 해석된다. 원래 16진수 이스케이프 시퀀스인 <code>\xhh</code>가 127보다 큰 경우에는 2바이트 UTF-8 문자를 찾는다.</p>
-<p><strong><code>\0</code></strong> : &quot;<code>\0</code>&quot; 뒤에 나오는 최대 두 개의 8진수를 읽는다. 두 자릿수 미만이면 존재하는 숫자만 사용된다. 따라서 시퀀스 &quot;<code>\0\x\07</code>&quot;은 BEL 문자 다음에 오는 2진 0을 지정한다. 뒤에 나오는 문자 그 자체가 8진수 이면 처음 0 뒤에 두 자리를 입력해야 한다.</p>
+<p><strong><code>\0</code></strong> : &quot;<code>\0</code>&quot; 뒤에 나오는 최대 두 개의 8진수를 읽는다. 두 자릿수 미만이면 존재하는 숫자만 사용된다. 따라서 시퀀스 &quot;<code>\0\x\07</code>&quot;은 BEL 문자(코드 값 7)가 뒤 따르는 두 개의 2진 0을 의미한다. 뒤에 나오는 문자 그 자체가 8진수 이면 처음 0 뒤에 두 자리를 입력해야 한다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$str</span> = <span class="hljs-string">'test-'</span> . chr(<span class="hljs-number">0</span>) . chr(<span class="hljs-number">0</span>) . chr(<span class="hljs-number">7</span>);
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\0\x\07/'</span>, <span class="hljs-variable">$str</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-comment">// matched</span>
+
+<span class="hljs-variable">$str</span> = <span class="hljs-string">'test-'</span> . chr(<span class="hljs-number">0</span>) . chr(<span class="hljs-number">7</span>);
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\0\x\07/'</span>, <span class="hljs-variable">$str</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-comment">// not matched</span></pre>
 <p>백 슬래시 뒤에 0이 아닌 숫자가 오는 경우 처리가 복잡하다. PCRE는 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 외부에서 10진수로 그 이후의 모든 자릿수를 읽는다. 숫자가 10보다 작거나 표현식에서 이전에 캡처한 왼쪽 괄호가 많으면 전체 시퀀스가 ​​역 참조로 간주된다. 이것이 어떻게 작동하는지에 대한 설명은 괄호로 묶인 서브 패턴에 대한 설명 이후에 다시 한다.</p>
 <p><a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 내에서, 또는 10진수가 9보다 크고 많은 패턴을 포착하지 않으면, PCRE는 백 슬래시 다음에 최대 세 개의 8진수를 다시 읽으며, 가장 중요한 8비트에서 1바이트를 생성하고 이후의 숫자는 그 자체를 나타낸다. 다음의 예시를 살펴보자 :</p>
 <table>
@@ -231,15 +239,15 @@
 </tr>
 <tr>
 <td style="text-align: center;"><code>\40</code></td>
-<td>is the same, provided there are fewer than 40 previous capturing subpatterns</td>
+<td>캡처 서브 패턴이 40개 미만인 경우 <code>\040</code>와 동일</td>
 </tr>
 <tr>
 <td style="text-align: center;"><code>\7</code></td>
-<td>항상 back reference를 의미</td>
+<td>항상 <a href="/2017/01/19/php-regex-back-references/">역 참조(back reference)</a>를 의미</td>
 </tr>
 <tr>
 <td style="text-align: center;"><code>\11</code></td>
-<td>back reference 이거나 tab(탭)듸 다른 표현</td>
+<td><a href="/2017/01/19/php-regex-back-references/">역 참조(back reference)</a> 이거나 tab(탭)의 다른 표현</td>
 </tr>
 <tr>
 <td style="text-align: center;"><code>\011</code></td>
@@ -259,12 +267,27 @@
 </tr>
 <tr>
 <td style="text-align: center;"><code>\81</code></td>
-<td>back reference 이거나 2진수 &quot;8&quot;과 &quot;1&quot;이 뒤 따르는 2진수</td>
+<td><a href="/2017/01/19/php-regex-back-references/">역 참조(back reference)</a> 이거나 &quot;8&quot;과 &quot;1&quot;이 뒤 따르는 두 개의 2진 0</td>
 </tr>
 </tbody>
 </table>
-<p>세개 이상의 8진수는 읽히지 않으므로 100 이상의 8진수 값은 선행 0과 함께 사용하면 안된다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\0113/'</span>, chr(octdec(<span class="hljs-number">11</span>)) . <span class="hljs-string">'3'</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-comment">// matched</span>
+
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\113/'</span>, chr(octdec(<span class="hljs-number">113</span>)))) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-comment">// matched</span>
+
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\377/'</span>, chr(octdec(<span class="hljs-number">377</span>)))) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-comment">// matched</span>
+
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\81/'</span>, chr(<span class="hljs-number">0</span>) . chr(<span class="hljs-number">0</span>) . <span class="hljs-string">'81'</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-comment">// matched</span></pre>
+<p>세 개 이상의 8진수는 읽히지 않으므로 100 이상의 8진수 값은 선행 0과 함께 사용하면 안된다.</p>
 <p>단일 바이트 값을 정의하는 모든 시퀀스는 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a>의 내부 및 외부 모두에서 사용할 수 있다. 또한 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 내에서 시퀀스 &quot;<code>\b</code>&quot;는 백 스페이스 문자 (16진수 08)로 해석된다. <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 외부에는 다른 의미가 있다 (아래 참조).</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[\b0-9]/'</span>, chr(octdec(<span class="hljs-number">8</span>)) . <span class="hljs-string">'3'</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-comment">// matched</span></pre>
 <h4>세번째, 일반 문자 유형을 지정하는 것이다.</h4>
 <table>
 <thead>
@@ -331,11 +354,11 @@
 <tbody>
 <tr>
 <td style="text-align: center;"><code>\b</code></td>
-<td>단어 경계</td>
+<td>단어(word) 경계</td>
 </tr>
 <tr>
 <td style="text-align: center;"><code>\B</code></td>
-<td>비단어 경계</td>
+<td>비단어(not a word) 경계</td>
 </tr>
 <tr>
 <td style="text-align: center;"><code>\A</code></td>
@@ -355,9 +378,90 @@
 </tr>
 </tbody>
 </table>
-<p>이러한 <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a>에 나타나지 않을 수도 있다 (단, &quot;<code>\b</code>&quot;는 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 내에서 백 스페이스 문자와는 다른 의미를 가진다).</p>
+<p>이러한 <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a>에 나타나지 않을 수도 있다 (단, &quot;<code>\b</code>&quot;는 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 내에서 백 스페이스 문자의 의미를 가진다).</p>
 <p>&quot;word&quot; 경계는 현재 문자와 이전 문자가 모두 <code>\w</code> 또는 <code>\W</code>와 일치하지 않는 대상 문자열에서의 위치이다(즉, 하나의 글자가 <code>\w</code>와 일치하고 다른 글자가 <code>\W</code>와 일치 경우). 또는, 시작 또는 마지막 문자가 각각 <code>\w</code>와 일치하면 문자열의 시작 또는 끝이 경계가 된다.</p>
-<p><code>\A</code>, <code>\Z</code> 및 <code>\z</code> <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 기존 곡절 부호(^) 및 달러 부호($)와 달리 옵션이 설정 되더라도 대상 문자열의 시작과 끝 부분에서만 일치한다. 이들은 <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_MULTILINE</a> 또는 <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_DOLLAR_ENDONLY</a> 옵션의 영향을 받지 않는다. <code>\Z</code>와 <code>\z</code>의 차이점은 <code>\Z</code>는 문자열의 마지막 문자뿐만 아니라 문자열 끝에 있는 개행 문자 앞도 일치하지만 <code>\z</code>는 문자열 끝에만 일치한다는 것이다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/(testable|string)/'</span>, <span class="hljs-string">'AtestableA'</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-comment">// matched</span>
+
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\b(testable|string)\b/'</span>, <span class="hljs-string">'AtestableA'</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-comment">// not matched</span>
+
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\b(testable|string)\b/'</span>, <span class="hljs-string">'A testable A'</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-comment">// matched</span>
+
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\B(testable|string)\B/'</span>, <span class="hljs-string">'AtestableA'</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-comment">// matched</span>
+
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\B(testable|string)\B/'</span>, <span class="hljs-string">'A testable A'</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-comment">// not matched</span></pre>
+<p><code>\A</code>, <code>\Z</code> 및 <code>\z</code> <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 기존 곡절 부호(^) 및 달러 부호($)와 달리 옵션이 설정 되더라도 대상 문자열의 시작과 끝 부분에서만 일치한다. 이들은 <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_MULTILINE</a> 또는 <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_DOLLAR_ENDONLY</a> 옵션의 영향을 받지 않는다. <code>\Z</code>와 <code>\z</code>의 차이점은 <code>\Z</code>는 문자열의 마지막 문자 뿐만 아니라 문자열 끝에 있는 개행 문자 앞도 일치하지만 <code>\z</code>는 문자열 끝에만 일치한다는 것이다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$str</span> = <span class="hljs-string">&lt;&lt;&lt;STR
+A testable string E
+B testable string F
+C testable string G
+D testable string H
+STR;</span>
+
+preg_match_all(<span class="hljs-string">'/\AB /m'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
+print_r(<span class="hljs-variable">$matches</span>);
+<span class="hljs-comment">//Array</span>
+<span class="hljs-comment">//(</span>
+<span class="hljs-comment">//  [0] =&gt; Array</span>
+<span class="hljs-comment">//  (</span>
+<span class="hljs-comment">//  )</span>
+<span class="hljs-comment">//)</span>
+
+preg_match_all(<span class="hljs-string">'/^B /m'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
+print_r(<span class="hljs-variable">$matches</span>);
+<span class="hljs-comment">//Array</span>
+<span class="hljs-comment">//(</span>
+<span class="hljs-comment">//  [0] =&gt; Array</span>
+<span class="hljs-comment">//  (</span>
+<span class="hljs-comment">//      [0] =&gt; B</span>
+<span class="hljs-comment">//  )</span>
+<span class="hljs-comment">//)</span>
+
+preg_match_all(<span class="hljs-string">'/H\z/m'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
+print_r(<span class="hljs-variable">$matches</span>);
+<span class="hljs-comment">//Array</span>
+<span class="hljs-comment">//(</span>
+<span class="hljs-comment">//  [0] =&gt; Array</span>
+<span class="hljs-comment">//  (</span>
+<span class="hljs-comment">//  )</span>
+<span class="hljs-comment">//)</span>
+
+preg_match_all(<span class="hljs-string">'/G$/m'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
+print_r(<span class="hljs-variable">$matches</span>);
+<span class="hljs-comment">//Array</span>
+<span class="hljs-comment">//(</span>
+<span class="hljs-comment">//  [0] =&gt; Array</span>
+<span class="hljs-comment">//  (</span>
+<span class="hljs-comment">//      [0] =&gt; G</span>
+<span class="hljs-comment">//  )</span>
+<span class="hljs-comment">//)</span>
+
+<span class="hljs-variable">$str</span> .= <span class="hljs-string">"\n"</span>;   <span class="hljs-comment">// \Z 와 \z의 차이를 확인하기 위해 개행문자 추가</span>
+
+preg_match_all(<span class="hljs-string">'/H\z/m'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
+print_r(<span class="hljs-variable">$matches</span>);
+<span class="hljs-comment">//Array</span>
+<span class="hljs-comment">//(</span>
+<span class="hljs-comment">//  [0] =&gt; Array</span>
+<span class="hljs-comment">//  (</span>
+<span class="hljs-comment">//  )</span>
+<span class="hljs-comment">//)</span>
+
+preg_match_all(<span class="hljs-string">'/H\Z/m'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
+print_r(<span class="hljs-variable">$matches</span>);
+<span class="hljs-comment">//Array</span>
+<span class="hljs-comment">//(</span>
+<span class="hljs-comment">//  [0] =&gt; Array</span>
+<span class="hljs-comment">//  (</span>
+<span class="hljs-comment">//      [0] =&gt; H</span>
+<span class="hljs-comment">//  )</span>
+<span class="hljs-comment">//)</span></pre>
 <p><code>\G</code> <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 현재 일치하는 위치가 <a href="http://php.net/manual/kr/function.preg-match.php">preg_match()</a>의 offset 인수에 지정된 일치 항목의 시작 지점에 있는 경우에만 매치된다. offset 값이 0이 아닌 경우 <code>\A</code>와 다르다(Perl에서의 <code>\G</code>와 다르다).</p>
 <pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
 preg_match(<span class="hljs-string">'/\G1234/'</span>, <span class="hljs-string">'test1234'</span>, <span class="hljs-variable">$matches</span>, <span class="hljs-number">0</span>, <span class="hljs-number">3</span>);

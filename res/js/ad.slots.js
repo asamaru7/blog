@@ -1,6 +1,11 @@
 (function () {
 	'use strict';
 
+	if (typeof window._AD_REQUESTED != 'undefined') {
+		return;
+	}
+	window._AD_REQUESTED = true;
+
 	window.ADSlots = {
 		'gad-top': {	// 블로그 상단
 			'type': 'adsense',

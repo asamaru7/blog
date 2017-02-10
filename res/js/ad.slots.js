@@ -163,12 +163,13 @@
 	} catch (e) {
 	}
 
-	try {
-		var script = document.createElement("script");
-		script.type = 'text/javascript';
-		script.async = true;
-		script.src = '//gravity.tanz.xyz/js/vendor/common/GadLoader.min.js';
-		document.getElementsByTagName("head")[0].appendChild(script);
-	} catch (e) {
-	}
+	// 배포시 통합 배포
+	// try {
+	// 	var script = document.createElement("script");
+	// 	script.type = 'text/javascript';
+	// 	script.async = true;
+	// 	script.src = '//gravity.tanz.xyz/js/vendor/common/GadLoader.min.js';
+	// 	document.getElementsByTagName("head")[0].appendChild(script);
+	// } catch (e) {
+	// }
 })();

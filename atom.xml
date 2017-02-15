@@ -1,7 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-<title>이 세상에 하나는 남기고 가자</title><id>https://blog.asamaru.net/</id><updated>2017-02-15T05:16:10+00:00</updated><subtitle>세상에 필요한 소스코드 한줄 남기고 가자</subtitle><link href="https://blog.asamaru.net/" rel="alternate" type="text/html" /><link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" /><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author>
+<title>이 세상에 하나는 남기고 가자</title><id>https://blog.asamaru.net/</id><updated>2017-02-15T06:56:09+00:00</updated><subtitle>세상에 필요한 소스코드 한줄 남기고 가자</subtitle><link href="https://blog.asamaru.net/" rel="alternate" type="text/html" /><link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" /><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author>
+<entry><id>https://blog.asamaru.net/2017/02/15/named-backreferences-with-preg-replace/</id><title type="html">preg_replace()의 치환 문자열에서 이름이 지정된 서브 패턴 사용하기</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/02/15/named-backreferences-with-preg-replace/"/><published>2017-02-15T15:36:32+00:00</published><updated>2017-02-15T15:36:32+00:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="php" label="php" /><summary><![CDATA[preg_replace()는 이름이 지정된 서브 패턴에 대한 역 참조(named backreferences)를 지원하지 않는다. 일단 일반적인 역 참조를 사용하는 방법에 대한 예시를 보자. <?php $string = 'user/foo'; echo preg_replace('/^user\\/(?P<id>[^\\/]+)$/', 'user/profile/\\1', $string); // user/profile/foo 위의 예시에서 치환 문자열의 \\1 대신에 패턴에서 지정된 이름("id")을 사용하고자 한다고 가정하자. <?php $string = 'user/foo'; echo preg_replace('/^user\\/(?P<id>[^\\/]+)$/', 'user/profile/\\1', $string); user/profile/\id 결과에서 보듯이 역 참조는 패턴에서 지정된 이름으로는 사용할 수 없다. 이런 경우라면 아래와 같이 preg_replace_callback()를 사용해야 한다. $string = 'user/foo'; echo preg_replace_callback('/^user\\/(?P<id>[^\\/]+)$/', function ($matches) { return 'user/profile/' . $matches['id']; }, $string) . "\n"; // user/profile/foo 위 예시를 봤을 때는 "굳이 복잡하게 서브 패턴에 이름을 지정해서 사용해야 하는가?" 하는 의문이 들겠지만 정규식이 복잡해 진다면 명시적으로 이름을 붙여서 사용하는 것이 유지 보수와 코드를 읽는데 도움이 된다. 서브 패턴과 역 참조에 대한 자세한 내용은 아래의 글을 참고하자. PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns) PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references)]]></summary><content type="html"><![CDATA[<p><a href="http://php.net/manual/kr/function.preg-replace.php">preg_replace()</a>는 이름이 지정된 <a href="/2017/01/17/php-regex-subpatterns/">서브 패턴</a>에 대한 <a href="/2017/01/19/php-regex-back-references/">역 참조</a>(named backreferences)를 지원하지 않는다.</p>
+<p>일단 일반적인 역 참조를 사용하는 방법에 대한 예시를 보자.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$string</span> = <span class="hljs-string">'user/foo'</span>;
+<span class="hljs-keyword">echo</span> preg_replace(<span class="hljs-string">'/^user\\/(?P&lt;id&gt;[^\\/]+)$/'</span>, <span class="hljs-string">'user/profile/\\1'</span>, <span class="hljs-variable">$string</span>);
+
+<span class="hljs-comment">// user/profile/foo</span></pre>
+<p>위의 예시에서 치환 문자열의 <code>\\1</code> 대신에 패턴에서 지정된 이름(&quot;id&quot;)을 사용하고자 한다고 가정하자.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-variable">$string</span> = <span class="hljs-string">'user/foo'</span>;
+<span class="hljs-keyword">echo</span> preg_replace(<span class="hljs-string">'/^user\\/(?P&lt;id&gt;[^\\/]+)$/'</span>, <span class="hljs-string">'user/profile/\\1'</span>, <span class="hljs-variable">$string</span>);
+
+user/profile/\id</pre>
+<p>결과에서 보듯이 역 참조는 패턴에서 지정된 이름으로는 사용할 수 없다. 이런 경우라면 아래와 같이 <a href="http://php.net/manual/kr/function.preg-replace-callback.php">preg_replace_callback()</a>를 사용해야 한다.</p>
+<pre class="hljs php"><span class="hljs-variable">$string</span> = <span class="hljs-string">'user/foo'</span>;
+<span class="hljs-keyword">echo</span> preg_replace_callback(<span class="hljs-string">'/^user\\/(?P&lt;id&gt;[^\\/]+)$/'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(<span class="hljs-variable">$matches</span>)</span> </span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-string">'user/profile/'</span> . <span class="hljs-variable">$matches</span>[<span class="hljs-string">'id'</span>];
+    }, <span class="hljs-variable">$string</span>) . <span class="hljs-string">"\n"</span>;
+
+<span class="hljs-comment">// user/profile/foo</span></pre>
+<p>위 예시를 봤을 때는 &quot;굳이 복잡하게 서브 패턴에 이름을 지정해서 사용해야 하는가?&quot; 하는 의문이 들겠지만 정규식이 복잡해 진다면 명시적으로 이름을 붙여서 사용하는 것이 유지 보수와 코드를 읽는데 도움이 된다.</p>
+<p>서브 패턴과 역 참조에 대한 자세한 내용은 아래의 글을 참고하자.</p>
+<ul>
+<li><a href="/2017/01/17/php-regex-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns)</a></li>
+<li><a href="/2017/01/19/php-regex-back-references/">PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references)</a></li>
+</ul>]]></content></entry>
 <entry><id>https://blog.asamaru.net/2017/02/06/difference-between-bindparam-and-bindvalue-in-php-pdo/</id><title type="html">PHP PDO의 bindParam와 bindValue의 차이</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/02/06/difference-between-bindparam-and-bindvalue-in-php-pdo/"/><published>2017-02-06T14:18:01+00:00</published><updated>2017-02-06T14:18:01+00:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="php" label="php" /><summary><![CDATA[PDO(PHP Data Objects)에서 Prepared statements 사용시 값을 bind하기 위해 PDOStatement::bindParam 또는 PDOStatement::bindValue를 주로 사용한다. 두개의 함수는 사용법이 거의 유사해서 어떤 차이가 있는지 알아둘 필요가 있다. 아래의 예시를 보면 정확한 차이를 바로 알 수 있다. <?php $sex = 'male'; $s = $dbh->prepare('SELECT name FROM students WHERE sex = :sex'); $s->bindParam(':sex', $sex); // use bindParam to bind the variable $sex = 'female'; $s->execute(); // executed with WHERE sex = 'female' <?php $sex = 'male'; $s = $dbh->prepare('SELECT name FROM students WHERE sex = :sex'); $s->bindValue(':sex', $sex); // use bindValue to bind the variable's value $sex = 'female'; $s->execute(); // executed with WHERE sex = 'male' 결론은 PDOStatement::bindParam는 변수의 레퍼런스로 바인딩 되므로 PDOStatement::execute가 호출될 때 값이 반영된다.]]></summary><content type="html"><![CDATA[<p><a href="http://php.net/manual/en/book.pdo.php">PDO(PHP Data Objects)</a>에서 Prepared statements 사용시 값을 bind하기 위해  <a href="http://php.net/manual/en/pdostatement.bindparam.php">PDOStatement::bindParam</a> 또는
 <a href="http://php.net/manual/en/pdostatement.bindvalue.php">PDOStatement::bindValue</a>를 주로 사용한다. 두개의 함수는 사용법이 거의 유사해서 어떤 차이가 있는지 알아둘 필요가 있다.</p>
 <p>아래의 예시를 보면 정확한 차이를 바로 알 수 있다.</p>
@@ -401,7 +427,7 @@ look-behind 어설션의 구현은 각 <a href="/2017/01/15/php-regex-alternatio
 <li><a href="/2017/01/24/php-regex-recursive-patterns/">PHP 정규식(PCRE)의 모든 것 - 재귀 패턴(Recursive patterns)</a></li>
 <li><a href="/2017/01/25/php-regex-epilogue/">PHP 정규식(PCRE)의 모든 것 - 에필로그</a></li>
 </ul>]]></content></entry>
-<entry><id>https://blog.asamaru.net/2017/01/19/php-regex-back-references/</id><title type="html">PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references)</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/01/19/php-regex-back-references/"/><published>2017-01-19T19:56:12+00:00</published><updated>2017-02-15T14:14:08+00:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="php" label="php" /><summary><![CDATA[[Back references] (http://php.net/manual/kr/regexp.reference.back-references.php) (역 참조) 캐릭터 클래스 밖에서 백 슬래시 다음에 0 보다 큰 숫자는 패턴에서 이전(즉, 왼쪽으로) 캡처 서브 패턴에 대한 역 참조다(주어진 수보다 캡처된 서브 패턴의 수가 같거나 더 많을 경우). 그러나 백 슬래시 뒤의 10진수가 10 보다 작은 경우에는 항상 역 참조로 사용되며 전체 패턴에 많은 왼쪽 여는 괄호(()가 없는 경우에만 오류가 발생한다. 즉, 참조된 괄호는 10 보다 작은 숫자의 참조 왼쪽에 있을 필요는 없다. "전방 참조"는 반복이 관련되어 있고 오른쪽의 서브 패턴이 이전 반복에 참여했을 때 의미가 있다. 백 슬래시 뒤에 나오는 숫자 처리에 대한 자세한 내용은 위의 "백 슬래시"절을 참조하자. 역 참조는 현재 문자열에서 캡처하는 서브 패턴과 실제로 일치하는 것과 일치한다. 그래서 패턴 (sens|respons)e and \1ibility는 "sense and sensibility"와 "response and responsibility"와 일치하지만 "sense and responsibility"은 일치하지 않는다. 대소문자를 구분하는(caseful) 일치일 경우 역 참조 또한 문자의 대소문자를 일치한다. 예를 들어 ((?i)rah)\s+\1은 "rah rah"및 "RAH RAH"와 일치하지만 "RAH rah"와 일치하지 않는다(원래 캡처 서브 패턴이 대소문자를 구분하지 않더라도). <?php $str = 'RAH rah'; preg_match('/((?i)rah)\s+\1/', $str, $matches); print_r($matches); //Array //( //) preg_match('/(RAH)\s+(?i)\1/', $str, $matches); print_r($matches); //Array //( // [0] => RAH rah //[1] => RAH //) 같은 서브 패턴에 대한 복수의 역 참조가 있을 수 있다. 특정 패턴에서 실제로 서브 패턴을 사용하지 않은 경우 항상 실패한다. 예를 들어 패턴 (a|(bc))\2는 "bc"가 아닌 "a"와 일치하기 시작하면 항상 실패한다. <?php $str = 'abc'; preg_match('/(a|(bc))\2/', $str, $matches); print_r($matches); //Array //( //) $str = 'bcbc'; preg_match('/(a|(bc))\2/', $str, $matches); print_r($matches); //Array //( // [0] => bcbc // [1] => bc // [2] => bc //) 최대 99개의 역 참조가 있을 수 있으므로 백 슬래시 뒤의 모든 숫자는 잠재적인 참조 번호의 일부로 사용된다. 패턴이 숫자로 계속되면 뒤로 구분을 종료하기 위한 구분 기호를 사용해야 한다. PCRE_EXTENDED 옵션이 설정되면 공백이 될 수 있다. 그렇지 않으면 빈 주석을 사용할 수 있다. <?php $str = 'bcbc2'; preg_match('/(a|(bc))\2(?#)2/', $str, $matches); print_r($matches); //Array //( // [0] => bcbc2 // [1] => bc // [2] => bc //) 서브 패턴이 처음 사용될 때 참조하는 괄호 안쪽에서 발생하는 역 참조는 실패한다. 예를 들어, (a\1)은 결코 일치하지 않는다. 그러나 이러한 참조는 반복되는 서브 패턴 내부에서 유용할 수 있다. 예를 들어, 패턴 (a|b\1)+는 "a" 및 "aba", "ababba" 등의 임의의 수와 일치한다. 서브 패턴의 각 반복에서 이전 참조는 이전 반복에 해당하는 문자열과 일치한다. 이 작업을 수행하려면 첫 번째 반복이 역 참조와 일치할 필요가 없는 패턴이어야 한다. 위의 예와 같이 한정 기호를 사용하거나 최솟값이 0인 수량 기호를 사용하여 이 작업을 수행 할 수 있다. PHP 5.2.2부터는 \g 이스케이프 시퀀스를 사용하여 서브 패턴의 절대 참조 및 상대 참조를 사용할 수 있다. 이 이스케이프 시퀀스 뒤에는 부호없는 숫자 또는 음수가 와야하며, 선택적으로 중괄호로 묶을 수 있다. \1, \g1 및 \g{1}은 서로 동의어다. 역 참조 뒤에 문자 숫자(\g{2}1)가 나타나는 경우 중괄호를 사용하면 모호성을 제거하는데 도움이 된다. 음수와 함께 \g 시퀀스를 사용하면 상대 참조를 의미한다. 예를 들어 (foo)(bar)\g{-1}은 "foobarbar"와 (foo)(bar)\g{-2}는 "foobarfoo"와 일치한다. 이것은 긴 패턴에서 특정 이전 서브 패턴을 참조하기 위해 서브 패턴의 수를 추적하는 대신에 사용하면 유용하다. 이름이 지정된 서브 패턴에 대한 역 참조는 (?P=name) 또는 PHP 5.2.2 이후 \k<name> 또는 \k'name'을 사용하여 수행 할 수 있다. 또한 PHP 5.2.4에서는 \k{name} 및 \g{name}에 대한 지원이 추가되었다. PHP 정규식(PCRE)의 모든 것 - 프롤로그 PHP 정규식(PCRE)의 모든 것 - 구분기호(Delimiters) PHP 정규식(PCRE)의 모든 것 - 메타문자(Meta-characters) PHP 정규식(PCRE)의 모든 것 - 이스케이프 시퀀스(Escape Sequences) PHP 정규식(PCRE)의 모든 것 - 유니코드 문자 속성(Unicode character properties) PHP 정규식(PCRE)의 모든 것 - 앵커(Anchors) PHP 정규식(PCRE)의 모든 것 - 마침표(Dot) PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes) PHP 정규식(PCRE)의 모든 것 - 선택(Alternation) PHP 정규식(PCRE)의 모든 것 - 내부 옵션 설정(Internal option setting) PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns) PHP 정규식(PCRE)의 모든 것 - 반복(Repetition) > PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references) PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions) PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns) PHP 정규식(PCRE)의 모든 것 - 조건부 서브 패턴(Conditional subpatterns) PHP 정규식(PCRE)의 모든 것 - 주석(Comments) PHP 정규식(PCRE)의 모든 것 - 재귀 패턴(Recursive patterns) PHP 정규식(PCRE)의 모든 것 - 에필로그]]></summary><content type="html"><![CDATA[<h3>[Back references] (<a href="http://php.net/manual/kr/regexp.reference.back-references.php">http://php.net/manual/kr/regexp.reference.back-references.php</a>) (역 참조)</h3>
+<entry><id>https://blog.asamaru.net/2017/01/19/php-regex-back-references/</id><title type="html">PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references)</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/01/19/php-regex-back-references/"/><published>2017-01-19T19:56:12+00:00</published><updated>2017-02-15T14:14:08+00:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="php" label="php" /><summary><![CDATA[Back references (역 참조) 캐릭터 클래스 밖에서 백 슬래시 다음에 0 보다 큰 숫자는 패턴에서 이전(즉, 왼쪽으로) 캡처 서브 패턴에 대한 역 참조다(주어진 수보다 캡처된 서브 패턴의 수가 같거나 더 많을 경우). 그러나 백 슬래시 뒤의 10진수가 10 보다 작은 경우에는 항상 역 참조로 사용되며 전체 패턴에 많은 왼쪽 여는 괄호(()가 없는 경우에만 오류가 발생한다. 즉, 참조된 괄호는 10 보다 작은 숫자의 참조 왼쪽에 있을 필요는 없다. "전방 참조"는 반복이 관련되어 있고 오른쪽의 서브 패턴이 이전 반복에 참여했을 때 의미가 있다. 백 슬래시 뒤에 나오는 숫자 처리에 대한 자세한 내용은 위의 "백 슬래시"절을 참조하자. 역 참조는 현재 문자열에서 캡처하는 서브 패턴과 실제로 일치하는 것과 일치한다. 그래서 패턴 (sens|respons)e and \1ibility는 "sense and sensibility"와 "response and responsibility"와 일치하지만 "sense and responsibility"은 일치하지 않는다. 대소문자를 구분하는(caseful) 일치일 경우 역 참조 또한 문자의 대소문자를 일치한다. 예를 들어 ((?i)rah)\s+\1은 "rah rah"및 "RAH RAH"와 일치하지만 "RAH rah"와 일치하지 않는다(원래 캡처 서브 패턴이 대소문자를 구분하지 않더라도). <?php $str = 'RAH rah'; preg_match('/((?i)rah)\s+\1/', $str, $matches); print_r($matches); //Array //( //) preg_match('/(RAH)\s+(?i)\1/', $str, $matches); print_r($matches); //Array //( // [0] => RAH rah //[1] => RAH //) 같은 서브 패턴에 대한 복수의 역 참조가 있을 수 있다. 특정 패턴에서 실제로 서브 패턴을 사용하지 않은 경우 항상 실패한다. 예를 들어 패턴 (a|(bc))\2는 "bc"가 아닌 "a"와 일치하기 시작하면 항상 실패한다. <?php $str = 'abc'; preg_match('/(a|(bc))\2/', $str, $matches); print_r($matches); //Array //( //) $str = 'bcbc'; preg_match('/(a|(bc))\2/', $str, $matches); print_r($matches); //Array //( // [0] => bcbc // [1] => bc // [2] => bc //) 최대 99개의 역 참조가 있을 수 있으므로 백 슬래시 뒤의 모든 숫자는 잠재적인 참조 번호의 일부로 사용된다. 패턴이 숫자로 계속되면 뒤로 구분을 종료하기 위한 구분 기호를 사용해야 한다. PCRE_EXTENDED 옵션이 설정되면 공백이 될 수 있다. 그렇지 않으면 빈 주석을 사용할 수 있다. <?php $str = 'bcbc2'; preg_match('/(a|(bc))\2(?#)2/', $str, $matches); print_r($matches); //Array //( // [0] => bcbc2 // [1] => bc // [2] => bc //) 서브 패턴이 처음 사용될 때 참조하는 괄호 안쪽에서 발생하는 역 참조는 실패한다. 예를 들어, (a\1)은 결코 일치하지 않는다. 그러나 이러한 참조는 반복되는 서브 패턴 내부에서 유용할 수 있다. 예를 들어, 패턴 (a|b\1)+는 "a" 및 "aba", "ababba" 등의 임의의 수와 일치한다. 서브 패턴의 각 반복에서 이전 참조는 이전 반복에 해당하는 문자열과 일치한다. 이 작업을 수행하려면 첫 번째 반복이 역 참조와 일치할 필요가 없는 패턴이어야 한다. 위의 예와 같이 한정 기호를 사용하거나 최솟값이 0인 수량 기호를 사용하여 이 작업을 수행 할 수 있다. PHP 5.2.2부터는 \g 이스케이프 시퀀스를 사용하여 서브 패턴의 절대 참조 및 상대 참조를 사용할 수 있다. 이 이스케이프 시퀀스 뒤에는 부호없는 숫자 또는 음수가 와야하며, 선택적으로 중괄호로 묶을 수 있다. \1, \g1 및 \g{1}은 서로 동의어다. 역 참조 뒤에 문자 숫자(\g{2}1)가 나타나는 경우 중괄호를 사용하면 모호성을 제거하는데 도움이 된다. 음수와 함께 \g 시퀀스를 사용하면 상대 참조를 의미한다. 예를 들어 (foo)(bar)\g{-1}은 "foobarbar"와 (foo)(bar)\g{-2}는 "foobarfoo"와 일치한다. 이것은 긴 패턴에서 특정 이전 서브 패턴을 참조하기 위해 서브 패턴의 수를 추적하는 대신에 사용하면 유용하다. 이름이 지정된 서브 패턴에 대한 역 참조는 (?P=name) 또는 PHP 5.2.2 이후 \k<name> 또는 \k'name'을 사용하여 수행 할 수 있다. 또한 PHP 5.2.4에서는 \k{name} 및 \g{name}에 대한 지원이 추가되었다. PHP 정규식(PCRE)의 모든 것 - 프롤로그 PHP 정규식(PCRE)의 모든 것 - 구분기호(Delimiters) PHP 정규식(PCRE)의 모든 것 - 메타문자(Meta-characters) PHP 정규식(PCRE)의 모든 것 - 이스케이프 시퀀스(Escape Sequences) PHP 정규식(PCRE)의 모든 것 - 유니코드 문자 속성(Unicode character properties) PHP 정규식(PCRE)의 모든 것 - 앵커(Anchors) PHP 정규식(PCRE)의 모든 것 - 마침표(Dot) PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes) PHP 정규식(PCRE)의 모든 것 - 선택(Alternation) PHP 정규식(PCRE)의 모든 것 - 내부 옵션 설정(Internal option setting) PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns) PHP 정규식(PCRE)의 모든 것 - 반복(Repetition) > PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references) PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions) PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns) PHP 정규식(PCRE)의 모든 것 - 조건부 서브 패턴(Conditional subpatterns) PHP 정규식(PCRE)의 모든 것 - 주석(Comments) PHP 정규식(PCRE)의 모든 것 - 재귀 패턴(Recursive patterns) PHP 정규식(PCRE)의 모든 것 - 에필로그]]></summary><content type="html"><![CDATA[<h3><a href="http://php.net/manual/kr/regexp.reference.back-references.php">Back references</a> (역 참조)</h3>
 <p><a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 밖에서 백 슬래시 다음에 0 보다 큰 숫자는 패턴에서 이전(즉, 왼쪽으로) 캡처 <a href="/2017/01/17/php-regex-subpatterns/">서브 패턴</a>에 대한 역 참조다(주어진 수보다 캡처된 서브 패턴의 수가 같거나 더 많을 경우).</p>
 <p>그러나 백 슬래시 뒤의 10진수가 10 보다 작은 경우에는 항상 역 참조로 사용되며 전체 패턴에 많은 왼쪽 여는 괄호(<code>(</code>)가 없는 경우에만 오류가 발생한다. 즉, 참조된 괄호는 10 보다 작은 숫자의 참조 왼쪽에 있을 필요는 없다. &quot;전방 참조&quot;는 반복이 관련되어 있고 오른쪽의 서브 패턴이 이전 반복에 참여했을 때 의미가 있다. 백 슬래시 뒤에 나오는 숫자 처리에 대한 자세한 내용은 위의 &quot;<a href="/2017/01/10/php-regex-escape-sequences/">백 슬래시</a>&quot;절을 참조하자.</p>
 <p>역 참조는 현재 문자열에서 캡처하는 서브 패턴과 실제로 일치하는 것과 일치한다. 그래서 패턴 <code>(sens|respons)e and \1ibility</code>는 &quot;sense and sensibility&quot;와 &quot;response and responsibility&quot;와 일치하지만 &quot;sense and responsibility&quot;은 일치하지 않는다. 대소문자를 구분하는(caseful) 일치일 경우 역 참조 또한 문자의 대소문자를 일치한다. 예를 들어 <code>((?i)rah)\s+\1</code>은 &quot;rah rah&quot;및 &quot;RAH RAH&quot;와 일치하지만 &quot;RAH rah&quot;와 일치하지 않는다(원래 캡처 서브 패턴이 대소문자를 구분하지 않더라도).</p>
@@ -565,119 +591,6 @@ print_r(<span class="hljs-variable">$matches</span>);
 <li><a href="/2017/01/16/php-regex-internal-option-setting/">PHP 정규식(PCRE)의 모든 것 - 내부 옵션 설정(Internal option setting)</a></li>
 <li><a href="/2017/01/17/php-regex-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns)</a></li>
 <li>> <strong>PHP 정규식(PCRE)의 모든 것 - 반복(Repetition)</strong></li>
-<li><a href="/2017/01/19/php-regex-back-references/">PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references)</a></li>
-<li><a href="/2017/01/20/php-regex-assertions/">PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)</a></li>
-<li><a href="/2017/01/21/php-regex-once-​only-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns)</a></li>
-<li><a href="/2017/01/22/php-regex-conditional-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 조건부 서브 패턴(Conditional subpatterns)</a></li>
-<li><a href="/2017/01/23/php-regex-comments/">PHP 정규식(PCRE)의 모든 것 - 주석(Comments)</a></li>
-<li><a href="/2017/01/24/php-regex-recursive-patterns/">PHP 정규식(PCRE)의 모든 것 - 재귀 패턴(Recursive patterns)</a></li>
-<li><a href="/2017/01/25/php-regex-epilogue/">PHP 정규식(PCRE)의 모든 것 - 에필로그</a></li>
-</ul>]]></content></entry>
-<entry><id>https://blog.asamaru.net/2017/01/17/php-regex-subpatterns/</id><title type="html">PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns)</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/01/17/php-regex-subpatterns/"/><published>2017-01-17T17:57:41+00:00</published><updated>2017-02-15T13:44:08+00:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="php" label="php" /><summary><![CDATA[Subpatterns (서브 패턴) 서브 패턴은 둥근 괄호(())로 구분되며 중첩 될 수 있다. 패턴의 일부를 서브 패턴으로 표시하는 것은 다음 두 가지를 수행한다. 선택 집합을 지역화 한다. 예를 들어 cat(aract|erpillar|) 패턴은 "cat", "cataract" 또는 "caterpillar" 중 하나와 일치한다. 괄호가 없으면 "cataract", "erpillar" 또는 빈 문자열과 일치한다. 서브 패턴을 캡처 서브 패턴으로 설정한다. 모든 패턴이 일치하면 서브 패턴과 일치하는 문자열의 부분은 pcre_exec()의 ovector 인수를 통해 호출자에게 다시 전달된다. 여는 괄호는 왼쪽에서 오른쪽으로 (1부터 시작) 카운트하여 캡처 서브 패턴의 수를 부여한다. 예를 들어 문자열 "the red king"이 ((red|white) (king|queen)) 패턴과 일치하면 캡처된 부분 문자열이 "red king", "red" 및 "king"이며 아래와 같이 번호가 부여된다. <?php $string = 'the red king'; preg_match('/((red|white) (king|queen))/', $string, $matches); print_r($matches); //Array //( // [0] => red king // [1] => red king // [2] => red // [3] => king //) 평범한 괄호가 두 가지 기능을 수행한다는 사실이 항상 도움이 되는 것은 아니다. 캡처 요구 사항없이 그룹화 서브 패턴이 필요한 경우가 종종 있다. 여는 괄호 뒤에 "?:"가 오는 경우 서브 패턴은 캡처를 수행하지 않으며 후속 캡처 서브 패턴의 수를 계산할 때는 계산되지 않는다. 예를 들어 문자열 "the white queen"이 ((?:red|white) (king|queen)) 패턴과 일치하면 캡처 된 부분 문자열은 "white queen"과 "queen"이며 1과 2로 번호가 매겨진다. 캡처된 부분 문자열의 최대 수는 99이며 캡처 및 캡처하지 않는 모든 서브 패턴의 최대 수는 200개다. <?php $string = 'the white queen'; preg_match('/((?:red|white) (king|queen))/', $string, $matches); print_r($matches); //Array //( // [0] => white queen // [1] => white queen // [2] => queen //) 캡처하지 않는 서브 패턴의 옵션이 필요한 경우 아래의 두 예시 처럼 "?" 그리고 ":" 사이에 옵션을 표기할 수 있다. (?i:saturday|sunday) (?:(?i)saturday|sunday) 정확히 동일한 문자열 세트와 일치해야 한다. 대체 분기는 왼쪽에서 오른쪽으로 시도되고 서브 패턴의 끝에 도달 할 때까지 옵션이 재설정 되지 않아 한 분기의 옵션 설정이 후속 분기에 영향을 미치므로 위 패턴은 "SUNDAY"및 "Saturday"와 일치한다. <?php preg_match('/(?i:saturday|sunday)/','Saturday', $matches); print_r($matches); // Array // ( // [0] => Saturday // ) preg_match('/(?:(?i)saturday|sunday)/','SUNDAY', $matches); print_r($matches); // Array // ( // [0] => SUNDAY // ) 구문 (?P<name>pattern)을 사용하여 서브 패턴의 이름을 지정할 수 있다. 그런 다음이 서브 패턴은 matches 배열에서 일반 숫자 위치와 이름을 기준으로 인덱싱 된다(PHP 5.2.2에서는 두 가지 대체 구문 (?<name>pattern)과 (?'name'pattern)을 사용할 수 있다). <?php $string = 'the white queen'; preg_match('/(?P<name>the)/', $string, $matches); print_r($matches); preg_match("/(?'name'the)/", $string, $matches); print_r($matches); //Array //( // [0] => the // [name] => the // [1] => the //) //Array //( // [0] => the // [name] => the // [1] => the //) 때로는 일치하는 여러 개의 서브 그룹을 정규식에 포함시켜야 할 필요가 있다. 일반적으로 이들 중 하나만 일치할 가능성이 있더라도 각각의 고유한 역 참조 번호가 부여된다. 이 문제를 극복하기 위해 (?| 구문을 사용하면 중복되는 숫자를 가질 수 있다. 다음 정규식 (?:(Sat)ur|(Sun))day을 "Sunday" 문자열과 비교해보자. <?php $string = 'Sunday'; preg_match('/(?:(Sat)ur|(Sun))day/', $string, $matches); print_r($matches); //Array //( // [0] => Sunday // [1] => // [2] => Sun //) 여기에서 "Sun"은 역 참조 2에 저장되고 역 참조 1은 비어 있다. 역 참조 1에서의 "Sat"는 역 참조 2에서 존재하지 않는다. (?|를 사용하여 패턴을 변경하면 이 문제가 해결된다. <?php $string = 'Sunday'; preg_match('/(?|(Sat)ur|(Sun))day/', $string, $matches); print_r($matches); //Array //( // [0] => Sunday // [1] => Sun //) 이 패턴을 사용하면 Sun과 Sat가 모두 역 참조 1에 저장된다. PHP 정규식(PCRE)의 모든 것 - 프롤로그 PHP 정규식(PCRE)의 모든 것 - 구분기호(Delimiters) PHP 정규식(PCRE)의 모든 것 - 메타문자(Meta-characters) PHP 정규식(PCRE)의 모든 것 - 이스케이프 시퀀스(Escape Sequences) PHP 정규식(PCRE)의 모든 것 - 유니코드 문자 속성(Unicode character properties) PHP 정규식(PCRE)의 모든 것 - 앵커(Anchors) PHP 정규식(PCRE)의 모든 것 - 마침표(Dot) PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes) PHP 정규식(PCRE)의 모든 것 - 선택(Alternation) PHP 정규식(PCRE)의 모든 것 - 내부 옵션 설정(Internal option setting) > PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns) PHP 정규식(PCRE)의 모든 것 - 반복(Repetition) PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references) PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions) PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns) PHP 정규식(PCRE)의 모든 것 - 조건부 서브 패턴(Conditional subpatterns) PHP 정규식(PCRE)의 모든 것 - 주석(Comments) PHP 정규식(PCRE)의 모든 것 - 재귀 패턴(Recursive patterns) PHP 정규식(PCRE)의 모든 것 - 에필로그]]></summary><content type="html"><![CDATA[<h3><a href="http://php.net/manual/kr/regexp.reference.subpatterns.php">Subpatterns</a> (서브 패턴)</h3>
-<p>서브 패턴은 둥근 괄호(<code>()</code>)로 구분되며 중첩 될 수 있다. 패턴의 일부를 서브 패턴으로 표시하는 것은 다음 두 가지를 수행한다.</p>
-<ol>
-<li>
-<p><a href="/2017/01/15/php-regex-alternation/">선택</a> 집합을 지역화 한다. 예를 들어 <code>cat(aract|erpillar|)</code> 패턴은 &quot;cat&quot;, &quot;cataract&quot; 또는 &quot;caterpillar&quot; 중 하나와 일치한다. 괄호가 없으면 &quot;cataract&quot;, &quot;erpillar&quot; 또는 빈 문자열과 일치한다.</p>
-</li>
-<li>서브 패턴을 캡처 서브 패턴으로 설정한다. 모든 패턴이 일치하면 서브 패턴과 일치하는 문자열의 부분은 <code>pcre_exec()</code>의 <code>ovector</code> 인수를 통해 호출자에게 다시 전달된다. 여는 괄호는 왼쪽에서 오른쪽으로 (1부터 시작) 카운트하여 캡처 서브 패턴의 수를 부여한다.</li>
-</ol>
-<p>예를 들어 문자열 &quot;the red king&quot;이 <code>((red|white) (king|queen))</code> 패턴과 일치하면 캡처된 부분 문자열이 &quot;red king&quot;, &quot;red&quot; 및 &quot;king&quot;이며 아래와 같이 번호가 부여된다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$string</span> = <span class="hljs-string">'the red king'</span>;
-preg_match(<span class="hljs-string">'/((red|white) (king|queen))/'</span>, <span class="hljs-variable">$string</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
-<span class="hljs-comment">//Array</span>
-<span class="hljs-comment">//(</span>
-<span class="hljs-comment">//  [0] =&gt; red king</span>
-<span class="hljs-comment">//  [1] =&gt; red king</span>
-<span class="hljs-comment">//  [2] =&gt; red</span>
-<span class="hljs-comment">//  [3] =&gt; king</span>
-<span class="hljs-comment">//)</span></pre>
-<p>평범한 괄호가 두 가지 기능을 수행한다는 사실이 항상 도움이 되는 것은 아니다. 캡처 요구 사항없이 그룹화 서브 패턴이 필요한 경우가 종종 있다. 여는 괄호 뒤에 &quot;<code>?:</code>&quot;가 오는 경우 서브 패턴은 캡처를 수행하지 않으며 후속 캡처 서브 패턴의 수를 계산할 때는 계산되지 않는다.</p>
-<p>예를 들어 문자열 &quot;the white queen&quot;이 <code>((?:red|white) (king|queen))</code> 패턴과 일치하면 캡처 된 부분 문자열은 &quot;white queen&quot;과 &quot;queen&quot;이며 1과 2로 번호가 매겨진다. 캡처된 부분 문자열의 최대 수는 99이며 캡처 및 캡처하지 않는 모든 서브 패턴의 최대 수는 200개다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$string</span> = <span class="hljs-string">'the white queen'</span>;
-preg_match(<span class="hljs-string">'/((?:red|white) (king|queen))/'</span>, <span class="hljs-variable">$string</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
-<span class="hljs-comment">//Array</span>
-<span class="hljs-comment">//(</span>
-<span class="hljs-comment">//  [0] =&gt; white queen</span>
-<span class="hljs-comment">//  [1] =&gt; white queen</span>
-<span class="hljs-comment">//  [2] =&gt; queen</span>
-<span class="hljs-comment">//)</span></pre>
-<p>캡처하지 않는 서브 패턴의 옵션이 필요한 경우 아래의 두 예시 처럼 &quot;?&quot; 그리고 &quot;:&quot; 사이에 옵션을 표기할 수 있다.</p>
-<pre><code>(?i:saturday|sunday)
-(?:(?i)saturday|sunday)</code></pre>
-<p>정확히 동일한 문자열 세트와 일치해야 한다. 대체 분기는 왼쪽에서 오른쪽으로 시도되고 서브 패턴의 끝에 도달 할 때까지 옵션이 재설정 되지 않아 한 분기의 옵션 설정이 후속 분기에 영향을 미치므로 위 패턴은 &quot;SUNDAY&quot;및 &quot;Saturday&quot;와 일치한다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-preg_match(<span class="hljs-string">'/(?i:saturday|sunday)/'</span>,<span class="hljs-string">'Saturday'</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
-<span class="hljs-comment">// Array</span>
-<span class="hljs-comment">// (</span>
-<span class="hljs-comment">//     [0] =&gt; Saturday</span>
-<span class="hljs-comment">// )</span>
-
-preg_match(<span class="hljs-string">'/(?:(?i)saturday|sunday)/'</span>,<span class="hljs-string">'SUNDAY'</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
-<span class="hljs-comment">// Array</span>
-<span class="hljs-comment">// (</span>
-<span class="hljs-comment">//     [0] =&gt; SUNDAY</span>
-<span class="hljs-comment">// )</span></pre>
-<p>구문 <code>(?P&lt;name&gt;pattern)</code>을 사용하여 서브 패턴의 이름을 지정할 수 있다. 그런 다음이 서브 패턴은 matches 배열에서 일반 숫자 위치와 이름을 기준으로 인덱싱 된다(PHP 5.2.2에서는 두 가지 대체 구문 <code>(?&lt;name&gt;pattern)</code>과 <code>(?'name'pattern)</code>을 사용할 수 있다).</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$string</span> = <span class="hljs-string">'the white queen'</span>;
-preg_match(<span class="hljs-string">'/(?P&lt;name&gt;the)/'</span>, <span class="hljs-variable">$string</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
-preg_match(<span class="hljs-string">"/(?'name'the)/"</span>, <span class="hljs-variable">$string</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
-<span class="hljs-comment">//Array</span>
-<span class="hljs-comment">//(</span>
-<span class="hljs-comment">//  [0] =&gt; the</span>
-<span class="hljs-comment">//  [name] =&gt; the</span>
-<span class="hljs-comment">//  [1] =&gt; the</span>
-<span class="hljs-comment">//)</span>
-<span class="hljs-comment">//Array</span>
-<span class="hljs-comment">//(</span>
-<span class="hljs-comment">//  [0] =&gt; the</span>
-<span class="hljs-comment">//  [name] =&gt; the</span>
-<span class="hljs-comment">//  [1] =&gt; the</span>
-<span class="hljs-comment">//)</span></pre>
-<p>때로는 일치하는 여러 개의 서브 그룹을 정규식에 포함시켜야 할 필요가 있다. 일반적으로 이들 중 하나만 일치할 가능성이 있더라도 각각의 고유한 역 참조 번호가 부여된다. 이 문제를 극복하기 위해 <code>(?|</code> 구문을 사용하면 중복되는 숫자를 가질 수 있다. 다음 정규식 <code>(?:(Sat)ur|(Sun))day</code>을 &quot;Sunday&quot; 문자열과 비교해보자.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$string</span> = <span class="hljs-string">'Sunday'</span>;
-preg_match(<span class="hljs-string">'/(?:(Sat)ur|(Sun))day/'</span>, <span class="hljs-variable">$string</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
-<span class="hljs-comment">//Array</span>
-<span class="hljs-comment">//(</span>
-<span class="hljs-comment">//  [0] =&gt; Sunday</span>
-<span class="hljs-comment">//  [1] =&gt;</span>
-<span class="hljs-comment">//  [2] =&gt; Sun</span>
-<span class="hljs-comment">//)</span></pre>
-<p>여기에서 &quot;Sun&quot;은 역 참조 2에 저장되고 역 참조 1은 비어 있다. 역 참조 1에서의 &quot;Sat&quot;는 역 참조 2에서 존재하지 않는다. <code>(?|</code>를 사용하여 패턴을 변경하면 이 문제가 해결된다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$string</span> = <span class="hljs-string">'Sunday'</span>;
-preg_match(<span class="hljs-string">'/(?|(Sat)ur|(Sun))day/'</span>, <span class="hljs-variable">$string</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
-<span class="hljs-comment">//Array</span>
-<span class="hljs-comment">//(</span>
-<span class="hljs-comment">//  [0] =&gt; Sunday</span>
-<span class="hljs-comment">//  [1] =&gt; Sun</span>
-<span class="hljs-comment">//)</span></pre>
-<p>이 패턴을 사용하면 Sun과 Sat가 모두 역 참조 1에 저장된다.</p>
-<hr />
-<ul>
-<li><a href="/2017/01/07/php-regex-prolog/">PHP 정규식(PCRE)의 모든 것 - 프롤로그</a></li>
-<li><a href="/2017/01/08/php-regex-delimiters/">PHP 정규식(PCRE)의 모든 것 - 구분기호(Delimiters)</a></li>
-<li><a href="/2017/01/09/php-regex-meta-characters/">PHP 정규식(PCRE)의 모든 것 - 메타문자(Meta-characters)</a></li>
-<li><a href="/2017/01/10/php-regex-escape-sequences/">PHP 정규식(PCRE)의 모든 것 - 이스케이프 시퀀스(Escape Sequences)</a></li>
-<li><a href="/2017/01/11/php-regex-unicode-character-properties/">PHP 정규식(PCRE)의 모든 것 - 유니코드 문자 속성(Unicode character properties)</a></li>
-<li><a href="/2017/01/12/php-regex-anchors/">PHP 정규식(PCRE)의 모든 것 - 앵커(Anchors)</a></li>
-<li><a href="/2017/01/13/php-regex-dot/">PHP 정규식(PCRE)의 모든 것 - 마침표(Dot)</a></li>
-<li><a href="/2017/01/14/php-regex-character-classes/">PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes)</a></li>
-<li><a href="/2017/01/15/php-regex-alternation/">PHP 정규식(PCRE)의 모든 것 - 선택(Alternation)</a></li>
-<li><a href="/2017/01/16/php-regex-internal-option-setting/">PHP 정규식(PCRE)의 모든 것 - 내부 옵션 설정(Internal option setting)</a></li>
-<li>> <strong>PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns)</strong></li>
-<li><a href="/2017/01/18/php-regex-repetition/">PHP 정규식(PCRE)의 모든 것 - 반복(Repetition)</a></li>
 <li><a href="/2017/01/19/php-regex-back-references/">PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references)</a></li>
 <li><a href="/2017/01/20/php-regex-assertions/">PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)</a></li>
 <li><a href="/2017/01/21/php-regex-once-​only-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns)</a></li>

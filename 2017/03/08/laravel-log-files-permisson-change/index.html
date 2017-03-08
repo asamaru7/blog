@@ -139,7 +139,7 @@
 <p>위 내용을 bootstrap이나 Provider에 추가한다.</p>
 <p>이 방법은 <a href="http://php.net/manual/kr/function.php-sapi-name.php">php_sapi_name()</a> 함수를 사용해서 인터페이스 형식을 로그 파일명에 추가함으로써 shell과 web의 로그 파일을 분리하는 것이다(권한 문제와는 상관없지만 RotatingFileHandler의 두번째 인자로 5가 추가되어 일단위로 5개의 파일까지 로그를 분할 저장하도록 되어있다).</p>
 <p>일반적인 경우라면 이 정도로 문제는 모두 해결된다. 그리고 대부분 권한을 변경하기 보다는 위 방법을 권장한다. 하지만 다음의 경우를 생각해보자.</p>
-<p>crontab은 root에서 실행되나 작업 또는 테스트 등의 이유로 root가 아는 사용자 계정의 shell에서 laravel 프로세스를 실행하는 경우 이미 root에 의해 로그 파일이 이미 생성되었다면 위 방법으로는 완전히 해결되지 않는다. 이러한 경우라면 아래와 같이 직접 permisson을 변경하는 방법도 가능하다.</p>
+<p>crontab은 root에서 실행되나 작업 또는 테스트 등의 이유로 root가 아닌 사용자 계정의 shell에서 laravel 프로세스를 실행하는 경우 이미 root에 의해 로그 파일이 이미 생성되었다면 위 방법으로는 완전히 해결되지 않는다. 이러한 경우라면 아래와 같이 직접 permisson을 변경하는 방법도 가능하다.</p>
 <pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
 <span class="hljs-variable">$app</span>-&gt;configureMonologUsing(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(Monolog\Logger <span class="hljs-variable">$monolog</span>)</span> </span>{
     <span class="hljs-variable">$filename</span> = storage_path(<span class="hljs-string">'/logs/laravel-'</span> . php_sapi_name() . <span class="hljs-string">'.log'</span>);

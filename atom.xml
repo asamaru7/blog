@@ -1,7 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-<title>이 세상에 하나는 남기고 가자</title><id>https://blog.asamaru.net/</id><updated>2017-03-08T01:59:45+00:00</updated><subtitle>세상에 필요한 소스코드 한줄 남기고 가자</subtitle><link href="https://blog.asamaru.net/" rel="alternate" type="text/html" /><link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" /><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author>
+<title>이 세상에 하나는 남기고 가자</title><id>https://blog.asamaru.net/</id><updated>2017-03-17T03:30:52+00:00</updated><subtitle>세상에 필요한 소스코드 한줄 남기고 가자</subtitle><link href="https://blog.asamaru.net/" rel="alternate" type="text/html" /><link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" /><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author>
+<entry><id>https://blog.asamaru.net/2017/03/17/laravel-schedule-artisan-commands-in-a-package/</id><title type="html">laravel(또는 lumen) package 에서 schedule 추가</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/03/17/laravel-schedule-artisan-commands-in-a-package/"/><published>2017-03-17T11:25:36+00:00</published><updated>2017-03-17T11:25:36+00:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="php" label="php" /><summary><![CDATA[laravel을 사용하는 프로젝트에서 schedule 처리는 Task Scheduling에 안내되어 있는 것처럼 \App\Console\Kernel의 schedule(Schedule $schedule) 메서드 내에서 정의해서 사용한다. laravel을 사용하는 프로젝트에서 사용하기 위해 추가한 package(module)에서 직접 schedule을 추가하고 싶다면 어떻게 해야할까? 이 부분에 대해서는 메뉴얼 상에 안내된 내용이 없다. 하지만 "How to schedule Artisan commands in a package?" 글을 참고하면 아래와 같이 처리할 수 있다. <?php use Illuminate\Support\ServiceProvider; use Illuminate\Console\Scheduling\Schedule; class ScheduleServiceProvider extends ServiceProvider { public function boot() { $this->app->booted(function () { $schedule = $this->app->make(Schedule::class); $schedule->command('some:command')->everyMinute(); }); } public function register() { } } Application Class의 booted($callback) 함수를 사용해서 schedule을 추가하는 것이다. 그런데 이 booted 함수가 lumen에서는 존재하지 않는다. booted 함수가 없는 것이 문제가 되는 이유는 schedule 개체를 만드는 Kernel Class의 defineConsoleSchedule() 메서드가 아래와 같이 구현되어 있으며 이 메서드는 Provider가 구성된 이후에 실행 되므로 $schedule 개체에 추가적인 schedule을 추가할 수 있는 진입 지점이 없다. <?php protected function defineConsoleSchedule() { $this->app->instance( 'Illuminate\Console\Scheduling\Schedule', $schedule = new Schedule($this->app[Cache::class]) ); $this->schedule($schedule); } 따라서 lumen 프로젝트에서는 package 내부에서 직접적으로 schedule을 추가하는 것은 불가능해 보인다. 굳이 해야 한다면 Kernel 클래스의 defineConsoleSchedule() 메서드를 override 하여 아래와 같이 구현해야 한다. <?php protected function defineConsoleSchedule() { $this->app->instance( 'Illuminate\Console\Scheduling\Schedule', $schedule = ScheduleHelper::get() ); $this->schedule($schedule); } new Schedule($this->app[Cache::class]) 대신에 ScheduleHelper::get()에서 인스턴스를 받아서 사용한다. <?php use Illuminate\Console\Scheduling\Schedule; use Illuminate\Contracts\Cache\Repository as Cache; class ScheduleHelper { /** @var Schedule */ private static $scheduleInstance = null; /** * @return Schedule */ static public function &get() { if (empty(static::$scheduleInstance)) { static::$scheduleInstance = new Schedule(app(Cache::class)); } return static::$scheduleInstance; } } ScheduleHelper에서는 schedule 인스턴스를 싱글톤으로 반환한다. <?php use Illuminate\Support\ServiceProvider; use Illuminate\Console\Scheduling\Schedule; class ScheduleServiceProvider extends ServiceProvider { public function boot() { $schedule = ScheduleHelper::get(); $schedule->command('some:command')->everyMinute(); } public function register() { } } Provider 에서는 ScheduleHelper::get()를 이용해서 schedule 인스턴스를 받아 schedule을 추가 한다. 위 방법은 lumen 프로젝트와 package 간의 종속 관계가 생기므로 권장할만한 방법은 아니다. 다만, 나의 경우는 lumen 프로젝트 개설시 기본적으로 직접 개발한 package를 사용하고 해당 package에서 기본 제어를 하도록 되어 있기 때문에 위 방법이 유용하게 사용될 수 있다(사실 대부분의 개발자들의 의견은 lumen은 간단한 프로젝트에서만 사용하고 다소 복잡해질 수 있는 프로젝트는 냥 laravel을 쓰라는 것이다).]]></summary><content type="html"><![CDATA[<p><a href="https://laravel.com">laravel</a>을 사용하는 프로젝트에서 schedule 처리는 <a href="https://laravel.com/docs/5.4/scheduling">Task Scheduling</a>에 안내되어 있는 것처럼 <code>\App\Console\Kernel</code>의 <code>schedule(Schedule $schedule)</code> 메서드 내에서 정의해서 사용한다.</p>
+<p>laravel을 사용하는 프로젝트에서 사용하기 위해 추가한 package(module)에서 직접 schedule을 추가하고 싶다면 어떻게 해야할까? 이 부분에 대해서는 메뉴얼 상에 안내된 내용이 없다. 하지만 &quot;<a href="http://stackoverflow.com/a/36630136">How to schedule Artisan commands in a package?</a>&quot; 글을 참고하면 아래와 같이 처리할 수 있다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-keyword">use</span> <span class="hljs-title">Illuminate</span>\<span class="hljs-title">Support</span>\<span class="hljs-title">ServiceProvider</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">Illuminate</span>\<span class="hljs-title">Console</span>\<span class="hljs-title">Scheduling</span>\<span class="hljs-title">Schedule</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ScheduleServiceProvider</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ServiceProvider</span>
+</span>{
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">boot</span><span class="hljs-params">()</span>
+    </span>{
+        <span class="hljs-variable">$this</span>-&gt;app-&gt;booted(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+            <span class="hljs-variable">$schedule</span> = <span class="hljs-variable">$this</span>-&gt;app-&gt;make(Schedule::class);
+            <span class="hljs-variable">$schedule</span>-&gt;command(<span class="hljs-string">'some:command'</span>)-&gt;everyMinute();
+        });
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">register</span><span class="hljs-params">()</span>
+    </span>{
+    }
+}</pre>
+<p>Application Class의 <code>booted($callback)</code> 함수를 사용해서 schedule을 추가하는 것이다.</p>
+<hr />
+<p>그런데 이 <code>booted</code> 함수가 <a href="https://lumen.laravel.com/">lumen</a>에서는 존재하지 않는다. <code>booted</code> 함수가 없는 것이 문제가 되는 이유는 schedule 개체를 만드는 Kernel Class의 <code>defineConsoleSchedule()</code> 메서드가 아래와 같이 구현되어 있으며 이 메서드는 Provider가 구성된 이후에 실행 되므로 <code>$schedule</code> 개체에 추가적인 schedule을 추가할 수 있는 진입 지점이 없다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-keyword">protected</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">defineConsoleSchedule</span><span class="hljs-params">()</span>
+</span>{
+  <span class="hljs-variable">$this</span>-&gt;app-&gt;instance(
+      <span class="hljs-string">'Illuminate\Console\Scheduling\Schedule'</span>, <span class="hljs-variable">$schedule</span> = <span class="hljs-keyword">new</span> Schedule(<span class="hljs-variable">$this</span>-&gt;app[Cache::class])
+  );
+
+  <span class="hljs-variable">$this</span>-&gt;schedule(<span class="hljs-variable">$schedule</span>);
+}</pre>
+<p>따라서 lumen 프로젝트에서는 package 내부에서 직접적으로 schedule을 추가하는 것은 불가능해 보인다. 굳이 해야 한다면 Kernel 클래스의 <code>defineConsoleSchedule()</code> 메서드를 override 하여 아래와 같이 구현해야 한다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-keyword">protected</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">defineConsoleSchedule</span><span class="hljs-params">()</span>
+</span>{
+  <span class="hljs-variable">$this</span>-&gt;app-&gt;instance(
+    <span class="hljs-string">'Illuminate\Console\Scheduling\Schedule'</span>, <span class="hljs-variable">$schedule</span> = ScheduleHelper::get()
+  );
+
+  <span class="hljs-variable">$this</span>-&gt;schedule(<span class="hljs-variable">$schedule</span>);
+}</pre>
+<p><code>new Schedule($this-&gt;app[Cache::class])</code> 대신에 <code>ScheduleHelper::get()</code>에서 인스턴스를 받아서 사용한다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+
+<span class="hljs-keyword">use</span> <span class="hljs-title">Illuminate</span>\<span class="hljs-title">Console</span>\<span class="hljs-title">Scheduling</span>\<span class="hljs-title">Schedule</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">Illuminate</span>\<span class="hljs-title">Contracts</span>\<span class="hljs-title">Cache</span>\<span class="hljs-title">Repository</span> <span class="hljs-title">as</span> <span class="hljs-title">Cache</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ScheduleHelper</span>
+</span>{
+    <span class="hljs-comment">/** <span class="hljs-doctag">@var</span> Schedule */</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-variable">$scheduleInstance</span> = <span class="hljs-keyword">null</span>;
+
+    <span class="hljs-comment">/**
+     * <span class="hljs-doctag">@return</span> Schedule
+     */</span>
+    <span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> &amp;<span class="hljs-title">get</span><span class="hljs-params">()</span>
+    </span>{
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">empty</span>(<span class="hljs-keyword">static</span>::<span class="hljs-variable">$scheduleInstance</span>)) {
+            <span class="hljs-keyword">static</span>::<span class="hljs-variable">$scheduleInstance</span> = <span class="hljs-keyword">new</span> Schedule(app(Cache::class));
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">static</span>::<span class="hljs-variable">$scheduleInstance</span>;
+    }
+}</pre>
+<p><code>ScheduleHelper</code>에서는 schedule 인스턴스를 싱글톤으로 반환한다.</p>
+<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<span class="hljs-keyword">use</span> <span class="hljs-title">Illuminate</span>\<span class="hljs-title">Support</span>\<span class="hljs-title">ServiceProvider</span>;
+<span class="hljs-keyword">use</span> <span class="hljs-title">Illuminate</span>\<span class="hljs-title">Console</span>\<span class="hljs-title">Scheduling</span>\<span class="hljs-title">Schedule</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ScheduleServiceProvider</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ServiceProvider</span>
+</span>{
+  <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">boot</span><span class="hljs-params">()</span>
+  </span>{
+    <span class="hljs-variable">$schedule</span> = ScheduleHelper::get();
+    <span class="hljs-variable">$schedule</span>-&gt;command(<span class="hljs-string">'some:command'</span>)-&gt;everyMinute();
+  }
+
+  <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">register</span><span class="hljs-params">()</span>
+  </span>{
+  }
+}</pre>
+<p>Provider 에서는 <code>ScheduleHelper::get()</code>를 이용해서 schedule 인스턴스를 받아 schedule을 추가 한다.</p>
+<hr />
+<p>위 방법은 lumen 프로젝트와 package 간의 종속 관계가 생기므로 권장할만한 방법은 아니다. 다만, 나의 경우는 lumen 프로젝트 개설시 기본적으로 직접 개발한 package를 사용하고 해당 package에서 기본 제어를 하도록 되어 있기 때문에 위 방법이 유용하게 사용될 수 있다(사실 대부분의 개발자들의 의견은 lumen은 간단한 프로젝트에서만 사용하고 다소 복잡해질 수 있는 프로젝트는 냥 laravel을 쓰라는 것이다).</p>]]></content></entry>
 <entry><id>https://blog.asamaru.net/2017/03/08/laravel-log-files-permisson-change/</id><title type="html">라라벨(laravel) log 파일 권한 변경</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/03/08/laravel-log-files-permisson-change/"/><published>2017-03-08T10:37:02+00:00</published><updated>2017-03-08T10:37:02+00:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="php" label="php" /><category term="laravel" label="laravel" /><summary><![CDATA[laravel 에서는 기본적으로 오류 로그를 "storage/logs"에 저장한다. 별다른 설정이 없다면 해당 경로에 실행 프로세스의 권한으로 로그 파일이 저장되는데 이것이 문제가 되는 경우가 있다. 예를들어 web server는 nobody 권한을 사용하고 crontab의 경우 root를 사용한다고 가정하다. crontab에 의해서 실행된 laravel 프로세스에서 오류가 발생하여 로그 파일이 생성 되었다면 이 파일의 권한은 기본적으로 root permission 에 644(-rw-r--r--)로 저장된다(서버 설정에 따라 다소 다를 수 있음). 이 상태에서 web server에서 실행한 프로세스에서 오류가 발생한다면 로그 파일에 접근할 권한이 없어 파일 저장 오류가 발생한다. 이 문제를 권한 변경없이 해결 할 수 있는 방법은 다음과 같다. <?php $app->configureMonologUsing(function(Monolog\Logger $monolog) { $filename = storage_path('/logs/laravel-' . php_sapi_name() . '.log'); $handler = new Monolog\Handler\RotatingFileHandler($filename, 5); $monolog->pushHandler($handler); }); 위 내용을 bootstrap이나 Provider에 추가한다. 이 방법은 php_sapi_name() 함수를 사용해서 인터페이스 형식을 로그 파일명에 추가함으로써 shell과 web의 로그 파일을 분리하는 것이다(권한 문제와는 상관없지만 RotatingFileHandler의 두번째 인자로 5가 추가되어 일단위로 5개의 파일까지 로그를 분할 저장하도록 되어있다). 일반적인 경우라면 이 정도로 문제는 모두 해결된다. 그리고 대부분 권한을 변경하기 보다는 위 방법을 권장한다. 하지만 다음의 경우를 생각해보자. crontab은 root에서 실행되나 작업 또는 테스트 등의 이유로 root가 아닌 사용자 계정의 shell에서 laravel 프로세스를 실행하는 경우 이미 root에 의해 로그 파일이 이미 생성되었다면 위 방법으로는 완전히 해결되지 않는다. 이러한 경우라면 아래와 같이 직접 permisson을 변경하는 방법도 가능하다. <?php $app->configureMonologUsing(function(Monolog\Logger $monolog) { $filename = storage_path('/logs/laravel-' . php_sapi_name() . '.log'); $handler = new Monolog\Handler\RotatingFileHandler($filename, 5, \Monolog\Logger::DEBUG, true, 0666); $monolog->pushHandler($handler); }); RotatingFileHandler에 추가 인자를 넘겨주어 로그 파일의 권한을 666(-rw-rw-rw-)으로 주도록 변경한 것이다. 혹 로그 파일의 수를 줄이고 싶거나 shell과 web의 로그가 분리되는 것이 싫다면 $filename 부분에서 php_sapi_name()를 제거하면 된다.]]></summary><content type="html"><![CDATA[<p><a href="https://laravel.com/">laravel</a> 에서는 기본적으로 오류 로그를 &quot;storage/logs&quot;에 저장한다. 별다른 설정이 없다면 해당 경로에 실행 프로세스의 권한으로 로그 파일이 저장되는데 이것이 문제가 되는 경우가 있다.</p>
 <p>예를들어 web server는 nobody 권한을 사용하고 crontab의 경우 root를 사용한다고 가정하다. crontab에 의해서 실행된 laravel 프로세스에서 오류가 발생하여 로그 파일이 생성 되었다면 이 파일의 권한은 기본적으로 root permission 에 <code>644(-rw-r--r--)</code>로 저장된다(서버 설정에 따라 다소 다를 수 있음). 이 상태에서 web server에서 실행한 프로세스에서 오류가 발생한다면 로그 파일에 접근할 권한이 없어 파일 저장 오류가 발생한다.</p>
 <p>이 문제를 권한 변경없이 해결 할 수 있는 방법은 다음과 같다.</p>
@@ -442,80 +526,6 @@ look-behind 어설션의 구현은 각 <a href="/2017/01/15/php-regex-alternatio
 <li><a href="/2017/01/18/php-regex-repetition/">PHP 정규식(PCRE)의 모든 것 - 반복(Repetition)</a></li>
 <li><a href="/2017/01/19/php-regex-back-references/">PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references)</a></li>
 <li>> <strong>PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)</strong></li>
-<li><a href="/2017/01/21/php-regex-once-​only-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns)</a></li>
-<li><a href="/2017/01/22/php-regex-conditional-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 조건부 서브 패턴(Conditional subpatterns)</a></li>
-<li><a href="/2017/01/23/php-regex-comments/">PHP 정규식(PCRE)의 모든 것 - 주석(Comments)</a></li>
-<li><a href="/2017/01/24/php-regex-recursive-patterns/">PHP 정규식(PCRE)의 모든 것 - 재귀 패턴(Recursive patterns)</a></li>
-<li><a href="/2017/01/25/php-regex-epilogue/">PHP 정규식(PCRE)의 모든 것 - 에필로그</a></li>
-</ul>]]></content></entry>
-<entry><id>https://blog.asamaru.net/2017/01/19/php-regex-back-references/</id><title type="html">PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references)</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/01/19/php-regex-back-references/"/><published>2017-01-19T19:56:12+00:00</published><updated>2017-02-15T14:14:08+00:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="php" label="php" /><summary><![CDATA[Back references (역 참조) 캐릭터 클래스 밖에서 백 슬래시 다음에 0 보다 큰 숫자는 패턴에서 이전(즉, 왼쪽으로) 캡처 서브 패턴에 대한 역 참조다(주어진 수보다 캡처된 서브 패턴의 수가 같거나 더 많을 경우). 그러나 백 슬래시 뒤의 10진수가 10 보다 작은 경우에는 항상 역 참조로 사용되며 전체 패턴에 많은 왼쪽 여는 괄호(()가 없는 경우에만 오류가 발생한다. 즉, 참조된 괄호는 10 보다 작은 숫자의 참조 왼쪽에 있을 필요는 없다. "전방 참조"는 반복이 관련되어 있고 오른쪽의 서브 패턴이 이전 반복에 참여했을 때 의미가 있다. 백 슬래시 뒤에 나오는 숫자 처리에 대한 자세한 내용은 위의 "백 슬래시"절을 참조하자. 역 참조는 현재 문자열에서 캡처하는 서브 패턴과 실제로 일치하는 것과 일치한다. 그래서 패턴 (sens|respons)e and \1ibility는 "sense and sensibility"와 "response and responsibility"와 일치하지만 "sense and responsibility"은 일치하지 않는다. 대소문자를 구분하는(caseful) 일치일 경우 역 참조 또한 문자의 대소문자를 일치한다. 예를 들어 ((?i)rah)\s+\1은 "rah rah"및 "RAH RAH"와 일치하지만 "RAH rah"와 일치하지 않는다(원래 캡처 서브 패턴이 대소문자를 구분하지 않더라도). <?php $str = 'RAH rah'; preg_match('/((?i)rah)\s+\1/', $str, $matches); print_r($matches); //Array //( //) preg_match('/(RAH)\s+(?i)\1/', $str, $matches); print_r($matches); //Array //( // [0] => RAH rah //[1] => RAH //) 같은 서브 패턴에 대한 복수의 역 참조가 있을 수 있다. 특정 패턴에서 실제로 서브 패턴을 사용하지 않은 경우 항상 실패한다. 예를 들어 패턴 (a|(bc))\2는 "bc"가 아닌 "a"와 일치하기 시작하면 항상 실패한다. <?php $str = 'abc'; preg_match('/(a|(bc))\2/', $str, $matches); print_r($matches); //Array //( //) $str = 'bcbc'; preg_match('/(a|(bc))\2/', $str, $matches); print_r($matches); //Array //( // [0] => bcbc // [1] => bc // [2] => bc //) 최대 99개의 역 참조가 있을 수 있으므로 백 슬래시 뒤의 모든 숫자는 잠재적인 참조 번호의 일부로 사용된다. 패턴이 숫자로 계속되면 뒤로 구분을 종료하기 위한 구분 기호를 사용해야 한다. PCRE_EXTENDED 옵션이 설정되면 공백이 될 수 있다. 그렇지 않으면 빈 주석을 사용할 수 있다. <?php $str = 'bcbc2'; preg_match('/(a|(bc))\2(?#)2/', $str, $matches); print_r($matches); //Array //( // [0] => bcbc2 // [1] => bc // [2] => bc //) 서브 패턴이 처음 사용될 때 참조하는 괄호 안쪽에서 발생하는 역 참조는 실패한다. 예를 들어, (a\1)은 결코 일치하지 않는다. 그러나 이러한 참조는 반복되는 서브 패턴 내부에서 유용할 수 있다. 예를 들어, 패턴 (a|b\1)+는 "a" 및 "aba", "ababba" 등의 임의의 수와 일치한다. 서브 패턴의 각 반복에서 이전 참조는 이전 반복에 해당하는 문자열과 일치한다. 이 작업을 수행하려면 첫 번째 반복이 역 참조와 일치할 필요가 없는 패턴이어야 한다. 위의 예와 같이 한정 기호를 사용하거나 최솟값이 0인 수량 기호를 사용하여 이 작업을 수행 할 수 있다. PHP 5.2.2부터는 \g 이스케이프 시퀀스를 사용하여 서브 패턴의 절대 참조 및 상대 참조를 사용할 수 있다. 이 이스케이프 시퀀스 뒤에는 부호없는 숫자 또는 음수가 와야하며, 선택적으로 중괄호로 묶을 수 있다. \1, \g1 및 \g{1}은 서로 동의어다. 역 참조 뒤에 문자 숫자(\g{2}1)가 나타나는 경우 중괄호를 사용하면 모호성을 제거하는데 도움이 된다. 음수와 함께 \g 시퀀스를 사용하면 상대 참조를 의미한다. 예를 들어 (foo)(bar)\g{-1}은 "foobarbar"와 (foo)(bar)\g{-2}는 "foobarfoo"와 일치한다. 이것은 긴 패턴에서 특정 이전 서브 패턴을 참조하기 위해 서브 패턴의 수를 추적하는 대신에 사용하면 유용하다. 이름이 지정된 서브 패턴에 대한 역 참조는 (?P=name) 또는 PHP 5.2.2 이후 \k<name> 또는 \k'name'을 사용하여 수행 할 수 있다. 또한 PHP 5.2.4에서는 \k{name} 및 \g{name}에 대한 지원이 추가되었다. PHP 정규식(PCRE)의 모든 것 - 프롤로그 PHP 정규식(PCRE)의 모든 것 - 구분기호(Delimiters) PHP 정규식(PCRE)의 모든 것 - 메타문자(Meta-characters) PHP 정규식(PCRE)의 모든 것 - 이스케이프 시퀀스(Escape Sequences) PHP 정규식(PCRE)의 모든 것 - 유니코드 문자 속성(Unicode character properties) PHP 정규식(PCRE)의 모든 것 - 앵커(Anchors) PHP 정규식(PCRE)의 모든 것 - 마침표(Dot) PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes) PHP 정규식(PCRE)의 모든 것 - 선택(Alternation) PHP 정규식(PCRE)의 모든 것 - 내부 옵션 설정(Internal option setting) PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns) PHP 정규식(PCRE)의 모든 것 - 반복(Repetition) > PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references) PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions) PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns) PHP 정규식(PCRE)의 모든 것 - 조건부 서브 패턴(Conditional subpatterns) PHP 정규식(PCRE)의 모든 것 - 주석(Comments) PHP 정규식(PCRE)의 모든 것 - 재귀 패턴(Recursive patterns) PHP 정규식(PCRE)의 모든 것 - 에필로그]]></summary><content type="html"><![CDATA[<h3><a href="http://php.net/manual/kr/regexp.reference.back-references.php">Back references</a> (역 참조)</h3>
-<p><a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 밖에서 백 슬래시 다음에 0 보다 큰 숫자는 패턴에서 이전(즉, 왼쪽으로) 캡처 <a href="/2017/01/17/php-regex-subpatterns/">서브 패턴</a>에 대한 역 참조다(주어진 수보다 캡처된 서브 패턴의 수가 같거나 더 많을 경우).</p>
-<p>그러나 백 슬래시 뒤의 10진수가 10 보다 작은 경우에는 항상 역 참조로 사용되며 전체 패턴에 많은 왼쪽 여는 괄호(<code>(</code>)가 없는 경우에만 오류가 발생한다. 즉, 참조된 괄호는 10 보다 작은 숫자의 참조 왼쪽에 있을 필요는 없다. &quot;전방 참조&quot;는 반복이 관련되어 있고 오른쪽의 서브 패턴이 이전 반복에 참여했을 때 의미가 있다. 백 슬래시 뒤에 나오는 숫자 처리에 대한 자세한 내용은 위의 &quot;<a href="/2017/01/10/php-regex-escape-sequences/">백 슬래시</a>&quot;절을 참조하자.</p>
-<p>역 참조는 현재 문자열에서 캡처하는 서브 패턴과 실제로 일치하는 것과 일치한다. 그래서 패턴 <code>(sens|respons)e and \1ibility</code>는 &quot;sense and sensibility&quot;와 &quot;response and responsibility&quot;와 일치하지만 &quot;sense and responsibility&quot;은 일치하지 않는다. 대소문자를 구분하는(caseful) 일치일 경우 역 참조 또한 문자의 대소문자를 일치한다. 예를 들어 <code>((?i)rah)\s+\1</code>은 &quot;rah rah&quot;및 &quot;RAH RAH&quot;와 일치하지만 &quot;RAH rah&quot;와 일치하지 않는다(원래 캡처 서브 패턴이 대소문자를 구분하지 않더라도).</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = <span class="hljs-string">'RAH rah'</span>;
-preg_match(<span class="hljs-string">'/((?i)rah)\s+\1/'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
-<span class="hljs-comment">//Array</span>
-<span class="hljs-comment">//(</span>
-<span class="hljs-comment">//)</span>
-
-preg_match(<span class="hljs-string">'/(RAH)\s+(?i)\1/'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
-<span class="hljs-comment">//Array</span>
-<span class="hljs-comment">//(</span>
-<span class="hljs-comment">//  [0] =&gt; RAH rah</span>
-<span class="hljs-comment">//[1] =&gt; RAH</span>
-<span class="hljs-comment">//)</span></pre>
-<p>같은 서브 패턴에 대한 복수의 역 참조가 있을 수 있다. 특정 패턴에서 실제로 서브 패턴을 사용하지 않은 경우 항상 실패한다. 예를 들어 패턴 <code>(a|(bc))\2</code>는 &quot;bc&quot;가 아닌 &quot;a&quot;와 일치하기 시작하면 항상 실패한다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = <span class="hljs-string">'abc'</span>;
-preg_match(<span class="hljs-string">'/(a|(bc))\2/'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
-<span class="hljs-comment">//Array</span>
-<span class="hljs-comment">//(</span>
-<span class="hljs-comment">//)</span>
-
-<span class="hljs-variable">$str</span> = <span class="hljs-string">'bcbc'</span>;
-preg_match(<span class="hljs-string">'/(a|(bc))\2/'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
-<span class="hljs-comment">//Array</span>
-<span class="hljs-comment">//(</span>
-<span class="hljs-comment">//  [0] =&gt; bcbc</span>
-<span class="hljs-comment">//  [1] =&gt; bc</span>
-<span class="hljs-comment">//  [2] =&gt; bc</span>
-<span class="hljs-comment">//)</span></pre>
-<p>최대 99개의 역 참조가 있을 수 있으므로 백 슬래시 뒤의 모든 숫자는 잠재적인 참조 번호의 일부로 사용된다. 패턴이 숫자로 계속되면 뒤로 구분을 종료하기 위한 구분 기호를 사용해야 한다. <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_EXTENDED</a> 옵션이 설정되면 공백이 될 수 있다. 그렇지 않으면 빈 주석을 사용할 수 있다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = <span class="hljs-string">'bcbc2'</span>;
-preg_match(<span class="hljs-string">'/(a|(bc))\2(?#)2/'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
-<span class="hljs-comment">//Array</span>
-<span class="hljs-comment">//(</span>
-<span class="hljs-comment">//  [0] =&gt; bcbc2</span>
-<span class="hljs-comment">//  [1] =&gt; bc</span>
-<span class="hljs-comment">//  [2] =&gt; bc</span>
-<span class="hljs-comment">//)</span></pre>
-<p>서브 패턴이 처음 사용될 때 참조하는 괄호 안쪽에서 발생하는 역 참조는 실패한다. 예를 들어, <code>(a\1)</code>은 결코 일치하지 않는다. 그러나 이러한 참조는 반복되는 서브 패턴 내부에서 유용할 수 있다. 예를 들어, 패턴 <code>(a|b\1)+</code>는 &quot;a&quot; 및 &quot;aba&quot;, &quot;ababba&quot; 등의 임의의 수와 일치한다. 서브 패턴의 각 반복에서 이전 참조는 이전 반복에 해당하는 문자열과 일치한다. 이 작업을 수행하려면 첫 번째 반복이 역 참조와 일치할 필요가 없는 패턴이어야 한다. 위의 예와 같이 한정 기호를 사용하거나 최솟값이 0인 수량 기호를 사용하여 이 작업을 수행 할 수 있다.</p>
-<p>PHP 5.2.2부터는 <code>\g</code> <a href="/2017/01/10/php-regex-escape-sequences/">이스케이프 시퀀스</a>를 사용하여 서브 패턴의 절대 참조 및 상대 참조를 사용할 수 있다. 이 <a href="/2017/01/10/php-regex-escape-sequences/">이스케이프 시퀀스</a> 뒤에는 부호없는 숫자 또는 음수가 와야하며, 선택적으로 중괄호로 묶을 수 있다. <code>\1</code>, <code>\g1</code> 및 <code>\g{1}</code>은 서로 동의어다. 역 참조 뒤에 문자 숫자(<code>\g{2}1</code>)가 나타나는 경우 중괄호를 사용하면 모호성을 제거하는데 도움이 된다.</p>
-<p>음수와 함께 <code>\g</code> 시퀀스를 사용하면 상대 참조를 의미한다. 예를 들어 <code>(foo)(bar)\g{-1}</code>은 &quot;foobarbar&quot;와 <code>(foo)(bar)\g{-2}</code>는 &quot;foobarfoo&quot;와 일치한다. 이것은 긴 패턴에서 특정 이전 서브 패턴을 참조하기 위해 서브 패턴의 수를 추적하는 대신에 사용하면 유용하다.</p>
-<p>이름이 지정된 서브 패턴에 대한 역 참조는 <code>(?P=name)</code> 또는 PHP 5.2.2 이후 <code>\k&lt;name&gt;</code> 또는 <code>\k'name'</code>을 사용하여 수행 할 수 있다. 또한 PHP 5.2.4에서는 <code>\k{name}</code> 및 <code>\g{name}</code>에 대한 지원이 추가되었다.</p>
-<hr />
-<ul>
-<li><a href="/2017/01/07/php-regex-prolog/">PHP 정규식(PCRE)의 모든 것 - 프롤로그</a></li>
-<li><a href="/2017/01/08/php-regex-delimiters/">PHP 정규식(PCRE)의 모든 것 - 구분기호(Delimiters)</a></li>
-<li><a href="/2017/01/09/php-regex-meta-characters/">PHP 정규식(PCRE)의 모든 것 - 메타문자(Meta-characters)</a></li>
-<li><a href="/2017/01/10/php-regex-escape-sequences/">PHP 정규식(PCRE)의 모든 것 - 이스케이프 시퀀스(Escape Sequences)</a></li>
-<li><a href="/2017/01/11/php-regex-unicode-character-properties/">PHP 정규식(PCRE)의 모든 것 - 유니코드 문자 속성(Unicode character properties)</a></li>
-<li><a href="/2017/01/12/php-regex-anchors/">PHP 정규식(PCRE)의 모든 것 - 앵커(Anchors)</a></li>
-<li><a href="/2017/01/13/php-regex-dot/">PHP 정규식(PCRE)의 모든 것 - 마침표(Dot)</a></li>
-<li><a href="/2017/01/14/php-regex-character-classes/">PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes)</a></li>
-<li><a href="/2017/01/15/php-regex-alternation/">PHP 정규식(PCRE)의 모든 것 - 선택(Alternation)</a></li>
-<li><a href="/2017/01/16/php-regex-internal-option-setting/">PHP 정규식(PCRE)의 모든 것 - 내부 옵션 설정(Internal option setting)</a></li>
-<li><a href="/2017/01/17/php-regex-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns)</a></li>
-<li><a href="/2017/01/18/php-regex-repetition/">PHP 정규식(PCRE)의 모든 것 - 반복(Repetition)</a></li>
-<li>> <strong>PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references)</strong></li>
-<li><a href="/2017/01/20/php-regex-assertions/">PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)</a></li>
 <li><a href="/2017/01/21/php-regex-once-​only-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns)</a></li>
 <li><a href="/2017/01/22/php-regex-conditional-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 조건부 서브 패턴(Conditional subpatterns)</a></li>
 <li><a href="/2017/01/23/php-regex-comments/">PHP 정규식(PCRE)의 모든 것 - 주석(Comments)</a></li>

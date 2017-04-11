@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-<title>이 세상에 하나는 남기고 가자</title><id>https://blog.asamaru.net/</id><updated>2017-04-05T17:25:50+09:00</updated><subtitle>세상에 필요한 소스코드 한줄 남기고 가자</subtitle><link href="https://blog.asamaru.net/" rel="alternate" type="text/html" /><link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" /><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author>
+<title>이 세상에 하나는 남기고 가자</title><id>https://blog.asamaru.net/</id><updated>2017-04-11T21:55:31+09:00</updated><subtitle>세상에 필요한 소스코드 한줄 남기고 가자</subtitle><link href="https://blog.asamaru.net/" rel="alternate" type="text/html" /><link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" /><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author>
+<entry><id>https://blog.asamaru.net/2017/04/11/target-overrides-the-always-embed-swift-standard-libraries-build-setting/</id><title type="html">target overrides the `ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES` build setting 오류 해결</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/04/11/target-overrides-the-always-embed-swift-standard-libraries-build-setting/"/><published>2017-04-11T21:40:03+09:00</published><updated>2017-04-11T21:40:03+09:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="swift" label="swift" /><summary><![CDATA[Xcode 8에서 cocoapods 사용시 아래와 같은 오류가 발생하는 경우가 있다. [!] The `xproject [Debug]` target overrides the `ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES` build setting defined in `Pods/Target Support Files/Pods-xproject/Pods-xproject.debug.xcconfig'. This can lead to problems with the CocoaPods installation - Use the `$(inherited)` flag, or - Remove the build settings from the target. [!] The `xproject [Release]` target overrides the `ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES` build setting defined in `Pods/Target Support Files/Pods-xproject/Pods-xproject.release.xcconfig'. This can lead to problems with the CocoaPods installation - Use the `$(inherited)` flag, or - Remove the build settings from the target. 최근 Xcode와 cocoapods를 업데이트하고 위와 같은 오류가 발생해서 찾아보니 Errors after updating to Xcode 8: "No such module" and "target overrides the EMBEDDED_CONTENT_CONTAINS_SWIFTbuild setting" 에서 해결 방법을 설명하고 있었다. Project/Targets -> [Project Name] -> Build Settings -> "ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES" 를 "$(inherited)"로 변경하는 것으로 위 문제는 간단히 해결된다. Xcode 8 Release Notes 주요 내용 정리를 보면 ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES에 대해 다음과 같이 설명하고 있다. EMBEDDED_CONTENT_CONTAINS_SWIFT는 없어지고 ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES가 추가되었다. 이 새로운 설정은 Xcode에서 항상 Swift Standard Libearies를 채워넣도록 지정하는 것이다. 대상에 직접 사용하거나 덧붙여 다른 제품이 Swift를 사용하는 경우에만 이 설정을 사용할 수 있다.]]></summary><content type="html"><![CDATA[<p>Xcode 8에서 <a href="https://cocoapods.org/">cocoapods</a> 사용시  아래와 같은 오류가 발생하는 경우가 있다.</p>
+<pre class="hljs bash">[!] The `xproject [Debug]` target overrides the `ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES` build setting defined <span class="hljs-keyword">in</span> `Pods/Target Support Files/Pods-xproject/Pods-xproject.debug.xcconfig<span class="hljs-string">'. This can lead to problems with the CocoaPods installation
+    - Use the `$(inherited)` flag, or
+    - Remove the build settings from the target.
+
+[!] The `xproject [Release]` target overrides the `ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES` build setting defined in `Pods/Target Support Files/Pods-xproject/Pods-xproject.release.xcconfig'</span>. This can lead to problems with the CocoaPods installation
+    - Use the `$(inherited)` flag, or
+    - Remove the build settings from the target.</pre>
+<p>최근 Xcode와 cocoapods를 업데이트하고 위와 같은 오류가 발생해서 찾아보니 <a href="http://stackoverflow.com/a/39686652">Errors after updating to Xcode 8: &quot;No such module&quot; and &quot;target overrides the <code>EMBEDDED_CONTENT_CONTAINS_SWIFT</code>build setting&quot;</a> 에서 해결 방법을 설명하고 있었다.</p>
+<p>Project/Targets -&gt; [Project Name] -&gt; Build Settings -&gt;  &quot;ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES&quot; 를 &quot;$(inherited)&quot;로 변경하는 것으로 위 문제는 간단히 해결된다.</p>
+<p><img src="/res/img/post/2017/04/target-overrides-the-always-embed-swift-standard-libraries-build-setting-1.png" alt="target-overrides-the-always-embed-swift-standard-libraries-build-setting-1" width="1123" height="247" /></p>
+<p><a href="https://swifter.kr/2016/09/26/xcode-8-release-notes-%EC%A3%BC%EC%9A%94-%EB%82%B4%EC%9A%A9-%EC%A0%95%EB%A6%AC/">Xcode 8 Release Notes 주요 내용 정리</a>를 보면 ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES에 대해 다음과 같이 설명하고 있다.</p>
+<blockquote>
+<p>EMBEDDED_CONTENT_CONTAINS_SWIFT는 없어지고 ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES가 추가되었다. 이 새로운 설정은 Xcode에서 항상 Swift Standard Libearies를 채워넣도록 지정하는 것이다. 대상에 직접 사용하거나 덧붙여 다른 제품이 Swift를 사용하는 경우에만 이 설정을 사용할 수 있다.</p>
+</blockquote>]]></content></entry>
 <entry><id>https://blog.asamaru.net/2017/04/04/css-image-vertical-center/</id><title type="html">CSS로 이미지 세로 중앙 정렬(Vertical align)하기</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/04/04/css-image-vertical-center/"/><published>2017-04-04T17:14:41+09:00</published><updated>2017-04-04T17:14:41+09:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="css" label="css" /><summary><![CDATA[HTML에서 <img>를 CSS만으로 비율을 유지한 채로 특정 영역의 중앙에 출력하는 방법은 다음과 같다. <!DOCTYPE html> <html> <head> <meta charset="utf-8"/> <style type="text/css"> /* 예시를 위한 css */ dl { float:left; margin-right:20px; } dt { clear:both; } dd { margin:0 0 20px 0; padding:10px; float:left; } dd > img, dd > div { border:#ccc solid 1px; float:left; margin-right:10px; } /* position 을 이용한 방법 */ div.box1 { position:relative; width:150px; height:200px; } div.box1 > img { position:absolute; max-width:100%; max-height:100%; width:auto; height:auto; margin:auto; top:0; bottom:0; left:0; right:0; } /* line-height 를 이용한 방법 */ div.box2 { width:150px; height:200px; line-height:200px; text-align:center; } div.box2 > img { max-width:100%; max-height:100%; vertical-align:middle; } /* :before / content 를 이용한 방법 */ div.box3 { width:150px; height:200px; text-align:center; white-space:nowrap; font:0/0 a; } div.box3:before { content:""; display:inline-block; vertical-align:middle; height:100%; } div.box3 > img { max-width:100%; max-height:100%; display:inline-block; vertical-align:middle; } /* flex 를 이용한 방법 */ div.box4 { width:150px; height:200px; display:flex; justify-content:center; align-items:center; } div.box4 > img { max-width:100%; max-height:100%; } </style> </head> <body> <dl> <dt>position 을 이용한 방법</dt> <dd> <div class="box1"> <img src="test_100px.png" alt="test image"/> </div> <div class="box1"> <img src="test_550px.png" alt="test image"/> </div> </dd> <dt>line-height 를 이용한 방법</dt> <dd> <div class="box2"> <img src="test_100px.png" alt="test image"/> </div> <div class="box2"> <img src="test_550px.png" alt="test image"/> </div> </dd> </dl> <dl> <dt>:before / content 를 이용한 방법</dt> <dd> <div class="box3"> <img src="test_100px.png" alt="test image"/> </div> <div class="box3"> <img src="test_550px.png" alt="test image"/> </div> </dd> <dt>flex 를 이용한 방법</dt> <dd> <div class="box4"> <img src="test_100px.png" alt="test image"/> </div> <div class="box4"> <img src="test_550px.png" alt="test image"/> </div> </dd> </dl> </body> </html> 총 4가지 방법을 예시로 나열했지만 나의 경우는 크로스 브라우징을 위해 "position 을 이용한 방법"이나 "line-height 를 이용한 방법"을 주로 사용한다. 하지만 상황에 따라서는 다른 방법이 유용할 수도 있기에 함께 남겨둔다. 그리고 여기서 사용된 원리를 잘 이용하면 다른 레이아웃을 구성하는데도 도움이 되니 한번쯤은 원리를 참고해보면 좋을 듯하다.]]></summary><content type="html"><![CDATA[<p>HTML에서 <code>&lt;img&gt;</code>를 CSS만으로 비율을 유지한 채로 특정 영역의 중앙에 출력하는 방법은 다음과 같다.</p>
 <p><img src="/res/img/post/2017/04/image_align_center.png" alt="phpstorm formatter markers" width="706" height="509" /></p>
 <pre class="hljs xml"><span class="hljs-doctype">&lt;!DOCTYPE html&gt;</span>
@@ -576,45 +591,6 @@ print_r(<span class="hljs-variable">$matches</span>);
 <li><a href="/2017/01/22/php-regex-conditional-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 조건부 서브 패턴(Conditional subpatterns)</a></li>
 <li><a href="/2017/01/23/php-regex-comments/">PHP 정규식(PCRE)의 모든 것 - 주석(Comments)</a></li>
 <li>> <strong>PHP 정규식(PCRE)의 모든 것 - 재귀 패턴(Recursive patterns)</strong></li>
-<li><a href="/2017/01/25/php-regex-epilogue/">PHP 정규식(PCRE)의 모든 것 - 에필로그</a></li>
-</ul>]]></content></entry>
-<entry><id>https://blog.asamaru.net/2017/01/23/php-regex-comments/</id><title type="html">PHP 정규식(PCRE)의 모든 것 - 주석(Comments)</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/01/23/php-regex-comments/"/><published>2017-01-23T14:12:12+09:00</published><updated>2017-01-23T14:12:12+09:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="php" label="php" /><summary><![CDATA[Comments (주석) 시퀀스 (?#는 다음 닫는 괄호까지 이어지는 주석의 시작을 표시한다. 중첩된 괄호는 허용되지 않으며 주석을 구성하는 문자는 패턴 일치에 전혀 영향을 미치지 않는다. PCRE_EXTENDED 옵션을 설정하면 캐릭터 클래스 외부의 이스케이프 처리되지 않은 # 문자가 패턴의 다음 줄바꿈 문자까지 이어지는 주석을 나타낸다. <?php $string = 'test'; echo preg_match('/te(?# 주석테스트)st/', $string) . "\n"; echo preg_match('/te#~~~~ st/', $string) . "\n"; echo preg_match('/te#~~~~ st/x', $string) . "\n"; // result // 1 // 0 // 1 // 두 번째 정규식의 경우 x(PCRE_EXTENDED) 옵션이 없으므로 #~~~~을 주석으로 인정하지 않아 실패를 반환 PHP 정규식(PCRE)의 모든 것 - 프롤로그 PHP 정규식(PCRE)의 모든 것 - 구분기호(Delimiters) PHP 정규식(PCRE)의 모든 것 - 메타문자(Meta-characters) PHP 정규식(PCRE)의 모든 것 - 이스케이프 시퀀스(Escape Sequences) PHP 정규식(PCRE)의 모든 것 - 유니코드 문자 속성(Unicode character properties) PHP 정규식(PCRE)의 모든 것 - 앵커(Anchors) PHP 정규식(PCRE)의 모든 것 - 마침표(Dot) PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes) PHP 정규식(PCRE)의 모든 것 - 선택(Alternation) PHP 정규식(PCRE)의 모든 것 - 내부 옵션 설정(Internal option setting) PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns) PHP 정규식(PCRE)의 모든 것 - 반복(Repetition) PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references) PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions) PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns) PHP 정규식(PCRE)의 모든 것 - 조건부 서브 패턴(Conditional subpatterns) > PHP 정규식(PCRE)의 모든 것 - 주석(Comments) PHP 정규식(PCRE)의 모든 것 - 재귀 패턴(Recursive patterns) PHP 정규식(PCRE)의 모든 것 - 에필로그]]></summary><content type="html"><![CDATA[<h3><a href="http://php.net/manual/kr/regexp.reference.comments.php">Comments</a> (주석)</h3>
-<p>시퀀스 <code>(?#</code>는 다음 닫는 괄호까지 이어지는 주석의 시작을 표시한다.
-중첩된 괄호는 허용되지 않으며 주석을 구성하는 문자는 패턴 일치에 전혀 영향을 미치지 않는다.</p>
-<p><a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_EXTENDED</a> 옵션을 설정하면 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 외부의 <a href="/2017/01/10/php-regex-escape-sequences/">이스케이프</a> 처리되지 않은 <code>#</code> 문자가 패턴의 다음 줄바꿈 문자까지 이어지는 주석을 나타낸다.</p>
-<pre><code>&lt;?php
-$string = 'test';
-echo preg_match('/te(?# 주석테스트)st/', $string) . "\n";
-echo preg_match('/te#~~~~
-st/', $string) . "\n";
-echo preg_match('/te#~~~~
-st/x', $string) . "\n";
-
-// result
-// 1
-// 0
-// 1
-// 두 번째 정규식의 경우 x(PCRE_EXTENDED) 옵션이 없으므로 #~~~~을 주석으로 인정하지 않아 실패를 반환</code></pre>
-<hr />
-<ul>
-<li><a href="/2017/01/07/php-regex-prolog/">PHP 정규식(PCRE)의 모든 것 - 프롤로그</a></li>
-<li><a href="/2017/01/08/php-regex-delimiters/">PHP 정규식(PCRE)의 모든 것 - 구분기호(Delimiters)</a></li>
-<li><a href="/2017/01/09/php-regex-meta-characters/">PHP 정규식(PCRE)의 모든 것 - 메타문자(Meta-characters)</a></li>
-<li><a href="/2017/01/10/php-regex-escape-sequences/">PHP 정규식(PCRE)의 모든 것 - 이스케이프 시퀀스(Escape Sequences)</a></li>
-<li><a href="/2017/01/11/php-regex-unicode-character-properties/">PHP 정규식(PCRE)의 모든 것 - 유니코드 문자 속성(Unicode character properties)</a></li>
-<li><a href="/2017/01/12/php-regex-anchors/">PHP 정규식(PCRE)의 모든 것 - 앵커(Anchors)</a></li>
-<li><a href="/2017/01/13/php-regex-dot/">PHP 정규식(PCRE)의 모든 것 - 마침표(Dot)</a></li>
-<li><a href="/2017/01/14/php-regex-character-classes/">PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes)</a></li>
-<li><a href="/2017/01/15/php-regex-alternation/">PHP 정규식(PCRE)의 모든 것 - 선택(Alternation)</a></li>
-<li><a href="/2017/01/16/php-regex-internal-option-setting/">PHP 정규식(PCRE)의 모든 것 - 내부 옵션 설정(Internal option setting)</a></li>
-<li><a href="/2017/01/17/php-regex-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 서브 패턴(Subpatterns)</a></li>
-<li><a href="/2017/01/18/php-regex-repetition/">PHP 정규식(PCRE)의 모든 것 - 반복(Repetition)</a></li>
-<li><a href="/2017/01/19/php-regex-back-references/">PHP 정규식(PCRE)의 모든 것 - 역 참조(Back references)</a></li>
-<li><a href="/2017/01/20/php-regex-assertions/">PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)</a></li>
-<li><a href="/2017/01/21/php-regex-once-​only-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 일회성 서브 패턴(Once-​only subpatterns)</a></li>
-<li><a href="/2017/01/22/php-regex-conditional-subpatterns/">PHP 정규식(PCRE)의 모든 것 - 조건부 서브 패턴(Conditional subpatterns)</a></li>
-<li>> <strong>PHP 정규식(PCRE)의 모든 것 - 주석(Comments)</strong></li>
-<li><a href="/2017/01/24/php-regex-recursive-patterns/">PHP 정규식(PCRE)의 모든 것 - 재귀 패턴(Recursive patterns)</a></li>
 <li><a href="/2017/01/25/php-regex-epilogue/">PHP 정규식(PCRE)의 모든 것 - 에필로그</a></li>
 </ul>]]></content></entry>
 

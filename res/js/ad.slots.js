@@ -7,7 +7,7 @@ var adslot = (ADSlots = window.ADSlots || []);
 	var isMobile = (winWidth <= 820);
 	var isMini = (winWidth <= 450);
 
-	if (isMobile) {
+	if (!isMobile) {
 		adslot.push({	// 블로그 우측
 			'target': '#cSide',
 			'slots': [{

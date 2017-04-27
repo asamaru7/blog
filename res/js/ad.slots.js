@@ -16,7 +16,7 @@ var adslot = (ADSlots = window.ADSlots || []);
 				'client': 'ca-pub-8163803188491150',
 				'slot': '1934918622',
 				'format': 'auto',
-				'style': 'width:300px; min-height:50px;'
+				'style': 'width:300px; min-height:50px; margin-bottom:40px;'
 			}]
 		});
 	}

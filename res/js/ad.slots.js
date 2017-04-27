@@ -12,7 +12,6 @@ var adslot = (ADSlots = window.ADSlots || []);
 			'target': '#cSide',
 			'slots': [{
 				'position': 'top',
-				'className': 'gad-box',
 				'type': 'adsense',
 				'client': 'ca-pub-8163803188491150',
 				'slot': '1934918622',
@@ -26,7 +25,6 @@ var adslot = (ADSlots = window.ADSlots || []);
 		'target': '.dMainBody',
 		'slots': [{
 			'position': 'bottom',
-			'className': 'gad-box',
 			'type': 'adsense',
 			'client': 'ca-pub-8163803188491150',
 			'slot': '9980888623',
@@ -39,7 +37,6 @@ var adslot = (ADSlots = window.ADSlots || []);
 		'target': '#cArticle',
 		'slots': [{
 			'position': 'bottom',
-			'className': 'gad-box',
 			'type': 'adsense',
 			'client': 'ca-pub-8163803188491150',
 			'slot': '7841851420',

@@ -29,7 +29,7 @@ var adslot = (ADSlots = window.ADSlots || []);
 			'client': 'ca-pub-8163803188491150',
 			'slot': '9980888623',
 			'format': 'auto',
-			'style': 'padding-top:30px; clear:both;' + (isMini ? 'width:300px; height:600px;' : '')
+			'style': 'padding-top:30px; clear:both; margin:0 auto;' + (isMini ? 'width:300px; height:600px;' : '')
 		}]
 	});
 

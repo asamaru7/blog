@@ -33,15 +33,22 @@ var adslot = (ADSlots = window.ADSlots || []);
 		}]
 	});
 
-	adslot.push({	// 본문 하단
+	adslot.push({
 		'target': '#cArticle',
-		'slots': [{
+		'slots': [{// 본문 하단
 			'position': 'bottom',
 			'type': 'adsense',
 			'client': 'ca-pub-8163803188491150',
 			'slot': '7841851420',
 			'format': 'auto',
 			'style': 'margin-top:30px;'
+		}, {// 본문 일치하는 콘텐츠
+			'position': 'bottom',
+			'type': 'adsense',
+			'client': 'ca-pub-8163803188491150',
+			'slot': '7054841029',
+			'format': 'autorelaxed',
+			'style': 'margin:30px auto;'
 		}]
 	});
 

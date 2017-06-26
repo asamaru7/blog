@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+					<title>Mac 에서 git 사용시 한글 파일명 문제 2 - 이 세상에 하나는 남기고 가자</title>
+	<meta name="author" content="유영재">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	
+	<meta name="description" content="Mac 에서 git 사용시 한글 파일명 문제 라는 글에서 core.precomposeunicode 옵션을 설정해서 한글 파일명 사용시 자소 단위로 분리되는 문제를 해결하는 방법을 소개 했었다. 그런데 맥에서 한글 파일명을 사용할 경우에 다른 문제가 하나더 있다. git status 명령으로 변경 파일을 보면 한글이 \306\301... 와 같이 보이는 문제가 있다. 보이기만 이렇게 보이는 것이면 그냥 참겠지만 commit 하는 등의 과정에서 파일명을 지정하는게 어려워진다. 이 문제를 해결하는 방법은 아래와 같다. git config">
+	<meta name="referrer" content="always">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="shortcut icon" type="image/x-icon" href="https://blog.asamaru.net/favicon.ico"/>
+	<link rel="canonical" href="https://blog.asamaru.net/2017/06/26/mac-os-git-korean-file-name-corequotepath/"/>
+			<link rel="amphtml" href="https://blog.asamaru.net/amp/2017/06/26/mac-os-git-korean-file-name-corequotepath/">
+	
+	<link href="//www.google-analytics.com" rel="dns-prefetch"/>
+	
+			<link href="//pagead2.googlesyndication.com" rel="dns-prefetch"/>
+		<link href="//googleads.g.doubleclick.net" rel="dns-prefetch"/>
+		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({
+				google_ad_client: 'ca-pub-8163803188491150',
+				enable_page_level_ads: true
+			});
+		</script>
+		<!--[if lt IE 9]>
+		<script src="//cdn.jsdelivr.net/html5shiv/3.7.3/html5shiv.min.js"></script>
+	<![endif]-->
+
+	<script src="/res/js/min/x15def8721d3248b655c2bf787ddb9cb2ddbb7a27.js" async="true" type="text/javascript"></script>
+<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+
+	
+	
+	<meta property="og:type" content="website">
+	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
+	<meta property="og:title" content="Mac 에서 git 사용시 한글 파일명 문제 2">
+	<meta property="og:description" content="Mac 에서 git 사용시 한글 파일명 문제 라는 글에서 core.precomposeunicode 옵션을 설정해서 한글 파일명 사용시 자소 단위로 분리되는 문제를 해결하는 방법을 소개 했었다. 그런데 맥에서 한글 파일명을 사용할 경우에 다른 문제가 하나더 있다. git status 명령으로 변경 파일을 보면 한글이 \306\301... 와 같이 보이는 문제가 있다. 보이기만 이렇게 보이는 것이면 그냥 참겠지만 commit 하는 등의 과정에서 파일명을 지정하는게 어려워진다. 이 문제를 해결하는 방법은 아래와 같다. git config">
+	<meta property="og:image" content="/res/img/icon/icon.png">
+	
+
+	
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="@asamaru7">
+	<meta name="twitter:title" content="Mac 에서 git 사용시 한글 파일명 문제 2">
+	<meta name="twitter:description" content="Mac 에서 git 사용시 한글 파일명 문제 라는 글에서 core.precomposeunicode 옵션을 설정해서 한글 파일명 사용시 자소 단위로 분리되는 문제를 해결하는 방법을 소개 했었다. 그런데 맥에서 한글 파일명을 사용할 경우에 다른 문제가 하나더 있다. git status 명령으로 변경 파일을 보면 한글이 \306\301... 와 같이 보이는 문제가 있다. 보이기만 이렇게 보이는 것이면 그냥 참겠지만 commit 하는 등의 과정에서 파일명을 지정하는게 어려워진다. 이 문제를 해결하는 방법은 아래와 같다. git config">
+	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	
+
+										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
+												<link rel="apple-touch-icon" sizes="76x76" href="/res/img/icon/76.png">
+												<link rel="apple-touch-icon" sizes="120x120" href="/res/img/icon/120.png">
+												<link rel="apple-touch-icon" sizes="152x152" href="/res/img/icon/152.png">
+						
+	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
+
+			<link href="/res/css/min/xa68c2a14160215d396b405dbca793445f06e1ae5.css" type="text/css" rel="stylesheet" />
+
+	 <script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "headline": "Mac 에서 git 사용시 한글 파일명 문제 2",
+    "author": {
+        "@type": "Person",
+        "name": "유영재"
+    },
+    "datePublished": "2017-6-26",
+    "dateModified": "2017-6-26",
+    "articleSection": "osx",
+    "url": "https://blog.asamaru.net/2017/06/26/mac-os-git-korean-file-name-corequotepath/",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://blog.asamaru.net/res/img/icon/icon.696.png",
+        "width": 696,
+        "height": 696
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "유영재",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://blog.asamaru.net/res/img/icon/icon.60.png",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://blog.asamaru.net/2017/06/26/mac-os-git-korean-file-name-corequotepath/"
+    }
+}</script> 
+		
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+			ga('create', 'UA-65749108-2', 'auto');
+			ga('send', 'pageview');
+		</script>
+	
+	</head>
+<body>
+<header>
+	<div class="dProfile">
+		<a href="https://blog.asamaru.net"><img src="/res/img/icon/icon.png" width="50" height="50" alt="profile"></a>
+		<h1><a href="https://blog.asamaru.net">이 세상에 하나는 남기고 가자</a></h1>
+					<p>세상에 필요한 소스코드 한줄 남기고 가자</p>
+				<button type="button" id="cBtnSlide"></button>
+	</div>
+</header>
+<section class="dMainBody">
+<div class="dWrapContent">
+	<section id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">Mac 에서 git 사용시 한글 파일명 문제 2</h2>
+												<a href="https://blog.asamaru.net/category/osx/" rel="tag">osx</a>
+									<a href="https://blog.asamaru.net/category/git/" rel="tag">git</a>
+													<span></span>
+										<time class="published " datetime="2017-06-26 17:25:35">2017.06.26. 17:25</time>
+			<time class="updated hide" datetime="2017-06-26 17:36:27">2017.06.26. 17:36</time>
+			<span class="vcard author hide"><span class="fn">유영재</span></span>
+		</div>
+		<div class="markdown-body entry-content"><p><a href="/2016/10/19/mac-os-git-korean-file-name-error/">Mac 에서 git 사용시 한글 파일명 문제</a> 라는 글에서 <code>core.precomposeunicode</code> 옵션을 설정해서 한글 파일명 사용시 자소 단위로 분리되는 문제를 해결하는 방법을 소개 했었다.
+그런데 맥에서 한글 파일명을 사용할 경우에 다른 문제가 하나더 있다. <code>git status</code> 명령으로 변경 파일을 보면 한글이 <code>\306\301...</code> 와 같이 보이는 문제가 있다. 보이기만 이렇게 보이는 것이면 그냥 참겠지만 commit 하는 등의 과정에서 파일명을 지정하는게 어려워진다.
+이 문제를 해결하는 방법은 아래와 같다.</p>
+<pre class="hljs bash">git config --global core.quotepath <span class="hljs-literal">false</span>
+git config --local core.quotepath <span class="hljs-literal">false</span></pre>
+<blockquote>
+<p><a href="http://git-scm.com/docs/git-config">Git Documentation</a></p>
+<p><strong>core.quotePath</strong></p>
+<p>Commands that output paths (e.g. ls-files, diff), will quote &quot;unusual&quot; characters in the pathname by enclosing the pathname in double-quotes and escaping those characters with backslashes in the same way C escapes control characters (e.g. \t for TAB, \n for LF, \ for backslash) or bytes with values larger than 0x80 (e.g. octal \302\265 for &quot;micro&quot; in UTF-8). If this variable is set to false, bytes higher than 0x80 are not considered &quot;unusual&quot; any more. Double-quotes, backslash and control characters are always escaped regardless of the setting of this variable. A simple space character is not considered &quot;unusual&quot;. Many commands can output pathnames completely verbatim using the -z option. The default value is true.</p>
+</blockquote>
+<hr />
+<p>결론을 이야기 하자면 특별한 이유가 있지 않는 이상 한글 파일명은 사용하지 않는 것이 정신 건강에 좋다. 그래서 나는 가급적 사용하지 않으려고 하지만 간혹 어쩔 수 없이 써야하는 경우가 있어 위 방법들을 남겨둔다.</p>
+</div>
+			</article>
+
+
+	
+	<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+
+
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2017/06/26/mac-os-git-korean-file-name-corequotepath/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</section>
+</div>
+<nav id="cSide" class="slideout-menu">
+	<div class="dSideBox">
+										
+										<dl class="dTags">
+					<dt>카테고리</dt>
+											<dd>
+							<a href="https://blog.asamaru.net/category/android/">
+								android<span>(57)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/blog/">
+								blog<span>(3)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/css/">
+								css<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/db/">
+								db<span>(6)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/flash/">
+								flash<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/git/">
+								git<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/html/">
+								html<span>(3)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ios/">
+								ios<span>(23)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/java/">
+								java<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/jekyll/">
+								jekyll<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/js/">
+								js<span>(14)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/laravel/">
+								laravel<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/linux/">
+								linux<span>(28)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/octopress/">
+								octopress<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/osx/">
+								osx<span>(11)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/php/">
+								php<span>(52)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/programming/">
+								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/swift/">
+								swift<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/thinking/">
+								thinking<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/tip/">
+								tip<span>(16)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/vagrant/">
+								vagrant<span>(7)</span>
+							</a>
+						</dd>
+									</dl>
+			
+			
+						
+			
+																<dl class="dArchives">
+						<dt>글 보관함</dt>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(38)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/06/">06 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/05/">05 <span>(4)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/04/">04 <span>(6)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/03/">03 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/02/">02 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/01/">01 <span>(22)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2016/">2016 <span>(69)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/12/">12 <span>(9)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/11/">11 <span>(11)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/10/">10 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/09/">09 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/08/">08 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/07/">07 <span>(5)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/05/">05 <span>(1)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/04/">04 <span>(9)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/03/">03 <span>(13)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/02/">02 <span>(7)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/01/">01 <span>(8)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2015/">2015 <span>(118)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/12/">12 <span>(16)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/11/">11 <span>(16)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/10/">10 <span>(41)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/09/">09 <span>(37)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/08/">08 <span>(8)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2012/">2012 <span>(7)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2012/10/">10 <span>(1)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2012/09/">09 <span>(6)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																		</dl>
+									
+				
+		
+		<form action="https://www.google.com/search" method="get" target="_blank" class="dFormSearch">
+			<fieldset>
+				<input type="hidden" name="sitesearch" value="https://blog.asamaru.net">
+				<legend>검색하기 폼</legend>
+				<label class="dIcon">검색하기</label>
+				<input type="text" name="q" value="" placeholder="Search"/>
+			</fieldset>
+		</form>
+
+		
+				<ul class="dLinks">
+							<li><a href="https://blog.asamaru.net/archives/" class="dInverse">전체글 보기</a></li>
+				<li class="dPipe"></li>
+						<li><a href="https://blog.asamaru.net/atom.xml" class="dInverse" target="_blank">RSS</a></li>
+		</ul>
+			</div>
+</nav>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</section>
+<footer>
+	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+</footer>
+
+
+
+<script async src="https://cdn.ampproject.org/v0.js"></script>
+<script async custom-element="amp-social-share" src="https://cdn.ampproject.org/v0/amp-social-share-0.1.js"></script>
+
+</body>
+</html>

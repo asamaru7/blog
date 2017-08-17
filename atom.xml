@@ -1,7 +1,486 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-<title>이 세상에 하나는 남기고 가자</title><id>https://blog.asamaru.net/</id><updated>2017-06-26T17:38:06+09:00</updated><subtitle>세상에 필요한 소스코드 한줄 남기고 가자</subtitle><link href="https://blog.asamaru.net/" rel="alternate" type="text/html" /><link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" /><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author>
+<title>이 세상에 하나는 남기고 가자</title><id>https://blog.asamaru.net/</id><updated>2017-08-17T21:46:16+09:00</updated><subtitle>세상에 필요한 소스코드 한줄 남기고 가자</subtitle><link href="https://blog.asamaru.net/" rel="alternate" type="text/html" /><link href="https://blog.asamaru.net/atom.xml" rel="self" type="application/atom+xml" /><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author>
+<entry><id>https://blog.asamaru.net/2017/08/14/top-10-es6-features/</id><title type="html">개발자가 필히 알아야 할 ES6 10가지 기능</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/08/14/top-10-es6-features/"/><published>2017-08-14T17:42:35+09:00</published><updated>2017-08-14T17:42:35+09:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="js" label="js" /><summary><![CDATA[ES6(ECMAScript 표준의 6번째 에디션, ECMAScript2015)에 대한 이야기를 하기 전에 자바스크립트와 ECMAScript에 대한 것부터 간략히 소개한다. 넷스케이프(Netscape)에서 1995년 개발한 자바스크립트(javascript)는 웹 브라우저에서 동적인 기능을 제공하기 위한 언어다. 현재는 대부분의 브라우저에서 이 언어를 제공하고 있다. 그런데 표준 규격없이 여러 브라우저에서 독자적인 특성이 추가되면서 호환성 문제가 발생하기 시작했다. 이에 ECMA 국제 기구에서 “ECMAScript Standard”라는 표준을 만들게 되었다. 정확히 이야기 하자면 현재의 자바스크립트는 ECMAScript와 BOM(Browser Object Model)와 DOM(Document Object Model)을 포괄하는 개념이다. 개별적인 설명에 앞서 개발자가 필히 알아야 할 ES6 10가지 기능을 나열하자면 아래와 같다. 기본 매개 변수 (Default Parameters) 템플릿 리터럴 (Template Literals) 멀티 라인 문자열 (Multi-line Strings) 비구조화 할당 (Destructuring Assignment) 향상된 객체 리터럴 (Enhanced Object Literals) 화살표 함수 (Arrow Functions) Promises 블록 범위 생성자 Let 및 Const (Block-Scoped Constructs Let and Const) 클래스 (Classes) 모듈 (Modules) 이제부터 하나씩 알아보자. 1. 기본 매개 변수 (Default Parameters) var link = function (height, color, url) { var height = height || 50 var color = color || 'red' var url = url || 'http://azat.co' ... } 함수에 넘겨주는 인자값에 대한 default 처리를 위해 위와 같이 처리 했었다면 ES6에서는 아래와 같이 간단히 처리할 수 있다. var link = function(height = 50, color = 'red', url = 'http://azat.co') { ... } 단, 주의해야 할 점이 있다. 인자값으로 0 또는 false가 입력될 때 두 예시의 결과는 다르다. ES5에서는 || 처리 시 0 또는 false 값이 입력 되어도 거짓이 되므로 기본값으로 대체된다. 하지만 ES6의 기본 매개 변수를 사용하면 undefined 를 제외한 입력된 모든 값(0, false, null 등)을 인정한다. 2. 템플릿 리터럴 (Template Literals) ES5에서는 아래와 같이 문자열을 처리해야 했다. var name = 'Your name is ' + first + ' ' + last + '.' var url = 'http://localhost:3000/api/messages/' + id 하지만 ES6에서는 템플릿 리터럴을 제공하므로 "`" (back-ticked) 문자열 안에 ${NAME}라는 새로운 구문을 사용해서 아래와 같이 간단히 처리할 수 있다. var name = `Your name is ${first} ${last}.` var url = `http://localhost:3000/api/messages/${id}` 3. 멀티 라인 문자열 (Multi-line Strings) ES5에서는 멀티 라인 문자열을 처리하기 위해 아래와 같은 방법들을 사용해야 했다. var roadPoem = 'Then took the other, as just as fair,\n\t' + 'And having perhaps the better claim\n\t' + 'Because it was grassy and wanted wear,\n\t' + 'Though as for that the passing there\n\t' + 'Had worn them really about the same,\n\t' var fourAgreements = 'You have the right to be you.\n\ You can only be you when you do your best.' 하지만 ES6에서는 "`" (back-ticked) 문자열을 이용해서 아래와 같이 간단히 처리할 수 있다. var roadPoem = `Then took the other, as just as fair, And having perhaps the better claim Because it was grassy and wanted wear, Though as for that the passing there Had worn them really about the same,` var fourAgreements = `You have the right to be you. You can only be you when you do your best.` 4. 비구조화 할당 (Destructuring Assignment) ES5에서는 구조화된 데이터를 변수로 받기 위해 아래와 같이 처리해야 했다. // browser var data = $('body').data(), // data has properties house and mouse house = data.house, mouse = data.mouse // Node.js var jsonMiddleware = require('body-parser').json var body = req.body, // body has username and password username = body.username, password = body.password 하지만 ES6에서는 비구조화 할당을 사용해 아래와 같이 처리할 수 있다. var {house, mouse} = $('body').data() // we'll get house and mouse variables var {jsonMiddleware} = require('body-parser') var {username, password} = req.body 주의할 점은 var로 할당하려는 변수명과 구조화된 데이터의 property명이 같아야 한다. 또한 구조화된 데이터가 아니라 배열의 경우 {} 대신 []를 사용해서 위와 유사하게 사용할 수 있다. var [col1, col2] = $('.column'), [line1, line2, line3, , line5] = file.split('\n') 5. 향상된 객체 리터럴 (Enhanced Object Literals) ES5에서는 아래와 같이 JSON을 사용해서 객체 리터럴을 만들 수 있었다. var serviceBase = {port: 3000, url: 'azat.co'}, getAccounts = function(){return [1,2,3]} var accountServiceES5 = { port: serviceBase.port, url: serviceBase.url, getAccounts: getAccounts, toString: function() { return JSON.stringify(this.valueOf()) }, getUrl: function() {return "http://" + this.url + ':' + this.port}, valueOf_1_2_3: getAccounts() } 위 예시와 달리 serviceBase를 확장하길 원한다면 Object.create 로 프로토타입화하여 상속 받을 수 있다. var accountServiceES5ObjectCreate = { getAccounts: getAccounts, toString: function() { return JSON.stringify(this.valueOf()) }, getUrl: function() {return "http://" + this.url + ':' + this.port}, valueOf_1_2_3: getAccounts() } accountServiceES5ObjectCreate.__proto__ = Object.create(serviceBase) accountServiceES5ObjectCreate와 accountServiceES5는 동일하게 사용할 수 있으나 다른 구조를 가진다. accountServiceES5ObjectCreate는 accountServiceES5와 다르게 __proto__ 에 port 와 url 속성을 가진 객체를 담고 있다. ES6에서는 아래와 같이 처리할 수 있다. var serviceBase = {port: 3000, url: 'azat.co'}, getAccounts = function(){return [1,2,3]} var accountService = { __proto__: serviceBase, getAccounts, toString() { return JSON.stringify((super.valueOf())) }, getUrl() {return "http://" + this.url + ':' + this.port}, [ 'valueOf_' + getAccounts().join('_') ]: getAccounts() }; 위 예시에 대해 ES5와의 차이를 요약하면 아래와 같다. __proto__ 속성을 사용해서 바로 프로토타입을 설정할 수 있다. getAccounts: getAccounts, 대신 getAccounts, 를 사용할 수 있다 (변수명으로 속성 이름을 지정). [ 'valueOf_' + getAccounts().join('_') ] 와 같이 동적으로 속성 이름을 정의할 수 있다. 조금 더 자세한 내용을 보고 싶다면 gsfe/es2015features 를 참고하자. 6. 화살표 함수 (Arrow Functions) 화살표 함수는 항상 익명 함수이며 this의 값을 현재 문맥에 바인딩 시킨다. 아래의 예시는 화살표 함수가 지원되지 않는 ES5에서 this를 사용하기 위한 처리 예시다. var _this = this $('.btn').click(function(event){ _this.sendData() }) 다음은 위 예시를 화살표 함수로 대체한 ES6 예시이다. $('.btn').click((event) => { this.sendData() }) 다음은 ES5에서 call을 사용하여 context를 logUpperCase() 함수에 전달하는 또 다른 예제다. var logUpperCase = function() { var _this = this this.string = this.string.toUpperCase() return function () { return console.log(_this.string) } } logUpperCase.call({ string: 'es6 rocks' })() ES6에서는 화살표 함수를 사용하면 _this 를 사용할 필요가 없다. var logUpperCase = function() { this.string = this.string.toUpperCase() return () => console.log(this.string) } logUpperCase.call({ string: 'es6 rocks' })() 화살표 함수가 한 줄의 명령문과 함께 사용되면 표현식이 되어 명령문의 결과를 암시적으로 반환한다. ES5에서의 처리 예시. var ids = ['5632953c4e345e145fdf2df8','563295464e345e145fdf2df9'] var messages = ids.map(function (value) { return "ID is " + value // explicit return }); ES6에서의 처리 예시. var ids = ['5632953c4e345e145fdf2df8','563295464e345e145fdf2df9'] var messages = ids.map(value => `ID is ${value}`) // implicit return 여러 개의 인자를 사용하는 경우는 변수 목록을 () 로 감싸줘야 한다. ES5에서의 처리 예시. var ids = ['5632953c4e345e145fdf2df8', '563295464e345e145fdf2df9']; var messages = ids.map(function (value, index, list) { return 'ID of ' + index + ' element is ' + value + ' ' // explicit return }); ES6에서의 처리 예시. var ids = ['5632953c4e345e145fdf2df8','563295464e345e145fdf2df9'] var messages = ids.map((value, index, list) => `ID of ${index} element is ${value} `) // implicit return 또한 본문을 괄호로 감싸 객체 표현식을 반환할 수 있으며 ... 을 이용해 가변 파라미터를 사용할 수도 있다. var ids = ['5632953c4e345e145fdf2df8','563295464e345e145fdf2df9'] var messages = ids.map((value, index, ...abc) => ({v:value, i:index, a:abc})) 7. Promises ES6에서는 표준 Promise가 제공된다. 아래는 setTimeout 을 이용한 지연된 비동기 실행에 대한 ES5 예시다. setTimeout(function(){ console.log('Yay!') }, 1000) 위 예시를 ES6에서 Promise를 사용해서 재작성하면 아래와 같다. var wait1000 = new Promise(function(resolve, reject) { setTimeout(resolve, 1000) }).then(function() { console.log('Yay!') }) 위 예시를 화살표 함수를 사용해 재작성한 예시는 아래와 같다. var wait1000 = new Promise((resolve, reject)=> { setTimeout(resolve, 1000) }).then(()=> { console.log('Yay!') }) ES5 보다 ES6의 Promise를 사용한 예시가 더 복잡해 보이지만 아래와 같이 중첩된 setTimeout 예시를 보면 Promise의 이점을 확인할 수 있다. setTimeout(function(){ console.log('Yay!') setTimeout(function(){ console.log('Wheeyee!') }, 1000) }, 1000) 아래는 ES6 Promise 로 작성된 예시. var wait1000 = ()=> new Promise((resolve, reject)=> {setTimeout(resolve, 1000)}) wait1000() .then(function() { console.log('Yay!') return wait1000() }) .then(function() { console.log('Wheeyee!') }); 조금 더 자세한 내용을 보고 싶다면 Introduction to ES6 Promises – The Four Functions You Need To Avoid Callback Hell 또는 gsfe/es2015features 를 참고하자. 8. 블록 범위 생성자 Let 및 Const (Block-Scoped Constructs Let and Const) let과 const는 중괄호("{}")로 정의된 블록으로 유효 범위(스코프)를 지정하는 새로운 var이다. 단, let은 변수를 const는 상수를 선언한다. function calculateTotalAmount (vip) { var amount = 0 if (vip) { var amount = 1 } { // more crazy blocks! var amount = 100 { var amount = 1000 } } return amount } console.log(calculateTotalAmount(true)) 위 예시의 결과는 1000 이다. var는 전역 또는 함수 내부로 유효 범위를 갖기 때문에 예시에 사용된 함수 내부의 "{}" 들은 아무런 역할을 하지 못한다. 아래는 위 예시에서 var를 let으로 바꾼 ES6 예시다. function calculateTotalAmount (vip) { var amount = 0 // probably should also be let, but you can mix var and let if (vip) { let amount = 1 // first amount is still 0 } { // more crazy blocks! let amount = 100 // first amount is still 0 { let amount = 1000 // first amount is still 0 } } return amount } console.log(calculateTotalAmount(true)) 이 예시의 결과는 0 이다. let 으로 선언된 변수는 "{}" 블록 내부로 유효 범위가 한정되므로 100, 1000으로 할당된 변수는 해당 블록 내부에서만 유효하기 때문이다. if 블록 내부에서 let으로 선언된 amount 또한 해당 if 블록 내에서만 유효하므로 아무런 변경이 일어나지 않는다. 아래의 예시는 const를 사용한 예시다. const는 상수를 선언하는 것으로 여러번 선언될 수 없지만 let과 같이 블록 내부로 유효 범위가 한정되므로 아래의 예시는 오류가 발생하지 않는다. function calculateTotalAmount (vip) { const amount = 0 if (vip) { const amount = 1 } { // more crazy blocks! const amount = 100 { const amount = 1000 } } return amount } console.log(calculateTotalAmount(true)) 9. 클래스 (Classes) ES6에는 class 키워드가 추가되어 ES5의 prototype 기반 상속보다 명확하게 class를 정의할 수 있다. get 과 set 키워드 외에도 static 키워드를 사용해 static 메소드를 정의하는 것도 가능하다. class baseModel { constructor(options = {}, data = []) { // class constructor this.name = 'Base' this.url = 'http://azat.co/api' this.data = data this.options = options } getName() { // class method console.log(`Class name: ${this.name}`) } } constructor 는 class 내부에 하나만 존재할 수 있으며 메소드 정의에 function 또는 콜론(":")이 더이상 필요하지 않다. 단, property의 경우 메소드와 달리 생성자에서 값을 할당해야 한다. 또한 아래의 예시와 같이 class NAME extends PARENT_NAME 형식으로 상속이 가능하다. 상속시 부모 생성자를 호출하기 위해 super() 를 사용할 수 있다. 생성자가 아닌 메소드에서는 super 키워드를 사용해서 부모 메소드에 접근한다. class AccountModel extends baseModel { constructor(options, data) { super({private: true}, ['32113123123', '524214691']) //call the parent method with super this.name = 'Account Model' this.url +='/accounts/' } get accountsData() { //calculated attribute getter // ... make XHR return this.data } } class 는 get 과 set 키워드를 사용할 수 있으며 선언된 함수는 아래와 같이 사용할 수 있다. let accounts = new AccountModel(5) accounts.getName() console.log('Data is %s', accounts.accountsData) 위 예시를 실행하면 아래와 같은 결과를 얻을 수 있다. Class name: Account Model Data is %s 32113123123,524214691 10. 모듈 (Modules) ES6 에서 모듈을 공식적으로 제공하기 전까지는 CommonJS, AMD, RequireJS 등의 비공식 모듈 스펙을 사용해 왔다. ES6에서 제공하는 모듈 스펙은 기존과 유사하지만 차이가 있다. ES5에서 CommonJS를 이용해서 모듈을 사용하는 예시는 아래와 같다(module.js). module.exports = { port: 3000, getAccounts: function() { ... } } main.js 파일에서 위에서 정의한 모듈을 불러서 사용하는 예시는 아래와 같다. var service = require('module.js') console.log(service.port) // 3000 여기서 부터는 ES6의 import 와 export 를 사용해서 유사한 기능을 구현한 예시다(module.js). export var port = 3000 export function getAccounts(url) { ... } main.js 파일에서는 import 를 사용해서 module.js 모듈을 불러올 수 있다. import {port, getAccounts} from 'module' console.log(port) // 3000 위와 유사하지만 export 된 모든 변수를 아래와 같이 하나의 구조화된 데이터로 받을 수도 있다. import * as service from 'module' console.log(service.port) // 3000 ES6 당장 사용할 수 있는 방법 (Babel) ES6는 확정되었지만 아직 모든 브라우저에서 완전하게 지원되지 않는다. 따라서 지금 당장 ES6 사용하고 싶다면 Babel과 같은 컴파일러를 사용해야 한다. Babel은 독립 실행형 도구로 실행하거나 빌드 시스템에서 사용할 수 있다. Grunt, Gulp 및 Webpack 용 Babel 플러그인이 있다. ES6의 기타 특징 참고로 이 외에도 여러가지 특징이 있으니 관심이 있다면 git.io/es6features를 번역한 ECMAScript 6 Features를 참고하면 된다. 참고 Top 10 ES6 Features Every Busy JavaScript Developer Must Know 자바스크립트-위키피디아 ECMA스크립트-위키피디아 ECMAScript, ES6란?-워너비스페셜]]></summary><content type="html"><![CDATA[<p>ES6(ECMAScript 표준의 6번째 에디션, ECMAScript2015)에 대한 이야기를 하기 전에 자바스크립트와 <a href="http://www.ecmascript.org/">ECMAScript</a>에 대한 것부터 간략히 소개한다.</p>
+<blockquote>
+<p>넷스케이프(Netscape)에서 1995년 개발한 자바스크립트(javascript)는 웹 브라우저에서 동적인 기능을 제공하기 위한 언어다. 현재는 대부분의 브라우저에서 이 언어를 제공하고 있다. 그런데 표준 규격없이 여러 브라우저에서 독자적인 특성이 추가되면서 호환성 문제가 발생하기 시작했다. 이에 ECMA 국제 기구에서 “ECMAScript Standard”라는 표준을 만들게 되었다. 정확히 이야기 하자면 현재의 자바스크립트는 ECMAScript와 BOM(Browser Object Model)와 DOM(Document Object Model)을 포괄하는 개념이다.</p>
+</blockquote>
+<p>개별적인 설명에 앞서 개발자가 필히 알아야 할 ES6 10가지 기능을 나열하자면 아래와 같다.</p>
+<ol>
+<li>기본 매개 변수 (Default Parameters)</li>
+<li>템플릿 리터럴 (Template Literals)</li>
+<li>멀티 라인 문자열 (Multi-line Strings)</li>
+<li>비구조화 할당 (Destructuring Assignment)</li>
+<li>향상된 객체 리터럴 (Enhanced Object Literals)</li>
+<li>화살표 함수 (Arrow Functions)</li>
+<li>Promises</li>
+<li>블록 범위 생성자 Let 및 Const (Block-Scoped Constructs Let and Const)</li>
+<li>클래스 (Classes)</li>
+<li>모듈 (Modules)</li>
+</ol>
+<p>이제부터 하나씩 알아보자.</p>
+<h3>1. 기본 매개 변수 (Default Parameters)</h3>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> link = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">height, color, url</span>) </span>{
+    <span class="hljs-keyword">var</span> height = height || <span class="hljs-number">50</span>
+    <span class="hljs-keyword">var</span> color = color || <span class="hljs-string">'red'</span>
+    <span class="hljs-keyword">var</span> url = url || <span class="hljs-string">'http://azat.co'</span>
+    ...
+}</pre>
+<p>함수에 넘겨주는 인자값에 대한 default 처리를 위해 위와 같이 처리 했었다면 ES6에서는 아래와 같이 간단히 처리할 수 있다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> link = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">height = 50, color = 'red', url = 'http:<span class="hljs-comment">//azat.co') {</span>
+  ...
+}</span></span></pre>
+<p>단, 주의해야 할 점이 있다. 인자값으로 0 또는 false가 입력될 때 두 예시의 결과는 다르다. ES5에서는 <code>||</code> 처리 시 0 또는 false 값이 입력 되어도 거짓이 되므로 기본값으로 대체된다. 하지만 ES6의 기본 매개 변수를 사용하면 undefined 를 제외한 입력된 모든 값(0, false, null 등)을 인정한다.</p>
+<h3>2. 템플릿 리터럴 (Template Literals)</h3>
+<p>ES5에서는 아래와 같이 문자열을 처리해야 했다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> name = <span class="hljs-string">'Your name is '</span> + first + <span class="hljs-string">' '</span> + last + <span class="hljs-string">'.'</span>
+<span class="hljs-keyword">var</span> url = <span class="hljs-string">'http://localhost:3000/api/messages/'</span> + id</pre>
+<p>하지만 ES6에서는 템플릿 리터럴을 제공하므로 &quot;`&quot; (back-ticked) 문자열 안에 <code>${NAME}</code>라는 새로운 구문을 사용해서 아래와 같이 간단히 처리할 수 있다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> name = <span class="hljs-string">`Your name is <span class="hljs-subst">${first}</span> <span class="hljs-subst">${last}</span>.`</span>
+<span class="hljs-keyword">var</span> url = <span class="hljs-string">`http://localhost:3000/api/messages/<span class="hljs-subst">${id}</span>`</span></pre>
+<h3>3. 멀티 라인 문자열 (Multi-line Strings)</h3>
+<p>ES5에서는 멀티 라인 문자열을 처리하기 위해 아래와 같은 방법들을 사용해야 했다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> roadPoem = <span class="hljs-string">'Then took the other, as just as fair,\n\t'</span>
+    + <span class="hljs-string">'And having perhaps the better claim\n\t'</span>
+    + <span class="hljs-string">'Because it was grassy and wanted wear,\n\t'</span>
+    + <span class="hljs-string">'Though as for that the passing there\n\t'</span>
+    + <span class="hljs-string">'Had worn them really about the same,\n\t'</span>
+
+<span class="hljs-keyword">var</span> fourAgreements = <span class="hljs-string">'You have the right to be you.\n\
+    You can only be you when you do your best.'</span></pre>
+<p>하지만 ES6에서는 &quot;`&quot; (back-ticked) 문자열을 이용해서 아래와 같이 간단히 처리할 수 있다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> roadPoem = <span class="hljs-string">`Then took the other, as just as fair,
+    And having perhaps the better claim
+    Because it was grassy and wanted wear,
+    Though as for that the passing there
+    Had worn them really about the same,`</span>
+
+<span class="hljs-keyword">var</span> fourAgreements = <span class="hljs-string">`You have the right to be you.
+    You can only be you when you do your best.`</span></pre>
+<h3>4. 비구조화 할당 (Destructuring Assignment)</h3>
+<p>ES5에서는 구조화된 데이터를 변수로 받기 위해 아래와 같이 처리해야 했다.</p>
+<pre class="hljs javascript"><span class="hljs-comment">// browser</span>
+<span class="hljs-keyword">var</span> data = $(<span class="hljs-string">'body'</span>).data(), <span class="hljs-comment">// data has properties house and mouse</span>
+  house = data.house,
+  mouse = data.mouse
+
+<span class="hljs-comment">// Node.js</span>
+<span class="hljs-keyword">var</span> jsonMiddleware = <span class="hljs-built_in">require</span>(<span class="hljs-string">'body-parser'</span>).json
+
+<span class="hljs-keyword">var</span> body = req.body, <span class="hljs-comment">// body has username and password</span>
+  username = body.username,
+  password = body.password</pre>
+<p>하지만 ES6에서는 비구조화 할당을 사용해 아래와 같이 처리할 수 있다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> {house, mouse} = $(<span class="hljs-string">'body'</span>).data() <span class="hljs-comment">// we'll get house and mouse variables</span>
+
+<span class="hljs-keyword">var</span> {jsonMiddleware} = <span class="hljs-built_in">require</span>(<span class="hljs-string">'body-parser'</span>)
+
+<span class="hljs-keyword">var</span> {username, password} = req.body</pre>
+<p>주의할 점은 var로 할당하려는 변수명과 구조화된 데이터의 property명이 같아야 한다. 또한 구조화된 데이터가 아니라 배열의 경우 <code>{}</code> 대신 <code>[]</code>를 사용해서 위와 유사하게 사용할 수 있다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> [col1, col2]  = $(<span class="hljs-string">'.column'</span>),
+  [line1, line2, line3, , line5] = file.split(<span class="hljs-string">'\n'</span>)</pre>
+<h3>5. 향상된 객체 리터럴 (Enhanced Object Literals)</h3>
+<p>ES5에서는 아래와 같이 JSON을 사용해서 객체 리터럴을 만들 수 있었다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> serviceBase = {port: <span class="hljs-number">3000</span>, url: <span class="hljs-string">'azat.co'</span>},
+    getAccounts = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{<span class="hljs-keyword">return</span> [<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>]}
+
+<span class="hljs-keyword">var</span> accountServiceES5 = {
+  port: serviceBase.port,
+  url: serviceBase.url,
+  getAccounts: getAccounts,
+  toString: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">JSON</span>.stringify(<span class="hljs-keyword">this</span>.valueOf())
+  },
+  getUrl: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{<span class="hljs-keyword">return</span> <span class="hljs-string">"http://"</span> + <span class="hljs-keyword">this</span>.url + <span class="hljs-string">':'</span> + <span class="hljs-keyword">this</span>.port},
+  valueOf_1_2_3: getAccounts()
+}</pre>
+<p>위 예시와 달리 serviceBase를 확장하길 원한다면 <code>Object.create</code> 로 프로토타입화하여 상속 받을 수 있다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> accountServiceES5ObjectCreate = {
+  getAccounts: getAccounts,
+  toString: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">JSON</span>.stringify(<span class="hljs-keyword">this</span>.valueOf())
+  },
+  getUrl: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{<span class="hljs-keyword">return</span> <span class="hljs-string">"http://"</span> + <span class="hljs-keyword">this</span>.url + <span class="hljs-string">':'</span> + <span class="hljs-keyword">this</span>.port},
+  valueOf_1_2_3: getAccounts()
+}
+accountServiceES5ObjectCreate.__proto__ = <span class="hljs-built_in">Object</span>.create(serviceBase)</pre>
+<p>accountServiceES5ObjectCreate와 accountServiceES5는 동일하게 사용할 수 있으나 다른 구조를 가진다. accountServiceES5ObjectCreate는 accountServiceES5와 다르게 <code>__proto__</code> 에 <code>port</code> 와 <code>url</code> 속성을 가진 객체를 담고 있다.</p>
+<p>ES6에서는 아래와 같이 처리할 수 있다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> serviceBase = {port: <span class="hljs-number">3000</span>, url: <span class="hljs-string">'azat.co'</span>},
+    getAccounts = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{<span class="hljs-keyword">return</span> [<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>]}
+<span class="hljs-keyword">var</span> accountService = {
+    __proto__: serviceBase,
+    getAccounts,
+    toString() {
+     <span class="hljs-keyword">return</span> <span class="hljs-built_in">JSON</span>.stringify((<span class="hljs-keyword">super</span>.valueOf()))
+    },
+    getUrl() {<span class="hljs-keyword">return</span> <span class="hljs-string">"http://"</span> + <span class="hljs-keyword">this</span>.url + <span class="hljs-string">':'</span> + <span class="hljs-keyword">this</span>.port},
+    [ <span class="hljs-string">'valueOf_'</span> + getAccounts().join(<span class="hljs-string">'_'</span>) ]: getAccounts()
+};</pre>
+<p>위 예시에 대해 ES5와의 차이를 요약하면 아래와 같다.</p>
+<ul>
+<li><code>__proto__</code> 속성을 사용해서 바로 프로토타입을 설정할 수 있다.</li>
+<li><code>getAccounts: getAccounts,</code> 대신 <code>getAccounts,</code> 를 사용할 수 있다 (변수명으로 속성 이름을 지정).</li>
+<li><code>[ 'valueOf_' + getAccounts().join('_') ]</code> 와 같이 동적으로 속성 이름을 정의할 수 있다.</li>
+</ul>
+<p>조금 더 자세한 내용을 보고 싶다면 <a href="https://github.com/gsfe/es2015features/tree/master/enhanced-object-literals">gsfe/es2015features</a> 를 참고하자.</p>
+<h3>6. 화살표 함수 (Arrow Functions)</h3>
+<p>화살표 함수는 항상 익명 함수이며 <code>this</code>의 값을 현재 문맥에 바인딩 시킨다.</p>
+<p>아래의 예시는 화살표 함수가 지원되지 않는 ES5에서 <code>this</code>를 사용하기 위한 처리 예시다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> _this = <span class="hljs-keyword">this</span>
+$(<span class="hljs-string">'.btn'</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">event</span>)</span>{
+  _this.sendData()
+})</pre>
+<p>다음은 위 예시를 화살표 함수로 대체한 ES6 예시이다.</p>
+<pre class="hljs javascript">$(<span class="hljs-string">'.btn'</span>).click((event) =&gt; {
+  <span class="hljs-keyword">this</span>.sendData()
+})</pre>
+<p>다음은 ES5에서 <code>call</code>을 사용하여 <code>context</code>를 <code>logUpperCase()</code> 함수에 전달하는 또 다른 예제다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> logUpperCase = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">var</span> _this = <span class="hljs-keyword">this</span>
+
+  <span class="hljs-keyword">this</span>.string = <span class="hljs-keyword">this</span>.string.toUpperCase()
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">console</span>.log(_this.string)
+  }
+}
+logUpperCase.call({ string: <span class="hljs-string">'es6 rocks'</span> })()</pre>
+<p>ES6에서는 화살표 함수를 사용하면 <code>_this</code> 를 사용할 필요가 없다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> logUpperCase = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">this</span>.string = <span class="hljs-keyword">this</span>.string.toUpperCase()
+  <span class="hljs-keyword">return</span> () =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">this</span>.string)
+}
+logUpperCase.call({ string: <span class="hljs-string">'es6 rocks'</span> })()</pre>
+<p>화살표 함수가 한 줄의 명령문과 함께 사용되면 표현식이 되어 명령문의 결과를 암시적으로 반환한다.</p>
+<p>ES5에서의 처리 예시.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> ids = [<span class="hljs-string">'5632953c4e345e145fdf2df8'</span>,<span class="hljs-string">'563295464e345e145fdf2df9'</span>]
+<span class="hljs-keyword">var</span> messages = ids.map(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-string">"ID is "</span> + value <span class="hljs-comment">// explicit return</span>
+});</pre>
+<p>ES6에서의 처리 예시.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> ids = [<span class="hljs-string">'5632953c4e345e145fdf2df8'</span>,<span class="hljs-string">'563295464e345e145fdf2df9'</span>]
+<span class="hljs-keyword">var</span> messages = ids.map(value =&gt; <span class="hljs-string">`ID is <span class="hljs-subst">${value}</span>`</span>) <span class="hljs-comment">// implicit return</span></pre>
+<p>여러 개의 인자를 사용하는 경우는 변수 목록을 <code>()</code> 로 감싸줘야 한다.</p>
+<p>ES5에서의 처리 예시.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> ids = [<span class="hljs-string">'5632953c4e345e145fdf2df8'</span>, <span class="hljs-string">'563295464e345e145fdf2df9'</span>];
+<span class="hljs-keyword">var</span> messages = ids.map(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value, index, list</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-string">'ID of '</span> + index + <span class="hljs-string">' element is '</span> + value + <span class="hljs-string">' '</span> <span class="hljs-comment">// explicit return</span>
+});</pre>
+<p>ES6에서의 처리 예시.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> ids = [<span class="hljs-string">'5632953c4e345e145fdf2df8'</span>,<span class="hljs-string">'563295464e345e145fdf2df9'</span>]
+<span class="hljs-keyword">var</span> messages = ids.map((value, index, list) =&gt; <span class="hljs-string">`ID of <span class="hljs-subst">${index}</span> element is <span class="hljs-subst">${value}</span> `</span>) <span class="hljs-comment">// implicit return</span></pre>
+<p>또한 본문을 괄호로 감싸 객체 표현식을 반환할 수 있으며 <code>...</code> 을 이용해 가변 파라미터를 사용할 수도 있다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> ids = [<span class="hljs-string">'5632953c4e345e145fdf2df8'</span>,<span class="hljs-string">'563295464e345e145fdf2df9'</span>]
+<span class="hljs-keyword">var</span> messages = ids.map((value, index, ...abc) =&gt; ({v:value, i:index, a:abc}))</pre>
+<h3>7. Promises</h3>
+<p>ES6에서는 표준 Promise가 제공된다.</p>
+<p>아래는 <code>setTimeout</code> 을 이용한 지연된 비동기 실행에 대한 ES5 예시다.</p>
+<pre class="hljs javascript">setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Yay!'</span>)
+}, <span class="hljs-number">1000</span>)</pre>
+<p>위 예시를 ES6에서 Promise를 사용해서 재작성하면 아래와 같다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> wait1000 =  <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resolve, reject</span>) </span>{
+  setTimeout(resolve, <span class="hljs-number">1000</span>)
+}).then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Yay!'</span>)
+})</pre>
+<p>위 예시를 화살표 함수를 사용해 재작성한 예시는 아래와 같다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> wait1000 =  <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject)=&gt; {
+  setTimeout(resolve, <span class="hljs-number">1000</span>)
+}).then(()=&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Yay!'</span>)
+})</pre>
+<p>ES5 보다 ES6의 Promise를 사용한 예시가 더 복잡해 보이지만 아래와 같이 중첩된 <code>setTimeout</code> 예시를 보면 Promise의 이점을 확인할 수 있다.</p>
+<pre class="hljs javascript">setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Yay!'</span>)
+  setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Wheeyee!'</span>)
+  }, <span class="hljs-number">1000</span>)
+}, <span class="hljs-number">1000</span>)</pre>
+<p>아래는 ES6 Promise 로 작성된 예시.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> wait1000 =  ()=&gt; <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject)=&gt; {setTimeout(resolve, <span class="hljs-number">1000</span>)})
+
+wait1000()
+    .then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Yay!'</span>)
+        <span class="hljs-keyword">return</span> wait1000()
+    })
+    .then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Wheeyee!'</span>)
+    });</pre>
+<p>조금 더 자세한 내용을 보고 싶다면 <a href="http://jamesknelson.com/grokking-es6-promises-the-four-functions-you-need-to-avoid-callback-hell/">Introduction to ES6 Promises – The Four Functions You Need To Avoid Callback Hell</a> 또는 <a href="https://github.com/gsfe/es2015features/tree/master/promise">gsfe/es2015features</a> 를 참고하자.</p>
+<h3>8. 블록 범위 생성자 Let 및 Const (Block-Scoped Constructs Let and Const)</h3>
+<p>let과 const는 중괄호(&quot;{}&quot;)로 정의된 블록으로 유효 범위(스코프)를 지정하는 새로운 var이다. 단, let은 변수를 const는 상수를 선언한다.</p>
+<pre class="hljs javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">calculateTotalAmount</span> (<span class="hljs-params">vip</span>) </span>{
+  <span class="hljs-keyword">var</span> amount = <span class="hljs-number">0</span>
+  <span class="hljs-keyword">if</span> (vip) {
+    <span class="hljs-keyword">var</span> amount = <span class="hljs-number">1</span>
+  }
+  { <span class="hljs-comment">// more crazy blocks!</span>
+    <span class="hljs-keyword">var</span> amount = <span class="hljs-number">100</span>
+    {
+      <span class="hljs-keyword">var</span> amount = <span class="hljs-number">1000</span>
+      }
+  }
+  <span class="hljs-keyword">return</span> amount
+}
+<span class="hljs-built_in">console</span>.log(calculateTotalAmount(<span class="hljs-literal">true</span>))</pre>
+<p>위 예시의 결과는 1000 이다. var는 전역 또는 함수 내부로 유효 범위를 갖기 때문에 예시에 사용된 함수 내부의 &quot;{}&quot; 들은 아무런 역할을 하지 못한다. 아래는 위 예시에서 var를 let으로 바꾼 ES6 예시다.</p>
+<pre class="hljs javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">calculateTotalAmount</span> (<span class="hljs-params">vip</span>) </span>{
+  <span class="hljs-keyword">var</span> amount = <span class="hljs-number">0</span> <span class="hljs-comment">// probably should also be let, but you can mix var and let</span>
+  <span class="hljs-keyword">if</span> (vip) {
+    <span class="hljs-keyword">let</span> amount = <span class="hljs-number">1</span> <span class="hljs-comment">// first amount is still 0</span>
+  }
+  { <span class="hljs-comment">// more crazy blocks!</span>
+    <span class="hljs-keyword">let</span> amount = <span class="hljs-number">100</span> <span class="hljs-comment">// first amount is still 0</span>
+    {
+      <span class="hljs-keyword">let</span> amount = <span class="hljs-number">1000</span> <span class="hljs-comment">// first amount is still 0</span>
+      }
+  }
+  <span class="hljs-keyword">return</span> amount
+}
+<span class="hljs-built_in">console</span>.log(calculateTotalAmount(<span class="hljs-literal">true</span>))</pre>
+<p>이 예시의 결과는 0 이다. let 으로 선언된 변수는 &quot;{}&quot; 블록 내부로 유효 범위가 한정되므로 100, 1000으로 할당된 변수는 해당 블록 내부에서만 유효하기 때문이다. <code>if</code> 블록 내부에서 let으로 선언된 amount 또한 해당 <code>if</code> 블록 내에서만 유효하므로 아무런 변경이 일어나지 않는다.</p>
+<p>아래의 예시는 const를 사용한 예시다. const는 상수를 선언하는 것으로 여러번 선언될 수 없지만 let과 같이 블록 내부로 유효 범위가 한정되므로 아래의 예시는 오류가 발생하지 않는다.</p>
+<pre class="hljs javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">calculateTotalAmount</span> (<span class="hljs-params">vip</span>) </span>{
+  <span class="hljs-keyword">const</span> amount = <span class="hljs-number">0</span>
+  <span class="hljs-keyword">if</span> (vip) {
+    <span class="hljs-keyword">const</span> amount = <span class="hljs-number">1</span>
+  }
+  { <span class="hljs-comment">// more crazy blocks!</span>
+    <span class="hljs-keyword">const</span> amount = <span class="hljs-number">100</span>
+    {
+      <span class="hljs-keyword">const</span> amount = <span class="hljs-number">1000</span>
+      }
+  }
+  <span class="hljs-keyword">return</span> amount
+}
+<span class="hljs-built_in">console</span>.log(calculateTotalAmount(<span class="hljs-literal">true</span>))</pre>
+<h3>9. 클래스 (Classes)</h3>
+<p>ES6에는 class 키워드가 추가되어 ES5의 prototype 기반 상속보다 명확하게 class를 정의할 수 있다. <code>get</code> 과 <code>set</code> 키워드 외에도 <code>static</code> 키워드를 사용해 static 메소드를 정의하는 것도 가능하다.</p>
+<pre class="hljs javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">baseModel</span> </span>{
+  constructor(options = {}, data = []) { <span class="hljs-comment">// class constructor</span>
+        <span class="hljs-keyword">this</span>.name = <span class="hljs-string">'Base'</span>
+    <span class="hljs-keyword">this</span>.url = <span class="hljs-string">'http://azat.co/api'</span>
+        <span class="hljs-keyword">this</span>.data = data
+    <span class="hljs-keyword">this</span>.options = options
+    }
+
+    getName() { <span class="hljs-comment">// class method</span>
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Class name: <span class="hljs-subst">${this.name}</span>`</span>)
+    }
+}</pre>
+<p>constructor 는 class 내부에 하나만 존재할 수 있으며 메소드 정의에 function 또는 콜론(&quot;:&quot;)이 더이상 필요하지 않다. 단, property의 경우 메소드와 달리 생성자에서 값을 할당해야 한다.</p>
+<p>또한 아래의 예시와 같이 <code>class NAME extends PARENT_NAME</code> 형식으로 상속이 가능하다.  상속시 부모 생성자를 호출하기 위해 <code>super()</code> 를 사용할 수 있다. 생성자가 아닌 메소드에서는 <code>super</code> 키워드를 사용해서 부모 메소드에 접근한다.</p>
+<pre class="hljs javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AccountModel</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">baseModel</span> </span>{
+    constructor(options, data) {
+      <span class="hljs-keyword">super</span>({private: <span class="hljs-literal">true</span>}, [<span class="hljs-string">'32113123123'</span>, <span class="hljs-string">'524214691'</span>]) <span class="hljs-comment">//call the parent method with super</span>
+      <span class="hljs-keyword">this</span>.name = <span class="hljs-string">'Account Model'</span>
+      <span class="hljs-keyword">this</span>.url +=<span class="hljs-string">'/accounts/'</span>
+    }
+
+    get accountsData() { <span class="hljs-comment">//calculated attribute getter</span>
+      <span class="hljs-comment">// ... make XHR</span>
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.data
+    }
+}</pre>
+<p>class 는 <code>get</code> 과 <code>set</code> 키워드를 사용할 수 있으며 선언된 함수는 아래와 같이 사용할 수 있다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">let</span> accounts = <span class="hljs-keyword">new</span> AccountModel(<span class="hljs-number">5</span>)
+accounts.getName()
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Data is %s'</span>, accounts.accountsData)</pre>
+<p>위 예시를 실행하면 아래와 같은 결과를 얻을 수 있다.</p>
+<pre class="hljs javascript">Class name: Account Model
+Data is %s <span class="hljs-number">32113123123</span>,<span class="hljs-number">524214691</span></pre>
+<h3>10. 모듈 (Modules)</h3>
+<p>ES6 에서 모듈을 공식적으로 제공하기 전까지는 CommonJS, AMD, RequireJS 등의 비공식 모듈 스펙을 사용해 왔다. ES6에서 제공하는 모듈 스펙은 기존과 유사하지만 차이가 있다.</p>
+<p>ES5에서 CommonJS를 이용해서 모듈을 사용하는 예시는 아래와 같다(module.js).</p>
+<pre class="hljs javascript"><span class="hljs-built_in">module</span>.exports = {
+  port: <span class="hljs-number">3000</span>,
+  getAccounts: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    ...
+  }
+}</pre>
+<p>main.js 파일에서 위에서 정의한 모듈을 불러서 사용하는 예시는 아래와 같다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">var</span> service = <span class="hljs-built_in">require</span>(<span class="hljs-string">'module.js'</span>)
+<span class="hljs-built_in">console</span>.log(service.port) <span class="hljs-comment">// 3000</span></pre>
+<p>여기서 부터는 ES6의 <code>import</code> 와 <code>export</code> 를 사용해서 유사한 기능을 구현한 예시다(module.js).</p>
+<pre class="hljs javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> port = <span class="hljs-number">3000</span>
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getAccounts</span>(<span class="hljs-params">url</span>) </span>{
+  ...
+}</pre>
+<p>main.js 파일에서는 <code>import</code> 를 사용해서 module.js 모듈을 불러올 수 있다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">import</span> {port, getAccounts} <span class="hljs-keyword">from</span> <span class="hljs-string">'module'</span>
+console.log(port) // 3000</pre>
+<p>위와 유사하지만 <code>export</code> 된 모든 변수를 아래와 같이 하나의 구조화된 데이터로 받을 수도 있다.</p>
+<pre class="hljs javascript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> service <span class="hljs-keyword">from</span> <span class="hljs-string">'module'</span>
+console.log(service.port) // 3000</pre>
+<h3>ES6 당장 사용할 수 있는 방법 (<a href="https://babeljs.io/">Babel</a>)</h3>
+<p>ES6는 확정되었지만 아직 모든 브라우저에서 완전하게 지원되지 않는다. 따라서 지금 당장 ES6 사용하고 싶다면 <a href="https://babeljs.io/">Babel</a>과 같은 컴파일러를 사용해야 한다.
+Babel은 독립 실행형 도구로 실행하거나 빌드 시스템에서 사용할 수 있다. <a href="https://gruntjs.com/">Grunt</a>, <a href="https://gulpjs.com/">Gulp</a> 및 <a href="https://webpack.github.io/">Webpack</a> 용 Babel 플러그인이 있다.</p>
+<h3>ES6의 기타 특징</h3>
+<p>참고로 이 외에도 여러가지 특징이 있으니 관심이 있다면 <a href="https://github.com/lukehoban/es6features/">git.io/es6features</a>를 번역한  <a href="http://seokjun.kr/ecmascript-6-features/">ECMAScript 6 Features</a>를 참고하면 된다.</p>
+<hr />
+<p>참고</p>
+<ul>
+<li><a href="https://webapplog.com/es6/">Top 10 ES6 Features Every Busy JavaScript Developer Must Know</a></li>
+<li><a href="https://ko.wikipedia.org/wiki/%EC%9E%90%EB%B0%94%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8">자바스크립트-위키피디아</a></li>
+<li><a href="https://ko.wikipedia.org/wiki/ECMA%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8">ECMA스크립트-위키피디아</a></li>
+<li><a href="http://takeuu.tistory.com/93">ECMAScript, ES6란?-워너비스페셜</a></li>
+</ul>]]></content></entry>
+<entry><id>https://blog.asamaru.net/2017/07/14/composer-autoloader-optimization/</id><title type="html">PHP Composer Autoloader 최적화</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/07/14/composer-autoloader-optimization/"/><published>2017-07-14T12:42:35+09:00</published><updated>2017-07-14T12:42:35+09:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="php" label="php" /><summary><![CDATA[Composer Autoloader 최적화 Composer Autoloader는 상대적으로 빠르게 실행되나 PSR-4 및 PSR-0 autoload 규칙이 설정되는 방식으로 인해 클래스 이름을 확인하기 전에 파일 시스템을 검사해야 한다. 이 경우 성능이 떨어지지만 개발 환경에서는 새로운 Class를 추가할 때 autoload 구성을 다시 작성하지 않고도 즉시 사용할 수 있으므로 편리하다. 그러나 production 환경에서는 클래스의 추가가 발생하지 않기 때문에 성능을 위해서 파일 시스템을 검사하지 않고 클래스를 로드하는 것이 좋다. Composer는 이러한 문제를 개선하기 위해 autoload 최적화 옵션을 제공한다. 최적화 레벨 1 : 클래스 맵 생성 autoload 최적화를 위한 클래스 맵을 생성하는 방법은 다음과 같은 몇가지가 존재한다. composer.json에 optimize-autoloader을 추가 install 또는 update 시 별도의 옵션을 주지 않아도 자동적으로 최적화를 수행하므로 편리하다. { "name": "project", ... "config": { "optimize-autoloader": true } } composer install / update 시 -o 또는 --optimize-autoloader 옵션을 추가 install 또는 update 시 별도의 옵션을 주어야 하지만 필요시에만 최적화를 하려는 경우 유용하다. $ composer install -o $ composer update --optimize-autoloader composer dump-autoload를 -o 또는 --optimize 옵션과 함께 실행 패키지들이 이미 설치된 이후에 최적화면 수행하고자 할 경우 사용 가능하다. $ composer dump-autoload --optimize 클래스 맵 생성은 기본적으로 PSR-4 / PSR-0 규칙을 클래스 맵 규칙으로 변환한다. 클래스 맵이 클래스의 존재와 위치를 보장하므로 Composer는 파일 시스템을 검사하지 않고 빠르게 클래스를 로드할 수 있다. 특히 PHP 5.6 이상에서는 opcache가 활성화되어 있는 경우 클래스 맵이 opcache에도 캐시될 수 있으므로 초기화 시간을 크게 향상된다. Trade-offs 최적화 레벨 1의 경우 특별한 Trade-offs가 없으므로 production 환경에서는 항상 활성화하는 것이 좋다. 단, 클래스 맵에 누락된 클래스를 호출하는 경우 PSR-4 규칙이 대체되어 파일 시스템 검사가 발생할 수 있다. 하지만 모든 클래스를 검사하는 것보다는 당연히 성능이 뛰어나므로 사용하지 않을 이유가 없다. 누락된 클래스에 의한 성능 저하를 해결하기 위해서 두가지의 레벨 2 최적화 옵션이 존재한다. 이 옵션들은 프로젝트에 존재하지 않는 클래스에 대한 class_exists 검사가 많은 경우 사용할 수 있다. 최적화 레벨 2/A : 신뢰할 수 있는 클래스 맵 autoload 최적화를 위한 신뢰할 수 있는 클래스 맵을 생성하는 방법은 다음과 같은 몇가지가 존재한다. composer.json에 classmap-authoritative을 추가 install 또는 update 시 별도의 옵션을 주지 않아도 자동적으로 최적화를 수행하므로 편리하다. { "name": "project", ... "config": { "classmap-authoritative": true } } composer install / update 시 -a 또는 --classmap-authoritative 옵션을 추가 install 또는 update 시 별도의 옵션을 주어야 하지만 필요시에만 최적화를 하려는 경우 유용하다. $ composer install -a $ composer update --classmap-authoritative composer dump-autoload를 -a 또는 --classmap-authoritative 옵션과 함께 실행 패키지들이 이미 설치된 이후에 최적화면 수행하고자 할 경우 사용 가능하다. $ composer dump-autoload --classmap-authoritative 이 옵션이 활성화될 경우 클래스맵에 찾는 클래스가 없더라도 PSR-4 규칙에 따른 파일 시스템 조사를 하지 않도록 하는 것이다. 또한 이 옵션을 사용하면 레벨 1 최적화는 자동적으로 활성화 된다. 이 옵션의 추가 전후의 autoload_real.php 파일 변화를 보면 차이가 명확히 보인다. public static function getLoader() { ... } else { $map = require __DIR__ . '/autoload_namespaces.php'; foreach ($map as $namespace => $path) { $loader->set($namespace, $path); } $map = require __DIR__ . '/autoload_psr4.php'; foreach ($map as $namespace => $path) { $loader->setPsr4($namespace, $path); } $classMap = require __DIR__ . '/autoload_classmap.php'; if ($classMap) { $loader->addClassMap($classMap); } } ... } public static function getLoader() { ... } else { $classMap = require __DIR__ . '/autoload_classmap.php'; if ($classMap) { $loader->addClassMap($classMap); } } ... } Trade-offs 이 욥션을 사용하면 PSR-4 규칙을 통한 파일 시스템 검사를하지 않으므로 autoloader가 항상 빠르게 동작한다. 하지만 이로 인해 런타임 상에서 클래스가 생성되는 경우 클래스를 찾을 수 없으므로 "class not found" 오류가 날 수 있으므로 주의해서 사용해야 한다. 특히 개발 환경에서는 클래스의 추가가 자주 일어날 수 있으므로 불편하다(클래스 추가시마다 클래스 맵을 재생성 해야 함). 또한 이 최적화 옵션은 최적화 레벨 2/B와 동시에 사용할 수 없다. 최적화 수준 2 / B : APCu 캐시 autoload 최적화를 위한 APCu 캐시를 사용하는 방법은 다음과 같은 몇가지가 존재한다. composer.json에 apcu-autoloader을 추가 install 또는 update 시 별도의 옵션을 주지 않아도 자동적으로 최적화를 수행하므로 편리하다. { "name": "project", ... "config": { "apcu-autoloader": true } } composer install / update 시 --apcu-autoloader 옵션을 추가 install 또는 update 시 별도의 옵션을 주어야 하지만 필요시에만 최적화를 하려는 경우 유용하다. $ composer install --apcu-autoloader $ composer update --apcu-autoloader composer dump-autoload를 --apcu 옵션과 함께 실행 패키지들이 이미 설치된 이후에 최적화면 수행하고자 할 경우 사용 가능하다. $ composer dump-autoload --apcu 이 옵션은 APCu 캐시를 클래스 맵의 fallback으로 추가한다. 발견된 class는 APCu에 캐시되므로 다음 요청시에는 빠르게 반환한다. 최적화 레벨 2/A와 달리 레벨 1 최적화를 자동적으로 활성화하지 않으므로 필요시 수동으로 활성화 해야 한다. Trade-offs APCu가 사용 가능해야 하는 제약이 있으며 APCu 메모리를 사용해 autoload를 수행하지만 신뢰할 수 있는 클래스 맵에서와 같이 클래스를 찾지 못하는 오류가 발생할 수 있다. 또한 이 최적화 옵션은 최적화 레벨 2/A와 동시에 사용할 수 없다. 결론 위에서 소개한 바와 같이 클래스 맵을 생성하는 최적화 레벨 1은 기본적으로 항상하는 것이 좋다. 최적화 레벨 2의 경우는 성능 상의 이점이 있으나 프로그램의 상황에 따라 오류 발생 가능성이 있으니 production 환경에서 상황에 맞게 선택적으로 사용하는 것이 좋다. 참고 : PHP Composer Autoloader Optimization]]></summary><content type="html"><![CDATA[<h3>Composer Autoloader 최적화</h3>
+<p>Composer Autoloader는 상대적으로 빠르게 실행되나 PSR-4 및 PSR-0 autoload 규칙이 설정되는 방식으로 인해 클래스 이름을 확인하기 전에 파일 시스템을 검사해야 한다.
+이 경우 성능이 떨어지지만 개발 환경에서는 새로운 Class를 추가할 때 autoload 구성을 다시 작성하지 않고도 즉시 사용할 수 있으므로 편리하다.
+그러나 production 환경에서는 클래스의 추가가 발생하지 않기 때문에 성능을 위해서 파일 시스템을 검사하지 않고 클래스를 로드하는 것이 좋다.</p>
+<p>Composer는 이러한 문제를 개선하기 위해 autoload 최적화 옵션을 제공한다.</p>
+<h3>최적화 레벨 1 : 클래스 맵 생성</h3>
+<p>autoload 최적화를 위한 클래스 맵을 생성하는 방법은 다음과 같은 몇가지가 존재한다.</p>
+<ul>
+<li><code>composer.json</code>에 <code>optimize-autoloader</code>을 추가</li>
+</ul>
+<blockquote>
+<p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주지 않아도 자동적으로 최적화를 수행하므로 편리하다.</p>
+</blockquote>
+<pre class="hljs json">{
+  "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"project"</span></span>,
+  ...
+  "<span class="hljs-attribute">config</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">optimize-autoloader</span>": <span class="hljs-value"><span class="hljs-literal">true</span>
+  </span>}
+</span>}</pre>
+<ul>
+<li><code>composer install</code> / <code>update</code> 시 <code>-o</code> 또는 <code>--optimize-autoloader</code> 옵션을 추가</li>
+</ul>
+<blockquote>
+<p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주어야 하지만 필요시에만 최적화를 하려는 경우 유용하다.</p>
+</blockquote>
+<pre class="hljs bash">$ composer install -o
+$ composer update --optimize-autoloader</pre>
+<ul>
+<li><code>composer dump-autoload</code>를 <code>-o</code> 또는 <code>--optimize</code> 옵션과 함께 실행</li>
+</ul>
+<blockquote>
+<p>패키지들이 이미 설치된 이후에 최적화면 수행하고자 할 경우 사용 가능하다.</p>
+</blockquote>
+<pre class="hljs bash">$ composer dump-autoload --optimize</pre>
+<p>클래스 맵 생성은 기본적으로 PSR-4 / PSR-0 규칙을 클래스 맵 규칙으로 변환한다.
+클래스 맵이 클래스의 존재와 위치를 보장하므로 Composer는 파일 시스템을 검사하지 않고 빠르게 클래스를 로드할 수 있다.</p>
+<p>특히 PHP 5.6 이상에서는 opcache가 활성화되어 있는 경우 클래스 맵이 opcache에도 캐시될 수 있으므로 초기화 시간을 크게 향상된다.</p>
+<h4>Trade-offs</h4>
+<p>최적화 레벨 1의 경우 특별한 Trade-offs가 없으므로 production 환경에서는 항상 활성화하는 것이 좋다.</p>
+<p>단, 클래스 맵에 누락된 클래스를 호출하는 경우 PSR-4 규칙이 대체되어 파일 시스템 검사가 발생할 수 있다.
+하지만 모든 클래스를 검사하는 것보다는 당연히 성능이 뛰어나므로 사용하지 않을 이유가 없다.</p>
+<p>누락된 클래스에 의한 성능 저하를 해결하기 위해서 두가지의 레벨 2 최적화 옵션이 존재한다. 이 옵션들은 프로젝트에 존재하지 않는 클래스에 대한 <code>class_exists</code> 검사가 많은 경우 사용할 수 있다.</p>
+<h3>최적화 레벨 2/A : 신뢰할 수 있는 클래스 맵</h3>
+<p>autoload 최적화를 위한 신뢰할 수 있는 클래스 맵을 생성하는 방법은 다음과 같은 몇가지가 존재한다.</p>
+<ul>
+<li><code>composer.json</code>에 <code>classmap-authoritative</code>을 추가</li>
+</ul>
+<blockquote>
+<p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주지 않아도 자동적으로 최적화를 수행하므로 편리하다.</p>
+</blockquote>
+<pre class="hljs json">{
+  "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"project"</span></span>,
+  ...
+  "<span class="hljs-attribute">config</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">classmap-authoritative</span>": <span class="hljs-value"><span class="hljs-literal">true</span>
+  </span>}
+</span>}</pre>
+<ul>
+<li><code>composer install</code> / <code>update</code> 시 <code>-a</code> 또는 <code>--classmap-authoritative</code> 옵션을 추가</li>
+</ul>
+<blockquote>
+<p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주어야 하지만 필요시에만 최적화를 하려는 경우 유용하다.</p>
+</blockquote>
+<pre class="hljs bash">$ composer install <span class="hljs-operator">-a</span>
+$ composer update --classmap-authoritative</pre>
+<ul>
+<li><code>composer dump-autoload</code>를 <code>-a</code> 또는 <code>--classmap-authoritative</code> 옵션과 함께 실행</li>
+</ul>
+<blockquote>
+<p>패키지들이 이미 설치된 이후에 최적화면 수행하고자 할 경우 사용 가능하다.</p>
+</blockquote>
+<pre class="hljs bash">$ composer dump-autoload --classmap-authoritative</pre>
+<p>이 옵션이 활성화될 경우 클래스맵에 찾는 클래스가 없더라도 PSR-4 규칙에 따른 파일 시스템 조사를 하지 않도록 하는 것이다.
+또한 이 옵션을 사용하면 레벨 1 최적화는 자동적으로 활성화 된다.</p>
+<p>이 옵션의 추가 전후의 <code>autoload_real.php</code> 파일 변화를 보면 차이가 명확히 보인다.</p>
+<pre class="hljs php"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getLoader</span><span class="hljs-params">()</span>
+</span>{
+    ...
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-variable">$map</span> = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_namespaces.php'</span>;
+        <span class="hljs-keyword">foreach</span> (<span class="hljs-variable">$map</span> <span class="hljs-keyword">as</span> <span class="hljs-variable">$namespace</span> =&gt; <span class="hljs-variable">$path</span>) {
+            <span class="hljs-variable">$loader</span>-&gt;set(<span class="hljs-variable">$namespace</span>, <span class="hljs-variable">$path</span>);
+        }
+
+        <span class="hljs-variable">$map</span> = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_psr4.php'</span>;
+        <span class="hljs-keyword">foreach</span> (<span class="hljs-variable">$map</span> <span class="hljs-keyword">as</span> <span class="hljs-variable">$namespace</span> =&gt; <span class="hljs-variable">$path</span>) {
+            <span class="hljs-variable">$loader</span>-&gt;setPsr4(<span class="hljs-variable">$namespace</span>, <span class="hljs-variable">$path</span>);
+        }
+
+        <span class="hljs-variable">$classMap</span> = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_classmap.php'</span>;
+        <span class="hljs-keyword">if</span> (<span class="hljs-variable">$classMap</span>) {
+            <span class="hljs-variable">$loader</span>-&gt;addClassMap(<span class="hljs-variable">$classMap</span>);
+        }
+    }
+    ...
+}</pre>
+<pre class="hljs php"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getLoader</span><span class="hljs-params">()</span>
+</span>{
+    ...
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-variable">$classMap</span> = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_classmap.php'</span>;
+        <span class="hljs-keyword">if</span> (<span class="hljs-variable">$classMap</span>) {
+            <span class="hljs-variable">$loader</span>-&gt;addClassMap(<span class="hljs-variable">$classMap</span>);
+        }
+    }
+    ...
+}</pre>
+<h4>Trade-offs</h4>
+<p>이 욥션을 사용하면 PSR-4 규칙을 통한 파일 시스템 검사를하지 않으므로 autoloader가 항상 빠르게 동작한다.
+하지만 이로 인해 런타임 상에서 클래스가 생성되는 경우 클래스를 찾을 수 없으므로 &quot;class not found&quot; 오류가 날 수 있으므로 주의해서 사용해야 한다.
+특히 개발 환경에서는 클래스의 추가가 자주 일어날 수 있으므로 불편하다(클래스 추가시마다 클래스 맵을 재생성 해야 함). </p>
+<p>또한 이 최적화 옵션은 최적화 레벨 2/B와 동시에 사용할 수 없다.  </p>
+<h3>최적화 수준 2 / B : APCu 캐시</h3>
+<p>autoload 최적화를 위한 APCu 캐시를 사용하는 방법은 다음과 같은 몇가지가 존재한다.</p>
+<ul>
+<li><code>composer.json</code>에 <code>apcu-autoloader</code>을 추가</li>
+</ul>
+<blockquote>
+<p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주지 않아도 자동적으로 최적화를 수행하므로 편리하다.</p>
+</blockquote>
+<pre class="hljs json">{
+  "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"project"</span></span>,
+  ...
+  "<span class="hljs-attribute">config</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">apcu-autoloader</span>": <span class="hljs-value"><span class="hljs-literal">true</span>
+  </span>}
+</span>}</pre>
+<ul>
+<li><code>composer install</code> / <code>update</code> 시 <code>--apcu-autoloader</code> 옵션을 추가</li>
+</ul>
+<blockquote>
+<p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주어야 하지만 필요시에만 최적화를 하려는 경우 유용하다.</p>
+</blockquote>
+<pre class="hljs bash">$ composer install --apcu-autoloader
+$ composer update --apcu-autoloader</pre>
+<ul>
+<li><code>composer dump-autoload</code>를 <code>--apcu</code> 옵션과 함께 실행</li>
+</ul>
+<blockquote>
+<p>패키지들이 이미 설치된 이후에 최적화면 수행하고자 할 경우 사용 가능하다.</p>
+</blockquote>
+<pre class="hljs bash">$ composer dump-autoload --apcu</pre>
+<p>이 옵션은 APCu 캐시를 클래스 맵의 fallback으로 추가한다. 발견된 class는 APCu에 캐시되므로 다음 요청시에는 빠르게 반환한다.
+최적화 레벨 2/A와 달리 레벨 1 최적화를 자동적으로 활성화하지 않으므로 필요시 수동으로 활성화 해야 한다.</p>
+<h4>Trade-offs</h4>
+<p>APCu가 사용 가능해야 하는 제약이 있으며 APCu 메모리를 사용해 autoload를 수행하지만 신뢰할 수 있는 클래스 맵에서와 같이 클래스를 찾지 못하는 오류가 발생할 수 있다.</p>
+<p>또한 이 최적화 옵션은 최적화 레벨 2/A와 동시에 사용할 수 없다.</p>
+<h3>결론</h3>
+<p>위에서 소개한 바와 같이 클래스 맵을 생성하는 최적화 레벨 1은 기본적으로 항상하는 것이 좋다.
+최적화 레벨 2의 경우는 성능 상의 이점이 있으나 프로그램의 상황에 따라 오류 발생 가능성이 있으니 production 환경에서 상황에 맞게 선택적으로 사용하는 것이 좋다.</p>
+<hr />
+<p>참고 : <a href="https://getcomposer.org/doc/articles/autoloader-optimization.md">PHP Composer Autoloader Optimization</a></p>]]></content></entry>
 <entry><id>https://blog.asamaru.net/2017/06/26/mac-os-git-korean-file-name-corequotepath/</id><title type="html">Mac 에서 git 사용시 한글 파일명 문제 2</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/06/26/mac-os-git-korean-file-name-corequotepath/"/><published>2017-06-26T17:25:35+09:00</published><updated>2017-06-26T17:36:27+09:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="osx" label="osx" /><category term="git" label="git" /><summary><![CDATA[Mac 에서 git 사용시 한글 파일명 문제 라는 글에서 core.precomposeunicode 옵션을 설정해서 한글 파일명 사용시 자소 단위로 분리되는 문제를 해결하는 방법을 소개 했었다. 그런데 맥에서 한글 파일명을 사용할 경우에 다른 문제가 하나더 있다. git status 명령으로 변경 파일을 보면 한글이 \306\301... 와 같이 보이는 문제가 있다. 보이기만 이렇게 보이는 것이면 그냥 참겠지만 commit 하는 등의 과정에서 파일명을 지정하는게 어려워진다. 이 문제를 해결하는 방법은 아래와 같다. git config --global core.quotepath false git config --local core.quotepath false Git Documentation core.quotePath Commands that output paths (e.g. ls-files, diff), will quote "unusual" characters in the pathname by enclosing the pathname in double-quotes and escaping those characters with backslashes in the same way C escapes control characters (e.g. \t for TAB, \n for LF, \ for backslash) or bytes with values larger than 0x80 (e.g. octal \302\265 for "micro" in UTF-8). If this variable is set to false, bytes higher than 0x80 are not considered "unusual" any more. Double-quotes, backslash and control characters are always escaped regardless of the setting of this variable. A simple space character is not considered "unusual". Many commands can output pathnames completely verbatim using the -z option. The default value is true. 결론을 이야기 하자면 특별한 이유가 있지 않는 이상 한글 파일명은 사용하지 않는 것이 정신 건강에 좋다. 그래서 나는 가급적 사용하지 않으려고 하지만 간혹 어쩔 수 없이 써야하는 경우가 있어 위 방법들을 남겨둔다.]]></summary><content type="html"><![CDATA[<p><a href="/2016/10/19/mac-os-git-korean-file-name-error/">Mac 에서 git 사용시 한글 파일명 문제</a> 라는 글에서 <code>core.precomposeunicode</code> 옵션을 설정해서 한글 파일명 사용시 자소 단위로 분리되는 문제를 해결하는 방법을 소개 했었다.
 그런데 맥에서 한글 파일명을 사용할 경우에 다른 문제가 하나더 있다. <code>git status</code> 명령으로 변경 파일을 보면 한글이 <code>\306\301...</code> 와 같이 보이는 문제가 있다. 보이기만 이렇게 보이는 것이면 그냥 참겠지만 commit 하는 등의 과정에서 파일명을 지정하는게 어려워진다.
 이 문제를 해결하는 방법은 아래와 같다.</p>
@@ -582,129 +1061,6 @@ Required by:myapp:app:unspecified</code></pre>
 <p><img src="/res/img/post/2017/04/could-not-find-comandroidsupportconstraintconstraint-layout-1.png" alt="could-not-find-comandroidsupportconstraintconstraint-layout-1" width="988" height="699" /></p>
 <p>&quot;Settings -&gt; Appearance &amp; Behavior -&gt; System Settings -&gt; Android SDK -&gt; SDK Tools&quot; 에서 &quot;ConstraintLayout for Android&quot; 를 체크해서 사용 가능하도록 해줘야 한다.</p>
 <p>나의 경우는 기존에 사용했었기 때문에 체크는 되어 있었으나 업데이트가 되지 않아서 발생한 문제였다. 다시 체크하여 업데이트를 받고 나니 정상적으로 빌드가 완료되었다.</p>]]></content></entry>
-<entry><id>https://blog.asamaru.net/2017/04/11/target-overrides-the-always-embed-swift-standard-libraries-build-setting/</id><title type="html">target overrides the `ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES` build setting 오류 해결</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/04/11/target-overrides-the-always-embed-swift-standard-libraries-build-setting/"/><published>2017-04-11T21:40:03+09:00</published><updated>2017-04-11T21:40:03+09:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="swift" label="swift" /><summary><![CDATA[Xcode 8에서 cocoapods 사용시 아래와 같은 오류가 발생하는 경우가 있다. [!] The `xproject [Debug]` target overrides the `ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES` build setting defined in `Pods/Target Support Files/Pods-xproject/Pods-xproject.debug.xcconfig'. This can lead to problems with the CocoaPods installation - Use the `$(inherited)` flag, or - Remove the build settings from the target. [!] The `xproject [Release]` target overrides the `ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES` build setting defined in `Pods/Target Support Files/Pods-xproject/Pods-xproject.release.xcconfig'. This can lead to problems with the CocoaPods installation - Use the `$(inherited)` flag, or - Remove the build settings from the target. 최근 Xcode와 cocoapods를 업데이트하고 위와 같은 오류가 발생해서 찾아보니 Errors after updating to Xcode 8: "No such module" and "target overrides the EMBEDDED_CONTENT_CONTAINS_SWIFTbuild setting" 에서 해결 방법을 설명하고 있었다. Project/Targets -> [Project Name] -> Build Settings -> "ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES" 를 "$(inherited)"로 변경하는 것으로 위 문제는 간단히 해결된다. Xcode 8 Release Notes 주요 내용 정리를 보면 ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES에 대해 다음과 같이 설명하고 있다. EMBEDDED_CONTENT_CONTAINS_SWIFT는 없어지고 ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES가 추가되었다. 이 새로운 설정은 Xcode에서 항상 Swift Standard Libearies를 채워넣도록 지정하는 것이다. 대상에 직접 사용하거나 덧붙여 다른 제품이 Swift를 사용하는 경우에만 이 설정을 사용할 수 있다.]]></summary><content type="html"><![CDATA[<p>Xcode 8에서 <a href="https://cocoapods.org/">cocoapods</a> 사용시  아래와 같은 오류가 발생하는 경우가 있다.</p>
-<pre class="hljs bash">[!] The `xproject [Debug]` target overrides the `ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES` build setting defined <span class="hljs-keyword">in</span> `Pods/Target Support Files/Pods-xproject/Pods-xproject.debug.xcconfig<span class="hljs-string">'. This can lead to problems with the CocoaPods installation
-    - Use the `$(inherited)` flag, or
-    - Remove the build settings from the target.
-
-[!] The `xproject [Release]` target overrides the `ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES` build setting defined in `Pods/Target Support Files/Pods-xproject/Pods-xproject.release.xcconfig'</span>. This can lead to problems with the CocoaPods installation
-    - Use the `$(inherited)` flag, or
-    - Remove the build settings from the target.</pre>
-<p>최근 Xcode와 cocoapods를 업데이트하고 위와 같은 오류가 발생해서 찾아보니 <a href="http://stackoverflow.com/a/39686652">Errors after updating to Xcode 8: &quot;No such module&quot; and &quot;target overrides the <code>EMBEDDED_CONTENT_CONTAINS_SWIFT</code>build setting&quot;</a> 에서 해결 방법을 설명하고 있었다.</p>
-<p>Project/Targets -&gt; [Project Name] -&gt; Build Settings -&gt;  &quot;ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES&quot; 를 &quot;$(inherited)&quot;로 변경하는 것으로 위 문제는 간단히 해결된다.</p>
-<p><img src="/res/img/post/2017/04/target-overrides-the-always-embed-swift-standard-libraries-build-setting-1.png" alt="target-overrides-the-always-embed-swift-standard-libraries-build-setting-1" width="1123" height="247" /></p>
-<p><a href="https://swifter.kr/2016/09/26/xcode-8-release-notes-%EC%A3%BC%EC%9A%94-%EB%82%B4%EC%9A%A9-%EC%A0%95%EB%A6%AC/">Xcode 8 Release Notes 주요 내용 정리</a>를 보면 ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES에 대해 다음과 같이 설명하고 있다.</p>
-<blockquote>
-<p>EMBEDDED_CONTENT_CONTAINS_SWIFT는 없어지고 ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES가 추가되었다. 이 새로운 설정은 Xcode에서 항상 Swift Standard Libearies를 채워넣도록 지정하는 것이다. 대상에 직접 사용하거나 덧붙여 다른 제품이 Swift를 사용하는 경우에만 이 설정을 사용할 수 있다.</p>
-</blockquote>]]></content></entry>
-<entry><id>https://blog.asamaru.net/2017/04/04/css-image-vertical-center/</id><title type="html">CSS로 이미지 세로 중앙 정렬(Vertical align)하기</title><link rel="alternate" type="text/html" href="https://blog.asamaru.net/2017/04/04/css-image-vertical-center/"/><published>2017-04-04T17:14:41+09:00</published><updated>2017-04-04T17:14:41+09:00</updated><author><name>유영재</name><uri>https://blog.asamaru.net/</uri><email>asamaru@asamaru.net</email></author><category term="css" label="css" /><summary><![CDATA[HTML에서 <img>를 CSS만으로 비율을 유지한 채로 특정 영역의 중앙에 출력하는 방법은 다음과 같다. <!DOCTYPE html> <html> <head> <meta charset="utf-8"/> <style type="text/css"> /* 예시를 위한 css */ dl { float:left; margin-right:20px; } dt { clear:both; } dd { margin:0 0 20px 0; padding:10px; float:left; } dd > img, dd > div { border:#ccc solid 1px; float:left; margin-right:10px; } /* position 을 이용한 방법 */ div.box1 { position:relative; width:150px; height:200px; } div.box1 > img { position:absolute; max-width:100%; max-height:100%; width:auto; height:auto; margin:auto; top:0; bottom:0; left:0; right:0; } /* line-height 를 이용한 방법 */ div.box2 { width:150px; height:200px; line-height:200px; text-align:center; } div.box2 > img { max-width:100%; max-height:100%; vertical-align:middle; } /* :before / content 를 이용한 방법 */ div.box3 { width:150px; height:200px; text-align:center; white-space:nowrap; font:0/0 a; } div.box3:before { content:""; display:inline-block; vertical-align:middle; height:100%; } div.box3 > img { max-width:100%; max-height:100%; display:inline-block; vertical-align:middle; } /* flex 를 이용한 방법 */ div.box4 { width:150px; height:200px; display:flex; justify-content:center; align-items:center; } div.box4 > img { max-width:100%; max-height:100%; } </style> </head> <body> <dl> <dt>position 을 이용한 방법</dt> <dd> <div class="box1"> <img src="test_100px.png" alt="test image"/> </div> <div class="box1"> <img src="test_550px.png" alt="test image"/> </div> </dd> <dt>line-height 를 이용한 방법</dt> <dd> <div class="box2"> <img src="test_100px.png" alt="test image"/> </div> <div class="box2"> <img src="test_550px.png" alt="test image"/> </div> </dd> </dl> <dl> <dt>:before / content 를 이용한 방법</dt> <dd> <div class="box3"> <img src="test_100px.png" alt="test image"/> </div> <div class="box3"> <img src="test_550px.png" alt="test image"/> </div> </dd> <dt>flex 를 이용한 방법</dt> <dd> <div class="box4"> <img src="test_100px.png" alt="test image"/> </div> <div class="box4"> <img src="test_550px.png" alt="test image"/> </div> </dd> </dl> </body> </html> 총 4가지 방법을 예시로 나열했지만 나의 경우는 크로스 브라우징을 위해 "position 을 이용한 방법"이나 "line-height 를 이용한 방법"을 주로 사용한다. 하지만 상황에 따라서는 다른 방법이 유용할 수도 있기에 함께 남겨둔다. 그리고 여기서 사용된 원리를 잘 이용하면 다른 레이아웃을 구성하는데도 도움이 되니 한번쯤은 원리를 참고해보면 좋을 듯하다.]]></summary><content type="html"><![CDATA[<p>HTML에서 <code>&lt;img&gt;</code>를 CSS만으로 비율을 유지한 채로 특정 영역의 중앙에 출력하는 방법은 다음과 같다.</p>
-<p><img src="/res/img/post/2017/04/image_align_center.png" alt="phpstorm formatter markers" width="706" height="509" /></p>
-<pre class="hljs xml"><span class="hljs-doctype">&lt;!DOCTYPE html&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-title">html</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-title">head</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">meta</span> <span class="hljs-attribute">charset</span>=<span class="hljs-value">"utf-8"</span>/&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/css"</span>&gt;</span><span class="css">
-        <span class="hljs-comment">/* 예시를 위한 css */</span>
-        <span class="hljs-tag">dl</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">float</span>:<span class="hljs-value">left</span></span>; <span class="hljs-rule"><span class="hljs-attribute">margin-right</span>:<span class="hljs-value"><span class="hljs-number">20px</span></span></span>; }</span>
-        <span class="hljs-tag">dt</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">clear</span>:<span class="hljs-value">both</span></span>; }</span>
-        <span class="hljs-tag">dd</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">margin</span>:<span class="hljs-value"><span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">20px</span> <span class="hljs-number">0</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">padding</span>:<span class="hljs-value"><span class="hljs-number">10px</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">float</span>:<span class="hljs-value">left</span></span>; }</span>
-        <span class="hljs-tag">dd</span> &gt; <span class="hljs-tag">img</span>,
-        <span class="hljs-tag">dd</span> &gt; <span class="hljs-tag">div</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">border</span>:<span class="hljs-value"><span class="hljs-hexcolor">#ccc</span> solid <span class="hljs-number">1px</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">float</span>:<span class="hljs-value">left</span></span>; <span class="hljs-rule"><span class="hljs-attribute">margin-right</span>:<span class="hljs-value"><span class="hljs-number">10px</span></span></span>; }</span>
-        <span class="hljs-comment">/* position 을 이용한 방법 */</span>
-        <span class="hljs-tag">div</span><span class="hljs-class">.box1</span> <span class="hljs-rules">{
-            <span class="hljs-rule"><span class="hljs-attribute">position</span>:<span class="hljs-value">relative</span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">width</span>:<span class="hljs-value"><span class="hljs-number">150px</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">height</span>:<span class="hljs-value"><span class="hljs-number">200px</span></span></span>;
-        }</span>
-        <span class="hljs-tag">div</span><span class="hljs-class">.box1</span> &gt; <span class="hljs-tag">img</span> <span class="hljs-rules">{
-            <span class="hljs-rule"><span class="hljs-attribute">position</span>:<span class="hljs-value">absolute</span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">max-width</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">max-height</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">width</span>:<span class="hljs-value">auto</span></span>; <span class="hljs-rule"><span class="hljs-attribute">height</span>:<span class="hljs-value">auto</span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">margin</span>:<span class="hljs-value">auto</span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">top</span>:<span class="hljs-value"><span class="hljs-number">0</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">bottom</span>:<span class="hljs-value"><span class="hljs-number">0</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">left</span>:<span class="hljs-value"><span class="hljs-number">0</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">right</span>:<span class="hljs-value"><span class="hljs-number">0</span></span></span>;
-        }</span>
-        <span class="hljs-comment">/* line-height 를 이용한 방법 */</span>
-        <span class="hljs-tag">div</span><span class="hljs-class">.box2</span> <span class="hljs-rules">{
-            <span class="hljs-rule"><span class="hljs-attribute">width</span>:<span class="hljs-value"><span class="hljs-number">150px</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">height</span>:<span class="hljs-value"><span class="hljs-number">200px</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">line-height</span>:<span class="hljs-value"><span class="hljs-number">200px</span></span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">text-align</span>:<span class="hljs-value">center</span></span>;
-        }</span>
-        <span class="hljs-tag">div</span><span class="hljs-class">.box2</span> &gt; <span class="hljs-tag">img</span> <span class="hljs-rules">{
-            <span class="hljs-rule"><span class="hljs-attribute">max-width</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">max-height</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">vertical-align</span>:<span class="hljs-value">middle</span></span>;
-        }</span>
-        <span class="hljs-comment">/* :before / content 를 이용한 방법 */</span>
-        <span class="hljs-tag">div</span><span class="hljs-class">.box3</span> <span class="hljs-rules">{
-            <span class="hljs-rule"><span class="hljs-attribute">width</span>:<span class="hljs-value"><span class="hljs-number">150px</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">height</span>:<span class="hljs-value"><span class="hljs-number">200px</span></span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">text-align</span>:<span class="hljs-value">center</span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">white-space</span>:<span class="hljs-value">nowrap</span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">font</span>:<span class="hljs-value"><span class="hljs-number">0</span>/<span class="hljs-number">0</span> a</span></span>;
-        }</span>
-        <span class="hljs-tag">div</span><span class="hljs-class">.box3</span><span class="hljs-pseudo">:before</span> <span class="hljs-rules">{
-            <span class="hljs-rule"><span class="hljs-attribute">content</span>:<span class="hljs-value"><span class="hljs-string">""</span></span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">display</span>:<span class="hljs-value">inline-block</span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">vertical-align</span>:<span class="hljs-value">middle</span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">height</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>;
-        }</span>
-        <span class="hljs-tag">div</span><span class="hljs-class">.box3</span> &gt; <span class="hljs-tag">img</span> <span class="hljs-rules">{
-            <span class="hljs-rule"><span class="hljs-attribute">max-width</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">max-height</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">display</span>:<span class="hljs-value">inline-block</span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">vertical-align</span>:<span class="hljs-value">middle</span></span>;
-        }</span>
-        <span class="hljs-comment">/* flex 를 이용한 방법 */</span>
-        <span class="hljs-tag">div</span><span class="hljs-class">.box4</span> <span class="hljs-rules">{
-            <span class="hljs-rule"><span class="hljs-attribute">width</span>:<span class="hljs-value"><span class="hljs-number">150px</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">height</span>:<span class="hljs-value"><span class="hljs-number">200px</span></span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">display</span>:<span class="hljs-value">flex</span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">justify-content</span>:<span class="hljs-value">center</span></span>;
-            <span class="hljs-rule"><span class="hljs-attribute">align-items</span>:<span class="hljs-value">center</span></span>;
-        }</span>
-        <span class="hljs-tag">div</span><span class="hljs-class">.box4</span> &gt; <span class="hljs-tag">img</span> <span class="hljs-rules">{
-            <span class="hljs-rule"><span class="hljs-attribute">max-width</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">max-height</span>:<span class="hljs-value"><span class="hljs-number">100%</span></span></span>;
-        }</span>
-    </span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">head</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-title">body</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-title">dl</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">dt</span>&gt;</span>position 을 이용한 방법<span class="hljs-tag">&lt;/<span class="hljs-title">dt</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">dd</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"box1"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-title">img</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"test_100px.png"</span> <span class="hljs-attribute">alt</span>=<span class="hljs-value">"test image"</span>/&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"box1"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-title">img</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"test_550px.png"</span> <span class="hljs-attribute">alt</span>=<span class="hljs-value">"test image"</span>/&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
-    <span class="hljs-tag">&lt;/<span class="hljs-title">dd</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">dt</span>&gt;</span>line-height 를 이용한 방법<span class="hljs-tag">&lt;/<span class="hljs-title">dt</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">dd</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"box2"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-title">img</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"test_100px.png"</span> <span class="hljs-attribute">alt</span>=<span class="hljs-value">"test image"</span>/&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"box2"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-title">img</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"test_550px.png"</span> <span class="hljs-attribute">alt</span>=<span class="hljs-value">"test image"</span>/&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
-    <span class="hljs-tag">&lt;/<span class="hljs-title">dd</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">dl</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-title">dl</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">dt</span>&gt;</span>:before / content 를 이용한 방법<span class="hljs-tag">&lt;/<span class="hljs-title">dt</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">dd</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"box3"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-title">img</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"test_100px.png"</span> <span class="hljs-attribute">alt</span>=<span class="hljs-value">"test image"</span>/&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"box3"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-title">img</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"test_550px.png"</span> <span class="hljs-attribute">alt</span>=<span class="hljs-value">"test image"</span>/&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
-    <span class="hljs-tag">&lt;/<span class="hljs-title">dd</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">dt</span>&gt;</span>flex 를 이용한 방법<span class="hljs-tag">&lt;/<span class="hljs-title">dt</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">dd</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"box4"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-title">img</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"test_100px.png"</span> <span class="hljs-attribute">alt</span>=<span class="hljs-value">"test image"</span>/&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"box4"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-title">img</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"test_550px.png"</span> <span class="hljs-attribute">alt</span>=<span class="hljs-value">"test image"</span>/&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
-    <span class="hljs-tag">&lt;/<span class="hljs-title">dd</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">dl</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">body</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">html</span>&gt;</span></pre>
-<p>총 4가지 방법을 예시로 나열했지만 나의 경우는 크로스 브라우징을 위해 &quot;position 을 이용한 방법&quot;이나 &quot;line-height 를 이용한 방법&quot;을 주로 사용한다. 하지만 상황에 따라서는 다른 방법이 유용할 수도 있기에 함께 남겨둔다. 그리고 여기서 사용된 원리를 잘 이용하면 다른 레이아웃을 구성하는데도 도움이 되니 한번쯤은 원리를 참고해보면 좋을 듯하다.</p>]]></content></entry>
 
 
 </feed>

@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+					<title>PHP Composer Autoloader 최적화 - 이 세상에 하나는 남기고 가자</title>
+	<meta name="author" content="유영재">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	
+	<meta name="description" content="Composer Autoloader 최적화 Composer Autoloader는 상대적으로 빠르게 실행되나 PSR-4 및 PSR-0 autoload 규칙이 설정되는 방식으로 인해 클래스 이름을 확인하기 전에 파일 시스템을 검사해야 한다. 이 경우 성능이 떨어지지만 개발 환경에서는 새로운 Class를 추가할 때 autoload 구성을 다시 작성하지 않고도 즉시 사용할 수 있으므로 편리하다. 그러나 production 환경에서는 클래스의 추가가 발생하지 않기 때문에 성능을 위해서 파일 시스템을 검사하지 않고 클래스를 로드하는 것이 좋다">
+	<meta name="referrer" content="always">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="shortcut icon" type="image/x-icon" href="https://blog.asamaru.net/favicon.ico"/>
+	<link rel="canonical" href="https://blog.asamaru.net/2017/07/14/composer-autoloader-optimization/"/>
+			<link rel="amphtml" href="https://blog.asamaru.net/amp/2017/07/14/composer-autoloader-optimization/">
+	
+	<link href="//www.google-analytics.com" rel="dns-prefetch"/>
+	
+			<link href="//pagead2.googlesyndication.com" rel="dns-prefetch"/>
+		<link href="//googleads.g.doubleclick.net" rel="dns-prefetch"/>
+		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({
+				google_ad_client: 'ca-pub-8163803188491150',
+				enable_page_level_ads: true
+			});
+		</script>
+		<!--[if lt IE 9]>
+		<script src="//cdn.jsdelivr.net/html5shiv/3.7.3/html5shiv.min.js"></script>
+	<![endif]-->
+
+	<script src="/res/js/min/x15def8721d3248b655c2bf787ddb9cb2ddbb7a27.js" async="true" type="text/javascript"></script>
+<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+
+	
+	
+	<meta property="og:type" content="website">
+	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
+	<meta property="og:title" content="PHP Composer Autoloader 최적화">
+	<meta property="og:description" content="Composer Autoloader 최적화 Composer Autoloader는 상대적으로 빠르게 실행되나 PSR-4 및 PSR-0 autoload 규칙이 설정되는 방식으로 인해 클래스 이름을 확인하기 전에 파일 시스템을 검사해야 한다. 이 경우 성능이 떨어지지만 개발 환경에서는 새로운 Class를 추가할 때 autoload 구성을 다시 작성하지 않고도 즉시 사용할 수 있으므로 편리하다. 그러나 production 환경에서는 클래스의 추가가 발생하지 않기 때문에 성능을 위해서 파일 시스템을 검사하지 않고 클래스를 로드하는 것이 좋다">
+	<meta property="og:image" content="/res/img/icon/icon.png">
+	
+
+	
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="@asamaru7">
+	<meta name="twitter:title" content="PHP Composer Autoloader 최적화">
+	<meta name="twitter:description" content="Composer Autoloader 최적화 Composer Autoloader는 상대적으로 빠르게 실행되나 PSR-4 및 PSR-0 autoload 규칙이 설정되는 방식으로 인해 클래스 이름을 확인하기 전에 파일 시스템을 검사해야 한다. 이 경우 성능이 떨어지지만 개발 환경에서는 새로운 Class를 추가할 때 autoload 구성을 다시 작성하지 않고도 즉시 사용할 수 있으므로 편리하다. 그러나 production 환경에서는 클래스의 추가가 발생하지 않기 때문에 성능을 위해서 파일 시스템을 검사하지 않고 클래스를 로드하는 것이 좋다">
+	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	
+
+										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
+												<link rel="apple-touch-icon" sizes="76x76" href="/res/img/icon/76.png">
+												<link rel="apple-touch-icon" sizes="120x120" href="/res/img/icon/120.png">
+												<link rel="apple-touch-icon" sizes="152x152" href="/res/img/icon/152.png">
+						
+	<link rel="alternate" type="application/rss+xml" title="이 세상에 하나는 남기고 가자" href="https://blog.asamaru.net/atom.xml"/>
+
+			<link href="/res/css/min/xa68c2a14160215d396b405dbca793445f06e1ae5.css" type="text/css" rel="stylesheet" />
+
+	 <script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "headline": "PHP Composer Autoloader 최적화",
+    "author": {
+        "@type": "Person",
+        "name": "유영재"
+    },
+    "datePublished": "2017-7-14",
+    "dateModified": "2017-7-14",
+    "articleSection": "php",
+    "url": "https://blog.asamaru.net/2017/07/14/composer-autoloader-optimization/",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://blog.asamaru.net/res/img/icon/icon.696.png",
+        "width": 696,
+        "height": 696
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "유영재",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://blog.asamaru.net/res/img/icon/icon.60.png",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://blog.asamaru.net/2017/07/14/composer-autoloader-optimization/"
+    }
+}</script> 
+		
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+			ga('create', 'UA-65749108-2', 'auto');
+			ga('send', 'pageview');
+		</script>
+	
+	</head>
+<body>
+<header>
+	<div class="dProfile">
+		<a href="https://blog.asamaru.net"><img src="/res/img/icon/icon.png" width="50" height="50" alt="profile"></a>
+		<h1><a href="https://blog.asamaru.net">이 세상에 하나는 남기고 가자</a></h1>
+					<p>세상에 필요한 소스코드 한줄 남기고 가자</p>
+				<button type="button" id="cBtnSlide"></button>
+	</div>
+</header>
+<section class="dMainBody">
+<div class="dWrapContent">
+	<section id="cMainPanel" class="clearfix">
+			
+	<article id="cArticle" class="dArticle hentry">
+		<div class="dTitle">
+			<h2 class="entry-title">PHP Composer Autoloader 최적화</h2>
+												<a href="https://blog.asamaru.net/category/php/" rel="tag">php</a>
+													<span></span>
+										<time class="published " datetime="2017-07-14 12:42:35">2017.07.14. 12:42</time>
+			<time class="updated hide" datetime="2017-07-14 12:42:35">2017.07.14. 12:42</time>
+			<span class="vcard author hide"><span class="fn">유영재</span></span>
+		</div>
+		<div class="markdown-body entry-content"><h3>Composer Autoloader 최적화</h3>
+<p>Composer Autoloader는 상대적으로 빠르게 실행되나 PSR-4 및 PSR-0 autoload 규칙이 설정되는 방식으로 인해 클래스 이름을 확인하기 전에 파일 시스템을 검사해야 한다.
+이 경우 성능이 떨어지지만 개발 환경에서는 새로운 Class를 추가할 때 autoload 구성을 다시 작성하지 않고도 즉시 사용할 수 있으므로 편리하다.
+그러나 production 환경에서는 클래스의 추가가 발생하지 않기 때문에 성능을 위해서 파일 시스템을 검사하지 않고 클래스를 로드하는 것이 좋다.</p>
+<p>Composer는 이러한 문제를 개선하기 위해 autoload 최적화 옵션을 제공한다.</p>
+<h3>최적화 레벨 1 : 클래스 맵 생성</h3>
+<p>autoload 최적화를 위한 클래스 맵을 생성하는 방법은 다음과 같은 몇가지가 존재한다.</p>
+<ul>
+<li><code>composer.json</code>에 <code>optimize-autoloader</code>을 추가</li>
+</ul>
+<blockquote>
+<p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주지 않아도 자동적으로 최적화를 수행하므로 편리하다.</p>
+</blockquote>
+<pre class="hljs json">{
+  "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"project"</span></span>,
+  ...
+  "<span class="hljs-attribute">config</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">optimize-autoloader</span>": <span class="hljs-value"><span class="hljs-literal">true</span>
+  </span>}
+</span>}</pre>
+<ul>
+<li><code>composer install</code> / <code>update</code> 시 <code>-o</code> 또는 <code>--optimize-autoloader</code> 옵션을 추가</li>
+</ul>
+<blockquote>
+<p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주어야 하지만 필요시에만 최적화를 하려는 경우 유용하다.</p>
+</blockquote>
+<pre class="hljs bash">$ composer install -o
+$ composer update --optimize-autoloader</pre>
+<ul>
+<li><code>composer dump-autoload</code>를 <code>-o</code> 또는 <code>--optimize</code> 옵션과 함께 실행</li>
+</ul>
+<blockquote>
+<p>패키지들이 이미 설치된 이후에 최적화면 수행하고자 할 경우 사용 가능하다.</p>
+</blockquote>
+<pre class="hljs bash">$ composer dump-autoload --optimize</pre>
+<p>클래스 맵 생성은 기본적으로 PSR-4 / PSR-0 규칙을 클래스 맵 규칙으로 변환한다.
+클래스 맵이 클래스의 존재와 위치를 보장하므로 Composer는 파일 시스템을 검사하지 않고 빠르게 클래스를 로드할 수 있다.</p>
+<p>특히 PHP 5.6 이상에서는 opcache가 활성화되어 있는 경우 클래스 맵이 opcache에도 캐시될 수 있으므로 초기화 시간을 크게 향상된다.</p>
+<h4>Trade-offs</h4>
+<p>최적화 레벨 1의 경우 특별한 Trade-offs가 없으므로 production 환경에서는 항상 활성화하는 것이 좋다.</p>
+<p>단, 클래스 맵에 누락된 클래스를 호출하는 경우 PSR-4 규칙이 대체되어 파일 시스템 검사가 발생할 수 있다.
+하지만 모든 클래스를 검사하는 것보다는 당연히 성능이 뛰어나므로 사용하지 않을 이유가 없다.</p>
+<p>누락된 클래스에 의한 성능 저하를 해결하기 위해서 두가지의 레벨 2 최적화 옵션이 존재한다. 이 옵션들은 프로젝트에 존재하지 않는 클래스에 대한 <code>class_exists</code> 검사가 많은 경우 사용할 수 있다.</p>
+<h3>최적화 레벨 2/A : 신뢰할 수 있는 클래스 맵</h3>
+<p>autoload 최적화를 위한 신뢰할 수 있는 클래스 맵을 생성하는 방법은 다음과 같은 몇가지가 존재한다.</p>
+<ul>
+<li><code>composer.json</code>에 <code>classmap-authoritative</code>을 추가</li>
+</ul>
+<blockquote>
+<p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주지 않아도 자동적으로 최적화를 수행하므로 편리하다.</p>
+</blockquote>
+<pre class="hljs json">{
+  "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"project"</span></span>,
+  ...
+  "<span class="hljs-attribute">config</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">classmap-authoritative</span>": <span class="hljs-value"><span class="hljs-literal">true</span>
+  </span>}
+</span>}</pre>
+<ul>
+<li><code>composer install</code> / <code>update</code> 시 <code>-a</code> 또는 <code>--classmap-authoritative</code> 옵션을 추가</li>
+</ul>
+<blockquote>
+<p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주어야 하지만 필요시에만 최적화를 하려는 경우 유용하다.</p>
+</blockquote>
+<pre class="hljs bash">$ composer install <span class="hljs-operator">-a</span>
+$ composer update --classmap-authoritative</pre>
+<ul>
+<li><code>composer dump-autoload</code>를 <code>-a</code> 또는 <code>--classmap-authoritative</code> 옵션과 함께 실행</li>
+</ul>
+<blockquote>
+<p>패키지들이 이미 설치된 이후에 최적화면 수행하고자 할 경우 사용 가능하다.</p>
+</blockquote>
+<pre class="hljs bash">$ composer dump-autoload --classmap-authoritative</pre>
+<p>이 옵션이 활성화될 경우 클래스맵에 찾는 클래스가 없더라도 PSR-4 규칙에 따른 파일 시스템 조사를 하지 않도록 하는 것이다.
+또한 이 옵션을 사용하면 레벨 1 최적화는 자동적으로 활성화 된다.</p>
+<p>이 옵션의 추가 전후의 <code>autoload_real.php</code> 파일 변화를 보면 차이가 명확히 보인다.</p>
+<pre class="hljs php"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getLoader</span><span class="hljs-params">()</span>
+</span>{
+    ...
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-variable">$map</span> = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_namespaces.php'</span>;
+        <span class="hljs-keyword">foreach</span> (<span class="hljs-variable">$map</span> <span class="hljs-keyword">as</span> <span class="hljs-variable">$namespace</span> =&gt; <span class="hljs-variable">$path</span>) {
+            <span class="hljs-variable">$loader</span>-&gt;set(<span class="hljs-variable">$namespace</span>, <span class="hljs-variable">$path</span>);
+        }
+
+        <span class="hljs-variable">$map</span> = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_psr4.php'</span>;
+        <span class="hljs-keyword">foreach</span> (<span class="hljs-variable">$map</span> <span class="hljs-keyword">as</span> <span class="hljs-variable">$namespace</span> =&gt; <span class="hljs-variable">$path</span>) {
+            <span class="hljs-variable">$loader</span>-&gt;setPsr4(<span class="hljs-variable">$namespace</span>, <span class="hljs-variable">$path</span>);
+        }
+
+        <span class="hljs-variable">$classMap</span> = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_classmap.php'</span>;
+        <span class="hljs-keyword">if</span> (<span class="hljs-variable">$classMap</span>) {
+            <span class="hljs-variable">$loader</span>-&gt;addClassMap(<span class="hljs-variable">$classMap</span>);
+        }
+    }
+    ...
+}</pre>
+<pre class="hljs php"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getLoader</span><span class="hljs-params">()</span>
+</span>{
+    ...
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-variable">$classMap</span> = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_classmap.php'</span>;
+        <span class="hljs-keyword">if</span> (<span class="hljs-variable">$classMap</span>) {
+            <span class="hljs-variable">$loader</span>-&gt;addClassMap(<span class="hljs-variable">$classMap</span>);
+        }
+    }
+    ...
+}</pre>
+<h4>Trade-offs</h4>
+<p>이 욥션을 사용하면 PSR-4 규칙을 통한 파일 시스템 검사를하지 않으므로 autoloader가 항상 빠르게 동작한다.
+하지만 이로 인해 런타임 상에서 클래스가 생성되는 경우 클래스를 찾을 수 없으므로 &quot;class not found&quot; 오류가 날 수 있으므로 주의해서 사용해야 한다.
+특히 개발 환경에서는 클래스의 추가가 자주 일어날 수 있으므로 불편하다(클래스 추가시마다 클래스 맵을 재생성 해야 함). </p>
+<p>또한 이 최적화 옵션은 최적화 레벨 2/B와 동시에 사용할 수 없다.  </p>
+<h3>최적화 수준 2 / B : APCu 캐시</h3>
+<p>autoload 최적화를 위한 APCu 캐시를 사용하는 방법은 다음과 같은 몇가지가 존재한다.</p>
+<ul>
+<li><code>composer.json</code>에 <code>apcu-autoloader</code>을 추가</li>
+</ul>
+<blockquote>
+<p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주지 않아도 자동적으로 최적화를 수행하므로 편리하다.</p>
+</blockquote>
+<pre class="hljs json">{
+  "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"project"</span></span>,
+  ...
+  "<span class="hljs-attribute">config</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">apcu-autoloader</span>": <span class="hljs-value"><span class="hljs-literal">true</span>
+  </span>}
+</span>}</pre>
+<ul>
+<li><code>composer install</code> / <code>update</code> 시 <code>--apcu-autoloader</code> 옵션을 추가</li>
+</ul>
+<blockquote>
+<p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주어야 하지만 필요시에만 최적화를 하려는 경우 유용하다.</p>
+</blockquote>
+<pre class="hljs bash">$ composer install --apcu-autoloader
+$ composer update --apcu-autoloader</pre>
+<ul>
+<li><code>composer dump-autoload</code>를 <code>--apcu</code> 옵션과 함께 실행</li>
+</ul>
+<blockquote>
+<p>패키지들이 이미 설치된 이후에 최적화면 수행하고자 할 경우 사용 가능하다.</p>
+</blockquote>
+<pre class="hljs bash">$ composer dump-autoload --apcu</pre>
+<p>이 옵션은 APCu 캐시를 클래스 맵의 fallback으로 추가한다. 발견된 class는 APCu에 캐시되므로 다음 요청시에는 빠르게 반환한다.
+최적화 레벨 2/A와 달리 레벨 1 최적화를 자동적으로 활성화하지 않으므로 필요시 수동으로 활성화 해야 한다.</p>
+<h4>Trade-offs</h4>
+<p>APCu가 사용 가능해야 하는 제약이 있으며 APCu 메모리를 사용해 autoload를 수행하지만 신뢰할 수 있는 클래스 맵에서와 같이 클래스를 찾지 못하는 오류가 발생할 수 있다.</p>
+<p>또한 이 최적화 옵션은 최적화 레벨 2/A와 동시에 사용할 수 없다.</p>
+<h3>결론</h3>
+<p>위에서 소개한 바와 같이 클래스 맵을 생성하는 최적화 레벨 1은 기본적으로 항상하는 것이 좋다.
+최적화 레벨 2의 경우는 성능 상의 이점이 있으나 프로그램의 상황에 따라 오류 발생 가능성이 있으니 production 환경에서 상황에 맞게 선택적으로 사용하는 것이 좋다.</p>
+<hr />
+<p>참고 : <a href="https://getcomposer.org/doc/articles/autoloader-optimization.md">PHP Composer Autoloader Optimization</a></p>
+</div>
+		
+		
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+	</article>
+
+
+
+			<div id="disqus_thread"></div>
+	<script type="text/javascript">
+		var disqus_shortname = 'asamaru7'; // required: replace example with your forum shortname
+		// var disqus_developer = 1; // Comment out when the site is live
+		var disqus_identifier = "/2017/07/14/composer-autoloader-optimization/";
+
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var dsq = document.createElement('script');
+			dsq.type = 'text/javascript';
+			dsq.async = true;
+			dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+			(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+		})();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+		</section>
+</div>
+<nav id="cSide" class="slideout-menu">
+	<div class="dSideBox">
+										
+										<dl class="dTags">
+					<dt>카테고리</dt>
+											<dd>
+							<a href="https://blog.asamaru.net/category/android/">
+								android<span>(57)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/blog/">
+								blog<span>(3)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/css/">
+								css<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/db/">
+								db<span>(6)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/flash/">
+								flash<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/git/">
+								git<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/html/">
+								html<span>(3)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ios/">
+								ios<span>(23)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/java/">
+								java<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/jekyll/">
+								jekyll<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/js/">
+								js<span>(15)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/laravel/">
+								laravel<span>(2)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/linux/">
+								linux<span>(28)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/octopress/">
+								octopress<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/osx/">
+								osx<span>(11)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/php/">
+								php<span>(53)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/programming/">
+								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/swift/">
+								swift<span>(8)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/thinking/">
+								thinking<span>(5)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/tip/">
+								tip<span>(16)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/vagrant/">
+								vagrant<span>(7)</span>
+							</a>
+						</dd>
+									</dl>
+			
+			
+						
+			
+																<dl class="dArchives">
+						<dt>글 보관함</dt>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/08/">08 <span>(1)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/07/">07 <span>(1)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/06/">06 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/05/">05 <span>(4)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/04/">04 <span>(6)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/03/">03 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/02/">02 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2017/01/">01 <span>(22)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2016/">2016 <span>(69)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/12/">12 <span>(9)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/11/">11 <span>(11)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/10/">10 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/09/">09 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/08/">08 <span>(2)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/07/">07 <span>(5)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/05/">05 <span>(1)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/04/">04 <span>(9)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/03/">03 <span>(13)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/02/">02 <span>(7)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2016/01/">01 <span>(8)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2015/">2015 <span>(118)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/12/">12 <span>(16)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/11/">11 <span>(16)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/10/">10 <span>(41)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/09/">09 <span>(37)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2015/08/">08 <span>(8)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2012/">2012 <span>(7)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2012/10/">10 <span>(1)</span></a>
+											</dd>
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2012/09/">09 <span>(6)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																		</dl>
+									
+				
+		
+		<form action="https://www.google.com/search" method="get" target="_blank" class="dFormSearch">
+			<fieldset>
+				<input type="hidden" name="sitesearch" value="https://blog.asamaru.net">
+				<legend>검색하기 폼</legend>
+				<label class="dIcon">검색하기</label>
+				<input type="text" name="q" value="" placeholder="Search"/>
+			</fieldset>
+		</form>
+
+		
+				<ul class="dLinks">
+							<li><a href="https://blog.asamaru.net/archives/" class="dInverse">전체글 보기</a></li>
+				<li class="dPipe"></li>
+						<li><a href="https://blog.asamaru.net/atom.xml" class="dInverse" target="_blank">RSS</a></li>
+		</ul>
+			</div>
+</nav>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</section>
+<footer>
+	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+</footer>
+
+
+
+<script async src="https://cdn.ampproject.org/v0.js"></script>
+<script async custom-element="amp-social-share" src="https://cdn.ampproject.org/v0/amp-social-share-0.1.js"></script>
+
+</body>
+</html>

@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>VirtualBox 5.1.20 버전업 후 Vagrant Shared Folders mount 오류 해결 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="개발 환경 구성을 위해 Vagrant를 사용중이다. 그런데 얼마전 VirtualBox를 5.1.20으로 업데이트하고 나니 Shared Folders를 mount 하는 과정에서 오류가 발생했다. Vagrant was unable to mount VirtualBox shared folders. This is usually because the filesystem &quot;vboxsf&quot; is not available. This filesystem is made available via the VirtualBox Guest Additions an">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="VirtualBox 5.1.20 버전업 후 Vagrant Shared Folders mount 오류 해결">
 	<meta property="og:description" content="개발 환경 구성을 위해 Vagrant를 사용중이다. 그런데 얼마전 VirtualBox를 5.1.20으로 업데이트하고 나니 Shared Folders를 mount 하는 과정에서 오류가 발생했다. Vagrant was unable to mount VirtualBox shared folders. This is usually because the filesystem &quot;vboxsf&quot; is not available. This filesystem is made available via the VirtualBox Guest Additions an">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2017/05/02/virtualbox-5-1-20-vagrant-shared-folders-mount-error/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="VirtualBox 5.1.20 버전업 후 Vagrant Shared Folders mount 오류 해결">
 	<meta name="twitter:description" content="개발 환경 구성을 위해 Vagrant를 사용중이다. 그런데 얼마전 VirtualBox를 5.1.20으로 업데이트하고 나니 Shared Folders를 mount 하는 과정에서 오류가 발생했다. Vagrant was unable to mount VirtualBox shared folders. This is usually because the filesystem &quot;vboxsf&quot; is not available. This filesystem is made available via the VirtualBox Guest Additions an">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -146,14 +149,14 @@ mount: wrong fs type, bad option, bad superblock on vagrant,
 <p>나의 경우는 shared folders를 사용하지 않고 nfs mount를 사용하고 있어 사용 상에 문제가 되는 부분은 없었으나 실행시 마다 오류가 나타나는 것도 보기 싫고 <code>vagrant up</code>을 한번 더 해줘야 시작시 실행되는 스크립트가 정상 실행되었기 때문에 해결하기 위해 찾아봤다(사실 비슷한 문제에 대해 &quot;<a href="/2015/12/02/vagrant-cant-mount-shared-folder/">VirtualBox 버전업 후 Vagrant synced_folder 설정에서 오류가 날 경우</a>&quot;라는 글을 쓴 적이 있었지만 이번엔 다른 문제였다).</p>
 <p>검색해보니 일본어로 되어 있긴 하지만 &quot;<a href="http://qiita.com/poad1010/items/675ffe46e70135fff839">VirtualBox 5.1.20で共有フォルダーが動かなくなる対策</a>&quot; 글에 해결 방법이 나와 있었다.</p>
 <p>간단한 해결 방법을 소개하자면 아래의 명령을 vagrant vm 내부에서 실행하면 된다.</p>
-<pre class="hljs bash">sudo rm /sbin/mount.vboxsf &amp;&amp; sudo ln <span class="hljs-operator">-s</span> /usr/lib/VBoxGuestAdditions/mount.vboxsf /sbin/mount.vboxsf</pre>
+<pre class="hljs bash">sudo rm /sbin/mount.vboxsf &amp;&amp; sudo ln -s /usr/lib/VBoxGuestAdditions/mount.vboxsf /sbin/mount.vboxsf</pre>
 <p>이후에 vagrant를 재시작 해주면 문제는 해결된다. </p>
 <p>재시작하기 싫다면 아래의 명령을 추가로 실행해서 즉시 mount 하는 것도 가능하다.</p>
-<pre class="hljs bash">sudo mount -t vboxsf -o dmode=<span class="hljs-number">755</span>,fmode=<span class="hljs-number">644</span>,uid=<span class="hljs-number">1000</span>,gid=<span class="hljs-number">1000</span> vagrant /vagrant</pre>
+<pre class="hljs bash">sudo mount -t vboxsf -o dmode=755,fmode=644,uid=1000,gid=1000 vagrant /vagrant</pre>
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -244,7 +247,7 @@ mount: wrong fs type, bad option, bad superblock on vagrant,
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -259,12 +262,17 @@ mount: wrong fs type, bad option, bad superblock on vagrant,
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -294,7 +302,16 @@ mount: wrong fs type, bad option, bad superblock on vagrant,
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -438,7 +455,8 @@ mount: wrong fs type, bad option, bad superblock on vagrant,
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

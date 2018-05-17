@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes) - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="Character classes (캐릭터 클래스) 캐릭터 클래스는 여는 대괄호([)와 닫는 대괄호(])로 영역을 선언한다. 닫는 대괄호는 그 자체만으로는 특별한 의미를 가지지 않는다. 닫는 대괄호가 클래스의 멤버로 필요하면 클래스의 첫 번째 데이터 문자(곡절 부호(^)로 시작하는 경우) 뒤에 있거나 백 슬래시로 이스케이프되어야 한다. 캐릭터 클래스는 문장의 단일 문자와 일치한다(단어가 아닌 단일 문자 단위로 일치한다). 캐릭터 클래스의 첫 번째 문자가 곡절 부호(^)가 아닌 경우 캐릭터 클래스에 정의된 문자 세트가 있으면 일치한다.">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes)">
 	<meta property="og:description" content="Character classes (캐릭터 클래스) 캐릭터 클래스는 여는 대괄호([)와 닫는 대괄호(])로 영역을 선언한다. 닫는 대괄호는 그 자체만으로는 특별한 의미를 가지지 않는다. 닫는 대괄호가 클래스의 멤버로 필요하면 클래스의 첫 번째 데이터 문자(곡절 부호(^)로 시작하는 경우) 뒤에 있거나 백 슬래시로 이스케이프되어야 한다. 캐릭터 클래스는 문장의 단일 문자와 일치한다(단어가 아닌 단일 문자 단위로 일치한다). 캐릭터 클래스의 첫 번째 문자가 곡절 부호(^)가 아닌 경우 캐릭터 클래스에 정의된 문자 세트가 있으면 일치한다.">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2017/01/14/php-regex-character-classes/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="PHP 정규식(PCRE)의 모든 것 - 캐릭터 클래스(Character classes)">
 	<meta name="twitter:description" content="Character classes (캐릭터 클래스) 캐릭터 클래스는 여는 대괄호([)와 닫는 대괄호(])로 영역을 선언한다. 닫는 대괄호는 그 자체만으로는 특별한 의미를 가지지 않는다. 닫는 대괄호가 클래스의 멤버로 필요하면 클래스의 첫 번째 데이터 문자(곡절 부호(^)로 시작하는 경우) 뒤에 있거나 백 슬래시로 이스케이프되어야 한다. 캐릭터 클래스는 문장의 단일 문자와 일치한다(단어가 아닌 단일 문자 단위로 일치한다). 캐릭터 클래스의 첫 번째 문자가 곡절 부호(^)가 아닌 경우 캐릭터 클래스에 정의된 문자 세트가 있으면 일치한다.">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -133,48 +136,48 @@
 곡절 부호(^)가 실제로 클래스의 구성원으로 필요하면 첫 번째 문자가 아닌지 확인하거나 백 슬래시로 <a href="/2017/01/10/php-regex-escape-sequences/">이스케이프</a> 처리해야 한다.</p>
 <p>예를 들어, 캐릭터 클래스 <code>[aeiou]</code>는 소문자 모음과 일치하지만 <code>[^aeiou]</code>는 소문자 모음이 아닌 문자와 일치한다. 곡절 부호는 <a href="/2017/01/15/php-regex-alternation/">어설션</a>이 아니며 클래스에 있는 문자를 열거하여 지정하는 편리한 표기법이다. 목표 문자열에서 문자를 찾아내며, 현재 위치가 문자열의 끝이면 실패한다.</p>
 <p>대소문자를 구분하지 않으면(caseless) 클래스의 문자는 모든 대문자와 소문자를 나타낸다. 예를 들어 대소문자를 구분하지 않는 <code>[aeiou]</code>는 &quot;A&quot;와 &quot;a&quot;에 일치되나, 대소문자를 구분하지 않는 <code>[^aeiou]</code>는 구분하는 경우에 일치하는 &quot;A&quot;에는 일치하지 않는다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = <span class="hljs-string">'a'</span>;
-<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[aeiou]/'</span>, <span class="hljs-variable">$str</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$str = <span class="hljs-string">'a'</span>;
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[aeiou]/'</span>, $str)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">//matched</span>
 
-<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[^aeiou]/'</span>, <span class="hljs-variable">$str</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[^aeiou]/'</span>, $str)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">//not matched</span>
 
-<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[aeiou]/i'</span>, <span class="hljs-variable">$str</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[aeiou]/i'</span>, $str)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">//matched</span>
 
-<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[^aeiou]/i'</span>, <span class="hljs-variable">$str</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[^aeiou]/i'</span>, $str)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">//not matched</span>
 
-<span class="hljs-variable">$str</span> = <span class="hljs-string">'A'</span>;
-<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[aeiou]/'</span>, <span class="hljs-variable">$str</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+$str = <span class="hljs-string">'A'</span>;
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[aeiou]/'</span>, $str)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">//not matched</span>
 
-<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[^aeiou]/'</span>, <span class="hljs-variable">$str</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[^aeiou]/'</span>, $str)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">//matched</span>
 
-<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[aeiou]/i'</span>, <span class="hljs-variable">$str</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[aeiou]/i'</span>, $str)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">//matched</span>
 
-<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[^aeiou]/i'</span>, <span class="hljs-variable">$str</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[^aeiou]/i'</span>, $str)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">//not matched</span></pre>
 <p>개행 문자는 <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_DOTALL</a> 또는 <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_MULTILINE</a> 옵션의 설정에 관계없이 캐릭터 클래스에서 특별한 방법으로 처리되지 않는다. <code>[^a]</code>와 같은 캐릭터 클래스는 항상 개행 문자와 일치한다.</p>
 <p>하이픈(<code>-</code>) 문자를 사용하여 캐릭터 클래스의 문자 범위를 지정할 수 있다. 예를 들어, <code>[d-m]</code>은 d와 m 사이의 모든 문자를 찾는다. 클래스에서 하이픈 문자가 필요하면 백 슬래시로 <a href="/2017/01/10/php-regex-escape-sequences/">이스케이프</a>하거나 범위를 나타내는 것으로 해석할 수 없는 위치(일반적으로 클래스의 시작 또는 마지막 문자)에 표시해야 한다.</p>
 <p>리터럴 문자 &quot;<code>]</code>&quot;는 범위의 끝 문자로 사용할 수 없다. <code>[W-]46]</code>과 같은 패턴은 두 문자 (&quot;<code>W</code>&quot; 및 &quot;<code>-</code>&quot;)의 리터럴 문자열 &quot;<code>46]</code>&quot;로 해석되므로 &quot;W46]&quot;또는 &quot;-46&quot;과 일치한다. 그러나 &quot;<code>]</code>&quot;이 역 슬래시로 <a href="/2017/01/10/php-regex-escape-sequences/">이스케이프</a>되면 범위 끝으로 해석되므로 <code>[W-\]46]</code>은 두 개의 개별 문자가 뒤에 오는 범위를 포함하는 단일 클래스로 해석된다. &quot;<code>]</code>&quot;의 8진수 또는 16진수 표현을 사용하여 범위를 끝낼 수도 있다.</p>
 <p>범위는 <a href="http://www.asciitable.com/">ASCII</a> 조합 순서로 정해진다. <code>[\000-\037]</code>와 같이 숫자로 지정된 문자를 사용할 수도 있다. 대소문자를 구분하지 않는(caseless) 일치가 설정 되었을 때는 범위 안의 문자들도 대소문자 구별없이 일치한다. 예를 들어 대소문자를 구분하지 않는 경우 <code>[Wc]</code>는 <code>[][\^_`wxyzabc]</code>와 동일하며 &quot;fr&quot; locale 문자표를 사용하는 경우 <code>[\xc8-\xcb]</code>는 악센트 부호가 있는 E 문자와 일치한다. 두 경우 모두.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = <span class="hljs-string">'[][^_`xyzabc]'</span>;
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$str = <span class="hljs-string">'[][^_`xyzabc]'</span>;
 
-preg_match(<span class="hljs-string">'/[W-c]*/i'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+preg_match(<span class="hljs-string">'/[W-c]*/i'</span>, $str, $matches);
+print_r($matches);
 <span class="hljs-comment">// Array</span>
 <span class="hljs-comment">// (</span>
 <span class="hljs-comment">//     [0] =&gt; [][^_`xyzabc]</span>
 <span class="hljs-comment">// )</span>
 
-preg_match(<span class="hljs-string">'/[\[\]\^_`xyzabc]*/i'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+preg_match(<span class="hljs-string">'/[\[\]\^_`xyzabc]*/i'</span>, $str, $matches);
+print_r($matches);
 <span class="hljs-comment">// Array</span>
 <span class="hljs-comment">// (</span>
 <span class="hljs-comment">//     [0] =&gt; [][^_`xyzabc]</span>
@@ -277,7 +280,7 @@ print_r(<span class="hljs-variable">$matches</span>);
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -368,7 +371,7 @@ print_r(<span class="hljs-variable">$matches</span>);
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -383,12 +386,17 @@ print_r(<span class="hljs-variable">$matches</span>);
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -418,7 +426,16 @@ print_r(<span class="hljs-variable">$matches</span>);
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -562,7 +579,8 @@ print_r(<span class="hljs-variable">$matches</span>);
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

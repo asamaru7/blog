@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>preg_replace()의 치환 문자열에서 이름이 지정된 서브 패턴의 역 참조 사용하기 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="preg_replace()는 이름이 지정된 서브 패턴에 대한 역 참조(named backreferences)를 지원하지 않는다. 일단 일반적인 역 참조를 사용하는 방법에 대한 예시를 보자. &lt;?php $string = &#039;user/foo&#039;; echo preg_replace(&#039;/^user\\/(?P&lt;id&gt;[^\\/]+)$/&#039;, &#039;user/profile/\\1&#039;, $string); // user/profile/foo 위의 예시에서 치환 문자열의 \\1 대신에 패턴에서 지정된 이름(&quot;id&quot;)을 사용하고자 한다고 가정하자. &lt;?php $st">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="preg_replace()의 치환 문자열에서 이름이 지정된 서브 패턴의 역 참조 사용하기">
 	<meta property="og:description" content="preg_replace()는 이름이 지정된 서브 패턴에 대한 역 참조(named backreferences)를 지원하지 않는다. 일단 일반적인 역 참조를 사용하는 방법에 대한 예시를 보자. &lt;?php $string = &#039;user/foo&#039;; echo preg_replace(&#039;/^user\\/(?P&lt;id&gt;[^\\/]+)$/&#039;, &#039;user/profile/\\1&#039;, $string); // user/profile/foo 위의 예시에서 치환 문자열의 \\1 대신에 패턴에서 지정된 이름(&quot;id&quot;)을 사용하고자 한다고 가정하자. &lt;?php $st">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2017/02/15/named-backreferences-with-preg-replace/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="preg_replace()의 치환 문자열에서 이름이 지정된 서브 패턴의 역 참조 사용하기">
 	<meta name="twitter:description" content="preg_replace()는 이름이 지정된 서브 패턴에 대한 역 참조(named backreferences)를 지원하지 않는다. 일단 일반적인 역 참조를 사용하는 방법에 대한 예시를 보자. &lt;?php $string = &#039;user/foo&#039;; echo preg_replace(&#039;/^user\\/(?P&lt;id&gt;[^\\/]+)$/&#039;, &#039;user/profile/\\1&#039;, $string); // user/profile/foo 위의 예시에서 치환 문자열의 \\1 대신에 패턴에서 지정된 이름(&quot;id&quot;)을 사용하고자 한다고 가정하자. &lt;?php $st">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -128,22 +131,22 @@
 		</div>
 		<div class="markdown-body entry-content"><p><a href="http://php.net/manual/kr/function.preg-replace.php">preg_replace()</a>는 이름이 지정된 <a href="/2017/01/17/php-regex-subpatterns/">서브 패턴</a>에 대한 <a href="/2017/01/19/php-regex-back-references/">역 참조</a>(named backreferences)를 지원하지 않는다.</p>
 <p>일단 일반적인 역 참조를 사용하는 방법에 대한 예시를 보자.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$string</span> = <span class="hljs-string">'user/foo'</span>;
-<span class="hljs-keyword">echo</span> preg_replace(<span class="hljs-string">'/^user\\/(?P&lt;id&gt;[^\\/]+)$/'</span>, <span class="hljs-string">'user/profile/\\1'</span>, <span class="hljs-variable">$string</span>);
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$string = <span class="hljs-string">'user/foo'</span>;
+<span class="hljs-keyword">echo</span> preg_replace(<span class="hljs-string">'/^user\\/(?P&lt;id&gt;[^\\/]+)$/'</span>, <span class="hljs-string">'user/profile/\\1'</span>, $string);
 
 <span class="hljs-comment">// user/profile/foo</span></pre>
 <p>위의 예시에서 치환 문자열의 <code>\\1</code> 대신에 패턴에서 지정된 이름(&quot;id&quot;)을 사용하고자 한다고 가정하자.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$string</span> = <span class="hljs-string">'user/foo'</span>;
-<span class="hljs-keyword">echo</span> preg_replace(<span class="hljs-string">'/^user\\/(?P&lt;id&gt;[^\\/]+)$/'</span>, <span class="hljs-string">'user/profile/\\id'</span>, <span class="hljs-variable">$string</span>);
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$string = <span class="hljs-string">'user/foo'</span>;
+<span class="hljs-keyword">echo</span> preg_replace(<span class="hljs-string">'/^user\\/(?P&lt;id&gt;[^\\/]+)$/'</span>, <span class="hljs-string">'user/profile/\\id'</span>, $string);
 
 user/profile/\id</pre>
 <p>결과에서 보듯이 역 참조는 패턴에서 지정된 이름으로는 사용할 수 없다. 이런 경우라면 아래와 같이 <a href="http://php.net/manual/kr/function.preg-replace-callback.php">preg_replace_callback()</a>을 사용해야 한다.</p>
-<pre class="hljs php"><span class="hljs-variable">$string</span> = <span class="hljs-string">'user/foo'</span>;
-<span class="hljs-keyword">echo</span> preg_replace_callback(<span class="hljs-string">'/^user\\/(?P&lt;id&gt;[^\\/]+)$/'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(<span class="hljs-variable">$matches</span>)</span> </span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">'user/profile/'</span> . <span class="hljs-variable">$matches</span>[<span class="hljs-string">'id'</span>];
-    }, <span class="hljs-variable">$string</span>) . <span class="hljs-string">"\n"</span>;
+<pre class="hljs php">$string = <span class="hljs-string">'user/foo'</span>;
+<span class="hljs-keyword">echo</span> preg_replace_callback(<span class="hljs-string">'/^user\\/(?P&lt;id&gt;[^\\/]+)$/'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">($matches)</span> </span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-string">'user/profile/'</span> . $matches[<span class="hljs-string">'id'</span>];
+    }, $string) . <span class="hljs-string">"\n"</span>;
 
 <span class="hljs-comment">// user/profile/foo</span></pre>
 <p>위 예시를 봤을 때는 &quot;굳이 복잡하게 서브 패턴에 이름을 지정해서 사용해야 하는가?&quot; 하는 의문이 들겠지만 정규식이 복잡해 진다면 명시적으로 이름을 붙여서 사용하는 것이 유지 보수와 코드를 읽는데 도움이 된다.</p>
@@ -155,7 +158,7 @@ user/profile/\id</pre>
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -246,7 +249,7 @@ user/profile/\id</pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -261,12 +264,17 @@ user/profile/\id</pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -296,7 +304,16 @@ user/profile/\id</pre>
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -440,7 +457,8 @@ user/profile/\id</pre>
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

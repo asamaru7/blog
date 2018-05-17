@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text() - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="앞선 포스팅 PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()에서 levenshtein() 함수에 대해 알아보았다. 이번엔 이와 유사한 함수인 similar_text()에 대해 알아보고자 한다. similar_text() 함수 php 메뉴얼의 설명에 따르면 similar_text() 함수는 두 문자열의 유사도를 계산한다고 되어 있다. 두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World&#039;s Best Algorithms by Oliver (ISBN 0-">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()">
 	<meta property="og:description" content="앞선 포스팅 PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()에서 levenshtein() 함수에 대해 알아보았다. 이번엔 이와 유사한 함수인 similar_text()에 대해 알아보고자 한다. similar_text() 함수 php 메뉴얼의 설명에 따르면 similar_text() 함수는 두 문자열의 유사도를 계산한다고 되어 있다. 두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World&#039;s Best Algorithms by Oliver (ISBN 0-">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2015/09/14/calculate-distance-between-two-strings-in-php-similar-text/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="PHP에서 두 문자열의 거리(유사도) 구하기 - similar_text()">
 	<meta name="twitter:description" content="앞선 포스팅 PHP에서 두 문자열의 거리(유사도) 구하기 - levenshtein()에서 levenshtein() 함수에 대해 알아보았다. 이번엔 이와 유사한 함수인 similar_text()에 대해 알아보고자 한다. similar_text() 함수 php 메뉴얼의 설명에 따르면 similar_text() 함수는 두 문자열의 유사도를 계산한다고 되어 있다. 두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World&#039;s Best Algorithms by Oliver (ISBN 0-">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -132,7 +135,7 @@
 <p>두 문자열의 유사도를 이 계산은 Programming Classics: Implementing the World's Best Algorithms by Oliver (ISBN 0-131-00413-1) 에서 설명되어 있다. 이 구현은 pseudo code와 다르게 스택은 아니지만, 재귀 호출이므로 전체 프로세스의 속도에 영향을 줄 수 있다. 이 계산 알고리즘은 시간복잡도 <code>O(N**3)</code>를 가지며 여기서 N은 두 문자열 중 긴 문자열의 길이를 뜻한다.</p>
 <p>문자열의 길이에 따라 성능이 극도로 떨어질 수 있으므로 가급적 짧은 문장의 비교에 사용하는 것이 좋다. 메뉴얼에서 paul은 20000자 이상에서만 성능에 문제가 있었다고는 하나 시간복잡도를 보더라도 긴 문자열은 자제하는게 좋겠다.</p>
 <h3>기본 사용법</h3>
-<pre class="hljs php">int similar_text ( string <span class="hljs-variable">$first</span> , string <span class="hljs-variable">$second</span> [, float &amp;<span class="hljs-variable">$percent</span> ] )</pre>
+<pre class="hljs php">int similar_text ( string $first , string $second [, float &amp;$percent ] )</pre>
 <h3>함수 인자</h3>
 <h4>first</h4>
 <p>첫 번째 문자열</p>
@@ -145,32 +148,32 @@
 <h3>예시</h3>
 <p>이 함수는 몇가지 특성을 가지고 있으므로 메뉴얼에 안내되어 있는 아래의 예시들을 통해 차이를 알고 사용해야 한다.</p>
 <h4>인자의 입력 순서에 따라 결과가 달라진다.</h4>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$var_1</span> = <span class="hljs-string">'PHP IS GREAT'</span>;
-<span class="hljs-variable">$var_2</span> = <span class="hljs-string">'WITH MYSQL'</span>;
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$var_1 = <span class="hljs-string">'PHP IS GREAT'</span>;
+$var_2 = <span class="hljs-string">'WITH MYSQL'</span>;
 
-similar_text(<span class="hljs-variable">$var_1</span>, <span class="hljs-variable">$var_2</span>, <span class="hljs-variable">$percent</span>);
+similar_text($var_1, $var_2, $percent);
 
-<span class="hljs-keyword">echo</span> <span class="hljs-variable">$percent</span>;
+<span class="hljs-keyword">echo</span> $percent;
 <span class="hljs-comment">// 27.272727272727</span>
 
-similar_text(<span class="hljs-variable">$var_2</span>, <span class="hljs-variable">$var_1</span>, <span class="hljs-variable">$percent</span>);
+similar_text($var_2, $var_1, $percent);
 
-<span class="hljs-keyword">echo</span> <span class="hljs-variable">$percent</span>;
+<span class="hljs-keyword">echo</span> $percent;
 <span class="hljs-comment">// 18.181818181818</span></pre>
 <h4>공백은 비교에서 제외된다.(그렇다고 trim이 되거나 문자열 내 공백이 제거되고 비교하는 것은 아니다.)</h4>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-string">" "</span>, <span class="hljs-string">""</span>, <span class="hljs-variable">$sim</span>);
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-string">" "</span>, <span class="hljs-string">""</span>, $sim);
 <span class="hljs-keyword">echo</span> <span class="hljs-string">" -&gt; "</span>;
-<span class="hljs-keyword">echo</span> <span class="hljs-variable">$sim</span>;
+<span class="hljs-keyword">echo</span> $sim;
 <span class="hljs-keyword">echo</span> <span class="hljs-string">"\n"</span>;
-<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-string">"ab c"</span>, <span class="hljs-string">"abc"</span>, <span class="hljs-variable">$sim</span>);
+<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-string">"ab c"</span>, <span class="hljs-string">"abc"</span>, $sim);
 <span class="hljs-keyword">echo</span> <span class="hljs-string">" -&gt; "</span>;
-<span class="hljs-keyword">echo</span> <span class="hljs-variable">$sim</span>;
+<span class="hljs-keyword">echo</span> $sim;
 <span class="hljs-keyword">echo</span> <span class="hljs-string">"\n"</span>;
-<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-string">" abc"</span>, <span class="hljs-string">"abc"</span>, <span class="hljs-variable">$sim</span>);
+<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-string">" abc"</span>, <span class="hljs-string">"abc"</span>, $sim);
 <span class="hljs-keyword">echo</span> <span class="hljs-string">" -&gt; "</span>;
-<span class="hljs-keyword">echo</span> <span class="hljs-variable">$sim</span>;
+<span class="hljs-keyword">echo</span> $sim;
 <span class="hljs-keyword">echo</span> <span class="hljs-string">"\n"</span>;
 
 <span class="hljs-comment">// 결과</span>
@@ -178,13 +181,13 @@ similar_text(<span class="hljs-variable">$var_2</span>, <span class="hljs-variab
 <span class="hljs-comment">// 3 -&gt; 85.714285714286</span>
 <span class="hljs-comment">// 3 -&gt; 85.714285714286</span></pre>
 <h4>대소문자를 구분한다.</h4>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$var1</span> = <span class="hljs-string">'Hello'</span>;
-<span class="hljs-variable">$var2</span> = <span class="hljs-string">'Hello'</span>;
-<span class="hljs-variable">$var3</span> = <span class="hljs-string">'hello'</span>;
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$var1 = <span class="hljs-string">'Hello'</span>;
+$var2 = <span class="hljs-string">'Hello'</span>;
+$var3 = <span class="hljs-string">'hello'</span>;
 
-<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-variable">$var1</span>, <span class="hljs-variable">$var2</span>);  <span class="hljs-comment">// 5</span>
-<span class="hljs-keyword">echo</span> similar_text(<span class="hljs-variable">$var1</span>, <span class="hljs-variable">$var3</span>);  <span class="hljs-comment">// 4</span></pre>
+<span class="hljs-keyword">echo</span> similar_text($var1, $var2);  <span class="hljs-comment">// 5</span>
+<span class="hljs-keyword">echo</span> similar_text($var1, $var3);  <span class="hljs-comment">// 4</span></pre>
 <h3>유사함수</h3>
 <p>비슷한 역할을 하는 함수에 대해 알고 싶다면 아래의 포스팅을 참고하자.</p>
 <ul>
@@ -193,7 +196,7 @@ similar_text(<span class="hljs-variable">$var_2</span>, <span class="hljs-variab
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -284,7 +287,7 @@ similar_text(<span class="hljs-variable">$var_2</span>, <span class="hljs-variab
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -299,12 +302,17 @@ similar_text(<span class="hljs-variable">$var_2</span>, <span class="hljs-variab
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -334,7 +342,16 @@ similar_text(<span class="hljs-variable">$var_2</span>, <span class="hljs-variab
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -478,7 +495,8 @@ similar_text(<span class="hljs-variable">$var_2</span>, <span class="hljs-variab
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

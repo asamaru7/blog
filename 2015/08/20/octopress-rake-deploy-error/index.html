@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>옥토프레스 rake deploy에서 오류가 날 경우 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="옥토프레스를 설치하고 테스트 포스팅을 한 후 본격적으로 세팅을 하려고 시작했다. 도메인도 세팅하고 구글 어날리틱스, disqus 등도 연결을 하고자 _config.xml 파일을 수정하고 몇가지 글도 포스팅하려고 저장 후 generate 했다. 이제 배포를 하려고 rake deploy를 하니 아래와 같은 오류가 나타났다. To https://github.com/asamaru7/blog.git ! [rejected] gh-pages -&gt; gh-pages (non-fast-forward) error: failed to push some ">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="옥토프레스 rake deploy에서 오류가 날 경우">
 	<meta property="og:description" content="옥토프레스를 설치하고 테스트 포스팅을 한 후 본격적으로 세팅을 하려고 시작했다. 도메인도 세팅하고 구글 어날리틱스, disqus 등도 연결을 하고자 _config.xml 파일을 수정하고 몇가지 글도 포스팅하려고 저장 후 generate 했다. 이제 배포를 하려고 rake deploy를 하니 아래와 같은 오류가 나타났다. To https://github.com/asamaru7/blog.git ! [rejected] gh-pages -&gt; gh-pages (non-fast-forward) error: failed to push some ">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2015/08/20/octopress-rake-deploy-error/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="옥토프레스 rake deploy에서 오류가 날 경우">
 	<meta name="twitter:description" content="옥토프레스를 설치하고 테스트 포스팅을 한 후 본격적으로 세팅을 하려고 시작했다. 도메인도 세팅하고 구글 어날리틱스, disqus 등도 연결을 하고자 _config.xml 파일을 수정하고 몇가지 글도 포스팅하려고 저장 후 generate 했다. 이제 배포를 하려고 rake deploy를 하니 아래와 같은 오류가 나타났다. To https://github.com/asamaru7/blog.git ! [rejected] gh-pages -&gt; gh-pages (non-fast-forward) error: failed to push some ">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -144,39 +147,39 @@ multitask <span class="hljs-symbol">:push</span> <span class="hljs-keyword">do</
   puts <span class="hljs-string">"## Deploying branch to Github Pages "</span>
   puts <span class="hljs-string">"## Pulling any updates from Github Pages "</span>
   cd <span class="hljs-string">"<span class="hljs-subst">#{deploy_dir}</span>"</span> <span class="hljs-keyword">do</span>
-    <span class="hljs-constant">Bundler</span>.with_clean_env { system <span class="hljs-string">"git pull"</span> }
+    Bundler.with_clean_env { system <span class="hljs-string">"git pull"</span> }
   <span class="hljs-keyword">end</span>
-  (<span class="hljs-constant">Dir</span>[<span class="hljs-string">"<span class="hljs-subst">#{deploy_dir}</span>/*"</span>]).each { |f| rm_rf(f) }
-  <span class="hljs-constant">Rake::Task</span>[<span class="hljs-symbol">:copydot</span>].invoke(public_dir, deploy_dir)
+  (Dir[<span class="hljs-string">"<span class="hljs-subst">#{deploy_dir}</span>/*"</span>]).each { <span class="hljs-params">|f|</span> rm_rf(f) }
+  Rake::Task[<span class="hljs-symbol">:copydot</span>].invoke(public_dir, deploy_dir)
   puts <span class="hljs-string">"\n## Copying <span class="hljs-subst">#{public_dir}</span> to <span class="hljs-subst">#{deploy_dir}</span>"</span>
   cp_r <span class="hljs-string">"<span class="hljs-subst">#{public_dir}</span>/."</span>, deploy_dir
   cd <span class="hljs-string">"<span class="hljs-subst">#{deploy_dir}</span>"</span> <span class="hljs-keyword">do</span>
     system <span class="hljs-string">"git add -A"</span>
-    message = <span class="hljs-string">"Site updated at <span class="hljs-subst">#{<span class="hljs-constant">Time</span>.now.utc}</span>"</span>
+    message = <span class="hljs-string">"Site updated at <span class="hljs-subst">#{Time.now.utc}</span>"</span>
     puts <span class="hljs-string">"\n## Committing: <span class="hljs-subst">#{message}</span>"</span>
     system <span class="hljs-string">"git commit -m \"<span class="hljs-subst">#{message}</span>\""</span>
     puts <span class="hljs-string">"\n## Pushing generated <span class="hljs-subst">#{deploy_dir}</span> website"</span>
-    <span class="hljs-constant">Bundler</span>.with_clean_env { system <span class="hljs-string">"git push origin <span class="hljs-subst">#{deploy_branch}</span>"</span> }
+    Bundler.with_clean_env { system <span class="hljs-string">"git push origin <span class="hljs-subst">#{deploy_branch}</span>"</span> }
     puts <span class="hljs-string">"\n## Github Pages deploy complete"</span>
   <span class="hljs-keyword">end</span>
 <span class="hljs-keyword">end</span></pre>
 <p>여기서 고칠 부분은 <code>Bundler.with_clean_env { system "git push origin #{deploy_branch}" }</code> 이 부분이다.
 <code>#{deploy_branch}"</code> 앞에 +를 붙여준다.</p>
-<pre class="hljs ruby"><span class="hljs-constant">Bundler</span>.with_clean_env { system <span class="hljs-string">"git push origin <span class="hljs-subst">#{deploy_branch}</span>"</span> }</pre>
+<pre class="hljs ruby">Bundler.with_clean_env { system <span class="hljs-string">"git push origin <span class="hljs-subst">#{deploy_branch}</span>"</span> }</pre>
 <p>이제 저장후 나와서 다시 deploy...</p>
 <pre class="hljs bash"><span class="hljs-comment">## Pushing generated _deploy website</span>
-Counting objects: <span class="hljs-number">36</span>, done.
-Delta compression using up to <span class="hljs-number">4</span> threads.
-Compressing objects: <span class="hljs-number">100</span>% (<span class="hljs-number">27</span>/<span class="hljs-number">27</span>), done.
-Writing objects: <span class="hljs-number">100</span>% (<span class="hljs-number">36</span>/<span class="hljs-number">36</span>), <span class="hljs-number">12.90</span> KiB | <span class="hljs-number">0</span> bytes/s, done.
-Total <span class="hljs-number">36</span> (delta <span class="hljs-number">14</span>), reused <span class="hljs-number">0</span> (delta <span class="hljs-number">0</span>)
+Counting objects: 36, <span class="hljs-keyword">done</span>.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (27/27), <span class="hljs-keyword">done</span>.
+Writing objects: 100% (36/36), 12.90 KiB | 0 bytes/s, <span class="hljs-keyword">done</span>.
+Total 36 (delta 14), reused 0 (delta 0)
 To https://github.com/asamaru7/blog.git
- + <span class="hljs-number">9295247</span>...d6c0b14 gh-pages -&gt; gh-pages (forced update)</pre>
+ + 9295247...d6c0b14 gh-pages -&gt; gh-pages (forced update)</pre>
 <p>이번엔 gh-pages (forced update) 안내를 보여주며 push 성공.</p>
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -267,7 +270,7 @@ To https://github.com/asamaru7/blog.git
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -282,12 +285,17 @@ To https://github.com/asamaru7/blog.git
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -317,7 +325,16 @@ To https://github.com/asamaru7/blog.git
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -461,7 +478,8 @@ To https://github.com/asamaru7/blog.git
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

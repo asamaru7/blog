@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>SSH 비밀번호 입력없이 로그인하기 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="ssh 사용시 매번 비밀번호를 입력하는 것은 귀찮은 일이다. 그럼에도 불구하고 ssh의 기본 기능에 비밀번호를 미리 입력하는 기능을 제공하지 않는 것은 보안 상의 이유 때문일 것이다. 하지만 비밀번호를 입력하는 귀찮음을 해소하는 것 외에도 스케쥴링 처리 스크립트 등에서 사용자의 비밀번호 입력없이 ssh 접속을 해야할 경우가 있다. 이런 경우에 대비해서 ssh에서는 클라이언트의 공개키를 원격 서버에 미리 등록 시켜두는 방식으로 비밀번호 없이 접속할 수 있는 방법을 제공한다. 사실 이 방법이 보안 상으로도 안전한 편이고 등록하는 과정도">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="SSH 비밀번호 입력없이 로그인하기">
 	<meta property="og:description" content="ssh 사용시 매번 비밀번호를 입력하는 것은 귀찮은 일이다. 그럼에도 불구하고 ssh의 기본 기능에 비밀번호를 미리 입력하는 기능을 제공하지 않는 것은 보안 상의 이유 때문일 것이다. 하지만 비밀번호를 입력하는 귀찮음을 해소하는 것 외에도 스케쥴링 처리 스크립트 등에서 사용자의 비밀번호 입력없이 ssh 접속을 해야할 경우가 있다. 이런 경우에 대비해서 ssh에서는 클라이언트의 공개키를 원격 서버에 미리 등록 시켜두는 방식으로 비밀번호 없이 접속할 수 있는 방법을 제공한다. 사실 이 방법이 보안 상으로도 안전한 편이고 등록하는 과정도">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2016/01/26/ssh-login-without-password/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="SSH 비밀번호 입력없이 로그인하기">
 	<meta name="twitter:description" content="ssh 사용시 매번 비밀번호를 입력하는 것은 귀찮은 일이다. 그럼에도 불구하고 ssh의 기본 기능에 비밀번호를 미리 입력하는 기능을 제공하지 않는 것은 보안 상의 이유 때문일 것이다. 하지만 비밀번호를 입력하는 귀찮음을 해소하는 것 외에도 스케쥴링 처리 스크립트 등에서 사용자의 비밀번호 입력없이 ssh 접속을 해야할 경우가 있다. 이런 경우에 대비해서 ssh에서는 클라이언트의 공개키를 원격 서버에 미리 등록 시켜두는 방식으로 비밀번호 없이 접속할 수 있는 방법을 제공한다. 사실 이 방법이 보안 상으로도 안전한 편이고 등록하는 과정도">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -141,8 +144,8 @@
 <pre class="hljs bash">ssh-copy-id -i ~/.ssh/id_rsa.pub [user]@[host]</pre>
 <p>여기까지 완료 했다면 비밀번호 없이 ssh 접속이 가능해야 한다.
 그런데 간혹 작업을 완료했음에도 불구하고 계속 비밀번호를 물어보는 경우가 있다. 그런 경우는 대부분 원격 서버의 <code>authorized_keys</code> 파일 퍼미션 문제다. 원격 서버에서 퍼미션을 아래와 같은지 확인하고 맞지 않다면 변경해 준다. 대부분의 경우는 접속 문제가 해결된다.</p>
-<pre class="hljs bash">chmod <span class="hljs-number">700</span> ~/.ssh/
-chmod <span class="hljs-number">600</span> ~/.ssh/authorized_keys</pre>
+<pre class="hljs bash">chmod 700 ~/.ssh/
+chmod 600 ~/.ssh/authorized_keys</pre>
 <h3>2. <a href="http://sourceforge.net/projects/sshpass/">sshpass</a>를 사용하는 방식</h3>
 <p><a href="http://sourceforge.net/projects/sshpass/">sshpass</a>는 ssh와는 직접적인 관련이 없는 프로그램으로 별도 설치가 필요하다. 설치되어 있지 않다면 아래와 같이 설치한다.</p>
 <pre class="hljs bash">yum --enablerepo=epel -y install sshpass</pre>
@@ -157,8 +160,8 @@ sshpass -p[password] scp -o StrictHostKeyChecking=no test.txt [user]@[host]:~/te
 <p><a href="http://sourceforge.net/projects/sshpass/">sshpass</a>를 사용하면 이 방식은 크게 의미가 없다. 하지만 sshpass를 사용할 수 없는 상황이다. expect를 활용해서 다른 곳에 응용할 수 있으니 참고 차원에서 ssh 자동 로그인 스크립트를 남긴다.</p>
 <p><strong>sshlogin</strong> 파일로 아래의 내용을 저장하고 실행 권한을 준다.</p>
 <pre class="hljs bash"><span class="hljs-comment">#! /usr/bin/expect</span>
-<span class="hljs-built_in">set</span> idNhost [lrange <span class="hljs-variable">$argv</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>]
-<span class="hljs-built_in">set</span> password [lindex <span class="hljs-variable">$argv</span> <span class="hljs-number">1</span>]
+<span class="hljs-built_in">set</span> idNhost [lrange <span class="hljs-variable">$argv</span> 0 0]
+<span class="hljs-built_in">set</span> password [lindex <span class="hljs-variable">$argv</span> 1]
 spawn ssh <span class="hljs-variable">$idNhost</span>
 expect -re <span class="hljs-string">"password: "</span>
 send <span class="hljs-string">"<span class="hljs-variable">$password</span>\r"</span>
@@ -168,7 +171,7 @@ interact</pre>
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -259,7 +262,7 @@ interact</pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -274,12 +277,17 @@ interact</pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -309,7 +317,16 @@ interact</pre>
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -453,7 +470,8 @@ interact</pre>
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>tar를 이용한 증분 백업 / 복원 + atime-preserve - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="서버를 운영하면서 가장 중요한 부분을 꼽으라면 백업을 꼽을 것이다. 안정적인 서버의 운영도 중요한 문제지만 소중한 데이터를 보호하는 것은 더 중요한 문제이다. 백업의 방법은 다양하다. RAID를 이용한 백업, sync를 통한 원격 백업, 파일을 압축해서 보관하는 백업, 백업 장비를 이용한 백업 등 많은 종류의 방법이 존재한다. 하지만 나는 백업의 방법 보다 백업 정책이 더 중요하다고 생각한다. 그중에서도 가장 중요한 원칙은 백업본은 원본 데이터와 함께 두지 않는다는 것이다. 다시말해 백업본은 원격지로 보내서 보관하여 원본 데이터가 ">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="tar를 이용한 증분 백업 / 복원 + atime-preserve">
 	<meta property="og:description" content="서버를 운영하면서 가장 중요한 부분을 꼽으라면 백업을 꼽을 것이다. 안정적인 서버의 운영도 중요한 문제지만 소중한 데이터를 보호하는 것은 더 중요한 문제이다. 백업의 방법은 다양하다. RAID를 이용한 백업, sync를 통한 원격 백업, 파일을 압축해서 보관하는 백업, 백업 장비를 이용한 백업 등 많은 종류의 방법이 존재한다. 하지만 나는 백업의 방법 보다 백업 정책이 더 중요하다고 생각한다. 그중에서도 가장 중요한 원칙은 백업본은 원본 데이터와 함께 두지 않는다는 것이다. 다시말해 백업본은 원격지로 보내서 보관하여 원본 데이터가 ">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2015/12/24/using-tar-for-differential-backup-with-atime-preserve/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="tar를 이용한 증분 백업 / 복원 + atime-preserve">
 	<meta name="twitter:description" content="서버를 운영하면서 가장 중요한 부분을 꼽으라면 백업을 꼽을 것이다. 안정적인 서버의 운영도 중요한 문제지만 소중한 데이터를 보호하는 것은 더 중요한 문제이다. 백업의 방법은 다양하다. RAID를 이용한 백업, sync를 통한 원격 백업, 파일을 압축해서 보관하는 백업, 백업 장비를 이용한 백업 등 많은 종류의 방법이 존재한다. 하지만 나는 백업의 방법 보다 백업 정책이 더 중요하다고 생각한다. 그중에서도 가장 중요한 원칙은 백업본은 원본 데이터와 함께 두지 않는다는 것이다. 다시말해 백업본은 원격지로 보내서 보관하여 원본 데이터가 ">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -146,51 +149,51 @@
 <pre class="hljs bash">tar -g backup.snap -zcf backup.tgz /backup/target/</pre>
 <p>위처럼 실행을 하면 <code>/backup/target/</code> 폴더를 <code>backup.tgz</code>로 압축해준다. 그런데 일반 압축과의 차이는 <code>backup.snap</code>라는 파일이 하나 더 생긴다는 것이다. 이 파일은 압축한 파일들의 정보로 이후 증분 백업시 데이터로 사용되므로 보관해야 한다.</p>
 <p>방금했던 압축은 증분이 아닌 full 백업이다. <code>-g</code> 옵션으로 넘겨주는 데이터가 없다면 이전 백업을 확인할 수 없으므로 full 백업을 한다. 자.. 이제 다시 아래의 스크립트를 보자.</p>
-<pre class="hljs bash">cp backup.snap backup-<span class="hljs-number">1</span>.snap
-tar -g backup-<span class="hljs-number">1</span>.snap -zcf backup-<span class="hljs-number">1</span>.tgz /backup/target/</pre>
+<pre class="hljs bash">cp backup.snap backup-1.snap
+tar -g backup-1.snap -zcf backup-1.tgz /backup/target/</pre>
 <p>이번에도 최초의 full 백업과 별반 다르지 않다. 다만, snapshot 파일을 복사해서 사용했다는 차이만 있다. <code>-g</code> 옵션을 사용하면 백업시 참조만 하는 것이 아니라 이번 백업의 정보를 보관하므로 내용을 덮어쓰지 않도록 복사해서 사용한 것이다. 위 과정을 통해 압축한 결과 파일들을 보면 <code>backup.tgz</code>는 용량이 커도 <code>backup-1.tgz</code>는 용량이 적을 것이다(대상 폴더에 파일이 거의 없었다면 별반 차이가 나지 않을 수 있다). <code>backup-1.tgz</code>는 증분 백업된 파일이기 때문이다.</p>
 <p>마지막으로 이 상태에서 다시 증분 백업하는 것을 한번만 더 보자.</p>
-<pre class="hljs bash">cp backup-<span class="hljs-number">1</span>.snap backup-<span class="hljs-number">2</span>.snap
-tar -g backup-<span class="hljs-number">2</span>.snap -zcf backup-<span class="hljs-number">2</span>.tgz /backup/target/</pre>
+<pre class="hljs bash">cp backup-1.snap backup-2.snap
+tar -g backup-2.snap -zcf backup-2.tgz /backup/target/</pre>
 <p>굳이 설명하지 않아도 보면 이해가 될 것이다. 그럼에도 한번 더 적는 이유는 <code>cp backup.snap backup-2.snap</code> 처럼 최초 snapshot에서 시작해야 하는지 마지막 snapshot에서 시작해야 하는지 헛갈릴 수 있기 때문이다. 사실 이 부분은 증분 백업 방식에 따라 차이가 나는 부분인데 뒤에 자세히 설명할 것이므로 일단은 그렇다고 생각하자.</p>
 <p>이로써 증분 백업에 대한 기본적인 설명이 끝났다. 생각보다 아주 간단하다. 하지만 이해를 돕기 위해 아래에 예시를 하나 첨부한다.</p>
 <p>우선 백업 과정이다. 이후의 예시들은 명령 중간 중간에 <code>ls -al</code> 등으로 <code>test</code> 폴더의 상태를 확인해 가면서 진행하면 이해가 더 쉬울 것이다.</p>
 <pre class="hljs bash">mkdir <span class="hljs-built_in">test</span>
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"1"</span> &gt; <span class="hljs-built_in">test</span>/<span class="hljs-number">1</span>.txt
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"2"</span> &gt; <span class="hljs-built_in">test</span>/<span class="hljs-number">2</span>.txt
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"1"</span> &gt; <span class="hljs-built_in">test</span>/1.txt
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"2"</span> &gt; <span class="hljs-built_in">test</span>/2.txt
 
 tar -g backup.snap -zcf backup.tgz ./<span class="hljs-built_in">test</span>/
 
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"3"</span> &gt; <span class="hljs-built_in">test</span>/<span class="hljs-number">3</span>.txt
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"4"</span> &gt; <span class="hljs-built_in">test</span>/<span class="hljs-number">4</span>.txt
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"3"</span> &gt; <span class="hljs-built_in">test</span>/3.txt
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"4"</span> &gt; <span class="hljs-built_in">test</span>/4.txt
 
-cp backup.snap backup-<span class="hljs-number">1</span>.snap
-tar -g backup-<span class="hljs-number">1</span>.snap -zcf backup-<span class="hljs-number">1</span>.tgz ./<span class="hljs-built_in">test</span>/
+cp backup.snap backup-1.snap
+tar -g backup-1.snap -zcf backup-1.tgz ./<span class="hljs-built_in">test</span>/
 
-rm <span class="hljs-operator">-f</span> <span class="hljs-built_in">test</span>/<span class="hljs-number">4</span>.txt
+rm -f <span class="hljs-built_in">test</span>/4.txt
 
-cp backup-<span class="hljs-number">1</span>.snap backup-<span class="hljs-number">2</span>.snap
-tar -g backup-<span class="hljs-number">2</span>.snap -zcf backup-<span class="hljs-number">2</span>.tgz ./<span class="hljs-built_in">test</span>/
+cp backup-1.snap backup-2.snap
+tar -g backup-2.snap -zcf backup-2.tgz ./<span class="hljs-built_in">test</span>/
 
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"5"</span> &gt; <span class="hljs-built_in">test</span>/<span class="hljs-number">5</span>.txt
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"6"</span> &gt; <span class="hljs-built_in">test</span>/<span class="hljs-number">6</span>.txt
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"5"</span> &gt; <span class="hljs-built_in">test</span>/5.txt
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"6"</span> &gt; <span class="hljs-built_in">test</span>/6.txt
 
-cp backup-<span class="hljs-number">2</span>.snap backup-<span class="hljs-number">3</span>.snap
-tar -g backup-<span class="hljs-number">3</span>.snap -zcf backup-<span class="hljs-number">3</span>.tgz ./<span class="hljs-built_in">test</span>/</pre>
+cp backup-2.snap backup-3.snap
+tar -g backup-3.snap -zcf backup-3.tgz ./<span class="hljs-built_in">test</span>/</pre>
 <p>이번엔 증분 백업된 내용에서 복원하는 과정이다.</p>
 <pre class="hljs bash"><span class="hljs-comment"># 복원 과정을 확인하기 위해 백업한 폴더는 일단 지운다.</span>
 rm -rf <span class="hljs-built_in">test</span>
 
-tar zxvf backup-<span class="hljs-number">0</span>.tgz
+tar zxvf backup-0.tgz
 ls -al ./<span class="hljs-built_in">test</span>/
 
-tar --incremental -zxvf backup-<span class="hljs-number">1</span>.tgz
+tar --incremental -zxvf backup-1.tgz
 ls -al ./<span class="hljs-built_in">test</span>/
 
-tar --incremental -zxvf backup-<span class="hljs-number">2</span>.tgz
+tar --incremental -zxvf backup-2.tgz
 ls -al ./<span class="hljs-built_in">test</span>/
 
-tar --incremental -zxvf backup-<span class="hljs-number">3</span>.tgz
+tar --incremental -zxvf backup-3.tgz
 ls -al ./<span class="hljs-built_in">test</span>/</pre>
 <p>그런데 이상하게 보이는 부분이 있을 수 있다. 압축할 때 사용했던 snapshot 파일을 복원시에는 사용하지 않는다는 것이다. 대신에 <code>--incremental</code>를 사용하고 있다. 이게 가능한 이유는 tgz 파일이 이미 자신에게 필요한 정보를 모두 가지고 있기 때문이다. 단, 정상적인 복원를 위해서는 백업한 순서대로 복원해야 한다. 그리고 <code>--incremental</code> 대신 <code>--listed-incremental=/dev/null</code>를 사용해도 무방하다. 그리고 이 부분에 대해서는 유의할 점이 한가지 있다. 다른 대부분의 설명글에 보면 snapshot 파일을 복원시에 사용한다. 그럼에도 불구하고 내가 이렇게 설명하는 것은 <a href="https://www.gnu.org/software/tar/manual/html_section/tar_70.html">메뉴얼</a>에 동일하게 나와있으며 위 실험 결과를 보면 알 수 있듯이 정상 동작하기 때문이다. 하지만 tar의 버전에 따른 차이일 수도 있으니 유의하자.</p>
 <p>자.. 다시 백업 과정을 한번 생각해보자. 복원시에 snapshot 파일이 필요하지 않다면 굳이 백업시마다 snapshot 파일을 복사하거나 하지 않고 계속 같은 파일을 덮어쓰도록 하면 안될까? 결론부터 이야기 하자면 당연히 가능하다. 그럼 굳이 복사를 했던 이유는 뭘까? 이 부분은 증분 백업의 방법 중 level을 증가시키면서 백업하는 방법을 보여주기 위해서였다. 따라서 이 방법에서는 <code>backup.snap</code> 파일을 다음 백업에서도 사용해도 된다. 데이터를 덮어쓰겠지만 어짜피 level을 증가시키면서 백업하는 것이므로 상관없다.</p>
@@ -198,37 +201,37 @@ ls -al ./<span class="hljs-built_in">test</span>/</pre>
 <p>이전 백업 방법과 유사하지만 자세히 보면 다른 백업 과정이다.</p>
 <pre class="hljs bash">rm -rf *
 mkdir <span class="hljs-built_in">test</span>
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"1"</span> &gt; <span class="hljs-built_in">test</span>/<span class="hljs-number">1</span>.txt
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"2"</span> &gt; <span class="hljs-built_in">test</span>/<span class="hljs-number">2</span>.txt
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"1"</span> &gt; <span class="hljs-built_in">test</span>/1.txt
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"2"</span> &gt; <span class="hljs-built_in">test</span>/2.txt
 
-tar -g backup-<span class="hljs-number">0</span>.snap -zcf backup-<span class="hljs-number">0</span>.tgz ./<span class="hljs-built_in">test</span>/
+tar -g backup-0.snap -zcf backup-0.tgz ./<span class="hljs-built_in">test</span>/
 
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"3"</span> &gt; <span class="hljs-built_in">test</span>/<span class="hljs-number">3</span>.txt
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"4"</span> &gt; <span class="hljs-built_in">test</span>/<span class="hljs-number">4</span>.txt
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"3"</span> &gt; <span class="hljs-built_in">test</span>/3.txt
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"4"</span> &gt; <span class="hljs-built_in">test</span>/4.txt
 
-cp backup-<span class="hljs-number">0</span>.snap backup-<span class="hljs-number">1</span>.snap
-tar -g backup-<span class="hljs-number">1</span>.snap -zcf backup-<span class="hljs-number">1</span>.tgz ./<span class="hljs-built_in">test</span>/
-rm <span class="hljs-operator">-f</span> backup-<span class="hljs-number">1</span>.snap
+cp backup-0.snap backup-1.snap
+tar -g backup-1.snap -zcf backup-1.tgz ./<span class="hljs-built_in">test</span>/
+rm -f backup-1.snap
 
-rm <span class="hljs-operator">-f</span> <span class="hljs-built_in">test</span>/<span class="hljs-number">4</span>.txt
+rm -f <span class="hljs-built_in">test</span>/4.txt
 
-cp backup-<span class="hljs-number">0</span>.snap backup-<span class="hljs-number">1</span>.snap
-tar -g backup-<span class="hljs-number">1</span>.snap -zcf backup-<span class="hljs-number">2</span>.tgz ./<span class="hljs-built_in">test</span>/
-rm <span class="hljs-operator">-f</span> backup-<span class="hljs-number">1</span>.snap
+cp backup-0.snap backup-1.snap
+tar -g backup-1.snap -zcf backup-2.tgz ./<span class="hljs-built_in">test</span>/
+rm -f backup-1.snap
 
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"5"</span> &gt; <span class="hljs-built_in">test</span>/<span class="hljs-number">5</span>.txt
-<span class="hljs-built_in">echo</span> <span class="hljs-string">"6"</span> &gt; <span class="hljs-built_in">test</span>/<span class="hljs-number">6</span>.txt
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"5"</span> &gt; <span class="hljs-built_in">test</span>/5.txt
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"6"</span> &gt; <span class="hljs-built_in">test</span>/6.txt
 
-cp backup-<span class="hljs-number">0</span>.snap backup-<span class="hljs-number">1</span>.snap
-tar -g backup-<span class="hljs-number">1</span>.snap -zcf backup-<span class="hljs-number">3</span>.tgz ./<span class="hljs-built_in">test</span>/
-rm <span class="hljs-operator">-f</span> backup-<span class="hljs-number">1</span>.snap</pre>
+cp backup-0.snap backup-1.snap
+tar -g backup-1.snap -zcf backup-3.tgz ./<span class="hljs-built_in">test</span>/
+rm -f backup-1.snap</pre>
 <p>자세히 보면 알겠지만 항상 <code>backup-0.snap</code> 파일을 기준으로 증분 백업을 하고 있다. 자세한 설명은 아래의 복원 과정을 보고 설명하겠다.</p>
 <pre class="hljs bash">rm -rf <span class="hljs-built_in">test</span>
 
-tar zxvf backup-<span class="hljs-number">0</span>.tgz
+tar zxvf backup-0.tgz
 ls -al ./<span class="hljs-built_in">test</span>/
 
-tar --incremental -zxvf backup-<span class="hljs-number">3</span>.tgz
+tar --incremental -zxvf backup-3.tgz
 ls -al ./<span class="hljs-built_in">test</span>/</pre>
 <p>복원 과정이 이전 방법에 비해 대폭 줄었다. 최초 백업본(full 백업)을 복원하고 중간 단계없이 바로 마지막 백업본으로 복원하고 있다. 결과를 보면 알겠지만 정상적으로 복원되었다. 어떻게 이게 가능할까? 앞서 설명했던 것과 같이 이 방법은 증분 백업을 항상 최초 백업본을 기준으로 증분 백업을 했으므로 최초와 마지막 백업본만 있으면 복구가 가능하다.</p>
 <hr />
@@ -240,7 +243,7 @@ ls -al ./<span class="hljs-built_in">test</span>/</pre>
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -331,7 +334,7 @@ ls -al ./<span class="hljs-built_in">test</span>/</pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -346,12 +349,17 @@ ls -al ./<span class="hljs-built_in">test</span>/</pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -381,7 +389,16 @@ ls -al ./<span class="hljs-built_in">test</span>/</pre>
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -525,7 +542,8 @@ ls -al ./<span class="hljs-built_in">test</span>/</pre>
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

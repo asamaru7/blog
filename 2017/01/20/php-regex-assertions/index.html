@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions) - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="Assertions (어설션, 단정) 어설션은 실제로 어떤 문자도 사용하지 않고 현재 일치 지점의 앞/뒤 문자에 대한 테스트이다. \b, \B, \A, \Z, \z, ^ 및 $로 코딩된 간단한 어설션은 앞서 설명했다. 더 복잡한 어서션은 서브 패턴으로 코딩 된다. 이 어설션은 대상 문자열의 현재 위치보다 앞을 검사하는 look-ahead와 뒤를 검사하는 look-behind 두 가지 종류가 있다. 어설션 서브 패턴은 현재 일치하는 위치가 변경되지 않는다는 점을 제외하면 일반적인 방법으로 일치한다. Look-ahead 어설션은 (?=">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)">
 	<meta property="og:description" content="Assertions (어설션, 단정) 어설션은 실제로 어떤 문자도 사용하지 않고 현재 일치 지점의 앞/뒤 문자에 대한 테스트이다. \b, \B, \A, \Z, \z, ^ 및 $로 코딩된 간단한 어설션은 앞서 설명했다. 더 복잡한 어서션은 서브 패턴으로 코딩 된다. 이 어설션은 대상 문자열의 현재 위치보다 앞을 검사하는 look-ahead와 뒤를 검사하는 look-behind 두 가지 종류가 있다. 어설션 서브 패턴은 현재 일치하는 위치가 변경되지 않는다는 점을 제외하면 일반적인 방법으로 일치한다. Look-ahead 어설션은 (?=">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2017/01/20/php-regex-assertions/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="PHP 정규식(PCRE)의 모든 것 - 어설션(Assertions)">
 	<meta name="twitter:description" content="Assertions (어설션, 단정) 어설션은 실제로 어떤 문자도 사용하지 않고 현재 일치 지점의 앞/뒤 문자에 대한 테스트이다. \b, \B, \A, \Z, \z, ^ 및 $로 코딩된 간단한 어설션은 앞서 설명했다. 더 복잡한 어서션은 서브 패턴으로 코딩 된다. 이 어설션은 대상 문자열의 현재 위치보다 앞을 검사하는 look-ahead와 뒤를 검사하는 look-behind 두 가지 종류가 있다. 어설션 서브 패턴은 현재 일치하는 위치가 변경되지 않는다는 점을 제외하면 일반적인 방법으로 일치한다. Look-ahead 어설션은 (?=">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -130,22 +133,22 @@
 <p>어설션은 실제로 어떤 문자도 사용하지 않고 현재 일치 지점의 앞/뒤 문자에 대한 테스트이다. <code>\b</code>, <code>\B</code>, <code>\A</code>, <code>\Z</code>, <code>\z</code>, <code>^</code> 및 <code>$</code>로 코딩된 간단한 어설션은 앞서 설명했다. 더 복잡한 어서션은 서브 패턴으로 코딩 된다. 이 어설션은 대상 문자열의 현재 위치보다 앞을 검사하는 look-ahead와 뒤를 검사하는 look-behind 두 가지 종류가 있다.</p>
 <p>어설션 서브 패턴은 현재 일치하는 위치가 변경되지 않는다는 점을 제외하면 일반적인 방법으로 일치한다.</p>
 <p>Look-ahead 어설션은 <code>(?=</code> 긍정 어설션, <code>(?!</code>은 부정 어설션을 나타낸다. 예를 들어, <code>\w+(?=;)</code>는 단어 뒤에 세미콜론이 있는 단어를 일치하지만 세미콜론은 포함하지 않는다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = <span class="hljs-string">'abc;def'</span>;
-preg_match(<span class="hljs-string">'/\w+(?=;)/'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$str = <span class="hljs-string">'abc;def'</span>;
+preg_match(<span class="hljs-string">'/\w+(?=;)/'</span>, $str, $matches);
+print_r($matches);
 <span class="hljs-comment">// Array</span>
 <span class="hljs-comment">// (</span>
 <span class="hljs-comment">//  [0] =&gt; abc</span>
 <span class="hljs-comment">// )</span></pre>
 <p><code>foo(?!bar)</code>는 &quot;bar&quot;가 뒤에 붙지 않는 &quot;foo&quot;와 일치한다. 기억할 점은 유사한 패턴인 <code>(?!foo)bar</code>는 &quot;foo&quot;로 시작되지 않는 &quot;bar&quot; 항목을 찾지 않는다는 것이다. 다음 3개의 문자가 &quot;bar&quot;일 때 어설션 <code>(?!foo)</code>은 항상 TRUE 이므로 모든 항목을 찾는다. 아래의 예시를 참고하자.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$string</span> = <span class="hljs-string">"fooXbar"</span>;
-<span class="hljs-keyword">echo</span> preg_match(<span class="hljs-string">'/foo(?!bar)/'</span>, <span class="hljs-variable">$string</span>) . <span class="hljs-string">"\n"</span>;
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$string = <span class="hljs-string">"fooXbar"</span>;
+<span class="hljs-keyword">echo</span> preg_match(<span class="hljs-string">'/foo(?!bar)/'</span>, $string) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">// 1</span>
 
-<span class="hljs-variable">$string</span> = <span class="hljs-string">"foobar"</span>;
-<span class="hljs-keyword">echo</span> preg_match(<span class="hljs-string">'/(?!foo)bar/'</span>, <span class="hljs-variable">$string</span>) . <span class="hljs-string">"\n"</span>;
+$string = <span class="hljs-string">"foobar"</span>;
+<span class="hljs-keyword">echo</span> preg_match(<span class="hljs-string">'/(?!foo)bar/'</span>, $string) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">// 1</span></pre>
 <p>원하는 결과를 얻으려면 look-behind 어설션이 필요하다.</p>
 <p>look-behind 어설션은 <code>(?&lt;=</code> 긍정 어설션, <code>(?&lt;!</code>은 부정 어설션을 나타낸다. 예를 들어, <code>(?&lt;!foo)bar</code>는 &quot;foo&quot;가 앞에 붙지 않는 &quot;bar&quot;의 항목을 찾는다. look-behind 어설션은 일치하는 모든 문자열이 고정 길이가 되도록 제한되지만, 여러 가지 <a href="/2017/01/15/php-regex-alternation/">선택</a>이 있는 경우 모든 <a href="/2017/01/15/php-regex-alternation/">선택</a>이 동일한 고정 길이를 가져야 하는 것은 아니다. 따라서 <code>(?&lt;=bullock|donkey)</code>는 허용된다. 그러나 <code>(?&lt;!dogs?|cats?)</code>는 컴파일 타임에 오류가 발생한다.
@@ -153,12 +156,12 @@ print_r(<span class="hljs-variable">$matches</span>);
 <code>(?&lt;=ab(c|de))</code>와 같은 어설션은 허용되지 않는다. 왜냐하면 단일 최상위 분기가 두 개의 다른 길이를 일치시킬 수 있기 때문이다. 그러나 두 개의 최상위 레벨 분기를 사용하도록 <code>(?&lt;=abc|abde)</code>로 다시 작성하면 허용된다.
 look-behind 어설션의 구현은 각 <a href="/2017/01/15/php-regex-alternation/">선택</a>에 따라 현재 위치를 고정폭 만큼 임시로 이동시킨 다음 일치시키려고 시도한다. 현재 위치 앞에 문자가 충분하지 않으면 일치가 실패한 것으로 간주된다. 한 번만 사용할 수 있는 서브 패턴과 관련된 look-behind는 특히 문자열 끝에 매칭하는데 유용 할 수 있다. <a href="/2017/01/21/php-regex-once-​only-subpatterns/">once-only subpatterns</a>에 대한 섹션에 예제가 있다.</p>
 <p>여러 어설션이 연속해서 발생할 수 있다. 예를 들어, <code>(?&lt;=\d{3})(?&lt;!999)foo</code>는 &quot;foo&quot; 앞에 &quot;999&quot;가 아닌 세 자리를 찾는다. 각 어설션은 주제 문자열의 동일한 지점에서 독립적으로 적용된다. 먼저 앞의 세 문자가 모두 숫자임을 확인한 다음 동일한 세 문자가 &quot;999&quot;가 아닌지 확인한다. 이 패턴은 &quot;foo&quot;와 6 문자 앞의 문자는 일치하지 않는다. 첫 번째 문자는 숫자이고 마지막 세 문자는 &quot;999&quot;가 아니다. 예를 들어, &quot;123abcfoo&quot;와 일치하지 않는다(<code>(?&lt;=\d{3}...)(?&lt;!999)foo</code>를 사용하면 일치한다).</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$string</span> = <span class="hljs-string">"123abcfoo"</span>;
-<span class="hljs-keyword">echo</span> preg_match(<span class="hljs-string">'/(?&lt;=\d{3})(?&lt;!999)foo/'</span>, <span class="hljs-variable">$string</span>) . <span class="hljs-string">"\n"</span>;
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$string = <span class="hljs-string">"123abcfoo"</span>;
+<span class="hljs-keyword">echo</span> preg_match(<span class="hljs-string">'/(?&lt;=\d{3})(?&lt;!999)foo/'</span>, $string) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">// 0</span>
 
-<span class="hljs-keyword">echo</span> preg_match(<span class="hljs-string">'/(?&lt;=\d{3}...)(?&lt;!999)foo/'</span>, <span class="hljs-variable">$string</span>) . <span class="hljs-string">"\n"</span>;
+<span class="hljs-keyword">echo</span> preg_match(<span class="hljs-string">'/(?&lt;=\d{3}...)(?&lt;!999)foo/'</span>, $string) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">// 1</span></pre>
 <p>이번에는 첫 번째 어설션은 앞의 여섯개 문자를 살펴보고 첫 번째 세 개가 숫자 임을 확인한 다음 두 번째 어설션은 앞의 세 문자가 &quot;999&quot;가 아님을 확인한다.</p>
 <p>어설션은 임의의 조합으로 중첩 될 수 있다. 예를 들어 <code>(?&lt;=(?&lt;!foo)bar)baz</code>는 앞에 &quot;foo&quot;가 없는 &quot;bar&quot;가 앞에 오는 &quot;baz&quot;의 발생과 일치하지만 <code>(?&lt;=\d{3}...(?&lt;!999))foo</code>는 &quot;foo&quot;앞에 3 자리 숫자와 &quot;999&quot;가 아닌 3 자와 일치하는 다른 패턴이다.</p>
@@ -189,7 +192,7 @@ look-behind 어설션의 구현은 각 <a href="/2017/01/15/php-regex-alternatio
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -280,7 +283,7 @@ look-behind 어설션의 구현은 각 <a href="/2017/01/15/php-regex-alternatio
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -295,12 +298,17 @@ look-behind 어설션의 구현은 각 <a href="/2017/01/15/php-regex-alternatio
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -330,7 +338,16 @@ look-behind 어설션의 구현은 각 <a href="/2017/01/15/php-regex-alternatio
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -474,7 +491,8 @@ look-behind 어설션의 구현은 각 <a href="/2017/01/15/php-regex-alternatio
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

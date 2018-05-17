@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>Vagrant Box Packaging 후 &quot;Warning: Authentication failure. Retrying... &quot; 오류가 발생할 경우 해결 방법 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="vagrant를 사용하면서 직접 box를 만들 경우가 자주 발생하지는 않는다. 하지만 환경 구성을 위해 간혹 작업을 하게되는데 작업 과정에 문제가 생기는 경우가 간혹 있다. 이번에 CentOS 7 환경을 구성하면서 vagrant로 테스트를 진행했었다. 최초 설치 상태로 box를 만들어두고 환경을 구성해보고 문제가 있으면 초기 box로 다시 구성하는 식으로 작업을 했다. 그런데 이번엔 작업을 하면서 이전에 발생하지 않았던 문제가 발생했다. 이전글 Vagrant BASE Box 만들기(CentOS 7)에서 설명했던 것처럼 box 생성 ">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="Vagrant Box Packaging 후 &quot;Warning: Authentication failure. Retrying... &quot; 오류가 발생할 경우 해결 방법">
 	<meta property="og:description" content="vagrant를 사용하면서 직접 box를 만들 경우가 자주 발생하지는 않는다. 하지만 환경 구성을 위해 간혹 작업을 하게되는데 작업 과정에 문제가 생기는 경우가 간혹 있다. 이번에 CentOS 7 환경을 구성하면서 vagrant로 테스트를 진행했었다. 최초 설치 상태로 box를 만들어두고 환경을 구성해보고 문제가 있으면 초기 box로 다시 구성하는 식으로 작업을 했다. 그런데 이번엔 작업을 하면서 이전에 발생하지 않았던 문제가 발생했다. 이전글 Vagrant BASE Box 만들기(CentOS 7)에서 설명했던 것처럼 box 생성 ">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2015/12/03/vagrant-warning-authentication-failure-retrying-dot-dot-dot-after-packaging-box/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="Vagrant Box Packaging 후 &quot;Warning: Authentication failure. Retrying... &quot; 오류가 발생할 경우 해결 방법">
 	<meta name="twitter:description" content="vagrant를 사용하면서 직접 box를 만들 경우가 자주 발생하지는 않는다. 하지만 환경 구성을 위해 간혹 작업을 하게되는데 작업 과정에 문제가 생기는 경우가 간혹 있다. 이번에 CentOS 7 환경을 구성하면서 vagrant로 테스트를 진행했었다. 최초 설치 상태로 box를 만들어두고 환경을 구성해보고 문제가 있으면 초기 box로 다시 구성하는 식으로 작업을 했다. 그런데 이번엔 작업을 하면서 이전에 발생하지 않았던 문제가 발생했다. 이전글 Vagrant BASE Box 만들기(CentOS 7)에서 설명했던 것처럼 box 생성 ">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -135,15 +138,15 @@ Bringing machine <span class="hljs-string">'default'</span> up with <span class=
 ==&gt; default: Setting the name of the VM: dev7_default_1449141471748_10760
 ==&gt; default: Clearing any previously <span class="hljs-built_in">set</span> network interfaces...
 ==&gt; default: Preparing network interfaces based on configuration...
-    default: Adapter <span class="hljs-number">1</span>: nat
-    default: Adapter <span class="hljs-number">2</span>: hostonly
+    default: Adapter 1: nat
+    default: Adapter 2: hostonly
 ==&gt; default: Forwarding ports...
-    default: <span class="hljs-number">80</span> =&gt; <span class="hljs-number">8080</span> (adapter <span class="hljs-number">1</span>)
-    default: <span class="hljs-number">22</span> =&gt; <span class="hljs-number">2222</span> (adapter <span class="hljs-number">1</span>)
+    default: 80 =&gt; 8080 (adapter 1)
+    default: 22 =&gt; 2222 (adapter 1)
 ==&gt; default: Running <span class="hljs-string">'pre-boot'</span> VM customizations...
 ==&gt; default: Booting VM...
 ==&gt; default: Waiting <span class="hljs-keyword">for</span> machine to boot. This may take a few minutes...
-    default: SSH address: <span class="hljs-number">127.0</span>.<span class="hljs-number">0.1</span>:<span class="hljs-number">2222</span>
+    default: SSH address: 127.0.0.1:2222
     default: SSH username: vagrant
     default: SSH auth method: private key
     default: Warning: Connection timeout. Retrying...
@@ -198,7 +201,7 @@ config.ssh.password = <span class="hljs-string">"vagrant"</span></pre>
 <p>이 방법은 ssh key를 사용하지 않고 아이디/비밀번호를 입력하는 방식으로 ssh 접속하는 것이다. 사실 이렇게하면 문제는 해결된다. 어짜피 비밀번호에 대한 보안이 중요한 상황도 아니므로 그냥 사용해도 무방하다. 그런데 그냥 사용하기에는 찜찜했다. 특별히 권장하거나 일반적인 방법이 아닌데다가 기존에는 굳이 이렇게하지 않아도 잘 동작하고 있었기 때문이다.</p>
 <p>그래서 오늘 많은 검색과 여러가지 방법을 시도한 끝에 해결 방법을 찾았다. 결론은 box 내부에서 처리하는 과정에 문제가 아니라 내 PC의 문제로 보인다. 해결 방법은 다음과 같다.</p>
 <p><strong>Vagrantfile 에 아래의 내용을 추가한다.</strong></p>
-<pre class="hljs ruby">config.ssh.insert_key = <span class="hljs-keyword">false</span></pre>
+<pre class="hljs ruby">config.ssh.insert_key = <span class="hljs-literal">false</span></pre>
 <p>아마도 내가 vagrant를 자주 변경하고 실험하는 사이에 뭔가 설정이 꼬인 것 같다. 이 옵션을 해결되는 것으로 볼 때 내 컴퓨터에 잘못된 키가 저장되어 있고 <code>vagrant up</code> 과정에서 가상 머신에 key를 변경해 버려서 위 문제가 발생했던 것으로 보인다.</p>
 <p>config.ssh.insert_key는 <a href="https://docs.vagrantup.com/v2/vagrantfile/ssh_settings.html">메뉴얼</a>에 아래와 같이 설명되어 있다.</p>
 <blockquote>
@@ -209,7 +212,7 @@ config.ssh.password = <span class="hljs-string">"vagrant"</span></pre>
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -300,7 +303,7 @@ config.ssh.password = <span class="hljs-string">"vagrant"</span></pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -315,12 +318,17 @@ config.ssh.password = <span class="hljs-string">"vagrant"</span></pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -350,7 +358,16 @@ config.ssh.password = <span class="hljs-string">"vagrant"</span></pre>
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -494,7 +511,8 @@ config.ssh.password = <span class="hljs-string">"vagrant"</span></pre>
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

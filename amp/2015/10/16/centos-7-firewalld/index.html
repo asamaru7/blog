@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 			<title>CentOS 7 firewalld vs iptables - 이 세상에 하나는 남기고 가자</title>
 		<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	<meta name="description" content="CentOS 7부터 방화벽으로 iptables를 사용하지 않고 firewalld를 사용한다. /etc/sysconfig/iptables 파일도 존재하지 않는다. 따라서 firewall-cmd를 사용해서 방화벽을 설정해야 한다(x windows에서는 firewall-config를 사용한다고하나 콘솔만 사용해봐서 firewall-config는 어떻게 생겼는지 모르겠다). Redhat Products &amp; Servies의 4.11. 보안 및 액세스 제어에 아래와 같이 설명되어 있다. 4.11.1. 새로운 방화벽 (firewalld) Red">
 	<meta name="referrer" content="always">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -16,7 +16,9 @@
 	<meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
-	
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
 	
 	
@@ -29,11 +31,12 @@
 	
 
 	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="CentOS 7 firewalld vs iptables">
 	<meta property="og:description" content="CentOS 7부터 방화벽으로 iptables를 사용하지 않고 firewalld를 사용한다. /etc/sysconfig/iptables 파일도 존재하지 않는다. 따라서 firewall-cmd를 사용해서 방화벽을 설정해야 한다(x windows에서는 firewall-config를 사용한다고하나 콘솔만 사용해봐서 firewall-config는 어떻게 생겼는지 모르겠다). Redhat Products &amp; Servies의 4.11. 보안 및 액세스 제어에 아래와 같이 설명되어 있다. 4.11.1. 새로운 방화벽 (firewalld) Red">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2015/10/16/centos-7-firewalld/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -41,7 +44,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="CentOS 7 firewalld vs iptables">
 	<meta name="twitter:description" content="CentOS 7부터 방화벽으로 iptables를 사용하지 않고 firewalld를 사용한다. /etc/sysconfig/iptables 파일도 존재하지 않는다. 따라서 firewall-cmd를 사용해서 방화벽을 설정해야 한다(x windows에서는 firewall-config를 사용한다고하나 콘솔만 사용해봐서 firewall-config는 어떻게 생겼는지 모르겠다). Redhat Products &amp; Servies의 4.11. 보안 및 액세스 제어에 아래와 같이 설명되어 있다. 4.11.1. 새로운 방화벽 (firewalld) Red">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -95,13 +98,17 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 	<script async src="https://cdn.ampproject.org/v0.js"></script>
 	<script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
 	<script async custom-element="amp-sidebar" src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"></script>
-	<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>
 	<script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
 	<script async custom-element="amp-ad" src="https://cdn.ampproject.org/v0/amp-ad-0.1.js"></script>
 	<script async custom-element="amp-social-share" src="https://cdn.ampproject.org/v0/amp-social-share-0.1.js"></script>
-			<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>
+	<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>
+	
+		
+	
+			<script async custom-element="amp-auto-ads" src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"></script>
 	</head>
 <body>
+	<amp-auto-ads type="adsense" data-ad-client="ca-pub-8163803188491150"></amp-auto-ads>
 	<amp-analytics type="googleanalytics" id="analytics-ga">
 		<script type="application/json">
 				{
@@ -186,7 +193,7 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -201,12 +208,17 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -236,7 +248,16 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -402,16 +423,6 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 			<span class="vcard author hide"><span class="fn">유영재</span></span>
 		</div>
 		
-					<amp-ad
-					class="dAmpAdPostTop"
-					layout="responsive"
-					heights="(min-width:468px) 60px, 100px"
-					width=300
-					height=250
-					type="adsense"
-					data-ad-client="ca-pub-8163803188491150"
-					data-ad-slot="9980888623">
-			</amp-ad>
 				
 		<div class="markdown-body entry-content"><p>CentOS 7부터 방화벽으로 iptables를 사용하지 않고 firewalld를 사용한다. <code>/etc/sysconfig/iptables</code> 파일도 존재하지 않는다. 따라서 <code>firewall-cmd</code>를 사용해서 방화벽을 설정해야 한다(x windows에서는 firewall-config를 사용한다고하나 콘솔만 사용해봐서 firewall-config는 어떻게 생겼는지 모르겠다).</p>
 <p><a href="https://access.redhat.com/documentation/ko-KR/Red_Hat_Enterprise_Linux/7/html/Migration_Planning_Guide/ch04s11.html#idp7905344">Redhat Products &amp; Servies의 4.11. 보안 및 액세스 제어</a>에 아래와 같이 설명되어 있다.</p>
@@ -424,19 +435,23 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 <li>
 <p>방화벽 설정에 대한 자세한 내용은 /etc/sysconfig/iptables에 저장되어 있지 않고 이 파일이 존재하지도 않습니다. 대신 설정 상세 정보는 /usr/lib/firewalld 및 /etc/firewalld 디렉토리에 있는 다양한 파일에 저장됩니다.</p>
 </li>
-<li>Red Hat Enterprise Linux 6의 방화벽 시스템에서는 설정 변경 사항이 있을 때 마다 모든 규칙이 삭제되고 다시 적용되어 firewalld는 설정 차이만을 적용합니다. 그 결과 firewalld는 기존 연결을 중단하지 않고 런타임 동안 설정을 변경할 수 있습니다.</li>
+<li>
+<p>Red Hat Enterprise Linux 6의 방화벽 시스템에서는 설정 변경 사항이 있을 때 마다 모든 규칙이 삭제되고 다시 적용되어 firewalld는 설정 차이만을 적용합니다. 그 결과 firewalld는 기존 연결을 중단하지 않고 런타임 동안 설정을 변경할 수 있습니다.</p>
+</li>
 </ul>
 </blockquote>
 <p>또한 <a href="http://www.slideshare.net/sukkim737/oracle-enterprise-linux-new-featurefirewalld">firewalld concept and configuration</a>에 보면 "firewalld의 필요성"에 대해 설명하고 있다(6 page). 편의를 위해 해당 부분만 아래에 안내한다.</p>
 <blockquote>
 <p><strong>firewalld 의 필요성</strong></p>
 <ul>
-<li>기존 iptables의 한계
+<li>
+<p>기존 iptables의 한계</p>
 <ul>
 <li>룰 변경시 서비스 중지 및 설정 변경</li>
 <li>오픈스택이나 KVM과 같은 가상화 호스트에서는 네트워크 변 화가 수시로 발생되므로 필터링 정책에 변경이 필요</li>
 <li>응용프로그램 자체에서 필터링 정책을 구성하는 경우 iptables 정책과 충돌되는 등의 문제 야기</li>
-</ul></li>
+</ul>
+</li>
 <li>
 <p>firewalld가 필요한 이유?</p>
 <ul>
@@ -444,7 +459,9 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 <li>DBUS API를 통한 정보 공유를 통해 정책 충돌 문제 해결</li>
 </ul>
 </li>
-<li>DBUS란? 어플리케이션간의 통신을 지원하는 인터페이스</li>
+<li>
+<p>DBUS란? 어플리케이션간의 통신을 지원하는 인터페이스</p>
+</li>
 </ul>
 </blockquote>
 <p>마지막으로 <a href="https://www.linux.co.kr/home2/board/subbs/board.php?bo_table=lecture&amp;wr_id=1860&amp;sca=&amp;page=0">Doly의 CentOS7 강좌30 12. 네트워크 보안설정 12.2 iptables 서비스 (1/3)</a>에서는 아래와 같이 안내하고 있다.</p>
@@ -471,7 +488,7 @@ $ service iptables save</pre>
 
 	<section class="dShare">
 	
-			<amp-social-share type="facebook" data-param-app_id="1796234843959223" width="60" height="44"></amp-social-share>
+			<amp-social-share type="facebook" data-param-app_id="1481515121924670" width="60" height="44"></amp-social-share>
 		<amp-social-share type="twitter" width="60" height="44"></amp-social-share>
 	<amp-social-share type="gplus" width="60" height="44"></amp-social-share>
 	<amp-social-share type="pinterest" width="60" height="44"></amp-social-share>
@@ -556,7 +573,7 @@ $ service iptables save</pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -571,12 +588,17 @@ $ service iptables save</pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -606,7 +628,16 @@ $ service iptables save</pre>
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -751,16 +782,6 @@ $ service iptables save</pre>
 
 </section>
 
-	<amp-ad
-			class="dAmpAdSiteBottom"
-			layout="responsive"
-			heights="(min-width:468px) 60px, (min-width:336px) 280px, (min-width:320px) 280px, (min-width:300px) 250px, 100px"
-			width=300
-			height=250
-			type="adsense"
-			data-ad-client="ca-pub-8163803188491150"
-			data-ad-slot="7841851420">
-	</amp-ad>
 
 <footer>
 	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>

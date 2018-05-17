@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>PHP PDO의 bindParam와 bindValue의 차이 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="PDO(PHP Data Objects)에서 Prepared statements 사용시 값을 bind하기 위해 PDOStatement::bindParam 또는 PDOStatement::bindValue를 주로 사용한다. 두개의 함수는 사용법이 거의 유사해서 어떤 차이가 있는지 알아둘 필요가 있다. 아래의 예시를 보면 정확한 차이를 바로 알 수 있다. &lt;?php $sex = &#039;male&#039;; $s = $dbh-&gt;prepare(&#039;SELECT name FROM students WHERE sex = :sex&#039;); $s-&gt;bindParam(&#039;:s">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="PHP PDO의 bindParam와 bindValue의 차이">
 	<meta property="og:description" content="PDO(PHP Data Objects)에서 Prepared statements 사용시 값을 bind하기 위해 PDOStatement::bindParam 또는 PDOStatement::bindValue를 주로 사용한다. 두개의 함수는 사용법이 거의 유사해서 어떤 차이가 있는지 알아둘 필요가 있다. 아래의 예시를 보면 정확한 차이를 바로 알 수 있다. &lt;?php $sex = &#039;male&#039;; $s = $dbh-&gt;prepare(&#039;SELECT name FROM students WHERE sex = :sex&#039;); $s-&gt;bindParam(&#039;:s">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2017/02/06/difference-between-bindparam-and-bindvalue-in-php-pdo/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="PHP PDO의 bindParam와 bindValue의 차이">
 	<meta name="twitter:description" content="PDO(PHP Data Objects)에서 Prepared statements 사용시 값을 bind하기 위해 PDOStatement::bindParam 또는 PDOStatement::bindValue를 주로 사용한다. 두개의 함수는 사용법이 거의 유사해서 어떤 차이가 있는지 알아둘 필요가 있다. 아래의 예시를 보면 정확한 차이를 바로 알 수 있다. &lt;?php $sex = &#039;male&#039;; $s = $dbh-&gt;prepare(&#039;SELECT name FROM students WHERE sex = :sex&#039;); $s-&gt;bindParam(&#039;:s">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -129,23 +132,23 @@
 		<div class="markdown-body entry-content"><p><a href="http://php.net/manual/en/book.pdo.php">PDO(PHP Data Objects)</a>에서 Prepared statements 사용시 값을 bind하기 위해  <a href="http://php.net/manual/en/pdostatement.bindparam.php">PDOStatement::bindParam</a> 또는
 <a href="http://php.net/manual/en/pdostatement.bindvalue.php">PDOStatement::bindValue</a>를 주로 사용한다. 두개의 함수는 사용법이 거의 유사해서 어떤 차이가 있는지 알아둘 필요가 있다.</p>
 <p>아래의 예시를 보면 정확한 차이를 바로 알 수 있다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$sex</span> = <span class="hljs-string">'male'</span>;
-<span class="hljs-variable">$s</span> = <span class="hljs-variable">$dbh</span>-&gt;prepare(<span class="hljs-string">'SELECT name FROM students WHERE sex = :sex'</span>);
-<span class="hljs-variable">$s</span>-&gt;bindParam(<span class="hljs-string">':sex'</span>, <span class="hljs-variable">$sex</span>); <span class="hljs-comment">// use bindParam to bind the variable</span>
-<span class="hljs-variable">$sex</span> = <span class="hljs-string">'female'</span>;
-<span class="hljs-variable">$s</span>-&gt;execute(); <span class="hljs-comment">// executed with WHERE sex = 'female'</span></pre>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$sex</span> = <span class="hljs-string">'male'</span>;
-<span class="hljs-variable">$s</span> = <span class="hljs-variable">$dbh</span>-&gt;prepare(<span class="hljs-string">'SELECT name FROM students WHERE sex = :sex'</span>);
-<span class="hljs-variable">$s</span>-&gt;bindValue(<span class="hljs-string">':sex'</span>, <span class="hljs-variable">$sex</span>); <span class="hljs-comment">// use bindValue to bind the variable's value</span>
-<span class="hljs-variable">$sex</span> = <span class="hljs-string">'female'</span>;
-<span class="hljs-variable">$s</span>-&gt;execute(); <span class="hljs-comment">// executed with WHERE sex = 'male'</span></pre>
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$sex = <span class="hljs-string">'male'</span>;
+$s = $dbh-&gt;prepare(<span class="hljs-string">'SELECT name FROM students WHERE sex = :sex'</span>);
+$s-&gt;bindParam(<span class="hljs-string">':sex'</span>, $sex); <span class="hljs-comment">// use bindParam to bind the variable</span>
+$sex = <span class="hljs-string">'female'</span>;
+$s-&gt;execute(); <span class="hljs-comment">// executed with WHERE sex = 'female'</span></pre>
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$sex = <span class="hljs-string">'male'</span>;
+$s = $dbh-&gt;prepare(<span class="hljs-string">'SELECT name FROM students WHERE sex = :sex'</span>);
+$s-&gt;bindValue(<span class="hljs-string">':sex'</span>, $sex); <span class="hljs-comment">// use bindValue to bind the variable's value</span>
+$sex = <span class="hljs-string">'female'</span>;
+$s-&gt;execute(); <span class="hljs-comment">// executed with WHERE sex = 'male'</span></pre>
 <p>결론은 <a href="http://php.net/manual/en/pdostatement.bindparam.php">PDOStatement::bindParam</a>는 변수의 레퍼런스로 바인딩 되므로 <a href="http://php.net/manual/kr/pdostatement.execute.php">PDOStatement::execute</a>가 호출될 때 값이 반영된다.</p>
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -236,7 +239,7 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -251,12 +254,17 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -286,7 +294,16 @@
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -430,7 +447,8 @@
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>안드로이드 WebView resumeTimers() / pauseTimers() 적용하기 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="안드로이드의 WebView를 사용하다 보면 처음 페이지를 보여줄 때는 정상적으로 보이나 두 번째 이후부터 페이지를 정상적으로 표시하지 못하는 경우가 있다. 이 경우는 여러가지 이유로 발생할 수 있으나 오늘은 pauseTimers / resumeTimers 때문에 발생하는 경우에 대한 이야기를 하고자 한다. 우선 이 함수들이 필요한 이유부터 간단히 알아보자. 메뉴얼에서 pauseTimers를 찾아보면 아래와 같이 설명되어 있다. Pauses all layout, parsing, and JavaScript timers for all W">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="안드로이드 WebView resumeTimers() / pauseTimers() 적용하기">
 	<meta property="og:description" content="안드로이드의 WebView를 사용하다 보면 처음 페이지를 보여줄 때는 정상적으로 보이나 두 번째 이후부터 페이지를 정상적으로 표시하지 못하는 경우가 있다. 이 경우는 여러가지 이유로 발생할 수 있으나 오늘은 pauseTimers / resumeTimers 때문에 발생하는 경우에 대한 이야기를 하고자 한다. 우선 이 함수들이 필요한 이유부터 간단히 알아보자. 메뉴얼에서 pauseTimers를 찾아보면 아래와 같이 설명되어 있다. Pauses all layout, parsing, and JavaScript timers for all W">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2016/08/01/android-webview-resumetimers-pausetimers/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="안드로이드 WebView resumeTimers() / pauseTimers() 적용하기">
 	<meta name="twitter:description" content="안드로이드의 WebView를 사용하다 보면 처음 페이지를 보여줄 때는 정상적으로 보이나 두 번째 이후부터 페이지를 정상적으로 표시하지 못하는 경우가 있다. 이 경우는 여러가지 이유로 발생할 수 있으나 오늘은 pauseTimers / resumeTimers 때문에 발생하는 경우에 대한 이야기를 하고자 한다. 우선 이 함수들이 필요한 이유부터 간단히 알아보자. 메뉴얼에서 pauseTimers를 찾아보면 아래와 같이 설명되어 있다. Pauses all layout, parsing, and JavaScript timers for all W">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -136,14 +139,14 @@
 <p>이 문제를 해결하기 위해서는 Activity를 벗어날 때 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 호출해주면 된다.</p>
 <p>그런데 이렇게 처리해 주었다면 Activity에 복귀할 때는 <a href="https://developer.android.com/reference/android/webkit/WebView.html#pauseTimers%28%29">pauseTimers</a>를 필히 호출해줘야 한다. 그렇지 않으면 화면이 보여지지 않는 문제를 만날 수 있다. 여러 사람들의 이야기를 들어보면 이 현상은 기기마다 차이가 있는 것으로 보인다(문제가 발생하는 기기도 있고 그렇지 않은 기기도 있다는 뜻).</p>
 <p>간단한 해결 방법은 아래와 같이 WebView를 사용하는 Activity의 onResume, onPause에서 직접 처리해주면 된다.</p>
-<pre class="hljs java"><span class="hljs-annotation">@Override</span>
+<pre class="hljs java"><span class="hljs-meta">@Override</span>
 <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onResume</span><span class="hljs-params">()</span> </span>{
   <span class="hljs-keyword">super</span>.onResume();
 
   webView.resumeTimers();
 }
 
-<span class="hljs-annotation">@Override</span>
+<span class="hljs-meta">@Override</span>
 <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onPause</span><span class="hljs-params">()</span> </span>{
   <span class="hljs-keyword">super</span>.onPause();
 
@@ -153,7 +156,7 @@
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -244,7 +247,7 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -259,12 +262,17 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -294,7 +302,16 @@
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -438,7 +455,8 @@
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

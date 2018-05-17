@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>linux에서 대량의 파일을 보다 빠르게 지우기 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="주기적으로 실행되는 스케쥴 중에 대량의 파일을 삭제해야 하는 작업이 있었다. 데이터 수집 등의 작업으로 누적된 로그/캐시 파일들을 작업 완료 후 삭제를 해야하는 작업이었다. 그런데 파일의 수가 워낙에 많다보니 지우는 작업에 소요되는 시간이 너무 길었다. 어차피 서비스 서버가 아니고 스케쥴로 처리되는 작업이니 시간이 조금 오래 걸려도 큰 문제될 것은 없었으나 그래도 시간을 조금이라도 줄여보고자 자료를 찾아보다 Efficiently delete large directory containing thousands of files라는 글을 ">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="linux에서 대량의 파일을 보다 빠르게 지우기">
 	<meta property="og:description" content="주기적으로 실행되는 스케쥴 중에 대량의 파일을 삭제해야 하는 작업이 있었다. 데이터 수집 등의 작업으로 누적된 로그/캐시 파일들을 작업 완료 후 삭제를 해야하는 작업이었다. 그런데 파일의 수가 워낙에 많다보니 지우는 작업에 소요되는 시간이 너무 길었다. 어차피 서비스 서버가 아니고 스케쥴로 처리되는 작업이니 시간이 조금 오래 걸려도 큰 문제될 것은 없었으나 그래도 시간을 조금이라도 줄여보고자 자료를 찾아보다 Efficiently delete large directory containing thousands of files라는 글을 ">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2016/04/26/efficiently-delete-large-directory-containing-thousands-of-files/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="linux에서 대량의 파일을 보다 빠르게 지우기">
 	<meta name="twitter:description" content="주기적으로 실행되는 스케쥴 중에 대량의 파일을 삭제해야 하는 작업이 있었다. 데이터 수집 등의 작업으로 누적된 로그/캐시 파일들을 작업 완료 후 삭제를 해야하는 작업이었다. 그런데 파일의 수가 워낙에 많다보니 지우는 작업에 소요되는 시간이 너무 길었다. 어차피 서비스 서버가 아니고 스케쥴로 처리되는 작업이니 시간이 조금 오래 걸려도 큰 문제될 것은 없었으나 그래도 시간을 조금이라도 줄여보고자 자료를 찾아보다 Efficiently delete large directory containing thousands of files라는 글을 ">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -128,14 +131,14 @@
 		</div>
 		<div class="markdown-body entry-content"><p>주기적으로 실행되는 스케쥴 중에 대량의 파일을 삭제해야 하는 작업이 있었다. 데이터 수집 등의 작업으로 누적된 로그/캐시 파일들을 작업 완료 후 삭제를 해야하는 작업이었다. 그런데 파일의 수가 워낙에 많다보니 지우는 작업에 소요되는 시간이 너무 길었다. 어차피 서비스 서버가 아니고 스케쥴로 처리되는 작업이니 시간이 조금 오래 걸려도 큰 문제될 것은 없었으나 그래도 시간을 조금이라도 줄여보고자 자료를 찾아보다 <a href="http://unix.stackexchange.com/questions/37329/efficiently-delete-large-directory-containing-thousands-of-files">Efficiently delete large directory containing thousands of files</a>라는 글을 찾았다.</p>
 <p>위 글에서 제시하는 방법은 <a href="https://en.wikipedia.org/wiki/Rsync">rsync</a>를 이용해서 빈 폴더와 동기화시키는 방법으로 파일들을 삭제하는 것이다. 이게 큰 차이가 있을까 싶었으나 위 글 외에도 여러 곳에서 이 방법을 제시하고 있다.</p>
-<pre class="hljs bash">$ rsync <span class="hljs-operator">-a</span> --delete _empty/ target_directory/</pre>
+<pre class="hljs bash">$ rsync -a --delete _empty/ target_directory/</pre>
 <p>대량의 파일을 지울 일이 있다면 한번쯤은 시도해 보는 것도 괜찮을 것 같아 소개해 본다.</p>
 <p>추가적으로 아래와 같이 병렬 삭제를 하는 것도 방법이라고 한다. 하지만 위 방법이 훨씬 나을 것으로 본다.</p>
-<pre class="hljs bash">$ find target_directory -maxdepth <span class="hljs-number">3</span> | tac | xargs <span class="hljs-operator">-d</span> \n -P <span class="hljs-number">5</span> -n <span class="hljs-number">5</span> rm -rf</pre>
+<pre class="hljs bash">$ find target_directory -maxdepth 3 | tac | xargs -d \n -P 5 -n 5 rm -rf</pre>
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -226,7 +229,7 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -241,12 +244,17 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -276,7 +284,16 @@
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -420,7 +437,8 @@
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

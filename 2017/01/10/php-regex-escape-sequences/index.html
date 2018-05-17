@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>PHP 정규식(PCRE)의 모든 것 - Escape sequences - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="Escape sequences 백 슬래시 문자는 여러 용도로 사용된다. 첫 번째, 영숫자가 아닌 문자가 나오면 문자가 가질 수 있는 특별한 의미가 없어진다. 이스케이프 문자로 백 슬래시를 사용하면 캐릭터 클래스의 내부 및 외부에 모두 적용된다. 예를 들어, &quot;*&quot; 문자를 일치시키려면 패턴에 &quot;\*&quot;을 쓴다. 이것은 \ 다음 문자가 메타 문자로 해석될지 여부와 관계없이 적용되므로 영숫자가 아닌 문자 앞에 &quot;\&quot;를 붙이면 문자 자체를 의미하는 것으로 항상 안전하다. 단, 백 슬래시와 일치시키려면 &quot;\\&quot;이라고 써야 한다. &#039; 또는 &quot; ">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="PHP 정규식(PCRE)의 모든 것 - Escape sequences">
 	<meta property="og:description" content="Escape sequences 백 슬래시 문자는 여러 용도로 사용된다. 첫 번째, 영숫자가 아닌 문자가 나오면 문자가 가질 수 있는 특별한 의미가 없어진다. 이스케이프 문자로 백 슬래시를 사용하면 캐릭터 클래스의 내부 및 외부에 모두 적용된다. 예를 들어, &quot;*&quot; 문자를 일치시키려면 패턴에 &quot;\*&quot;을 쓴다. 이것은 \ 다음 문자가 메타 문자로 해석될지 여부와 관계없이 적용되므로 영숫자가 아닌 문자 앞에 &quot;\&quot;를 붙이면 문자 자체를 의미하는 것으로 항상 안전하다. 단, 백 슬래시와 일치시키려면 &quot;\\&quot;이라고 써야 한다. &#039; 또는 &quot; ">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2017/01/10/php-regex-escape-sequences/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="PHP 정규식(PCRE)의 모든 것 - Escape sequences">
 	<meta name="twitter:description" content="Escape sequences 백 슬래시 문자는 여러 용도로 사용된다. 첫 번째, 영숫자가 아닌 문자가 나오면 문자가 가질 수 있는 특별한 의미가 없어진다. 이스케이프 문자로 백 슬래시를 사용하면 캐릭터 클래스의 내부 및 외부에 모두 적용된다. 예를 들어, &quot;*&quot; 문자를 일치시키려면 패턴에 &quot;\*&quot;을 쓴다. 이것은 \ 다음 문자가 메타 문자로 해석될지 여부와 관계없이 적용되므로 영숫자가 아닌 문자 앞에 &quot;\&quot;를 붙이면 문자 자체를 의미하는 것으로 항상 안전하다. 단, 백 슬래시와 일치시키려면 &quot;\\&quot;이라고 써야 한다. &#039; 또는 &quot; ">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -194,20 +197,20 @@
 </table>
 <p><strong><code>\cx</code></strong> : &quot;control-x&quot;를 나타낸다(ctrl키 + x). 변환과정은 다음과 같다. &quot;x&quot;가 소문자 인 경우 대문자로 변환된다. 그런 다음 문자의 6번 비트(16진수 40)가 반전된다. 따라서 &quot;<code>\cz</code>&quot;는 16진수 1A가 되고, &quot;<code>\c{</code>&quot;는 16진수 3B, &quot;<code>\c;</code>&quot;는 16진수 7B가 된다.<br />
 변환 과정은 아래의 코드를 보면 더 빠르게 이해가 될 것이다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$tmp</span> = [<span class="hljs-string">'z'</span> =&gt; <span class="hljs-string">'1a'</span>, <span class="hljs-string">'{'</span> =&gt; <span class="hljs-string">'3b'</span>, <span class="hljs-string">';'</span> =&gt; <span class="hljs-string">'7b'</span>];
-<span class="hljs-keyword">foreach</span> (<span class="hljs-variable">$tmp</span> <span class="hljs-keyword">as</span> <span class="hljs-variable">$from</span> =&gt; <span class="hljs-variable">$expect</span>) {
-    <span class="hljs-variable">$fromBit</span> = sprintf(<span class="hljs-string">'%07s'</span>, decbin(ord(strtoupper(<span class="hljs-variable">$from</span>))));
-    <span class="hljs-keyword">echo</span> <span class="hljs-variable">$fromBit</span> . <span class="hljs-string">' '</span> . <span class="hljs-string">"\n"</span>;
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$tmp = [<span class="hljs-string">'z'</span> =&gt; <span class="hljs-string">'1a'</span>, <span class="hljs-string">'{'</span> =&gt; <span class="hljs-string">'3b'</span>, <span class="hljs-string">';'</span> =&gt; <span class="hljs-string">'7b'</span>];
+<span class="hljs-keyword">foreach</span> ($tmp <span class="hljs-keyword">as</span> $from =&gt; $expect) {
+    $fromBit = sprintf(<span class="hljs-string">'%07s'</span>, decbin(ord(strtoupper($from))));
+    <span class="hljs-keyword">echo</span> $fromBit . <span class="hljs-string">' '</span> . <span class="hljs-string">"\n"</span>;
 
-    <span class="hljs-variable">$toBit</span> = (!substr(<span class="hljs-variable">$fromBit</span>, -<span class="hljs-number">7</span>, <span class="hljs-number">1</span>) ? <span class="hljs-string">'1'</span> : <span class="hljs-string">'0'</span>) . substr(<span class="hljs-variable">$fromBit</span>, -<span class="hljs-number">6</span>);
+    $toBit = (!substr($fromBit, <span class="hljs-number">-7</span>, <span class="hljs-number">1</span>) ? <span class="hljs-string">'1'</span> : <span class="hljs-string">'0'</span>) . substr($fromBit, <span class="hljs-number">-6</span>);
 
-    <span class="hljs-keyword">echo</span> <span class="hljs-variable">$toBit</span> . <span class="hljs-string">"\n"</span>;
-    <span class="hljs-keyword">if</span> (strcmp(dechex(bindec(<span class="hljs-variable">$toBit</span>)), <span class="hljs-variable">$expect</span>) != <span class="hljs-number">0</span>) {
+    <span class="hljs-keyword">echo</span> $toBit . <span class="hljs-string">"\n"</span>;
+    <span class="hljs-keyword">if</span> (strcmp(dechex(bindec($toBit)), $expect) != <span class="hljs-number">0</span>) {
         <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> \<span class="hljs-keyword">Exception</span>(<span class="hljs-string">'변환 오류'</span>);
     }
-    <span class="hljs-keyword">echo</span> dechex(bindec(<span class="hljs-variable">$toBit</span>)) . <span class="hljs-string">' &lt;- '</span> . <span class="hljs-variable">$expect</span> . <span class="hljs-string">"\n"</span>;
-    <span class="hljs-keyword">echo</span> <span class="hljs-variable">$from</span> . <span class="hljs-string">' -&gt; '</span> . chr(bindec(<span class="hljs-variable">$toBit</span>)) . <span class="hljs-string">"\n"</span>;
+    <span class="hljs-keyword">echo</span> dechex(bindec($toBit)) . <span class="hljs-string">' &lt;- '</span> . $expect . <span class="hljs-string">"\n"</span>;
+    <span class="hljs-keyword">echo</span> $from . <span class="hljs-string">' -&gt; '</span> . chr(bindec($toBit)) . <span class="hljs-string">"\n"</span>;
     <span class="hljs-keyword">echo</span> <span class="hljs-string">"\n"</span>;
 }
 
@@ -227,13 +230,13 @@
 <span class="hljs-comment">// ; -&gt; {</span></pre>
 <p><strong><code>\x</code></strong> : &quot;<code>\x</code>&quot; 뒤에 나오는 최대 두 개의 16진수를 읽는다(문자는 대문자 또는 소문자로 입력 할 수 있음). UTF-8 모드에서는 &quot;<code>\x{...}</code>&quot;가 허용되며 중괄호의 내용은 16진수 문자열이다. 주어진 16진수 코드 넘버는 UTF-8 문자로 해석된다. 원래 16진수 이스케이프 시퀀스인 <code>\xhh</code>가 127보다 큰 경우에는 2바이트 UTF-8 문자로 취급한다.</p>
 <p><strong><code>\0</code></strong> : &quot;<code>\0</code>&quot; 뒤에 나오는 최대 두 개의 8진수를 읽는다. 두 자릿수 미만이면 존재하는 숫자만 사용된다. 따라서 시퀀스 &quot;<code>\0\x\07</code>&quot;은 BEL 문자(코드 값 7)가 뒤 따르는 두 개의 2진 0을 의미한다. 뒤에 나오는 문자 그 자체가 8진수 이면 처음 0 뒤에 두 자리를 입력해야 한다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = <span class="hljs-string">'test-'</span> . chr(<span class="hljs-number">0</span>) . chr(<span class="hljs-number">0</span>) . chr(<span class="hljs-number">7</span>);
-<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\0\x\07/'</span>, <span class="hljs-variable">$str</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$str = <span class="hljs-string">'test-'</span> . chr(<span class="hljs-number">0</span>) . chr(<span class="hljs-number">0</span>) . chr(<span class="hljs-number">7</span>);
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\0\x\07/'</span>, $str)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">// matched</span>
 
-<span class="hljs-variable">$str</span> = <span class="hljs-string">'test-'</span> . chr(<span class="hljs-number">0</span>) . chr(<span class="hljs-number">7</span>);
-<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\0\x\07/'</span>, <span class="hljs-variable">$str</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
+$str = <span class="hljs-string">'test-'</span> . chr(<span class="hljs-number">0</span>) . chr(<span class="hljs-number">7</span>);
+<span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\0\x\07/'</span>, $str)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">// not matched</span></pre>
 <p>백 슬래시 뒤에 0이 아닌 숫자가 오는 경우 처리가 복잡하다. PCRE는 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 외부에서 10진수로 그 이후의 모든 자릿수를 읽는다. 숫자가 10보다 작거나 표현식에서 이전에 캡처한 왼쪽 괄호가 많으면 전체 시퀀스가 ​​<a href="/2017/01/19/php-regex-back-references/">역 참조</a>로 간주된다. 이것이 어떻게 작동하는지에 대한 설명은 괄호로 묶인 서브 패턴에 대한 설명 이후에 다시 한다.</p>
 <p><a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 안이나, 10진수가 9보다 크고 그보다 많은 패턴을 포착되지 않으면, PCRE는 백 슬래시 다음에 최대 세 개의 8진수를 다시 읽으며, 해당하는 8비트 값으로 하나의 바이트를 생성하고 이후의 숫자는 그 자체를 나타낸다. 다음의 예시를 살펴보자 :</p>
@@ -283,7 +286,7 @@
 </tr>
 </tbody>
 </table>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
 <span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\0113/'</span>, chr(octdec(<span class="hljs-number">11</span>)) . <span class="hljs-string">'3'</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">// matched</span>
 
@@ -297,7 +300,7 @@
 <span class="hljs-comment">// matched</span></pre>
 <p>세 개 이상의 8진수는 읽히지 않으므로 100 이상의 8진수 값은 선행 0과 함께 사용하면 안된다.</p>
 <p>단일 바이트 값을 정의하는 모든 시퀀스는 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a>의 내부 및 외부 모두에서 사용할 수 있다. 또한 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 내에서 시퀀스 &quot;<code>\b</code>&quot;는 백 스페이스 문자 (16진수 08)로 해석된다. <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 외부에는 다른 의미가 있다 (아래 참조).</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
 <span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/[\b0-9]{2}/'</span>, chr(<span class="hljs-number">8</span>) . <span class="hljs-string">'3'</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">// matched</span></pre>
 <h4>세 번째, 일반 문자 유형을 지정하는 것이다.</h4>
@@ -392,7 +395,7 @@
 </table>
 <p>이러한 <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 안에서 사용할 수 없다. (단, &quot;<code>\b</code>&quot;는 <a href="/2017/01/14/php-regex-character-classes/">캐릭터 클래스</a> 내에서 백 스페이스 문자의 의미를 가진다).</p>
 <p>&quot;word&quot; 경계는 현재 문자와 이전 문자가 모두 <code>\w</code> 또는 <code>\W</code>와 일치하지 않는 대상 문자열에서의 위치이다(즉, 하나의 글자가 <code>\w</code>와 일치하고 다른 글자가 <code>\W</code>와 일치 경우). 또는, 시작 또는 마지막 문자가 각각 <code>\w</code>와 일치하면 문자열의 시작 또는 끝이 경계가 된다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
 <span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/(testable|string)/'</span>, <span class="hljs-string">'AtestableA'</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">// matched</span>
 
@@ -408,16 +411,16 @@
 <span class="hljs-keyword">echo</span> ((preg_match(<span class="hljs-string">'/\B(testable|string)\B/'</span>, <span class="hljs-string">'A testable A'</span>)) ? <span class="hljs-string">'matched'</span> : <span class="hljs-string">'not matched'</span>) . <span class="hljs-string">"\n"</span>;
 <span class="hljs-comment">// not matched</span></pre>
 <p><code>\A</code>, <code>\Z</code> 및 <code>\z</code> <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 기존 곡절 부호(^) 및 달러 부호($)와 달리 옵션이 설정 되더라도 대상 문자열의 시작과 끝 부분에서만 일치한다. 이들은 <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_MULTILINE</a> 또는 <a href="/2017/01/04/php-pcre-pattern-modifiers/">PCRE_DOLLAR_ENDONLY</a> 옵션의 영향을 받지 않는다. <code>\Z</code>와 <code>\z</code>의 차이점은 <code>\Z</code>는 문자열의 마지막 문자 뿐만 아니라 문자열 끝에 있는 개행 문자 앞도 일치하지만 <code>\z</code>는 문자열 끝에만 일치한다는 것이다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = <span class="hljs-string">&lt;&lt;&lt;STR
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$str = <span class="hljs-string">&lt;&lt;&lt;STR
 A testable string E
 B testable string F
 C testable string G
 D testable string H
 STR;</span>
 
-preg_match_all(<span class="hljs-string">'/\AB /m'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+preg_match_all(<span class="hljs-string">'/\AB /m'</span>, $str, $matches);
+print_r($matches);
 <span class="hljs-comment">//Array</span>
 <span class="hljs-comment">//(</span>
 <span class="hljs-comment">//  [0] =&gt; Array</span>
@@ -425,8 +428,8 @@ print_r(<span class="hljs-variable">$matches</span>);
 <span class="hljs-comment">//  )</span>
 <span class="hljs-comment">//)</span>
 
-preg_match_all(<span class="hljs-string">'/^B /m'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+preg_match_all(<span class="hljs-string">'/^B /m'</span>, $str, $matches);
+print_r($matches);
 <span class="hljs-comment">//Array</span>
 <span class="hljs-comment">//(</span>
 <span class="hljs-comment">//  [0] =&gt; Array</span>
@@ -435,8 +438,8 @@ print_r(<span class="hljs-variable">$matches</span>);
 <span class="hljs-comment">//  )</span>
 <span class="hljs-comment">//)</span>
 
-preg_match_all(<span class="hljs-string">'/H\z/m'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+preg_match_all(<span class="hljs-string">'/H\z/m'</span>, $str, $matches);
+print_r($matches);
 <span class="hljs-comment">//Array</span>
 <span class="hljs-comment">//(</span>
 <span class="hljs-comment">//  [0] =&gt; Array</span>
@@ -444,8 +447,8 @@ print_r(<span class="hljs-variable">$matches</span>);
 <span class="hljs-comment">//  )</span>
 <span class="hljs-comment">//)</span>
 
-preg_match_all(<span class="hljs-string">'/G$/m'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+preg_match_all(<span class="hljs-string">'/G$/m'</span>, $str, $matches);
+print_r($matches);
 <span class="hljs-comment">//Array</span>
 <span class="hljs-comment">//(</span>
 <span class="hljs-comment">//  [0] =&gt; Array</span>
@@ -454,10 +457,10 @@ print_r(<span class="hljs-variable">$matches</span>);
 <span class="hljs-comment">//  )</span>
 <span class="hljs-comment">//)</span>
 
-<span class="hljs-variable">$str</span> .= <span class="hljs-string">"\n"</span>;   <span class="hljs-comment">// \Z 와 \z의 차이를 확인하기 위해 개행문자 추가</span>
+$str .= <span class="hljs-string">"\n"</span>;   <span class="hljs-comment">// \Z 와 \z의 차이를 확인하기 위해 개행문자 추가</span>
 
-preg_match_all(<span class="hljs-string">'/H\z/m'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+preg_match_all(<span class="hljs-string">'/H\z/m'</span>, $str, $matches);
+print_r($matches);
 <span class="hljs-comment">//Array</span>
 <span class="hljs-comment">//(</span>
 <span class="hljs-comment">//  [0] =&gt; Array</span>
@@ -465,8 +468,8 @@ print_r(<span class="hljs-variable">$matches</span>);
 <span class="hljs-comment">//  )</span>
 <span class="hljs-comment">//)</span>
 
-preg_match_all(<span class="hljs-string">'/H\Z/m'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+preg_match_all(<span class="hljs-string">'/H\Z/m'</span>, $str, $matches);
+print_r($matches);
 <span class="hljs-comment">//Array</span>
 <span class="hljs-comment">//(</span>
 <span class="hljs-comment">//  [0] =&gt; Array</span>
@@ -475,51 +478,51 @@ print_r(<span class="hljs-variable">$matches</span>);
 <span class="hljs-comment">//  )</span>
 <span class="hljs-comment">//)</span></pre>
 <p><code>\G</code> <a href="/2017/01/15/php-regex-alternation/">어설션</a>은 현재 일치하는 위치가 <a href="http://php.net/manual/kr/function.preg-match.php">preg_match()</a>의 offset 인수에 지정된 일치 항목의 시작 지점에 있는 경우에만 일치된다. offset 값이 0이 아닌 경우 <code>\A</code>와 다르다(Perl에서의 <code>\G</code>와 다르다).</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-preg_match(<span class="hljs-string">'/\G1234/'</span>, <span class="hljs-string">'test1234'</span>, <span class="hljs-variable">$matches</span>, <span class="hljs-number">0</span>, <span class="hljs-number">3</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+preg_match(<span class="hljs-string">'/\G1234/'</span>, <span class="hljs-string">'test1234'</span>, $matches, <span class="hljs-number">0</span>, <span class="hljs-number">3</span>);
+print_r($matches);
 <span class="hljs-comment">// offset 위치의 시작이 "t"이므로 일치되지 않음</span>
 <span class="hljs-comment">//Array</span>
 <span class="hljs-comment">//(</span>
 <span class="hljs-comment">//)</span>
 
-preg_match(<span class="hljs-string">'/\G1234/'</span>, <span class="hljs-string">'test1234'</span>, <span class="hljs-variable">$matches</span>, <span class="hljs-number">0</span>, <span class="hljs-number">4</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+preg_match(<span class="hljs-string">'/\G1234/'</span>, <span class="hljs-string">'test1234'</span>, $matches, <span class="hljs-number">0</span>, <span class="hljs-number">4</span>);
+print_r($matches);
 <span class="hljs-comment">//Array</span>
 <span class="hljs-comment">//(</span>
 <span class="hljs-comment">//  [0] =&gt; 1234</span>
 <span class="hljs-comment">//)</span></pre>
 <p><code>\Q</code>와 <code>\E</code>는 패턴에서 regexp 메타 문자를 무시하는데 사용될 수 있다. 예를 들어 <code>\w+\Q.$.\E$</code>는 하나 이상의 단어 문자와 일치하며 리터럴 <code>.$.</code>이 따라 오며 문자열 끝에 고정된다. 간단히 말해 <code>\Q</code>로 시작해서 <code>\E</code>로 끝나는 내부의 글자는 리터럴로 인지한다는 것이다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = <span class="hljs-string">'asdf abc.$.'</span>;
-preg_match(<span class="hljs-string">'/\w+\Q.$.\E$/'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$str = <span class="hljs-string">'asdf abc.$.'</span>;
+preg_match(<span class="hljs-string">'/\w+\Q.$.\E$/'</span>, $str, $matches);
+print_r($matches);
 
 <span class="hljs-comment">// Array</span>
 <span class="hljs-comment">// (</span>
 <span class="hljs-comment">//     [0] =&gt; abc.$.</span>
 <span class="hljs-comment">// )</span>
 
-<span class="hljs-variable">$str</span> = <span class="hljs-string">'asdf abc.$x'</span>;
-preg_match(<span class="hljs-string">'/\w+\Q.$.\E$/'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+$str = <span class="hljs-string">'asdf abc.$x'</span>;
+preg_match(<span class="hljs-string">'/\w+\Q.$.\E$/'</span>, $str, $matches);
+print_r($matches);
 
 <span class="hljs-comment">// Array</span>
 <span class="hljs-comment">// (</span>
 <span class="hljs-comment">// )</span></pre>
 <p><code>\K</code>는 PHP 5.2.4부터 일치 시작을 초기화하는데 사용될 수 있다. 예를 들어, <code>foo\Kbar</code> 패턴은 &quot;foobar&quot;와 일치하지만 &quot;bar&quot;와도 일치한다고 보고한다. <code>\K</code>를 사용하면 캡처된 부분 문자열의 설정을 방해하지 않는다. 예를 들어, 패턴 <code>(foo)\Kbar</code>가 &quot;foobar&quot;와 일치하면 첫 번째 하위 문자열은 여전히 ​​&quot;foo&quot;로 설정된다.</p>
-<pre class="hljs php"><span class="hljs-preprocessor">&lt;?php</span>
-<span class="hljs-variable">$str</span> = <span class="hljs-string">'foobar'</span>;
-preg_match(<span class="hljs-string">'/foobar/'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+<pre class="hljs php"><span class="hljs-meta">&lt;?php</span>
+$str = <span class="hljs-string">'foobar'</span>;
+preg_match(<span class="hljs-string">'/foobar/'</span>, $str, $matches);
+print_r($matches);
 
 <span class="hljs-comment">//Array</span>
 <span class="hljs-comment">//(</span>
 <span class="hljs-comment">//  [0] =&gt; foobar</span>
 <span class="hljs-comment">//)</span>
 
-preg_match(<span class="hljs-string">'/(foo)bar/'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+preg_match(<span class="hljs-string">'/(foo)bar/'</span>, $str, $matches);
+print_r($matches);
 
 <span class="hljs-comment">//Array</span>
 <span class="hljs-comment">//(</span>
@@ -527,16 +530,16 @@ print_r(<span class="hljs-variable">$matches</span>);
 <span class="hljs-comment">//  [1] =&gt; foo</span>
 <span class="hljs-comment">//)</span>
 
-preg_match(<span class="hljs-string">'/foo\Kbar/'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+preg_match(<span class="hljs-string">'/foo\Kbar/'</span>, $str, $matches);
+print_r($matches);
 
 <span class="hljs-comment">//Array</span>
 <span class="hljs-comment">//(</span>
 <span class="hljs-comment">//  [0] =&gt; bar</span>
 <span class="hljs-comment">//)</span>
 
-preg_match(<span class="hljs-string">'/(foo)\Kbar/'</span>, <span class="hljs-variable">$str</span>, <span class="hljs-variable">$matches</span>);
-print_r(<span class="hljs-variable">$matches</span>);
+preg_match(<span class="hljs-string">'/(foo)\Kbar/'</span>, $str, $matches);
+print_r($matches);
 
 <span class="hljs-comment">//Array</span>
 <span class="hljs-comment">//(</span>
@@ -568,7 +571,7 @@ print_r(<span class="hljs-variable">$matches</span>);
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -659,7 +662,7 @@ print_r(<span class="hljs-variable">$matches</span>);
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -674,12 +677,17 @@ print_r(<span class="hljs-variable">$matches</span>);
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -709,7 +717,16 @@ print_r(<span class="hljs-variable">$matches</span>);
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -853,7 +870,8 @@ print_r(<span class="hljs-variable">$matches</span>);
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

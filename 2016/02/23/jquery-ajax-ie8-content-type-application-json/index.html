@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>jQuery $.ajax에서 응답 Content-Type을 application/json 사용시 응답 내용이 파일로 다운로드 처리되는 문제 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="jQuery의 $.ajax 함수를 사용해서 JSON 응답을 받고자 할 때 응답값을 배열(객체)로 받는 방법으로 서버 응답시 header 정보에 Content-Type:application/json; charset=utf-8을 포함하는 방법을 주로 사용한다. 다른 방법도 있지만 응답 데이터의 유형을 명시적으로 지정해서 반환하는 것이 더 나은 방법이라는 생각이다. 실제로 이 방법으로 이제까지 잘 사용해 왔다. 그런데 얼마전 간단한 작업을 하던 중 이상한 상황에 부딪혔다. IE8/9에서 Content-Type:application/jso">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="jQuery $.ajax에서 응답 Content-Type을 application/json 사용시 응답 내용이 파일로 다운로드 처리되는 문제">
 	<meta property="og:description" content="jQuery의 $.ajax 함수를 사용해서 JSON 응답을 받고자 할 때 응답값을 배열(객체)로 받는 방법으로 서버 응답시 header 정보에 Content-Type:application/json; charset=utf-8을 포함하는 방법을 주로 사용한다. 다른 방법도 있지만 응답 데이터의 유형을 명시적으로 지정해서 반환하는 것이 더 나은 방법이라는 생각이다. 실제로 이 방법으로 이제까지 잘 사용해 왔다. 그런데 얼마전 간단한 작업을 하던 중 이상한 상황에 부딪혔다. IE8/9에서 Content-Type:application/jso">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2016/02/23/jquery-ajax-ie8-content-type-application-json/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="jQuery $.ajax에서 응답 Content-Type을 application/json 사용시 응답 내용이 파일로 다운로드 처리되는 문제">
 	<meta name="twitter:description" content="jQuery의 $.ajax 함수를 사용해서 JSON 응답을 받고자 할 때 응답값을 배열(객체)로 받는 방법으로 서버 응답시 header 정보에 Content-Type:application/json; charset=utf-8을 포함하는 방법을 주로 사용한다. 다른 방법도 있지만 응답 데이터의 유형을 명시적으로 지정해서 반환하는 것이 더 나은 방법이라는 생각이다. 실제로 이 방법으로 이제까지 잘 사용해 왔다. 그런데 얼마전 간단한 작업을 하던 중 이상한 상황에 부딪혔다. IE8/9에서 Content-Type:application/jso">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -131,12 +134,12 @@
 IE8/9에서 <code>Content-Type:application/json; charset=utf-8</code>을 정상적으로 인식하지 못해 ajax 호출시 응답값을 파일로 저장(다운로드)하려고 하는 것이다(IE10에서 이상없음). 그래서 관련 내용을 찾아보니 <a href="http://stackoverflow.com/questions/8892819/ie8-treats-json-response-as-file-and-tries-to-download-it">IE8 treats json response as file and tries to download it</a>라는 글이 있었다. 여기서의 설명처럼 <code>application/json</code> 대신 <code>text/plain</code>을 사용하면 다운로드를 시도하는 현상은 없어진다. 하지만 $.ajax의 done(success) 함수에서 받은 응답값이 배열(객체)가 아니라 text다. 어떻게보면 당연하다. 서버에서 text라고 보냈으니.</p>
 <p>그럼 이 문제는 어떻게 해결할까? 간단한 방법은 $.ajax 사용시 dataType을 'json'으로 지정하는 방법을 사용하면 해결된다. 위 링크에서 질문자가 올린 코드를 예시로 아래에 남긴다.</p>
 <pre class="hljs javascript">$.ajax({
-  url: url_string,
-  dataType: <span class="hljs-string">"json"</span>,
-  success: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">response</span>)</span>{
+  <span class="hljs-attr">url</span>: url_string,
+  <span class="hljs-attr">dataType</span>: <span class="hljs-string">"json"</span>,
+  <span class="hljs-attr">success</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">response</span>)</span>{
     alert(<span class="hljs-string">'all is well'</span>);
   },
-  error: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">request, status, error</span>)</span>{
+  <span class="hljs-attr">error</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">request, status, error</span>)</span>{
     alert(request);
     alert(status);
     alert(error);
@@ -148,27 +151,27 @@ IE8/9에서 <code>Content-Type:application/json; charset=utf-8</code>을 정상�
 <p>정확히 이야기하자면 나의 경우는 <a href="http://malsup.com/jquery/form/">jQuery Form Plugin</a>을 사용하면서 이 문제가 발생했다. 이번 작업에서 AJAX 파일업로드를 처리 할 일이 있어서 위 라이브러리를 사용했다. 그런데 이 라이브러리의 문제인 것인지 <code>$.ajaxForm</code> 함수를 사용하면 위 문제가 발생한다.</p>
 <p>해결 방법은 jQuery와 동일하다. 서버 응답시 header에 <code>text/plain</code>를 사용하고 <code>dataType: "json"</code>을 옵션으로 추가하면 해결된다. 아래의 예시를 보자.</p>
 <p>우선 PHP 샘플 코드다. IE의 버전을 검사해서 필요시에만 <code>text/plain</code>를 적용한다.</p>
-<pre class="hljs php"><span class="hljs-variable">$returnData</span> = [<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>];
-<span class="hljs-keyword">if</span> (preg_match(<span class="hljs-string">'/(?i)msie [5-9]/'</span>, <span class="hljs-variable">$_SERVER</span>[<span class="hljs-string">'HTTP_USER_AGENT'</span>])) {
+<pre class="hljs php">$returnData = [<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>];
+<span class="hljs-keyword">if</span> (preg_match(<span class="hljs-string">'/(?i)msie [5-9]/'</span>, $_SERVER[<span class="hljs-string">'HTTP_USER_AGENT'</span>])) {
   header(<span class="hljs-string">'Content-Type:text/plain; charset=utf-8'</span>);
 } <span class="hljs-keyword">else</span> {
   header(<span class="hljs-string">'Content-Type:application/json; charset=utf-8'</span>);
 }
-<span class="hljs-keyword">echo</span> json_encode(<span class="hljs-variable">$returnData</span>);</pre>
+<span class="hljs-keyword">echo</span> json_encode($returnData);</pre>
 <p>다음은 javascript 샘플 코드다. <code>dataType: "json"</code>를 추가해서 사용한다.</p>
 <pre class="hljs javascript">$(<span class="hljs-string">'#form'</span>).ajaxForm({
-    dataType: <span class="hljs-string">"json"</span>,
-    beforeSubmit: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">formData, jqForm, options</span>) </span>{
+    <span class="hljs-attr">dataType</span>: <span class="hljs-string">"json"</span>,
+    <span class="hljs-attr">beforeSubmit</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">formData, jqForm, options</span>) </span>{
         <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
     },
-    success: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">response, statusText, xhr, $form</span>) </span>{
+    <span class="hljs-attr">success</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">response, statusText, xhr, $form</span>) </span>{
         <span class="hljs-keyword">if</span> (<span class="hljs-string">'success'</span> == statusText) {
             <span class="hljs-keyword">if</span> ((response) &amp;&amp; (<span class="hljs-keyword">typeof</span> response !== <span class="hljs-string">"object"</span>)) {
                 response = $.parseJSON(response);
             }
         }
     },
-    error: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-attr">error</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
     }
 });</pre>
 <p>추가적으로 응답값의 데이터 타입을 검사해서 text이면 <code>$.parseJSON</code> 또는 <code>JSON.parse</code>를 수행해 주도록 한다. 위 코드대로라면 IE9 이하에서는 response가 &quot;string&quot;으로 넘어오고 기타 브라우저에서는 &quot;object&quot;로 넘어올 것이기 때문이다.</p>
@@ -177,7 +180,7 @@ IE8/9에서 <code>Content-Type:application/json; charset=utf-8</code>을 정상�
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -268,7 +271,7 @@ IE8/9에서 <code>Content-Type:application/json; charset=utf-8</code>을 정상�
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -283,12 +286,17 @@ IE8/9에서 <code>Content-Type:application/json; charset=utf-8</code>을 정상�
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -318,7 +326,16 @@ IE8/9에서 <code>Content-Type:application/json; charset=utf-8</code>을 정상�
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -462,7 +479,8 @@ IE8/9에서 <code>Content-Type:application/json; charset=utf-8</code>을 정상�
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류 해결 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="안드로이드 Fragment 작업 중에 java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류가 발생했다. 상황은 이렇다. Fragment를 가진 Activity에서 새로운 Activity를 띄우고 해당 Activity에서 setResult를 통해 값을 반환했다. 새로운 Activity를 열었던 Activity에서는 protected void onActivityResult(int requestCode, int resultCode,">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류 해결">
 	<meta property="og:description" content="안드로이드 Fragment 작업 중에 java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류가 발생했다. 상황은 이렇다. Fragment를 가진 Activity에서 새로운 Activity를 띄우고 해당 Activity에서 setResult를 통해 값을 반환했다. 새로운 Activity를 열었던 Activity에서는 protected void onActivityResult(int requestCode, int resultCode,">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2015/10/13/java-dot-lang-dot-illegalstateexception-can-not-perform-this-action-after-onsaveinstancestate/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류 해결">
 	<meta name="twitter:description" content="안드로이드 Fragment 작업 중에 java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState 오류가 발생했다. 상황은 이렇다. Fragment를 가진 Activity에서 새로운 Activity를 띄우고 해당 Activity에서 setResult를 통해 값을 반환했다. 새로운 Activity를 열었던 Activity에서는 protected void onActivityResult(int requestCode, int resultCode,">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -127,7 +130,7 @@
 			<span class="vcard author hide"><span class="fn">유영재</span></span>
 		</div>
 		<div class="markdown-body entry-content"><p>안드로이드 Fragment 작업 중에 <code>java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState</code> 오류가 발생했다. 상황은 이렇다. Fragment를 가진 Activity에서 새로운 Activity를 띄우고 해당 Activity에서 <code>setResult</code>를 통해 값을 반환했다. 새로운 Activity를 열었던 Activity에서는 <code>protected void onActivityResult(int requestCode, int resultCode, Intent intent)</code>를 통해 값을 전달 받아 새로운 Fragment를 불렀다. 그런데 위 오류가 난다. 아래는 작성했던 코드의 일부를 예시를 위해 수정한 것이다(실행가능한 코드가 아니다).</p>
-<pre class="hljs java"><span class="hljs-annotation">@Override</span>
+<pre class="hljs java"><span class="hljs-meta">@Override</span>
 <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onActivityResult</span><span class="hljs-params">(<span class="hljs-keyword">int</span> requestCode, <span class="hljs-keyword">int</span> resultCode, Intent intent)</span> </span>{
     <span class="hljs-keyword">if</span> (resultCode == RESULT_OK) {
         FragmentManager ft = getChildFragmentManager();
@@ -143,7 +146,7 @@
 <li><a href="http://www.kmshack.kr/2013/08/fragment-%ED%8C%8C%ED%97%A4%EC%B9%98%EA%B8%B0-3-fragmentmanager-fragmenttransaction%EC%97%90-%EB%8C%80%ED%95%B4%EC%84%9C/">Fragment 파헤치기 – 3. FragmentManager, FragmentTransaction에 대해서</a></li>
 </ul>
 <p><strong>간단히 요약하자면 <code>commit()</code> 대신 <code>commitAllowingStateLoss()</code>을 사용하면 된다.</strong> 원인에 대해서는 위의 글들을 참고하면 상세히 설명되어 있다. 그래서 고쳐진 코드는 다음과 같다.</p>
-<pre class="hljs java"><span class="hljs-annotation">@Override</span>
+<pre class="hljs java"><span class="hljs-meta">@Override</span>
 <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onActivityResult</span><span class="hljs-params">(<span class="hljs-keyword">int</span> requestCode, <span class="hljs-keyword">int</span> resultCode, Intent intent)</span> </span>{
     <span class="hljs-keyword">if</span> (resultCode == RESULT_OK) {
         FragmentManager ft = getChildFragmentManager();
@@ -161,12 +164,12 @@
 <p>Like commit() but allows the commit to be executed after an activity's state is saved. This is dangerous because the commit can be lost if the activity needs to later be restored from its state, so this should only be used for cases where it is okay for the UI state to change unexpectedly on the user.</p>
 </blockquote>
 <p><code>commitAllowingStateLoss()</code>를 사용하지 않고 해결하는 방법은 없을까? 생각해보면 실행되는 시점의 문제이므로 시점을 조금 지연하는 방법을 쓸 수도 있다.</p>
-<pre class="hljs java"><span class="hljs-annotation">@Override</span>
+<pre class="hljs java"><span class="hljs-meta">@Override</span>
 <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onActivityResult</span><span class="hljs-params">(<span class="hljs-keyword">int</span> requestCode, <span class="hljs-keyword">int</span> resultCode, Intent intent)</span> </span>{
     <span class="hljs-keyword">if</span> (resultCode == RESULT_OK) {
         Handler handler_ = <span class="hljs-keyword">new</span> Handler(Looper.getMainLooper());
         handler_.postDelayed(<span class="hljs-keyword">new</span> Runnable() {
-            <span class="hljs-annotation">@Override</span>
+            <span class="hljs-meta">@Override</span>
             <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">run</span><span class="hljs-params">()</span> </span>{
                 FragmentManager ft = getChildFragmentManager();
                 ft.beginTransaction()
@@ -182,7 +185,7 @@
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -273,7 +276,7 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -288,12 +291,17 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -323,7 +331,16 @@
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -467,7 +484,8 @@
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>PHP Composer Autoloader 최적화 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="Composer Autoloader 최적화 Composer Autoloader는 상대적으로 빠르게 실행되나 PSR-4 및 PSR-0 autoload 규칙이 설정되는 방식으로 인해 클래스 이름을 확인하기 전에 파일 시스템을 검사해야 한다. 이 경우 성능이 떨어지지만 개발 환경에서는 새로운 Class를 추가할 때 autoload 구성을 다시 작성하지 않고도 즉시 사용할 수 있으므로 편리하다. 그러나 production 환경에서는 클래스의 추가가 발생하지 않기 때문에 성능을 위해서 파일 시스템을 검사하지 않고 클래스를 로드하는 것이 좋다">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="PHP Composer Autoloader 최적화">
 	<meta property="og:description" content="Composer Autoloader 최적화 Composer Autoloader는 상대적으로 빠르게 실행되나 PSR-4 및 PSR-0 autoload 규칙이 설정되는 방식으로 인해 클래스 이름을 확인하기 전에 파일 시스템을 검사해야 한다. 이 경우 성능이 떨어지지만 개발 환경에서는 새로운 Class를 추가할 때 autoload 구성을 다시 작성하지 않고도 즉시 사용할 수 있으므로 편리하다. 그러나 production 환경에서는 클래스의 추가가 발생하지 않기 때문에 성능을 위해서 파일 시스템을 검사하지 않고 클래스를 로드하는 것이 좋다">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2017/07/14/composer-autoloader-optimization/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="PHP Composer Autoloader 최적화">
 	<meta name="twitter:description" content="Composer Autoloader 최적화 Composer Autoloader는 상대적으로 빠르게 실행되나 PSR-4 및 PSR-0 autoload 규칙이 설정되는 방식으로 인해 클래스 이름을 확인하기 전에 파일 시스템을 검사해야 한다. 이 경우 성능이 떨어지지만 개발 환경에서는 새로운 Class를 추가할 때 autoload 구성을 다시 작성하지 않고도 즉시 사용할 수 있으므로 편리하다. 그러나 production 환경에서는 클래스의 추가가 발생하지 않기 때문에 성능을 위해서 파일 시스템을 검사하지 않고 클래스를 로드하는 것이 좋다">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -140,12 +143,12 @@
 <p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주지 않아도 자동적으로 최적화를 수행하므로 편리하다.</p>
 </blockquote>
 <pre class="hljs json">{
-  "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"project"</span></span>,
+  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"project"</span>,
   ...
-  "<span class="hljs-attribute">config</span>": <span class="hljs-value">{
-    "<span class="hljs-attribute">optimize-autoloader</span>": <span class="hljs-value"><span class="hljs-literal">true</span>
-  </span>}
-</span>}</pre>
+  <span class="hljs-attr">"config"</span>: {
+    <span class="hljs-attr">"optimize-autoloader"</span>: <span class="hljs-literal">true</span>
+  }
+}</pre>
 <ul>
 <li><code>composer install</code> / <code>update</code> 시 <code>-o</code> 또는 <code>--optimize-autoloader</code> 옵션을 추가</li>
 </ul>
@@ -178,19 +181,19 @@ $ composer update --optimize-autoloader</pre>
 <p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주지 않아도 자동적으로 최적화를 수행하므로 편리하다.</p>
 </blockquote>
 <pre class="hljs json">{
-  "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"project"</span></span>,
+  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"project"</span>,
   ...
-  "<span class="hljs-attribute">config</span>": <span class="hljs-value">{
-    "<span class="hljs-attribute">classmap-authoritative</span>": <span class="hljs-value"><span class="hljs-literal">true</span>
-  </span>}
-</span>}</pre>
+  <span class="hljs-attr">"config"</span>: {
+    <span class="hljs-attr">"classmap-authoritative"</span>: <span class="hljs-literal">true</span>
+  }
+}</pre>
 <ul>
 <li><code>composer install</code> / <code>update</code> 시 <code>-a</code> 또는 <code>--classmap-authoritative</code> 옵션을 추가</li>
 </ul>
 <blockquote>
 <p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주어야 하지만 필요시에만 최적화를 하려는 경우 유용하다.</p>
 </blockquote>
-<pre class="hljs bash">$ composer install <span class="hljs-operator">-a</span>
+<pre class="hljs bash">$ composer install -a
 $ composer update --classmap-authoritative</pre>
 <ul>
 <li><code>composer dump-autoload</code>를 <code>-a</code> 또는 <code>--classmap-authoritative</code> 옵션과 함께 실행</li>
@@ -206,19 +209,19 @@ $ composer update --classmap-authoritative</pre>
 </span>{
     ...
     } <span class="hljs-keyword">else</span> {
-        <span class="hljs-variable">$map</span> = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_namespaces.php'</span>;
-        <span class="hljs-keyword">foreach</span> (<span class="hljs-variable">$map</span> <span class="hljs-keyword">as</span> <span class="hljs-variable">$namespace</span> =&gt; <span class="hljs-variable">$path</span>) {
-            <span class="hljs-variable">$loader</span>-&gt;set(<span class="hljs-variable">$namespace</span>, <span class="hljs-variable">$path</span>);
+        $map = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_namespaces.php'</span>;
+        <span class="hljs-keyword">foreach</span> ($map <span class="hljs-keyword">as</span> $namespace =&gt; $path) {
+            $loader-&gt;set($namespace, $path);
         }
 
-        <span class="hljs-variable">$map</span> = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_psr4.php'</span>;
-        <span class="hljs-keyword">foreach</span> (<span class="hljs-variable">$map</span> <span class="hljs-keyword">as</span> <span class="hljs-variable">$namespace</span> =&gt; <span class="hljs-variable">$path</span>) {
-            <span class="hljs-variable">$loader</span>-&gt;setPsr4(<span class="hljs-variable">$namespace</span>, <span class="hljs-variable">$path</span>);
+        $map = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_psr4.php'</span>;
+        <span class="hljs-keyword">foreach</span> ($map <span class="hljs-keyword">as</span> $namespace =&gt; $path) {
+            $loader-&gt;setPsr4($namespace, $path);
         }
 
-        <span class="hljs-variable">$classMap</span> = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_classmap.php'</span>;
-        <span class="hljs-keyword">if</span> (<span class="hljs-variable">$classMap</span>) {
-            <span class="hljs-variable">$loader</span>-&gt;addClassMap(<span class="hljs-variable">$classMap</span>);
+        $classMap = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_classmap.php'</span>;
+        <span class="hljs-keyword">if</span> ($classMap) {
+            $loader-&gt;addClassMap($classMap);
         }
     }
     ...
@@ -227,9 +230,9 @@ $ composer update --classmap-authoritative</pre>
 </span>{
     ...
     } <span class="hljs-keyword">else</span> {
-        <span class="hljs-variable">$classMap</span> = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_classmap.php'</span>;
-        <span class="hljs-keyword">if</span> (<span class="hljs-variable">$classMap</span>) {
-            <span class="hljs-variable">$loader</span>-&gt;addClassMap(<span class="hljs-variable">$classMap</span>);
+        $classMap = <span class="hljs-keyword">require</span> <span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">'/autoload_classmap.php'</span>;
+        <span class="hljs-keyword">if</span> ($classMap) {
+            $loader-&gt;addClassMap($classMap);
         }
     }
     ...
@@ -248,12 +251,12 @@ $ composer update --classmap-authoritative</pre>
 <p><code>install</code> 또는 <code>update</code> 시 별도의 옵션을 주지 않아도 자동적으로 최적화를 수행하므로 편리하다.</p>
 </blockquote>
 <pre class="hljs json">{
-  "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"project"</span></span>,
+  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"project"</span>,
   ...
-  "<span class="hljs-attribute">config</span>": <span class="hljs-value">{
-    "<span class="hljs-attribute">apcu-autoloader</span>": <span class="hljs-value"><span class="hljs-literal">true</span>
-  </span>}
-</span>}</pre>
+  <span class="hljs-attr">"config"</span>: {
+    <span class="hljs-attr">"apcu-autoloader"</span>: <span class="hljs-literal">true</span>
+  }
+}</pre>
 <ul>
 <li><code>composer install</code> / <code>update</code> 시 <code>--apcu-autoloader</code> 옵션을 추가</li>
 </ul>
@@ -282,7 +285,7 @@ $ composer update --apcu-autoloader</pre>
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -373,7 +376,7 @@ $ composer update --apcu-autoloader</pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -388,12 +391,17 @@ $ composer update --apcu-autoloader</pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -423,7 +431,16 @@ $ composer update --apcu-autoloader</pre>
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -567,7 +584,8 @@ $ composer update --apcu-autoloader</pre>
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>SSH 무작위 로그인 시도 막기(With Fail2Ban on CentOS 6/7 + selinux) - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="linux 서버를 공개망에서 사용하면서 방화벽을 사용하지 않는 경우 ssh 로그인을 지속적으로 시도하는 로그를 볼 수 있다. 대부분 외국 IP 대역에서 지속적으로 ssh 로그인을 시도하는데 무작위 비밀번호를 대입하는 것이다. 당연히 방화벽을 설정하는 것이 당연하나 특수한 목적으로 인해 접속 IP 대역을 제한할 수 없는 경우도 있을 수 있다. 이런 경우에 보안을 조금이나마 강화하기 위해 사용할 수 있는 것이 fail2ban 이다. 우선 실제로 해당 서버에 어떤 IP들이 ssh 로그인을 시도했는지 아래의 명령으로 확인 할 수 있다(이하">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="SSH 무작위 로그인 시도 막기(With Fail2Ban on CentOS 6/7 + selinux)">
 	<meta property="og:description" content="linux 서버를 공개망에서 사용하면서 방화벽을 사용하지 않는 경우 ssh 로그인을 지속적으로 시도하는 로그를 볼 수 있다. 대부분 외국 IP 대역에서 지속적으로 ssh 로그인을 시도하는데 무작위 비밀번호를 대입하는 것이다. 당연히 방화벽을 설정하는 것이 당연하나 특수한 목적으로 인해 접속 IP 대역을 제한할 수 없는 경우도 있을 수 있다. 이런 경우에 보안을 조금이나마 강화하기 위해 사용할 수 있는 것이 fail2ban 이다. 우선 실제로 해당 서버에 어떤 IP들이 ssh 로그인을 시도했는지 아래의 명령으로 확인 할 수 있다(이하">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2016/04/07/how-to-protect-ssh-with-fail2ban-on-centos-6-7/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="SSH 무작위 로그인 시도 막기(With Fail2Ban on CentOS 6/7 + selinux)">
 	<meta name="twitter:description" content="linux 서버를 공개망에서 사용하면서 방화벽을 사용하지 않는 경우 ssh 로그인을 지속적으로 시도하는 로그를 볼 수 있다. 대부분 외국 IP 대역에서 지속적으로 ssh 로그인을 시도하는데 무작위 비밀번호를 대입하는 것이다. 당연히 방화벽을 설정하는 것이 당연하나 특수한 목적으로 인해 접속 IP 대역을 제한할 수 없는 경우도 있을 수 있다. 이런 경우에 보안을 조금이나마 강화하기 위해 사용할 수 있는 것이 fail2ban 이다. 우선 실제로 해당 서버에 어떤 IP들이 ssh 로그인을 시도했는지 아래의 명령으로 확인 할 수 있다(이하">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -132,7 +135,7 @@
 <pre class="hljs bash">$ ls /var/<span class="hljs-built_in">log</span>/secure | xargs grep -E <span class="hljs-string">"[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+"</span> -o | sort | uniq</pre>
 <p>공개망에 연결된 서버라면 생각보다 많은 IP가 나와 놀랄수도 있다. IP들 중 자신이 아는 IP를 제외하면 대부분이 위에 언급한 공격일 확률이 높다.</p>
 <p>다른 방법으로 아래와 같이 최근 로그인 실패 기록을 확인하는 것도 가능하다.</p>
-<pre class="hljs bash">$ last <span class="hljs-operator">-f</span> /var/<span class="hljs-built_in">log</span>/btmp | more</pre>
+<pre class="hljs bash">$ last -f /var/<span class="hljs-built_in">log</span>/btmp | more</pre>
 <p><a href="http://www.thegeekstuff.com/2011/08/linux-var-log-files/">20 Linux Log Files that are Located under /var/log Directory</a>에 보면 <code>/var/log/btmp</code>에 대한 설명을 확인 할 수 있다.</p>
 <p>상황을 확인 했으니 이제 본격적으로 <a href="http://www.fail2ban.org/">fail2ban</a>을 사용해 보자.</p>
 <hr />
@@ -140,7 +143,7 @@
 <p>fail2ban은 지정된 시간 내에 지정된 횟수 이상으로 ssh 로그인을 실패하면 해당 IP에서의 접근을 지정된 시간만큼 차단하는 역할을 한다.</p>
 <p>아래의 설치 과정은 CentOS 7을 기준으로 한다. 이는 iptables 대신 firewalld가 사용되며 systemd를 사용하는 것을 기준으로 한다는 뜻이다. CentOS 6이라면 아래의 참고자료를 살펴보기 바란다.</p>
 <pre class="hljs bash"><span class="hljs-comment"># epel-release 추가</span>
-$ rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-<span class="hljs-number">7</span>.noarch.rpm
+$ rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 <span class="hljs-comment"># fail2ban 설치</span>
 $ yum install -y fail2ban
@@ -172,17 +175,17 @@ $ <span class="hljs-built_in">echo</span> <span class="hljs-string">"enabled = t
 $ semodule_package -o fail2ban-syslog.pp -m fail2ban-syslog.mod
 $ semodule -r fail2ban-syslog
 $ semodule -i fail2ban-syslog.pp
-$ rm <span class="hljs-operator">-f</span> fail2ban-syslog.mod
-$ rm <span class="hljs-operator">-f</span> fail2ban-syslog.pp
-$ semodule <span class="hljs-operator">-l</span>|grep fail2ban-syslog
+$ rm -f fail2ban-syslog.mod
+$ rm -f fail2ban-syslog.pp
+$ semodule -l|grep fail2ban-syslog
 
 $ checkmodule -M -m -o logrotate-fail2ban.mod logrotate-fail2ban.te
 $ semodule_package -o logrotate-fail2ban.pp -m logrotate-fail2ban.mod
 $ semodule -r logrotate-fail2ban
 $ semodule -i logrotate-fail2ban.pp
-$ rm <span class="hljs-operator">-f</span> logrotate-fail2ban.mod
-$ rm <span class="hljs-operator">-f</span> logrotate-fail2ban.pp
-$ semodule <span class="hljs-operator">-l</span>|grep logrotate-fail2ban</pre>
+$ rm -f logrotate-fail2ban.mod
+$ rm -f logrotate-fail2ban.pp
+$ semodule -l|grep logrotate-fail2ban</pre>
 <p>아래의 2개의 파일은 위 스크립트 실행에 필요한 파일이므로 해당 파일명으로 저장해서 사용하면 된다.</p>
 <p><strong>fail2ban-syslog.te</strong></p>
 <pre><code>module fail2ban-syslog 1.0;
@@ -219,19 +222,19 @@ allow logrotate_t init_var_lib_t:file { open read getattr write create unlink se
 <p>설치가 다 되었다면 아래의 명령 실행시 다음과 비슷한 결과를 볼 수 있다.</p>
 <pre class="hljs bash">$ firewall-cmd --direct --get-all-rules
 
-ipv4 filter INPUT <span class="hljs-number">0</span> -p tcp -m multiport --dports ssh -m <span class="hljs-built_in">set</span> --match-set fail2ban-sshd src -j REJECT --reject-with icmp-port-unreachable</pre>
+ipv4 filter INPUT 0 -p tcp -m multiport --dports ssh -m <span class="hljs-built_in">set</span> --match-set fail2ban-sshd src -j REJECT --reject-with icmp-port-unreachable</pre>
 <p>그리고 아래의 명령으로 적용 상황을 확인할 수 있다.</p>
 <pre class="hljs bash"><span class="hljs-comment"># fail2ban 상태 확인</span>
 $ fail2ban-client status sshd
 
 Status <span class="hljs-keyword">for</span> the jail: sshd
 |- Filter
-|  |- Currently failed: <span class="hljs-number">1</span>
-|  |- Total failed: <span class="hljs-number">153</span>
+|  |- Currently failed: 1
+|  |- Total failed: 153
 |  `- File list:    /var/<span class="hljs-built_in">log</span>/secure
 `- Actions
-   |- Currently banned: <span class="hljs-number">0</span>
-   |- Total banned: <span class="hljs-number">2</span>
+   |- Currently banned: 0
+   |- Total banned: 2
    `- Banned IP list:
 
 <span class="hljs-comment"># ipset에 설정(차단)된 내용 확인</span>
@@ -239,10 +242,10 @@ $ ipset --list
 
 Name: fail2ban-sshd
 Type: <span class="hljs-built_in">hash</span>:ip
-Revision: <span class="hljs-number">1</span>
-Header: family inet hashsize <span class="hljs-number">1024</span> maxelem <span class="hljs-number">65536</span> timeout <span class="hljs-number">3600</span>
-Size <span class="hljs-keyword">in</span> memory: <span class="hljs-number">16656</span>
-References: <span class="hljs-number">1</span>
+Revision: 1
+Header: family inet hashsize 1024 maxelem 65536 timeout 3600
+Size <span class="hljs-keyword">in</span> memory: 16656
+References: 1
 Members:
 
 <span class="hljs-comment"># fail2ban 로그 확인</span>
@@ -264,7 +267,7 @@ $ awk <span class="hljs-string">'($(NF-1) = /Ban/){print $NF}'</span> /var/<span
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -355,7 +358,7 @@ $ awk <span class="hljs-string">'($(NF-1) = /Ban/){print $NF}'</span> /var/<span
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -370,12 +373,17 @@ $ awk <span class="hljs-string">'($(NF-1) = /Ban/){print $NF}'</span> /var/<span
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -405,7 +413,16 @@ $ awk <span class="hljs-string">'($(NF-1) = /Ban/){print $NF}'</span> /var/<span
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -549,7 +566,8 @@ $ awk <span class="hljs-string">'($(NF-1) = /Ban/){print $NF}'</span> /var/<span
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

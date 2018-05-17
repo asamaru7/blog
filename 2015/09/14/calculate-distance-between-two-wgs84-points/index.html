@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>두지점(WGS84 좌표)간 km 거리 계산 함수(php, mysql, javascript) - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="WGS84 좌표계는 위키피디아에 따르면 다음과 같다. World Geodetic System (WGS) 1984년에 제정된 범 지구적 측위 시스템으로 지도학, 측지학, 항법에 많이 사용된다. 통칭 및 약칭은 WGS 84 (aka WGS 1984, EPSG:4326, WGS84)라고 부르며, 2004년에 마지막으로 개정되었다. 이전에 쓰던 초안으로 WGS 72, WGS 66, 그리고 WGS 60이 있다. 기존에는 네이버 지도 등에서 KTM 좌표를 사용하기도 했지만 요즘엔 WGS84 좌표를 주로 사용한다. 이번에 작업을 하면서 WGS8">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="두지점(WGS84 좌표)간 km 거리 계산 함수(php, mysql, javascript)">
 	<meta property="og:description" content="WGS84 좌표계는 위키피디아에 따르면 다음과 같다. World Geodetic System (WGS) 1984년에 제정된 범 지구적 측위 시스템으로 지도학, 측지학, 항법에 많이 사용된다. 통칭 및 약칭은 WGS 84 (aka WGS 1984, EPSG:4326, WGS84)라고 부르며, 2004년에 마지막으로 개정되었다. 이전에 쓰던 초안으로 WGS 72, WGS 66, 그리고 WGS 60이 있다. 기존에는 네이버 지도 등에서 KTM 좌표를 사용하기도 했지만 요즘엔 WGS84 좌표를 주로 사용한다. 이번에 작업을 하면서 WGS8">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2015/09/14/calculate-distance-between-two-wgs84-points/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="두지점(WGS84 좌표)간 km 거리 계산 함수(php, mysql, javascript)">
 	<meta name="twitter:description" content="WGS84 좌표계는 위키피디아에 따르면 다음과 같다. World Geodetic System (WGS) 1984년에 제정된 범 지구적 측위 시스템으로 지도학, 측지학, 항법에 많이 사용된다. 통칭 및 약칭은 WGS 84 (aka WGS 1984, EPSG:4326, WGS84)라고 부르며, 2004년에 마지막으로 개정되었다. 이전에 쓰던 초안으로 WGS 72, WGS 66, 그리고 WGS 60이 있다. 기존에는 네이버 지도 등에서 KTM 좌표를 사용하기도 했지만 요즘엔 WGS84 좌표를 주로 사용한다. 이번에 작업을 하면서 WGS8">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -137,20 +140,20 @@
 <p>이번에 작업을 하면서 WGS84 좌표 두개의 거리를 계산해야하는 일이 생겼다. 관련된 내용을 찾아보니 여러자료가 있긴하지만 바로 사용할만한 정보를 찾기가 어려웠다. 사실 계산방법이 조금씩 다르다(따라서 아래의 내용이 아주 정확한 값은 아닐 수 있다). 그래서 조사한김에 내용을 정리해둔다.</p>
 <p>아래는 몇가지 언어로 구현된 함수들이다. 반환값은 모두 km 단위로 반환된다. 필요한 단위로의 변환은 당연히 산술계산을 하면된다.</p>
 <h2>php</h2>
-<pre class="hljs php"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getDistance</span><span class="hljs-params">(<span class="hljs-variable">$lat1</span>, <span class="hljs-variable">$lng1</span>, <span class="hljs-variable">$lat2</span>, <span class="hljs-variable">$lng2</span>)</span>
+<pre class="hljs php"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getDistance</span><span class="hljs-params">($lat1, $lng1, $lat2, $lng2)</span>
 </span>{
-    <span class="hljs-variable">$earth_radius</span> = <span class="hljs-number">6371</span>;
-    <span class="hljs-variable">$dLat</span> = deg2rad(<span class="hljs-variable">$lat2</span> - <span class="hljs-variable">$lat1</span>);
-    <span class="hljs-variable">$dLon</span> = deg2rad(<span class="hljs-variable">$lng2</span> - <span class="hljs-variable">$lng1</span>);
-    <span class="hljs-variable">$a</span> = sin(<span class="hljs-variable">$dLat</span>/<span class="hljs-number">2</span>) * sin(<span class="hljs-variable">$dLat</span>/<span class="hljs-number">2</span>) + cos(deg2rad(<span class="hljs-variable">$lat1</span>)) * cos(deg2rad(<span class="hljs-variable">$lat2</span>)) * sin(<span class="hljs-variable">$dLon</span>/<span class="hljs-number">2</span>) * sin(<span class="hljs-variable">$dLon</span>/<span class="hljs-number">2</span>);
-    <span class="hljs-variable">$c</span> = <span class="hljs-number">2</span> * asin(sqrt(<span class="hljs-variable">$a</span>));
-    <span class="hljs-variable">$d</span> = <span class="hljs-variable">$earth_radius</span> * <span class="hljs-variable">$c</span>;
-    <span class="hljs-keyword">return</span> <span class="hljs-variable">$d</span>;
+    $earth_radius = <span class="hljs-number">6371</span>;
+    $dLat = deg2rad($lat2 - $lat1);
+    $dLon = deg2rad($lng2 - $lng1);
+    $a = sin($dLat/<span class="hljs-number">2</span>) * sin($dLat/<span class="hljs-number">2</span>) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon/<span class="hljs-number">2</span>) * sin($dLon/<span class="hljs-number">2</span>);
+    $c = <span class="hljs-number">2</span> * asin(sqrt($a));
+    $d = $earth_radius * $c;
+    <span class="hljs-keyword">return</span> $d;
 }</pre>
 <h2>MySql</h2>
 <p>함수로 구현된 예시이지만 당연히 query에서 return 부분을 직접 사용해도 된다.</p>
-<pre class="hljs sql"><span class="hljs-operator"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">FUNCTION</span> distance_between (from_lat <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">6</span>, <span class="hljs-number">3</span>), from_lng <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">6</span>, <span class="hljs-number">3</span>), to_lat <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">6</span>, <span class="hljs-number">3</span>), to_lng <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">6</span>, <span class="hljs-number">3</span>)) <span class="hljs-keyword">RETURNS</span> <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">11</span>, <span class="hljs-number">3</span>)
-    <span class="hljs-keyword">RETURN</span> <span class="hljs-number">6371</span> * <span class="hljs-number">2</span> * ATAN2(<span class="hljs-keyword">SQRT</span>(<span class="hljs-keyword">POW</span>(<span class="hljs-keyword">SIN</span>(<span class="hljs-keyword">RADIANS</span>(to_lat - from_lat)/<span class="hljs-number">2</span>), <span class="hljs-number">2</span>) + <span class="hljs-keyword">POW</span>(<span class="hljs-keyword">SIN</span>(<span class="hljs-keyword">RADIANS</span>(to_lng - from_lng)/<span class="hljs-number">2</span>), <span class="hljs-number">2</span>) * <span class="hljs-keyword">COS</span>(<span class="hljs-keyword">RADIANS</span>(from_lat)) * <span class="hljs-keyword">COS</span>(<span class="hljs-keyword">RADIANS</span>(to_lat))), <span class="hljs-keyword">SQRT</span>(<span class="hljs-number">1</span> - <span class="hljs-keyword">POW</span>(<span class="hljs-keyword">SIN</span>(<span class="hljs-keyword">RADIANS</span>(to_lat - from_lat)/<span class="hljs-number">2</span>), <span class="hljs-number">2</span>) + <span class="hljs-keyword">POW</span>(<span class="hljs-keyword">SIN</span>(<span class="hljs-keyword">RADIANS</span>(to_lng - from_lng)/<span class="hljs-number">2</span>), <span class="hljs-number">2</span>) * <span class="hljs-keyword">COS</span>(<span class="hljs-keyword">RADIANS</span>(from_lat)) * <span class="hljs-keyword">COS</span>(<span class="hljs-keyword">RADIANS</span>(to_lat))));</span></pre>
+<pre class="hljs sql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">FUNCTION</span> distance_between (from_lat <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">6</span>, <span class="hljs-number">3</span>), from_lng <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">6</span>, <span class="hljs-number">3</span>), to_lat <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">6</span>, <span class="hljs-number">3</span>), to_lng <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">6</span>, <span class="hljs-number">3</span>)) <span class="hljs-keyword">RETURNS</span> <span class="hljs-built_in">DECIMAL</span>(<span class="hljs-number">11</span>, <span class="hljs-number">3</span>)
+    <span class="hljs-keyword">RETURN</span> <span class="hljs-number">6371</span> * <span class="hljs-number">2</span> * ATAN2(<span class="hljs-keyword">SQRT</span>(<span class="hljs-keyword">POW</span>(<span class="hljs-keyword">SIN</span>(<span class="hljs-keyword">RADIANS</span>(to_lat - from_lat)/<span class="hljs-number">2</span>), <span class="hljs-number">2</span>) + <span class="hljs-keyword">POW</span>(<span class="hljs-keyword">SIN</span>(<span class="hljs-keyword">RADIANS</span>(to_lng - from_lng)/<span class="hljs-number">2</span>), <span class="hljs-number">2</span>) * <span class="hljs-keyword">COS</span>(<span class="hljs-keyword">RADIANS</span>(from_lat)) * <span class="hljs-keyword">COS</span>(<span class="hljs-keyword">RADIANS</span>(to_lat))), <span class="hljs-keyword">SQRT</span>(<span class="hljs-number">1</span> - <span class="hljs-keyword">POW</span>(<span class="hljs-keyword">SIN</span>(<span class="hljs-keyword">RADIANS</span>(to_lat - from_lat)/<span class="hljs-number">2</span>), <span class="hljs-number">2</span>) + <span class="hljs-keyword">POW</span>(<span class="hljs-keyword">SIN</span>(<span class="hljs-keyword">RADIANS</span>(to_lng - from_lng)/<span class="hljs-number">2</span>), <span class="hljs-number">2</span>) * <span class="hljs-keyword">COS</span>(<span class="hljs-keyword">RADIANS</span>(from_lat)) * <span class="hljs-keyword">COS</span>(<span class="hljs-keyword">RADIANS</span>(to_lat))));</pre>
 <h2>javascript</h2>
 <pre class="hljs javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getDistanceFromLatLonInKm</span>(<span class="hljs-params">lat1,lng1,lat2,lng2</span>) </span>{
     <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">deg2rad</span>(<span class="hljs-params">deg</span>) </span>{
@@ -170,7 +173,7 @@
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -261,7 +264,7 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -276,12 +279,17 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -311,7 +319,16 @@
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -455,7 +472,8 @@
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

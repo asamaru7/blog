@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>안드로이드 tap highlight 레이어로 대체하기 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="오늘은 지난번 -webkit-tap-highlight-color 사용하기 에서 얘기했던 안드로이드 tap highlight 버그를 회피할 수 있는 방법에 대해 포스팅하고자 한다. 일단 기본적인 아이디어는 이렇다. webkit 브라우저는 기본적으로 tap highlight를 숨길 수 있으므로 tap highlight를 투명하게 변경하고 해당 링크의 위치에 원하는 모양의 레이어를 띄우는 것이다. 여기서 또 다른 문제를 함께 해결해야 하는데, 삼성 갤럭시 계열의 스마트폰에서는 숨기는 것 조차 안된다는 것. 그래서 조금 더 꼼수를 부려야 ">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="안드로이드 tap highlight 레이어로 대체하기">
 	<meta property="og:description" content="오늘은 지난번 -webkit-tap-highlight-color 사용하기 에서 얘기했던 안드로이드 tap highlight 버그를 회피할 수 있는 방법에 대해 포스팅하고자 한다. 일단 기본적인 아이디어는 이렇다. webkit 브라우저는 기본적으로 tap highlight를 숨길 수 있으므로 tap highlight를 투명하게 변경하고 해당 링크의 위치에 원하는 모양의 레이어를 띄우는 것이다. 여기서 또 다른 문제를 함께 해결해야 하는데, 삼성 갤럭시 계열의 스마트폰에서는 숨기는 것 조차 안된다는 것. 그래서 조금 더 꼼수를 부려야 ">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2012/10/03/android-tap-highlight-layer/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="안드로이드 tap highlight 레이어로 대체하기">
 	<meta name="twitter:description" content="오늘은 지난번 -webkit-tap-highlight-color 사용하기 에서 얘기했던 안드로이드 tap highlight 버그를 회피할 수 있는 방법에 대해 포스팅하고자 한다. 일단 기본적인 아이디어는 이렇다. webkit 브라우저는 기본적으로 tap highlight를 숨길 수 있으므로 tap highlight를 투명하게 변경하고 해당 링크의 위치에 원하는 모양의 레이어를 띄우는 것이다. 여기서 또 다른 문제를 함께 해결해야 하는데, 삼성 갤럭시 계열의 스마트폰에서는 숨기는 것 조차 안된다는 것. 그래서 조금 더 꼼수를 부려야 ">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -141,10 +144,10 @@
 <p>아주 상세히 설명하자면 더 해야 겠지만 이 정도면 원리 정도는 설명했다고 생각된다. 혹 이해가 안되는 부분은 블로그로 문의 바란다.</p>
 <p>자 그럼 소스를 첨부한다. 정리를 해야 겠지만 시간 관계상... (그리고 jquery는 기본적으로 사용한다는 가정하에서 제작된 소스다. jquery를 사용하지 않는다면 사용 부분은 수정이 필요하다. 사실 jquery 문제가 아니더라도 범용으로 사용하기 위해 제작되 것이 아니므로 그냥 그대로 가져다 쓸 수는 없으니 참고로만 보면 된다.)</p>
 <h3>css 소스</h3>
-<pre class="hljs css"><span class="hljs-class">.p_tap_highlight</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">position</span>:<span class="hljs-value">absolute</span></span>; <span class="hljs-rule"><span class="hljs-attribute">background-color</span>:<span class="hljs-value"><span class="hljs-hexcolor">#333</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">-moz-opacity</span>:<span class="hljs-value">.<span class="hljs-number">30</span></span></span>; <span class="hljs-rule"><span class="hljs-attribute">filter</span>:<span class="hljs-value"><span class="hljs-function">alpha</span>(opacity=<span class="hljs-number">30</span>)</span></span>; <span class="hljs-rule"><span class="hljs-attribute">opacity</span>:<span class="hljs-value">.<span class="hljs-number">30</span></span></span>; }</span></pre>
+<pre class="hljs css"><span class="hljs-selector-class">.p_tap_highlight</span> { <span class="hljs-attribute">position</span>:absolute; <span class="hljs-attribute">background-color</span>:<span class="hljs-number">#333</span>; <span class="hljs-attribute">-moz-opacity</span>:.<span class="hljs-number">30</span>; <span class="hljs-attribute">filter</span>:<span class="hljs-built_in">alpha</span>(opacity=30); <span class="hljs-attribute">opacity</span>:.<span class="hljs-number">30</span>; }</pre>
 <h3>js 소스</h3>
 <pre class="hljs javascript">(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">var</span> isAndroid = (navigator.userAgent.toLowerCase().indexOf(<span class="hljs-string">"android"</span>) &gt; -<span class="hljs-number">1</span>); <span class="hljs-comment">//&amp;&amp; ua.indexOf("mobile");</span>
+    <span class="hljs-keyword">var</span> isAndroid = (navigator.userAgent.toLowerCase().indexOf(<span class="hljs-string">"android"</span>) &gt; <span class="hljs-number">-1</span>); <span class="hljs-comment">//&amp;&amp; ua.indexOf("mobile");</span>
     <span class="hljs-keyword">if</span>(isAndroid) { <span class="hljs-comment">// 안드로이드 계열에서 탭 하이라이트 위치가 맞지 않아 프로그램으로 대체</span>
         <span class="hljs-comment">// 탭 하이라이트 숨김 : 삼성 계열은 소용없음</span>
         $(<span class="hljs-string">"&lt;style type='text/css'&gt; html, body, body * { -webkit-tap-highlight-color:rgba(0,0,0,0); } &lt;/style&gt;"</span>).appendTo(<span class="hljs-string">"head"</span>);
@@ -197,7 +200,7 @@
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -288,7 +291,7 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -303,12 +306,17 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -338,7 +346,16 @@
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -482,7 +499,8 @@
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

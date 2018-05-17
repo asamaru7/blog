@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 			<title>HTML Critical rendering path의 이해 - 이 세상에 하나는 남기고 가자</title>
 		<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	<meta name="description" content="아래의 글은 &quot;Understanding the Critical Rendering Path&quot;의 내용을 번역한 글이다. 브라우저가 서버에서 페이지에 대한 HTML 응답을 받으면 화면에 표시되기 전에 많은 단계를 거쳐야 한다. 브라우저가 페이지의 초기 출력을 위해 실행해야하는 이 순서를 &quot;Critical Rendering Path&quot;(이하 CRP)라고 한다. 사이트의 성능을 향상시키는 방법을 이해하는데 CRP에 대한 지식은 매우 유용하다. CRP는 아래와 같이 6단계로 구성된다. DOM 트리 구축(Constructing the DOM Tr">
 	<meta name="referrer" content="always">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -16,7 +16,9 @@
 	<meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
-	
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
 	
 	
@@ -29,11 +31,12 @@
 	
 
 	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="HTML Critical rendering path의 이해">
 	<meta property="og:description" content="아래의 글은 &quot;Understanding the Critical Rendering Path&quot;의 내용을 번역한 글이다. 브라우저가 서버에서 페이지에 대한 HTML 응답을 받으면 화면에 표시되기 전에 많은 단계를 거쳐야 한다. 브라우저가 페이지의 초기 출력을 위해 실행해야하는 이 순서를 &quot;Critical Rendering Path&quot;(이하 CRP)라고 한다. 사이트의 성능을 향상시키는 방법을 이해하는데 CRP에 대한 지식은 매우 유용하다. CRP는 아래와 같이 6단계로 구성된다. DOM 트리 구축(Constructing the DOM Tr">
-	<meta property="og:image" content="/res/img/post/2017/05/understanding-the-critical-rendering-path.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2017/05/04/understanding-the-critical-rendering-path/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/post/2017/05/understanding-the-critical-rendering-path.png">
 	
 
 	
@@ -41,7 +44,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="HTML Critical rendering path의 이해">
 	<meta name="twitter:description" content="아래의 글은 &quot;Understanding the Critical Rendering Path&quot;의 내용을 번역한 글이다. 브라우저가 서버에서 페이지에 대한 HTML 응답을 받으면 화면에 표시되기 전에 많은 단계를 거쳐야 한다. 브라우저가 페이지의 초기 출력을 위해 실행해야하는 이 순서를 &quot;Critical Rendering Path&quot;(이하 CRP)라고 한다. 사이트의 성능을 향상시키는 방법을 이해하는데 CRP에 대한 지식은 매우 유용하다. CRP는 아래와 같이 6단계로 구성된다. DOM 트리 구축(Constructing the DOM Tr">
-	<meta property="twitter:image" content="/res/img/post/2017/05/understanding-the-critical-rendering-path.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/post/2017/05/understanding-the-critical-rendering-path.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -95,13 +98,17 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 	<script async src="https://cdn.ampproject.org/v0.js"></script>
 	<script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
 	<script async custom-element="amp-sidebar" src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"></script>
-	<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>
 	<script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
 	<script async custom-element="amp-ad" src="https://cdn.ampproject.org/v0/amp-ad-0.1.js"></script>
 	<script async custom-element="amp-social-share" src="https://cdn.ampproject.org/v0/amp-social-share-0.1.js"></script>
-			<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>
+	<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>
+	
+		
+	
+			<script async custom-element="amp-auto-ads" src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"></script>
 	</head>
 <body>
+	<amp-auto-ads type="adsense" data-ad-client="ca-pub-8163803188491150"></amp-auto-ads>
 	<amp-analytics type="googleanalytics" id="analytics-ga">
 		<script type="application/json">
 				{
@@ -186,7 +193,7 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -201,12 +208,17 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -236,7 +248,16 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -404,16 +425,6 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 			<span class="vcard author hide"><span class="fn">유영재</span></span>
 		</div>
 		
-					<amp-ad
-					class="dAmpAdPostTop"
-					layout="responsive"
-					heights="(min-width:468px) 60px, 100px"
-					width=300
-					height=250
-					type="adsense"
-					data-ad-client="ca-pub-8163803188491150"
-					data-ad-slot="9980888623">
-			</amp-ad>
 				
 		<div class="markdown-body entry-content"><blockquote>
 <p>아래의 글은 "<a href="https://bitsofco.de/understanding-the-critical-rendering-path/">Understanding the Critical Rendering Path</a>"의 내용을 번역한 글이다.</p>
@@ -432,39 +443,39 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 <h3>1.  DOM 트리 구축(Constructing the DOM Tree)</h3>
 <p>DOM(Document Object Model) 트리는 완전히 구문 분석된 HTML 페이지의 Object 표현이다. 루트 요소 <code>&lt;html&gt;</code>로 시작하여 페이지의 각 element/text에 대한 노드가 만들어진다. 다른 요소 내에 중첩된 요소는 자식 노드로 표시되며 각 노드에는 해당 요소의 전체 특성이 포함된다. 예를 들어, <code>&lt;a&gt;</code> 요소는 노드와 관련된 <code>href</code> 속성을 갖는다.</p>
 <p>예를들어 아래의 html 문서를 보자.</p>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">html</span>&gt;</span>  
-<span class="hljs-tag">&lt;<span class="hljs-title">head</span>&gt;</span>  
-  <span class="hljs-tag">&lt;<span class="hljs-title">title</span>&gt;</span>Understanding the Critical Rendering Path<span class="hljs-tag">&lt;/<span class="hljs-title">title</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-title">link</span> <span class="hljs-attribute">rel</span>=<span class="hljs-value">"stylesheet"</span> <span class="hljs-attribute">href</span>=<span class="hljs-value">"style.css"</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">head</span>&gt;</span>  
-<span class="hljs-tag">&lt;<span class="hljs-title">body</span>&gt;</span>  
-  <span class="hljs-tag">&lt;<span class="hljs-title">header</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-title">h1</span>&gt;</span>Understanding the Critical Rendering Path<span class="hljs-tag">&lt;/<span class="hljs-title">h1</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-title">header</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-title">main</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-title">h2</span>&gt;</span>Introduction<span class="hljs-tag">&lt;/<span class="hljs-title">h2</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-title">p</span>&gt;</span>Lorem ipsum dolor sit amet<span class="hljs-tag">&lt;/<span class="hljs-title">p</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-title">main</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-title">footer</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-title">small</span>&gt;</span>Copyright 2017<span class="hljs-tag">&lt;/<span class="hljs-title">small</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-title">footer</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">body</span>&gt;</span>  
-<span class="hljs-tag">&lt;/<span class="hljs-title">html</span>&gt;</span>  </pre>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>  
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>  
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Understanding the Critical Rendering Path<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"style.css"</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>  
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>  
+  <span class="hljs-tag">&lt;<span class="hljs-name">header</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Understanding the Critical Rendering Path<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">header</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">main</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>Introduction<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Lorem ipsum dolor sit amet<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">main</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">footer</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">small</span>&gt;</span>Copyright 2017<span class="hljs-tag">&lt;/<span class="hljs-name">small</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">footer</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>  
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>  </pre>
 <p>위 html 문서는 다음과 같은 DOM 트리를 생성한다.</p>
 <p><amp-img src="/res/img/post/2017/05/understanding-the-critical-rendering-path-1.png" alt="understanding-the-critical-rendering-path-1" width="780" height="411" layout="responsive"></amp-img></p>
 <p>HTML의 장점은 부분적으로 실행될 수 있다는 것이다. 페이지에 내용이 표시하기 위해 전체 문서를 로드할 필요가 없다. 그러나 다른 리소스인 CSS와 JavaScript는 페이지 렌더링을 차단할 수 있다.</p>
 <h3>2. CSSOM 트리 구축(Constructing the CSSOM Tree)</h3>
 <p>CSSOM(CSS Object Model)은 DOM과 연관된 스타일의 Object 표현이다. 이것은 DOM과 비슷한 방식으로 표현되지만 명시적 또는 암시적 선언과 상속 여부에 관계없이 각 노드의 관련 스타일로 표시된다.</p>
 <p>위에서 언급한 html 문서의 <code>style.css</code> 파일에는 아래와 같은 style이 정의되어 있다.</p>
-<pre class="hljs css"><span class="hljs-tag">body</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">font-size</span>:<span class="hljs-value"> <span class="hljs-number">18px</span></span></span>; }</span>
+<pre class="hljs css"><span class="hljs-selector-tag">body</span> { <span class="hljs-attribute">font-size</span>: <span class="hljs-number">18px</span>; }
 
-<span class="hljs-tag">header</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">color</span>:<span class="hljs-value"> plum</span></span>; }</span>  
-<span class="hljs-tag">h1</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">font-size</span>:<span class="hljs-value"> <span class="hljs-number">28px</span></span></span>; }</span>
+<span class="hljs-selector-tag">header</span> { <span class="hljs-attribute">color</span>: plum; }  
+<span class="hljs-selector-tag">h1</span> { <span class="hljs-attribute">font-size</span>: <span class="hljs-number">28px</span>; }
 
-<span class="hljs-tag">main</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">color</span>:<span class="hljs-value"> firebrick</span></span>; }</span>  
-<span class="hljs-tag">h2</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">font-size</span>:<span class="hljs-value"> <span class="hljs-number">20px</span></span></span>; }</span>
+<span class="hljs-selector-tag">main</span> { <span class="hljs-attribute">color</span>: firebrick; }  
+<span class="hljs-selector-tag">h2</span> { <span class="hljs-attribute">font-size</span>: <span class="hljs-number">20px</span>; }
 
-<span class="hljs-tag">footer</span> <span class="hljs-rules">{ <span class="hljs-rule"><span class="hljs-attribute">display</span>:<span class="hljs-value"> none</span></span>; }</span>  </pre>
+<span class="hljs-selector-tag">footer</span> { <span class="hljs-attribute">display</span>: none; }  </pre>
 <p>위 CSS는 다음과 같은 CSSOM 트리를 생성한다.</p>
 <p><amp-img src="/res/img/post/2017/05/understanding-the-critical-rendering-path-2.png" alt="understanding-the-critical-rendering-path-2" width="780" height="411" layout="responsive"></amp-img></p>
 <p>CSS는 "<strong>렌더링 차단 리소스(render blocking resource)</strong>"로 간주된다. 즉, 먼저 리소스를 완전히 파싱하지 않으면 렌더링 트리를 구성 할 수 없다. HTML과 달리 CSS는 계단식 상속  특성 때문에 부분적으로 실행될 수 없다. 문서의 뒷부분에 정의된 스타일은 이전에 정의된 스타일을 무시하고 변경할 수 있다. 따라서 스타일 시트 전체가 파싱되기 전에 스타일 시트에서 앞에서 정의한 CSS 스타일을 사용하기 시작하면 잘못된 CSS가 적용되는 상황이 발생할 수 있다. 즉, 다음 단계로 넘어 가기 전에 CSS를 완전히 파싱 해야 한다.</p>
@@ -474,7 +485,7 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 <p>JavaScript는 "<strong>파서 차단 리소스(parser blocking resource)</strong>"로 간주된다. 즉, HTML 문서 자체의 구문 분석은 JavaScript에 의해 차단된다.</p>
 <p>파서가 내부 태그이든 외부 태그이든 <code>&lt;script&gt;</code> 태그에 도달하면 (외부 태그 인 경우) fetch를 중단하고 실행한다. 따라서 문서 내의 요소를 참조하는 JavaScript 파일이 있는 경우 해당 문서가 표시된 후에 배치 해야 한다.</p>
 <p>JavaScript가 파서 차단(parser blocking)되는 것을 피하기 위해 <code>async</code> 속성을 적용하여 비동기적으로 로드 할 수 있다.</p>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">async</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"script.js"</span>&gt;</span><span class=""></span></pre>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">async</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"script.js"</span>&gt;</span><span class=""></span></pre>
 <h3>4. 랜더링 트리 구축(Creating the Render Tree)</h3>
 <p>렌더링 트리는 DOM과 CSSOM의 조합이다. 페이지에서 최종적으로 렌더링 될 내용을 나타내는 트리다. 즉, 표시되는 내용만 캡쳐하가 때문에 <code>display:none</code>을 사용하여 CSS로 숨겨진 요소는 포함하지 않는다.</p>
 <p>위의 예제 DOM과 CSSOM을 사용하여 다음 렌더링 트리가 생성된다.</p>
@@ -482,7 +493,7 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 <h3>5. 레이아웃 생성(Generating the Layout)</h3>
 <p>레이아웃은 뷰포트의 크기에 관련된 CSS 스타일에 대한 컨텍스트에 의해 뷰포트의 크기를 결정한다. 비율 또는 뷰포트 단위. 뷰포트 크기는 문서 헤드에 제공된 메타 뷰포트 태그에 의해 결정되거나, 태그가 제공되지 않으면 기본 뷰포트 너비 인 980px가 사용된다.</p>
 <p>예를 들어 가장 일반적인 메타 뷰포트 값은 뷰포트 크기를 장치 너비에 맞게 설정하는 것이다.</p>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">meta</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"viewport"</span> <span class="hljs-attribute">content</span>=<span class="hljs-value">"width=device-width,initial-scale=1"</span>&gt;</span>  </pre>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"viewport"</span> <span class="hljs-attr">content</span>=<span class="hljs-string">"width=device-width,initial-scale=1"</span>&gt;</span>  </pre>
 <p>예를 들어 사용자가 너비가 1000px 인 기기에서 웹 페이지를 방문하면 뷰포트 크기는 해당 값을 기반으로 합니다. 뷰포트의 절반은 500px이고, 10vw는 100px이 된다.</p>
 <h3>6. 페인팅(Painting)</h3>
 <p>마지막으로 Painting 단계에서 페이지의 가시적인 내용을 픽셀로 변환하여 화면에 표시 할 수 있다.</p>
@@ -490,25 +501,25 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 <h3>종합(Putting it All Together)</h3>
 <p>Critical Rendering Path를 진행하는 과정을 DevTools로 확인 할 수 있다(Chrome에서는 DevTools의 Performance에서 확인 할 수 있다).</p>
 <p>예를 들어 위의 샘플 HTML (<code>&lt;script&gt;</code> 태그가 추가 된 경우) -</p>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">html</span>&gt;</span>  
-<span class="hljs-tag">&lt;<span class="hljs-title">head</span>&gt;</span>  
-  <span class="hljs-tag">&lt;<span class="hljs-title">title</span>&gt;</span>Understanding the Critical Rendering Path<span class="hljs-tag">&lt;/<span class="hljs-title">title</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-title">link</span> <span class="hljs-attribute">rel</span>=<span class="hljs-value">"stylesheet"</span> <span class="hljs-attribute">href</span>=<span class="hljs-value">"style.css"</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">head</span>&gt;</span>  
-<span class="hljs-tag">&lt;<span class="hljs-title">body</span>&gt;</span>  
-  <span class="hljs-tag">&lt;<span class="hljs-title">header</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-title">h1</span>&gt;</span>Understanding the Critical Rendering Path<span class="hljs-tag">&lt;/<span class="hljs-title">h1</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-title">header</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-title">main</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-title">h2</span>&gt;</span>Introduction<span class="hljs-tag">&lt;/<span class="hljs-title">h2</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-title">p</span>&gt;</span>Lorem ipsum dolor sit amet<span class="hljs-tag">&lt;/<span class="hljs-title">p</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-title">main</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-title">footer</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-title">small</span>&gt;</span>Copyright 2017<span class="hljs-tag">&lt;/<span class="hljs-title">small</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-title">footer</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"main.js"</span>&gt;</span><span class=""></span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">body</span>&gt;</span>  
-<span class="hljs-tag">&lt;/<span class="hljs-title">html</span>&gt;</span>  </pre>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>  
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>  
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Understanding the Critical Rendering Path<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"style.css"</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>  
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>  
+  <span class="hljs-tag">&lt;<span class="hljs-name">header</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Understanding the Critical Rendering Path<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">header</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">main</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>Introduction<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Lorem ipsum dolor sit amet<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">main</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">footer</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">small</span>&gt;</span>Copyright 2017<span class="hljs-tag">&lt;/<span class="hljs-name">small</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">footer</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"main.js"</span>&gt;</span><span class=""></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>  
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>  </pre>
 <p>페이지 로드에 대한 이벤트 로그를 보면 아래와 같은 결과를 볼 수 있다.</p>
 <p><amp-img src="/res/img/post/2017/05/understanding-the-critical-rendering-path-4.png" alt="understanding-the-critical-rendering-path-4" width="568" height="681" layout="responsive"></amp-img></p>
 <ol>
@@ -526,7 +537,7 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 
 	<section class="dShare">
 	
-			<amp-social-share type="facebook" data-param-app_id="1796234843959223" width="60" height="44"></amp-social-share>
+			<amp-social-share type="facebook" data-param-app_id="1481515121924670" width="60" height="44"></amp-social-share>
 		<amp-social-share type="twitter" width="60" height="44"></amp-social-share>
 	<amp-social-share type="gplus" width="60" height="44"></amp-social-share>
 	<amp-social-share type="pinterest" width="60" height="44"></amp-social-share>
@@ -611,7 +622,7 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -626,12 +637,17 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -661,7 +677,16 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -806,16 +831,6 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 
 </section>
 
-	<amp-ad
-			class="dAmpAdSiteBottom"
-			layout="responsive"
-			heights="(min-width:468px) 60px, (min-width:336px) 280px, (min-width:320px) 280px, (min-width:300px) 250px, 100px"
-			width=300
-			height=250
-			type="adsense"
-			data-ad-client="ca-pub-8163803188491150"
-			data-ad-slot="7841851420">
-	</amp-ad>
 
 <footer>
 	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>

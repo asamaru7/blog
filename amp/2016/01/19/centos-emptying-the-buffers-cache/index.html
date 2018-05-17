@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 			<title>linux buffer/cache 비우기 - 이 세상에 하나는 남기고 가자</title>
 		<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	<meta name="description" content="예전에 리눅스에서 swap 메모리 초기화에서 swap 메모리를 비우는 방법을 남겼다. 이번엔 swap이 아닌 &quot;buff/cache&quot;를 비우는 방법을 남기고자 한다. linux에서 top 또는 free 명령으로 메모리 상황을 보면 &quot;buff/cache&quot; 항목이 있다. 이 부분은 실제로 직접 사용하고 있는 메모리가 아니라 말그대로 버퍼와 캐시에 사용된 메모리를 뜻한다. 그렇다면 &quot;굳이 왜 이것을 비우려고 하는가?&quot;하는 의문이 생길 수 있다. 일반적으로 캐시는 느린 장치의 데이터를 빠른 장치에 임시 보관해두고 사용함으로써 성능을 높이는 ">
 	<meta name="referrer" content="always">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -16,7 +16,9 @@
 	<meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
-	
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
 	
 	
@@ -29,11 +31,12 @@
 	
 
 	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="linux buffer/cache 비우기">
 	<meta property="og:description" content="예전에 리눅스에서 swap 메모리 초기화에서 swap 메모리를 비우는 방법을 남겼다. 이번엔 swap이 아닌 &quot;buff/cache&quot;를 비우는 방법을 남기고자 한다. linux에서 top 또는 free 명령으로 메모리 상황을 보면 &quot;buff/cache&quot; 항목이 있다. 이 부분은 실제로 직접 사용하고 있는 메모리가 아니라 말그대로 버퍼와 캐시에 사용된 메모리를 뜻한다. 그렇다면 &quot;굳이 왜 이것을 비우려고 하는가?&quot;하는 의문이 생길 수 있다. 일반적으로 캐시는 느린 장치의 데이터를 빠른 장치에 임시 보관해두고 사용함으로써 성능을 높이는 ">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2016/01/19/centos-emptying-the-buffers-cache/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -41,7 +44,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="linux buffer/cache 비우기">
 	<meta name="twitter:description" content="예전에 리눅스에서 swap 메모리 초기화에서 swap 메모리를 비우는 방법을 남겼다. 이번엔 swap이 아닌 &quot;buff/cache&quot;를 비우는 방법을 남기고자 한다. linux에서 top 또는 free 명령으로 메모리 상황을 보면 &quot;buff/cache&quot; 항목이 있다. 이 부분은 실제로 직접 사용하고 있는 메모리가 아니라 말그대로 버퍼와 캐시에 사용된 메모리를 뜻한다. 그렇다면 &quot;굳이 왜 이것을 비우려고 하는가?&quot;하는 의문이 생길 수 있다. 일반적으로 캐시는 느린 장치의 데이터를 빠른 장치에 임시 보관해두고 사용함으로써 성능을 높이는 ">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -95,13 +98,17 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 	<script async src="https://cdn.ampproject.org/v0.js"></script>
 	<script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
 	<script async custom-element="amp-sidebar" src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"></script>
-	<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>
 	<script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
 	<script async custom-element="amp-ad" src="https://cdn.ampproject.org/v0/amp-ad-0.1.js"></script>
 	<script async custom-element="amp-social-share" src="https://cdn.ampproject.org/v0/amp-social-share-0.1.js"></script>
-			<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>
+	<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>
+	
+		
+	
+			<script async custom-element="amp-auto-ads" src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"></script>
 	</head>
 <body>
+	<amp-auto-ads type="adsense" data-ad-client="ca-pub-8163803188491150"></amp-auto-ads>
 	<amp-analytics type="googleanalytics" id="analytics-ga">
 		<script type="application/json">
 				{
@@ -186,7 +193,7 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -201,12 +208,17 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -236,7 +248,16 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -402,16 +423,6 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 			<span class="vcard author hide"><span class="fn">유영재</span></span>
 		</div>
 		
-					<amp-ad
-					class="dAmpAdPostTop"
-					layout="responsive"
-					heights="(min-width:468px) 60px, 100px"
-					width=300
-					height=250
-					type="adsense"
-					data-ad-client="ca-pub-8163803188491150"
-					data-ad-slot="9980888623">
-			</amp-ad>
 				
 		<div class="markdown-body entry-content"><p>예전에 <a href="/2015/10/02/linux-how-to-clear-memory-swap/">리눅스에서 swap 메모리 초기화</a>에서 swap 메모리를 비우는 방법을 남겼다. 이번엔 swap이 아닌 "buff/cache"를 비우는 방법을 남기고자 한다.</p>
 <p>linux에서 <code>top</code> 또는 <code>free</code> 명령으로 메모리 상황을 보면 "buff/cache" 항목이 있다. 이 부분은 실제로 직접 사용하고 있는 메모리가 아니라 말그대로 버퍼와 캐시에 사용된 메모리를 뜻한다. 그렇다면 "굳이 왜 이것을 비우려고 하는가?"하는 의문이 생길 수 있다.</p>
@@ -422,24 +433,24 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 <p>우선 아래와 같이 선택적으로 cache를 비울 수 있다. <code>sync</code> 명령을 사용하는 이유는 해당 cache 기능을 비우기 전에 사용중인 데이터를 sync하기 위한 것이다.</p>
 <p>pagecache 비우기</p>
 <pre class="hljs bash">sync
-<span class="hljs-built_in">echo</span> <span class="hljs-number">1</span> &gt; /proc/sys/vm/drop_caches
+<span class="hljs-built_in">echo</span> 1 &gt; /proc/sys/vm/drop_caches
 <span class="hljs-comment"># 또는</span>
 sync
-sysctl -w vm.drop_caches=<span class="hljs-number">1</span></pre>
+sysctl -w vm.drop_caches=1</pre>
 <p>dentries, inodes 비우기</p>
 <pre class="hljs bash">sync
-<span class="hljs-built_in">echo</span> <span class="hljs-number">2</span> &gt; /proc/sys/vm/drop_caches
+<span class="hljs-built_in">echo</span> 2 &gt; /proc/sys/vm/drop_caches
 <span class="hljs-comment"># 또는</span>
 sync
-sysctl -w vm.drop_caches=<span class="hljs-number">2</span></pre>
+sysctl -w vm.drop_caches=2</pre>
 <p>pagecache, dentries, inodes 모두 비우기</p>
 <pre class="hljs bash">sync
-<span class="hljs-built_in">echo</span> <span class="hljs-number">3</span> &gt; /proc/sys/vm/drop_caches
+<span class="hljs-built_in">echo</span> 3 &gt; /proc/sys/vm/drop_caches
 <span class="hljs-comment"># 또는</span>
 sync
-sysctl -w vm.drop_caches=<span class="hljs-number">3</span></pre>
+sysctl -w vm.drop_caches=3</pre>
 <p>위에서 1,2,3으로 지정한 값들은 영구적 설정이 아니라 설정되는 그 시점에만 적용된다. 바꿔서 이야기 하자면 <code>/proc/sys/vm/drop_caches</code>는 파일이 아니라 명령어인 셈이다. 실제로 아래와 같이 기본값인 0으로 되돌리려고하면 오류가 난다.</p>
-<pre class="hljs bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-number">0</span> &gt; /proc/sys/vm/drop_caches
+<pre class="hljs bash">$ <span class="hljs-built_in">echo</span> 0 &gt; /proc/sys/vm/drop_caches
 -bash: <span class="hljs-built_in">echo</span>: write error: 부적절한 인수</pre>
 </div>
 
@@ -447,7 +458,7 @@ sysctl -w vm.drop_caches=<span class="hljs-number">3</span></pre>
 
 	<section class="dShare">
 	
-			<amp-social-share type="facebook" data-param-app_id="1796234843959223" width="60" height="44"></amp-social-share>
+			<amp-social-share type="facebook" data-param-app_id="1481515121924670" width="60" height="44"></amp-social-share>
 		<amp-social-share type="twitter" width="60" height="44"></amp-social-share>
 	<amp-social-share type="gplus" width="60" height="44"></amp-social-share>
 	<amp-social-share type="pinterest" width="60" height="44"></amp-social-share>
@@ -532,7 +543,7 @@ sysctl -w vm.drop_caches=<span class="hljs-number">3</span></pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -547,12 +558,17 @@ sysctl -w vm.drop_caches=<span class="hljs-number">3</span></pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -582,7 +598,16 @@ sysctl -w vm.drop_caches=<span class="hljs-number">3</span></pre>
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -727,16 +752,6 @@ sysctl -w vm.drop_caches=<span class="hljs-number">3</span></pre>
 
 </section>
 
-	<amp-ad
-			class="dAmpAdSiteBottom"
-			layout="responsive"
-			heights="(min-width:468px) 60px, (min-width:336px) 280px, (min-width:320px) 280px, (min-width:300px) 250px, 100px"
-			width=300
-			height=250
-			type="adsense"
-			data-ad-client="ca-pub-8163803188491150"
-			data-ad-slot="7841851420">
-	</amp-ad>
 
 <footer>
 	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>

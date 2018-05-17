@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>SSH를 사용해서 mysqldump 하기 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="SSH 비밀번호 입력없이 로그인하기에 이어서 ssh를 이용해서 MySql 원격 서버의 데이터를 로컬로 dump 받는 방법을 소개하려고 한다. &quot;굳이 이런 방법이 왜 필요한가?&quot;에 대한 의문이 생길 수 있으니 상황부터 설명해야 할 것 같다. mysqldump를 사용하고자 할 경우 mysql client가 설치되어 있어야 한다. CentOS기준으로 mysql은 &quot;mysql&quot;, mariadb 기준으로 보자면 &quot;MariaDB-client&quot; 패키지가 설치되어 있어야 한다. 그런데 이 패키지가 설치되지 않은 상태에서 mysqldump를 사용하">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="SSH를 사용해서 mysqldump 하기">
 	<meta property="og:description" content="SSH 비밀번호 입력없이 로그인하기에 이어서 ssh를 이용해서 MySql 원격 서버의 데이터를 로컬로 dump 받는 방법을 소개하려고 한다. &quot;굳이 이런 방법이 왜 필요한가?&quot;에 대한 의문이 생길 수 있으니 상황부터 설명해야 할 것 같다. mysqldump를 사용하고자 할 경우 mysql client가 설치되어 있어야 한다. CentOS기준으로 mysql은 &quot;mysql&quot;, mariadb 기준으로 보자면 &quot;MariaDB-client&quot; 패키지가 설치되어 있어야 한다. 그런데 이 패키지가 설치되지 않은 상태에서 mysqldump를 사용하">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2016/01/27/mysqldump-via-ssh/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="SSH를 사용해서 mysqldump 하기">
 	<meta name="twitter:description" content="SSH 비밀번호 입력없이 로그인하기에 이어서 ssh를 이용해서 MySql 원격 서버의 데이터를 로컬로 dump 받는 방법을 소개하려고 한다. &quot;굳이 이런 방법이 왜 필요한가?&quot;에 대한 의문이 생길 수 있으니 상황부터 설명해야 할 것 같다. mysqldump를 사용하고자 할 경우 mysql client가 설치되어 있어야 한다. CentOS기준으로 mysql은 &quot;mysql&quot;, mariadb 기준으로 보자면 &quot;MariaDB-client&quot; 패키지가 설치되어 있어야 한다. 그런데 이 패키지가 설치되지 않은 상태에서 mysqldump를 사용하">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -135,7 +138,7 @@ mysqldump를 사용하고자 할 경우 mysql client가 설치되어 있어야 �
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -226,7 +229,7 @@ mysqldump를 사용하고자 할 경우 mysql client가 설치되어 있어야 �
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -241,12 +244,17 @@ mysqldump를 사용하고자 할 경우 mysql client가 설치되어 있어야 �
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -276,7 +284,16 @@ mysqldump를 사용하고자 할 경우 mysql client가 설치되어 있어야 �
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -420,7 +437,8 @@ mysqldump를 사용하고자 할 경우 mysql client가 설치되어 있어야 �
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

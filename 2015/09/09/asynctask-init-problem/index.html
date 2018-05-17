@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>AsyncTask의 생성을 UIThread에서 하지 않으면 발생하는 문제 해결 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="최근에 안드로이드의 앱 성능 개선에 관련하여 여러가지 자료를 확인중이다. 대표적인 것들이 memory leak에 관련된 문제와 thread 사용에 대한 것들이 있다. 오늘 하고자 하는 얘기는 이 thread 관련된 정보를 조사하다가 알게된 부분을 공유하고자 한다. 이 내용의 출처는 여기다. AsyncTask가 UI 스레드가 아닌 곳에서 처음으로 호출된다면 아래와 같은 에러스택이 발생할 수 있다고 한다. 이건 또 무슨 말도 안되는 소린가? 정말 안드로이드는 말도 안되는 이상한 현상들이 너무나도 많다. 하지만 위에 안내한 출처에서 명확">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="AsyncTask의 생성을 UIThread에서 하지 않으면 발생하는 문제 해결">
 	<meta property="og:description" content="최근에 안드로이드의 앱 성능 개선에 관련하여 여러가지 자료를 확인중이다. 대표적인 것들이 memory leak에 관련된 문제와 thread 사용에 대한 것들이 있다. 오늘 하고자 하는 얘기는 이 thread 관련된 정보를 조사하다가 알게된 부분을 공유하고자 한다. 이 내용의 출처는 여기다. AsyncTask가 UI 스레드가 아닌 곳에서 처음으로 호출된다면 아래와 같은 에러스택이 발생할 수 있다고 한다. 이건 또 무슨 말도 안되는 소린가? 정말 안드로이드는 말도 안되는 이상한 현상들이 너무나도 많다. 하지만 위에 안내한 출처에서 명확">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2015/09/09/asynctask-init-problem/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="AsyncTask의 생성을 UIThread에서 하지 않으면 발생하는 문제 해결">
 	<meta name="twitter:description" content="최근에 안드로이드의 앱 성능 개선에 관련하여 여러가지 자료를 확인중이다. 대표적인 것들이 memory leak에 관련된 문제와 thread 사용에 대한 것들이 있다. 오늘 하고자 하는 얘기는 이 thread 관련된 정보를 조사하다가 알게된 부분을 공유하고자 한다. 이 내용의 출처는 여기다. AsyncTask가 UI 스레드가 아닌 곳에서 처음으로 호출된다면 아래와 같은 에러스택이 발생할 수 있다고 한다. 이건 또 무슨 말도 안되는 소린가? 정말 안드로이드는 말도 안되는 이상한 현상들이 너무나도 많다. 하지만 위에 안내한 출처에서 명확">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -127,7 +130,7 @@
 			<span class="vcard author hide"><span class="fn">유영재</span></span>
 		</div>
 		<div class="markdown-body entry-content"><p>최근에 안드로이드의 앱 성능 개선에 관련하여 여러가지 자료를 확인중이다. 대표적인 것들이 memory leak에 관련된 문제와 thread 사용에 대한 것들이 있다. 오늘 하고자 하는 얘기는 이 thread 관련된 정보를 조사하다가 알게된 부분을 공유하고자 한다.</p>
-<p>이 내용의 출처는 <a href=""https://gist.github.com/benelog/5954649"">여기</a>다.</p>
+<p>이 내용의 출처는 <a href="https://gist.github.com/benelog/5954649">여기</a>다.</p>
 <p>AsyncTask가 UI 스레드가 아닌 곳에서 처음으로 호출된다면 아래와 같은 에러스택이 발생할 수 있다고 한다. 이건 또 무슨 말도 안되는 소린가? 정말 안드로이드는 말도 안되는 이상한 현상들이 너무나도 많다. 하지만 위에 안내한 출처에서 명확한 원인과 해결 방법을 제시하고 있다.</p>
 <pre><code>android.view.ViewRoot$CalledFromWrongThreadException: Only the original thread that created a view hierarchy can touch its views.
     at android.view.ViewRoot.checkThread(ViewRoot.java:3011)
@@ -173,7 +176,7 @@
 <p><a href="https://github.com/android/platform_frameworks_base/commit/5e9120d4adfb07aeeadb0e0de1de2eb9ebbd80e0">https://github.com/android/platform_frameworks_base/commit/5e9120d4adfb07aeeadb0e0de1de2eb9ebbd80e0</a></p>
 </blockquote>
 <p>이렇게 설명되어 있으나 위에 얘기한 것 처럼 현재는 다시 조금 변경되어 있었다. 정확히는 AsyncTask.init() 이 부분이 없다. init() 함수도 선언되어 있지 않다.</p>
-<p>그렇다면 문제가 없는 것일까? 해서 다시 조금 찾아봤다. 이 부분에 대해서는 <a href=""http://sjava.net/?p=1570"">여기</a>에서 설명하고 있었다.
+<p>그렇다면 문제가 없는 것일까? 해서 다시 조금 찾아봤다. 이 부분에 대해서는 <a href="&quot;http://sjava.net/?p=1570&quot;">여기</a>에서 설명하고 있었다.
 내용을 보니 5.1이 나오면서 내부적 처리가 변경된 것으로 보인다. 그리고 설명대로라면 사용상의 변경은 크지 않으므로 역시 초기화 과정은 필요없다.</p>
 <p>덤으로 위 사이트에서 안내된 내용 중에 아래의 내용도 있다.</p>
 <h3>Threading rules</h3>
@@ -201,7 +204,7 @@
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -292,7 +295,7 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -307,12 +310,17 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -342,7 +350,16 @@
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -486,7 +503,8 @@
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

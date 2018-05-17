@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>script의 async와 defer 속성 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="웹 브라우저는 html을 랜더링하는 과정에서 css(&lt;link type=&#039;text/css&#039;&gt;) 또는 js(&lt;script&gt;) 를 만나면 동기적으로 처리한다. 다시 말해 해당 내용이 해석되고 실행되기 전에는 뒤에 나오는 내용을 처리하지 않는다는 것이다. 이 부분은 화면의 랜더링 속도에 큰 영향을 줄 수 있다(사용자 경험 측면에서 큰 영향을 주며 SEO와도 관련된다). 이와 관련된 자세한 내용은 HTML Critical rendering path의 이해라는 글에 있으니 필요하면 참고 바란다. css의 경우는 화면을 랜더링하는데 필요한 정">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="script의 async와 defer 속성">
 	<meta property="og:description" content="웹 브라우저는 html을 랜더링하는 과정에서 css(&lt;link type=&#039;text/css&#039;&gt;) 또는 js(&lt;script&gt;) 를 만나면 동기적으로 처리한다. 다시 말해 해당 내용이 해석되고 실행되기 전에는 뒤에 나오는 내용을 처리하지 않는다는 것이다. 이 부분은 화면의 랜더링 속도에 큰 영향을 줄 수 있다(사용자 경험 측면에서 큰 영향을 주며 SEO와도 관련된다). 이와 관련된 자세한 내용은 HTML Critical rendering path의 이해라는 글에 있으니 필요하면 참고 바란다. css의 경우는 화면을 랜더링하는데 필요한 정">
-	<meta property="og:image" content="/res/img/post/2017/05/script-async-defer-1.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2017/05/04/script-async-defer/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/post/2017/05/script-async-defer-1.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="script의 async와 defer 속성">
 	<meta name="twitter:description" content="웹 브라우저는 html을 랜더링하는 과정에서 css(&lt;link type=&#039;text/css&#039;&gt;) 또는 js(&lt;script&gt;) 를 만나면 동기적으로 처리한다. 다시 말해 해당 내용이 해석되고 실행되기 전에는 뒤에 나오는 내용을 처리하지 않는다는 것이다. 이 부분은 화면의 랜더링 속도에 큰 영향을 줄 수 있다(사용자 경험 측면에서 큰 영향을 주며 SEO와도 관련된다). 이와 관련된 자세한 내용은 HTML Critical rendering path의 이해라는 글에 있으니 필요하면 참고 바란다. css의 경우는 화면을 랜더링하는데 필요한 정">
-	<meta property="twitter:image" content="/res/img/post/2017/05/script-async-defer-1.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/post/2017/05/script-async-defer-1.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -136,12 +139,12 @@
 <p>위 그림에서 보여주듯이 스크립트를 가져 와서 실행하기 위해 HTML 구문 분석이 일시 중지되므로 HTML이 화면에 출력되는 시간이 길어진다.</p>
 <h3>async 속성이 추가된 경우의 실행</h3>
 <p>async 속성은 브라우저에 스크립트 파일이 비동기적으로 실행될 수 있음을 나타내기 위해 사용된다. HTML 구문 분석기는 스크립트 태그에 도달한 지점에서 스크립트를 가져오고 실행하기 위해 일시 중지 할 필요가 없다. 따라서 HTML 구문 분석과 병행하여 스크립트를 가져온 후 스크립트가 준비 될 때마다 즉시 실행이 가능하다. 그러므로 <strong>실행의 순서가 다운로드 완료 시점의 결정되므로 실행 순서가 중요한 스크립트들에 async를 사용할 때는 유의해야 한다(HTML5 spec에 async=false 속성 지정시 호출 순서대로 실행되도록 추가됨(default : true)).</strong></p>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">async</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"script.js"</span>&gt;</span><span class=""></span></pre>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">async</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"script.js"</span>&gt;</span><span class=""></span></pre>
 <p>이 속성은 외부에 위치한 스크립트 파일에서만 사용할 수 있다. 외부 스크립트에 이 속성이 있으면 HTML 문서가 여전히 구문 분석되는 동안 파일을 다운로드 할 수 있으며 다운로드가 완료되면 스크립트가 실행될 수 있도록 구문 분석이 일시 중지 된다.</p>
 <p><img src="/res/img/post/2017/05/script-async-defer-2.png" alt="javascript-async-execution" width="780" height="152" /></p>
 <h3>defer 속성이 추가된 경우의 실행</h3>
 <p>defer 속성은 HTML 구문 분석이 완전히 완료되면 스크립트 파일을 실행하도록 브라우저에 지시한다.</p>
-<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">defer</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"script.js"</span>&gt;</span><span class=""></span></pre>
+<pre class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">defer</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"script.js"</span>&gt;</span><span class=""></span></pre>
 <p>비동기적으로 로드된 스크립트와 마찬가지로, HTML 구문 분석이 실행되는 동안 파일을 다운로드 할 수 있다. 그러나 HTML 구문 분석이 완료되기 전에 스크립트 다운로드가 완료 되더라도 구문 분석이 완료 될 때까지 스크립트는 실행되지 않는다. 또한, <strong>async와는 다르게 호출된 순서대로 실행된다.</strong></p>
 <p><img src="/res/img/post/2017/05/script-async-defer-3.png" alt="javascript-defer-execution" width="780" height="152" /></p>
 <h3>언제 사용할 것인가?</h3>
@@ -174,7 +177,7 @@
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -265,7 +268,7 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -280,12 +283,17 @@
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -315,7 +323,16 @@
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -459,7 +476,8 @@
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>Nginx(stable / mainline) 설치 - CentOS 6.5 / 7 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="Nginx는 위키피디아에서 아래와 같이 설명하고 있다. Nginx(엔진 x라 읽는다)는 웹 서버 소프트웨어로, 가벼움과 높은 성능을 목표로 한다. 웹 서버, 리버스 프록시 및 메일 프록시 기능을 가진다. Netcraft의 2011년 1월 웹서버 설문조사에 따르면, nginx는 전체 도메인에서 4번째(7.50%)로 많이 쓰이는 웹서버이며, 활성화된 웹 사이트에 대한 통계에서도 역시 4번째(8.23%)로 많이 사용된다[1]. Nginx는 요청에 응답하기 위해 비동기 이벤트 기반 구조를 가진다. 이것은 아파치 HTTP 서버의 스레드/프로">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="Nginx(stable / mainline) 설치 - CentOS 6.5 / 7">
 	<meta property="og:description" content="Nginx는 위키피디아에서 아래와 같이 설명하고 있다. Nginx(엔진 x라 읽는다)는 웹 서버 소프트웨어로, 가벼움과 높은 성능을 목표로 한다. 웹 서버, 리버스 프록시 및 메일 프록시 기능을 가진다. Netcraft의 2011년 1월 웹서버 설문조사에 따르면, nginx는 전체 도메인에서 4번째(7.50%)로 많이 쓰이는 웹서버이며, 활성화된 웹 사이트에 대한 통계에서도 역시 4번째(8.23%)로 많이 사용된다[1]. Nginx는 요청에 응답하기 위해 비동기 이벤트 기반 구조를 가진다. 이것은 아파치 HTTP 서버의 스레드/프로">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2015/11/27/installing-nginx-on-centos-6-dot-5-slash-7/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="Nginx(stable / mainline) 설치 - CentOS 6.5 / 7">
 	<meta name="twitter:description" content="Nginx는 위키피디아에서 아래와 같이 설명하고 있다. Nginx(엔진 x라 읽는다)는 웹 서버 소프트웨어로, 가벼움과 높은 성능을 목표로 한다. 웹 서버, 리버스 프록시 및 메일 프록시 기능을 가진다. Netcraft의 2011년 1월 웹서버 설문조사에 따르면, nginx는 전체 도메인에서 4번째(7.50%)로 많이 쓰이는 웹서버이며, 활성화된 웹 사이트에 대한 통계에서도 역시 4번째(8.23%)로 많이 사용된다[1]. Nginx는 요청에 응답하기 위해 비동기 이벤트 기반 구조를 가진다. 이것은 아파치 HTTP 서버의 스레드/프로">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -166,33 +169,33 @@ enabled=1</code></pre>
 <pre class="hljs bash">sudo yum install nginx</pre>
 <p>이것 또한 아주 간단하다. 약간의 부가 작업을 포함해서 bash shell 스크립트를 하나 만들어 뒀다.</p>
 <p>nginx.install.sh</p>
-<pre class="hljs bash"><span class="hljs-shebang">#!/bin/bash</span>
-<span class="hljs-keyword">function</span> <span class="hljs-built_in">print</span>Title {
-    <span class="hljs-built_in">echo</span> <span class="hljs-operator">-e</span> <span class="hljs-string">"\e[1;97m=======================================\e[0m"</span>
-    <span class="hljs-built_in">echo</span> <span class="hljs-operator">-e</span> <span class="hljs-string">"\e[1;97m* <span class="hljs-variable">$1</span>\e[0m"</span>
-    <span class="hljs-built_in">echo</span> <span class="hljs-operator">-e</span> <span class="hljs-string">"\e[1;97m=======================================\e[0m"</span>
+<pre class="hljs bash"><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-keyword">function</span> printTitle {
+    <span class="hljs-built_in">echo</span> -e <span class="hljs-string">"\e[1;97m=======================================\e[0m"</span>
+    <span class="hljs-built_in">echo</span> -e <span class="hljs-string">"\e[1;97m* <span class="hljs-variable">$1</span>\e[0m"</span>
+    <span class="hljs-built_in">echo</span> -e <span class="hljs-string">"\e[1;97m=======================================\e[0m"</span>
 }
 
-<span class="hljs-keyword">function</span> <span class="hljs-built_in">print</span>Job {
-    <span class="hljs-built_in">echo</span> <span class="hljs-operator">-e</span> <span class="hljs-string">"\e[94m* <span class="hljs-variable">$1</span>\e[0m"</span>
+<span class="hljs-keyword">function</span> printJob {
+    <span class="hljs-built_in">echo</span> -e <span class="hljs-string">"\e[94m* <span class="hljs-variable">$1</span>\e[0m"</span>
 }
 
-<span class="hljs-keyword">function</span> <span class="hljs-built_in">print</span>SubJob {
-    <span class="hljs-built_in">echo</span> <span class="hljs-operator">-e</span> <span class="hljs-string">"\e[96m\t<span class="hljs-variable">$1</span>\e[0m"</span>
+<span class="hljs-keyword">function</span> printSubJob {
+    <span class="hljs-built_in">echo</span> -e <span class="hljs-string">"\e[96m\t<span class="hljs-variable">$1</span>\e[0m"</span>
 }
 
-<span class="hljs-built_in">print</span>Title <span class="hljs-string">"Nginx 설치"</span>
+printTitle <span class="hljs-string">"Nginx 설치"</span>
 
-<span class="hljs-built_in">print</span>Job <span class="hljs-string">"httpd.service 종료"</span>
+printJob <span class="hljs-string">"httpd.service 종료"</span>
 systemctl stop httpd.service
 
-<span class="hljs-built_in">print</span>Job <span class="hljs-string">"httpd.service 제거"</span>
+printJob <span class="hljs-string">"httpd.service 제거"</span>
 yum remove -y httpd
 systemctl <span class="hljs-built_in">disable</span> httpd.service
 
-<span class="hljs-built_in">print</span>Job <span class="hljs-string">"Nginx 설치"</span>
-<span class="hljs-keyword">if</span> [ ! <span class="hljs-operator">-e</span> /etc/yum.repos.d/nginx.repo ]; <span class="hljs-keyword">then</span>
-    <span class="hljs-built_in">print</span>SubJob <span class="hljs-string">"nginx repository 추가"</span>
+printJob <span class="hljs-string">"Nginx 설치"</span>
+<span class="hljs-keyword">if</span> [ ! -e /etc/yum.repos.d/nginx.repo ]; <span class="hljs-keyword">then</span>
+    printSubJob <span class="hljs-string">"nginx repository 추가"</span>
     <span class="hljs-built_in">echo</span> <span class="hljs-string">"[nginx]"</span> &gt; /etc/yum.repos.d/nginx.repo
     <span class="hljs-built_in">echo</span> <span class="hljs-string">"name=nginx repo"</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
     <span class="hljs-built_in">echo</span> <span class="hljs-string">"baseurl=http://nginx.org/packages/mainline/centos/\$releasever/\$basearch/"</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
@@ -201,29 +204,29 @@ systemctl <span class="hljs-built_in">disable</span> httpd.service
     <span class="hljs-built_in">echo</span> <span class="hljs-string">"enabled=1"</span> &gt;&gt; /etc/yum.repos.d/nginx.repo
 <span class="hljs-keyword">fi</span>
 
-<span class="hljs-built_in">print</span>SubJob <span class="hljs-string">"nginx package 설치"</span>
+printSubJob <span class="hljs-string">"nginx package 설치"</span>
 yum install -y nginx
 
-<span class="hljs-built_in">print</span>Job <span class="hljs-string">"Nginx 서비스 활성"</span>
+printJob <span class="hljs-string">"Nginx 서비스 활성"</span>
 systemctl <span class="hljs-built_in">enable</span> nginx.service
 
-<span class="hljs-built_in">print</span>Job <span class="hljs-string">"Nginx 서비스 시작"</span>
+printJob <span class="hljs-string">"Nginx 서비스 시작"</span>
 systemctl start nginx.service
 
-<span class="hljs-built_in">print</span>Job <span class="hljs-string">"방화벽 설정"</span>
-<span class="hljs-keyword">if</span> [ `firewall-cmd --zone=public --list-all|grep <span class="hljs-string">"services"</span>|grep <span class="hljs-string">"http"</span> | wc <span class="hljs-operator">-l</span>` <span class="hljs-operator">-eq</span> <span class="hljs-number">0</span> ]; <span class="hljs-keyword">then</span>
-    <span class="hljs-built_in">print</span>SubJob <span class="hljs-string">"http/https 개방"</span>
+printJob <span class="hljs-string">"방화벽 설정"</span>
+<span class="hljs-keyword">if</span> [ `firewall-cmd --zone=public --list-all|grep <span class="hljs-string">"services"</span>|grep <span class="hljs-string">"http"</span> | wc -l` -eq 0 ]; <span class="hljs-keyword">then</span>
+    printSubJob <span class="hljs-string">"http/https 개방"</span>
     firewall-cmd --permanent --zone=public --add-service=http
     firewall-cmd --permanent --zone=public --add-service=https
 
-    <span class="hljs-built_in">print</span>SubJob <span class="hljs-string">"방화벽 rule reload"</span>
+    printSubJob <span class="hljs-string">"방화벽 rule reload"</span>
     firewall-cmd --reload
 <span class="hljs-keyword">fi</span></pre>
 <p>위 소스는 CentOS 7에서 firewalld를 사용하는 것을 기준으로 만들어진 것이니 참고하기 바란다. 그리고 원래 내가 사용하는 소스에서 불필요한 부분을 제거하고 넣은 것이라 <code>print***</code> 함수 같은 부분이 잘못 되었을 수 있는데 오류가 난다면 관련 부분을 모두 제거하면 된다.</p>
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -314,7 +317,7 @@ systemctl start nginx.service
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -329,12 +332,17 @@ systemctl start nginx.service
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -364,7 +372,16 @@ systemctl start nginx.service
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -508,7 +525,8 @@ systemctl start nginx.service
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

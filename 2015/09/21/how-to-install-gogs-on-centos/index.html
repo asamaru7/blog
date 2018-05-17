@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>CentOS에 gogs 설치하기 - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="기존에는 SCM(source code management)으로 SVN을 주로 사용했다. 하지만 git를 사용하기 시작하면서 부터 git를 주로 사용하긴 했는데 주로 github를 통해서만 사용했다. 그런데 이번에 회사 프로젝트에서 필요한 부분이 있어 자체 호스팅을 하기 위해 기존에 봐뒀던 gitlab을 쓰려다가 gogs를 알게 되면서 이걸 설치했다. gogs를 고른 이유는 간단하기 때문이다(GitHub vs GitLab vs Stash vs Gogs를 참고). 사실 아직 제대로 사용해보지 않아서 맞는지는 모르겠지만 gitlab은 r">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="CentOS에 gogs 설치하기">
 	<meta property="og:description" content="기존에는 SCM(source code management)으로 SVN을 주로 사용했다. 하지만 git를 사용하기 시작하면서 부터 git를 주로 사용하긴 했는데 주로 github를 통해서만 사용했다. 그런데 이번에 회사 프로젝트에서 필요한 부분이 있어 자체 호스팅을 하기 위해 기존에 봐뒀던 gitlab을 쓰려다가 gogs를 알게 되면서 이걸 설치했다. gogs를 고른 이유는 간단하기 때문이다(GitHub vs GitLab vs Stash vs Gogs를 참고). 사실 아직 제대로 사용해보지 않아서 맞는지는 모르겠지만 gitlab은 r">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2015/09/21/how-to-install-gogs-on-centos/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="CentOS에 gogs 설치하기">
 	<meta name="twitter:description" content="기존에는 SCM(source code management)으로 SVN을 주로 사용했다. 하지만 git를 사용하기 시작하면서 부터 git를 주로 사용하긴 했는데 주로 github를 통해서만 사용했다. 그런데 이번에 회사 프로젝트에서 필요한 부분이 있어 자체 호스팅을 하기 위해 기존에 봐뒀던 gitlab을 쓰려다가 gogs를 알게 되면서 이걸 설치했다. gogs를 고른 이유는 간단하기 때문이다(GitHub vs GitLab vs Stash vs Gogs를 참고). 사실 아직 제대로 사용해보지 않아서 맞는지는 모르겠지만 gitlab은 r">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -139,7 +142,7 @@ baseurl=https://rpm.packager.io/gh/pkgr/gogs/centos6/pkgr
 enabled=1"</span> | sudo tee /etc/yum.repos.d/gogs.repo
 sudo yum install gogs</pre>
 <p>그냥 시키는대로 따라하면 설치는 간단히 완료된다. 단, gogs는 계정을 추가하는 부분이 있어 passwd, shadow 파일에 lock이 걸려있으면 아래와 같은 오류가 나며 제대로 설치가 되지 않는다.</p>
-<pre class="hljs bash">Error <span class="hljs-keyword">in</span> PREIN scriptlet <span class="hljs-keyword">in</span> rpm package gogs-<span class="hljs-number">0.6</span>.<span class="hljs-number">9</span>-<span class="hljs-number">1442807350.69</span>b1d65.centos6.x86_64
+<pre class="hljs bash">Error <span class="hljs-keyword">in</span> PREIN scriptlet <span class="hljs-keyword">in</span> rpm package gogs-0.6.9-1442807350.69b1d65.centos6.x86_64
 useradd: /etc/passwd을(를) 열 수 없습니다</pre>
 <p>일단 풀어주고 설치하자.</p>
 <pre class="hljs bash">$ chattr -i /etc/passwd
@@ -161,9 +164,9 @@ la /home/gogs</pre>
 <pre class="hljs bash">mysqladmin -u root password <span class="hljs-string">"<span class="hljs-variable">${MYSQL_PASSWORD}</span>"</span>
 mysqladmin -u root --password=<span class="hljs-string">"<span class="hljs-variable">${MYSQL_PASSWORD}</span>"</span> password <span class="hljs-string">"<span class="hljs-variable">${MYSQL_PASSWORD}</span>"</span></pre>
 <p>하지만 DB는 만들어 줘야 한다.</p>
-<pre class="hljs bash">mysql -u root -p<span class="hljs-variable">${MYSQL_PASSWORD}</span> <span class="hljs-operator">-e</span> <span class="hljs-string">"CREATE DATABASE IF NOT EXISTS <span class="hljs-variable">${APP_NAME}</span>; use <span class="hljs-variable">${APP_NAME}</span>; set global storage_engine=INNODB;"</span></pre>
+<pre class="hljs bash">mysql -u root -p<span class="hljs-variable">${MYSQL_PASSWORD}</span> -e <span class="hljs-string">"CREATE DATABASE IF NOT EXISTS <span class="hljs-variable">${APP_NAME}</span>; use <span class="hljs-variable">${APP_NAME}</span>; set global storage_engine=INNODB;"</span></pre>
 <p><strong>예시</strong></p>
-<pre class="hljs bash">mysql -u root -p <span class="hljs-operator">-e</span> <span class="hljs-string">"CREATE DATABASE IF NOT EXISTS gogs; use gogs; set global storage_engine=INNODB;"</span></pre>
+<pre class="hljs bash">mysql -u root -p -e <span class="hljs-string">"CREATE DATABASE IF NOT EXISTS gogs; use gogs; set global storage_engine=INNODB;"</span></pre>
 <h3>WEB UI를 이용한 설정</h3>
 <p>그럼 본격적으로 설정을 시작하자.</p>
 <p><a href="http://userdomain:3000/">http://userdomain:3000/</a></p>
@@ -171,27 +174,27 @@ mysqladmin -u root --password=<span class="hljs-string">"<span class="hljs-varia
 <h3>도메인 연결</h3>
 <p>이제는 도메인 연결을 할 차례이다.</p>
 <p><strong>httpd 2 기준</strong></p>
-<pre class="hljs apache"><span class="hljs-tag">&lt;VirtualHost *:80&gt;</span>
-  <span class="hljs-keyword"><span class="hljs-common">ServerName</span></span> your.domain.com
+<pre class="hljs apache"><span class="hljs-section">&lt;VirtualHost *:80&gt;</span>
+  <span class="hljs-attribute"><span class="hljs-nomarkup">ServerName</span></span> your.domain.com
 
-  <span class="hljs-tag">&lt;IfModule !mod_proxy.c&gt;</span>
-    <span class="hljs-keyword"><span class="hljs-common">LoadModule</span></span> proxy_module modules/mod_proxy.so
-  <span class="hljs-tag">&lt;/IfModule&gt;</span>
-  <span class="hljs-tag">&lt;IfModule !proxy_http_module.c&gt;</span>
-    <span class="hljs-keyword"><span class="hljs-common">LoadModule</span></span> proxy_http_module modules/mod_proxy_http.so
-  <span class="hljs-tag">&lt;/IfModule&gt;</span>
+  <span class="hljs-section">&lt;IfModule !mod_proxy.c&gt;</span>
+    <span class="hljs-attribute"><span class="hljs-nomarkup">LoadModule</span></span> proxy_module modules/mod_proxy.so
+  <span class="hljs-section">&lt;/IfModule&gt;</span>
+  <span class="hljs-section">&lt;IfModule !proxy_http_module.c&gt;</span>
+    <span class="hljs-attribute"><span class="hljs-nomarkup">LoadModule</span></span> proxy_http_module modules/mod_proxy_http.so
+  <span class="hljs-section">&lt;/IfModule&gt;</span>
 
-  <span class="hljs-keyword">ProxyPass</span> / http://localhost:3000/
-  <span class="hljs-keyword">ProxyPassReverse</span> / http://localhost:3000/
-<span class="hljs-tag">&lt;/VirtualHost&gt;</span></pre>
+  <span class="hljs-attribute">ProxyPass</span> / http://localhost:3000/
+  <span class="hljs-attribute">ProxyPassReverse</span> / http://localhost:3000/
+<span class="hljs-section">&lt;/VirtualHost&gt;</span></pre>
 <p>나의 경우는 apache를 사용중이라 위와 같이 설정하면 되나 nginx를 사용하는 경우라면 아래를 참고하자(packager.io에 안내된 내용이다.).</p>
 <p><strong>nginx</strong></p>
 <pre class="hljs bash">cat &gt; /etc/nginx/sites-available/default &lt;&lt;EOF
 server {
-  listen          <span class="hljs-number">80</span>;
+  listen          80;
   server_name     <span class="hljs-variable">${HOSTNAME}</span>;
   location / {
-    proxy_pass      http://localhost:<span class="hljs-number">6000</span>;
+    proxy_pass      http://localhost:6000;
   }
 }
 EOF
@@ -200,7 +203,7 @@ sudo service nginx restart</pre>
 <p>우선 서버 시작시 자동 시작 되도록 설정하자(필요하다면). 나의 경우 <code>setup</code>으로 확인해보니 자동으로 들어가 있지 않았다. 그래서 아래와 같이 시도했다.</p>
 <pre class="hljs bash"><span class="hljs-comment"># 서버 부팅시 자동 시작</span>
 /sbin/chkconfig --add gogs
-/sbin/chkconfig --level <span class="hljs-number">35</span> gogs on
+/sbin/chkconfig --level 35 gogs on
 /sbin/chkconfig --list</pre>
 <p>첫줄부터 안된다. &quot;gogs 서비스는 chkconfig 를 지원하지 않습니다&quot;라고 오류를 내보낸다. 말그대로 gogs는 chkconfig를 지원하지 않는다. 해서 아래와 같이 서버 시작시 스크립트를 실행하도록 넣어 버렸다.</p>
 <pre class="hljs bash">$ vi /etc/rc.d/rc.local
@@ -230,7 +233,7 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -321,7 +324,7 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -336,12 +339,17 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -371,7 +379,16 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -515,7 +532,8 @@ ROOT를 변경한 후 재시작하고 레포지토리를 만들면 아래의 예
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

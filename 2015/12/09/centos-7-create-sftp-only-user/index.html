@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 					<title>sftp-only 사용자 추가 (CentOS 7) - 이 세상에 하나는 남기고 가자</title>
 	<meta name="author" content="유영재">
-	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,swift,thinking,tip,vagrant">
+	<meta name="keywords" content="android,blog,css,db,flash,git,html,ios,java,jekyll,js,laravel,linux,octopress,osx,php,programming,ssl,swift,thinking,tip,vagrant">
 	
 	<meta name="description" content="linux 서버를 운영하면서 sftp가 필요한 경우가 있다. 일반 계정이라면 sftp로 그냥 접속하면 되지만 특정 사용자에게 shell 접속은 차단하고 파일 업/다운로드만 제공해야 하는 상황이 있을 수 있다. 파일 전송을 주로 해야하는 서버가 아니라면 이런 경우를 위해 ftp 데몬을 구동하는 것도 부담스럽다. 이런 경우라면 sftp 전용 사용자를 추가하는 방법을 사용할 수 있다. 우선 아래의 과정을 보자. 미리 이야기 하지만 아래의 설정 과정은 앞으로 설명하는 요구 사항에 맞추어 작성된 것이다. 따라서 그룹 설정, home dire">
 	<meta name="referrer" content="always">
@@ -33,13 +33,16 @@
 <meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
 
+						<meta property="fb:pages" content="347561328975949" />
+					<meta property="fb:app_id" content="1481515121924670" />
+			
 	
-	
-	<meta property="og:type" content="website">
+	<meta property="og:type" content="article">
 	<meta property="og:site_name" content="이 세상에 하나는 남기고 가자">
 	<meta property="og:title" content="sftp-only 사용자 추가 (CentOS 7)">
 	<meta property="og:description" content="linux 서버를 운영하면서 sftp가 필요한 경우가 있다. 일반 계정이라면 sftp로 그냥 접속하면 되지만 특정 사용자에게 shell 접속은 차단하고 파일 업/다운로드만 제공해야 하는 상황이 있을 수 있다. 파일 전송을 주로 해야하는 서버가 아니라면 이런 경우를 위해 ftp 데몬을 구동하는 것도 부담스럽다. 이런 경우라면 sftp 전용 사용자를 추가하는 방법을 사용할 수 있다. 우선 아래의 과정을 보자. 미리 이야기 하지만 아래의 설정 과정은 앞으로 설명하는 요구 사항에 맞추어 작성된 것이다. 따라서 그룹 설정, home dire">
-	<meta property="og:image" content="/res/img/icon/icon.png">
+	<meta property="og:url" content="https://blog.asamaru.net/2015/12/09/centos-7-create-sftp-only-user/" />
+	<meta property="og:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 	
@@ -47,7 +50,7 @@
 	<meta name="twitter:site" content="@asamaru7">
 	<meta name="twitter:title" content="sftp-only 사용자 추가 (CentOS 7)">
 	<meta name="twitter:description" content="linux 서버를 운영하면서 sftp가 필요한 경우가 있다. 일반 계정이라면 sftp로 그냥 접속하면 되지만 특정 사용자에게 shell 접속은 차단하고 파일 업/다운로드만 제공해야 하는 상황이 있을 수 있다. 파일 전송을 주로 해야하는 서버가 아니라면 이런 경우를 위해 ftp 데몬을 구동하는 것도 부담스럽다. 이런 경우라면 sftp 전용 사용자를 추가하는 방법을 사용할 수 있다. 우선 아래의 과정을 보자. 미리 이야기 하지만 아래의 설정 과정은 앞으로 설명하는 요구 사항에 맞추어 작성된 것이다. 따라서 그룹 설정, home dire">
-	<meta property="twitter:image" content="/res/img/icon/icon.png">
+	<meta property="twitter:image" content="https://blog.asamaru.net/res/img/icon/icon.png">
 	
 
 										<link rel="apple-touch-icon" sizes="180x180" href="/res/img/icon/180.png">
@@ -129,12 +132,12 @@
 		<div class="markdown-body entry-content"><p>linux 서버를 운영하면서 sftp가 필요한 경우가 있다. 일반 계정이라면 sftp로 그냥 접속하면 되지만 특정 사용자에게 shell 접속은 차단하고 파일 업/다운로드만 제공해야 하는 상황이 있을 수 있다. 파일 전송을 주로 해야하는 서버가 아니라면 이런 경우를 위해 ftp 데몬을 구동하는 것도 부담스럽다. 이런 경우라면 sftp 전용 사용자를 추가하는 방법을 사용할 수 있다.</p>
 <p>우선 아래의 과정을 보자. 미리 이야기 하지만 아래의 설정 과정은 앞으로 설명하는 요구 사항에 맞추어 작성된 것이다. 따라서 그룹 설정, home directory 설정 등 여러가지 설정들은 자신에게 맞게 변경해도 된다. 단, 설정을 잘못하면 실제로 접속시에 오류가 날 수 있으니 내용을 이해하고 사용하기를 당부한다.</p>
 <pre class="hljs bash">$ /sbin/groupadd sftp
-$ /usr/sbin/useradd -g sftp [username] <span class="hljs-operator">-d</span> [user home directory] <span class="hljs-operator">-s</span> /bin/<span class="hljs-literal">false</span>
+$ /usr/sbin/useradd -g sftp [username] -d [user home directory] -s /bin/<span class="hljs-literal">false</span>
 $ <span class="hljs-built_in">echo</span> <span class="hljs-string">"[password]"</span> | passwd --stdin [username]
 
 $ chown -R [username].sftp [user home directory]
 $ chown root [user home directory]
-$ chmod <span class="hljs-number">755</span> [user home directory]
+$ chmod 755 [user home directory]
 
 $ sed -i <span class="hljs-string">"s/Subsystem[[:space:]]*sftp/#Subsystem   sftp/g"</span> /etc/ssh/sshd_config
 
@@ -188,12 +191,14 @@ $ systemctl restart sshd.service</pre>
 <li>
 <p><code>setsebool -P ssh_chroot_rw_homedirs on</code> : 이 부분은 selinux를 사용할 경우에만 해당된다. chroot가 적용된 home directory에 읽기/쓰기를 할 수 있도록 권한을 열어준다. 그런데 테스트 해보니 이 명령은 하지 않아도 파일 업로드는 이상이 없다. 대부분의 경우에 이 옵션을 주도록 설명하고 있어 추가는 해 두었지만 sftp 전용으로 계정을 사용할 경우는 사용하지 않아도 되는 것으로 보인다. 따라서 지정하지 않은 상태에서 업로드를 테스트 해보고 이상이 없다면 처리하지 않아도 되지 않을까 생각한다.</p>
 </li>
-<li><code>systemctl restart sshd.service</code> : 설정이 완료되었으므로 sshd를 재시작 해주면 바로 사용할 수 있다. <code>[username]</code> 계정으로 접속(<code>sftp [username]@127.0.0.1</code>)해서 테스트 해보고 이상이 없다면 완료된 것이다.</li>
+<li>
+<p><code>systemctl restart sshd.service</code> : 설정이 완료되었으므로 sshd를 재시작 해주면 바로 사용할 수 있다. <code>[username]</code> 계정으로 접속(<code>sftp [username]@127.0.0.1</code>)해서 테스트 해보고 이상이 없다면 완료된 것이다.</p>
+</li>
 </ul>
 </div>
 		
 		
-		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1796234843959223"></div>
+		<div class="share-sns twitter facebook googleplus band line kakaostory kakaotalk" data-kakao-api="624ef6707c0abb3894fed329f77b21a3" data-facebook-app-id="1481515121924670"></div>
 	</article>
 
 
@@ -284,7 +289,7 @@ $ systemctl restart sshd.service</pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/linux/">
-								linux<span>(28)</span>
+								linux<span>(30)</span>
 							</a>
 						</dd>
 											<dd>
@@ -299,12 +304,17 @@ $ systemctl restart sshd.service</pre>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/php/">
-								php<span>(53)</span>
+								php<span>(54)</span>
 							</a>
 						</dd>
 											<dd>
 							<a href="https://blog.asamaru.net/category/programming/">
 								programming<span>(1)</span>
+							</a>
+						</dd>
+											<dd>
+							<a href="https://blog.asamaru.net/category/ssl/">
+								ssl<span>(1)</span>
 							</a>
 						</dd>
 											<dd>
@@ -334,7 +344,16 @@ $ systemctl restart sshd.service</pre>
 			
 																<dl class="dArchives">
 						<dt>글 보관함</dt>
-													<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
+													<dd class="dYear"><a href="https://blog.asamaru.net/2018/">2018 <span>(2)</span></a></dd>
+															<dd>
+									<dl>
+										
+																					<dd class="dMonth">
+												<a href="https://blog.asamaru.net/2018/02/">02 <span>(2)</span></a>
+											</dd>
+																			</dl>
+								</dd>
+																				<dd class="dYear"><a href="https://blog.asamaru.net/2017/">2017 <span>(40)</span></a></dd>
 															<dd>
 									<dl>
 										
@@ -478,7 +497,8 @@ $ systemctl restart sshd.service</pre>
 
 </section>
 <footer>
-	hosted by <a href="https://github.com/"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	hosted by <a href="https://github.com/" target="_blank"><em>Github</em></a> / Posted by <a href="mailto:asamaru@asamaru.net"><em>유영재</em></a>
+	&nbsp;&nbsp;&nbsp;<a href="/privacy/" target="_blank">개인정보취급방침</a>
 </footer>
 
 

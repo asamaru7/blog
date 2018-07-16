@@ -146,6 +146,13 @@
 그런데 간혹 작업을 완료했음에도 불구하고 계속 비밀번호를 물어보는 경우가 있다. 그런 경우는 대부분 원격 서버의 <code>authorized_keys</code> 파일 퍼미션 문제다. 원격 서버에서 퍼미션을 아래와 같은지 확인하고 맞지 않다면 변경해 준다. 대부분의 경우는 접속 문제가 해결된다.</p>
 <pre class="hljs bash">chmod 700 ~/.ssh/
 chmod 600 ~/.ssh/authorized_keys</pre>
+<p>selinux를 사용하고 있는 경우 추가적으로 아래의 처리가 필요할 수 있다.</p>
+<pre class="hljs bash">restorecon -R -v ~/.ssh
+
+<span class="hljs-comment"># 또는</span>
+
+chcon -t ssh_home_t ~/.ssh/
+chcon -t ssh_home_t ~/.ssh/authorized_keys</pre>
 <h3>2. <a href="http://sourceforge.net/projects/sshpass/">sshpass</a>를 사용하는 방식</h3>
 <p><a href="http://sourceforge.net/projects/sshpass/">sshpass</a>는 ssh와는 직접적인 관련이 없는 프로그램으로 별도 설치가 필요하다. 설치되어 있지 않다면 아래와 같이 설치한다.</p>
 <pre class="hljs bash">yum --enablerepo=epel -y install sshpass</pre>

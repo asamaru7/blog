@@ -16,7 +16,8 @@ var adslot = (ADSlots = window.ADSlots || []);
 				client: 'ca-pub-8163803188491150',
 				slot: '1934918622',
 				format: 'auto',
-				style: 'width:300px; min-height:50px; margin-bottom:40px;'
+				style: 'width:300px; min-height:50px; margin-bottom:40px;',
+				wrap: '<div class="gad-box no-deco"/>'
 			}]
 		});
 	}
@@ -29,7 +30,8 @@ var adslot = (ADSlots = window.ADSlots || []);
 			client: 'ca-pub-8163803188491150',
 			slot: '9980888623',
 			format: 'auto',
-			style: 'padding-top:30px; clear:both; margin:0 auto;' + (isMini ? 'width:300px; height:600px;' : '')
+			style: 'padding-top:30px; clear:both; margin:0 auto;' + (isMini ? 'width:300px; height:600px;' : ''),
+			wrap: '<div class="gad-box"/>'
 		}]
 	});
 
@@ -41,14 +43,16 @@ var adslot = (ADSlots = window.ADSlots || []);
 			client: 'ca-pub-8163803188491150',
 			slot: '7841851420',
 			format: 'auto',
-			style: 'margin-top:30px;'
+			style: 'margin-top:30px;',
+			wrap: '<div class="gad-box"/>'
 		}, {// 본문 일치하는 콘텐츠
 			position: 'bottom',
 			type: 'adsense',
 			client: 'ca-pub-8163803188491150',
 			slot: '7054841029',
 			format: 'autorelaxed',
-			style: 'margin:30px auto;'
+			style: 'margin:30px auto;',
+			wrap: '<div class="gad-box"/>'
 		}]
 	});
 
@@ -63,7 +67,8 @@ var adslot = (ADSlots = window.ADSlots || []);
 			client: 'ca-pub-8163803188491150',
 			slot: '6221779423',
 			format: 'auto',
-			style: 'margin:15px 0;'
+			style: 'margin:15px 0;',
+			wrap: '<div class="gad-box"/>'
 		}, {	// archive 목록 중간 아래
 			position: {
 				selector: 'h3',
@@ -73,7 +78,8 @@ var adslot = (ADSlots = window.ADSlots || []);
 			client: 'ca-pub-8163803188491150',
 			slot: '7698512627',
 			format: 'auto',
-			style: 'margin:15px 0;'
+			style: 'margin:15px 0;',
+			wrap: '<div class="gad-box"/>'
 		}]
 	});
 
@@ -88,7 +94,8 @@ var adslot = (ADSlots = window.ADSlots || []);
 			client: 'ca-pub-8163803188491150',
 			slot: '6221779423',
 			format: 'auto',
-			style: 'margin:15px 0;'
+			style: 'margin:15px 0;',
+			wrap: '<div class="gad-box"/>'
 		}, {	// 블로그 목록 중간 아래
 			position: {
 				selector: 'li.hentry',
@@ -98,8 +105,8 @@ var adslot = (ADSlots = window.ADSlots || []);
 			client: 'ca-pub-8163803188491150',
 			slot: '7698512627',
 			format: 'auto',
-			style: 'margin:15px 0;'
+			style: 'margin:15px 0;',
+			wrap: '<div class="gad-box"/>'
 		}]
 	});
-
 })();

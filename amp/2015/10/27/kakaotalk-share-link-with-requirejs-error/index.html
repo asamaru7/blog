@@ -416,21 +416,21 @@ amp-ad.dAmpAdPostTop{margin-bottom:30px}amp-ad.dAmpAdSiteBottom{clear:both;margi
 그리고 kakao api가 버전업되면 상황이 달라질 수도 있다. 현재는 v1.0.49다.</p>
 <pre class="hljs javascript">&lt;!DOCTYPE html&gt;
 <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
-    </span>&lt;head&gt;
-        &lt;script data-main="app2" src="lib/require.js"&gt;&lt;/script&gt;
-        &lt;script type="text/javascript"&gt;
-            function test1() {
-                requirejs(["kakao"], function(Kakao, print) {
-                  Kakao.init('TGIF');
+    <span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">data-main</span>=<span class="hljs-string">"app2"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"lib/require.js"</span>&gt;</span><span class=""></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/javascript"</span>&gt;</span><span class="actionscript">
+            <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test1</span><span class="hljs-params">()</span> </span>{
+                requirejs([<span class="hljs-string">"kakao"</span>], <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(Kakao, print)</span> </span>{
+                  Kakao.init(<span class="hljs-string">'TGIF'</span>);
                   Kakao.Link.sendTalkLink({});
                 });
             }
-        &lt;/script&gt;
-    &lt;/head&gt;<span class="xml">
-    </span>&lt;body&gt;
-        &lt;h1&gt;탐색이 차단됨 오류 테스트 : 스마트폰에서 테스트&lt;/h1&gt;
-        &lt;button type="button" onclick="test1();"&gt;KAKAO link&lt;/button&gt;
-    &lt;/body&gt;<span class="xml">
+        </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>탐색이 차단됨 오류 테스트 : 스마트폰에서 테스트<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"test1();"</span>&gt;</span>KAKAO link<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span></span></pre>
 <p>이 코드를 모바일 크롬 브라우저에서 확인하면 위의 오류를 볼 수 있다.
 추정하는 상황은 이렇다. 브라우저에서 팝업창을 열려고 할 경우 사용자의 액션(클릭 이벤트)의 스코프를 벗어나서 <code>window.open</code>을 하려고하면 보안상의 이유로 팝업을 기본적으로 차단한다. 이것 또한 동일한 원인으로 예상된다. requirejs를 통해 kakao js를 호출하고 완료되면 동작을 실행하므로 스코프를 벗어나게 된다. 그렇기에 크롬에서 해당 링크를 차단시켜버리는 것으로 추정하고 있다. 현재로써는 이 문제를 해결하려면 kakao js의 호출과 init을 액션(클릭 이벤트)이 발생하기 이전에 해주는 방법 밖에 없다.</p>
